@@ -23,6 +23,89 @@ from core.scope_gate import load_scope_gate
 from core.compare_types import CoverageCard, Evidence, CompareStats
 
 
+def _select_diverse_evidences(evidences: List[Evidence], max_count: int = 3) -> List[Evidence]:
+    """
+    STEP 6-ε.1: Doc-Type Diversity Evidence Selection with Fill-up + Fallback Priority LOCK
+
+    Args:
+        evidences: 전체 evidence 목록
+        max_count: 최대 선택 개수 (기본 3)
+
+    Returns:
+        List[Evidence]: 선택된 evidence (최대 max_count개)
+
+    규칙:
+        Rule 6-ε.1: 항상 max_count까지 채우기 (Fill-up)
+        Rule 6-ε.2: Evidence 정렬 우선순위 (Deterministic)
+            1. Non-fallback 우선
+            2. doc_type priority: 약관 > 사업방법서 > 상품요약서
+            3. page 오름차순 (앞 페이지 우선)
+            4. (동률) file_path 문자열 오름차순 (완전결정성 확보용)
+        Rule 6-ε.3: Fallback 판정 (엄격)
+            - match_keyword에 'fallback_' 포함 시 fallback으로 간주
+    """
+    if not evidences:
+        return []
+
+    # Helper: fallback 판정 (Rule 6-ε.3)
+    def is_fallback(ev: Evidence) -> bool:
+        return bool(ev.match_keyword and 'fallback_' in ev.match_keyword.lower())
+
+    # Helper: doc_type priority index (Rule 6-ε.2)
+    doc_type_priority_map = {
+        '약관': 0,
+        '사업방법서': 1,
+        '상품요약서': 2
+    }
+
+    def doc_type_priority_index(ev: Evidence) -> int:
+        return doc_type_priority_map.get(ev.doc_type, 999)
+
+    # Helper: sort key (Rule 6-ε.2)
+    def sort_key(ev: Evidence):
+        return (
+            is_fallback(ev),           # 1. Non-fallback 우선
+            doc_type_priority_index(ev),  # 2. doc_type priority
+            ev.page,                   # 3. page 오름차순
+            ev.file_path               # 4. file_path 오름차순 (완전결정성)
+        )
+
+    # 1차 선택 (Diversity pass): 약관/사업방법서/상품요약서 각 1개씩
+    by_doc_type = {}
+    for ev in evidences:
+        doc_type = ev.doc_type
+        if doc_type not in by_doc_type:
+            by_doc_type[doc_type] = []
+        by_doc_type[doc_type].append(ev)
+
+    # 각 doc_type 내에서 정렬
+    for doc_type in by_doc_type:
+        by_doc_type[doc_type].sort(key=sort_key)
+
+    selected = []
+    doc_type_priority = ['약관', '사업방법서', '상품요약서']
+
+    # 1차 선택: 각 doc_type에서 1개씩
+    for doc_type in doc_type_priority:
+        if doc_type in by_doc_type and len(selected) < max_count:
+            selected.append(by_doc_type[doc_type][0])
+
+    # 2차 보충 (Fill-up pass): max_count까지 채우기 (Rule 6-ε.1)
+    if len(selected) < max_count:
+        # 선택되지 않은 evidence pool 구축
+        selected_set = set(id(ev) for ev in selected)
+        remaining = [ev for ev in evidences if id(ev) not in selected_set]
+
+        # 정렬 후 부족분 채우기
+        remaining.sort(key=sort_key)
+        for ev in remaining:
+            if len(selected) >= max_count:
+                break
+            selected.append(ev)
+
+    return selected[:max_count]
+
+
 def build_coverage_cards(
     scope_mapped_csv: str,
     evidence_pack_jsonl: str,
@@ -118,6 +201,9 @@ def build_coverage_cards(
         coverage_code = scope_info['coverage_code'] if scope_info['coverage_code'] else None
         coverage_name_canonical = scope_info['coverage_name_canonical'] if scope_info['coverage_name_canonical'] else None
 
+        # STEP 6-ε: Doc-Type Diversity Evidence Selection (최대 3개)
+        selected_evidences = _select_diverse_evidences(evidences, max_count=3)
+
         # Card 생성
         card = CoverageCard(
             insurer=insurer,
@@ -126,7 +212,7 @@ def build_coverage_cards(
             coverage_name_canonical=coverage_name_canonical,
             mapping_status=mapping_status,
             evidence_status=evidence_status,
-            evidences=evidences[:3],  # 최대 3개
+            evidences=selected_evidences,
             hits_by_doc_type=hits_by_doc_type,
             flags=flags
         )

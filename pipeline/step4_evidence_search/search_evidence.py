@@ -299,6 +299,75 @@ class EvidenceSearcher:
 
         return core_tokens
 
+    def _kb_bm_a4200_1_definition_hit(self, pages: List[Dict]) -> Dict:
+        """
+        STEP 6-δ.1: KB 사업방법서 A4200_1 정의 Hit 판정 (snippet 품질 개선)
+
+        Args:
+            pages: 사업방법서 페이지 데이터 목록
+
+        Returns:
+            Dict: {'hit': bool, 'snippet': str, 'page': int, 'file_path': str}
+        """
+        # STEP 6-δ.1: Snippet 후보 점수화
+        best_candidate = None
+        best_score = 0
+
+        for page_data in pages:
+            text = page_data['text']
+            lines = text.split('\n')
+            page = page_data['page']
+            file_path = page_data['file_path']
+
+            # 각 라인 점수화
+            for i, line in enumerate(lines):
+                # 필수 토큰 체크 (ALL REQUIRED)
+                has_cancer_diagnosis = '암진단비' in line
+                has_similar_cancer = '유사암' in line
+                has_exclude = '제외' in line or '유사암제외' in line
+
+                # 필수 토큰이 모두 없으면 skip
+                if not (has_cancer_diagnosis and has_similar_cancer and has_exclude):
+                    continue
+
+                # 점수 계산
+                score = 0
+                if has_cancer_diagnosis:
+                    score += 1
+                if has_similar_cancer:
+                    score += 1
+                if has_exclude:
+                    score += 1
+                if '보험금' in line or '지급' in line:
+                    score += 1
+
+                # score < 3은 폐기
+                if score < 3:
+                    continue
+
+                # 최고 점수 갱신
+                if score > best_score:
+                    best_score = score
+                    # snippet: 선택된 라인 기준 위아래 4줄 (총 9줄)
+                    start = max(0, i - 4)
+                    end = min(len(lines), i + 5)
+                    snippet_lines = lines[start:end]
+                    snippet = '\n'.join(snippet_lines).strip()[:500]
+
+                    best_candidate = {
+                        'hit': True,
+                        'snippet': snippet,
+                        'page': page,
+                        'file_path': file_path
+                    }
+
+        # 최고 점수 후보 반환
+        if best_candidate:
+            return best_candidate
+
+        # No hit
+        return {'hit': False, 'snippet': '', 'page': 0, 'file_path': ''}
+
     def _fallback_token_and_search(
         self,
         coverage_name: str,
@@ -364,6 +433,7 @@ class EvidenceSearcher:
         coverage_name_raw: str,
         coverage_name_canonical: Optional[str] = None,
         mapping_status: str = "matched",
+        coverage_code: Optional[str] = None,
         max_evidences_per_type: int = 3
     ) -> Dict:
         """
@@ -373,6 +443,7 @@ class EvidenceSearcher:
             coverage_name_raw: 원본 담보명
             coverage_name_canonical: 표준 담보명 (matched인 경우)
             mapping_status: matched | unmatched
+            coverage_code: 담보 코드 (STEP 6-δ 전용)
             max_evidences_per_type: 문서 타입별 최대 evidence 수
 
         Returns:
@@ -490,6 +561,31 @@ class EvidenceSearcher:
                     all_evidences.extend(fallback_evidences)
                     fallback_flags.append('fallback_token_and')
 
+        # STEP 6-δ: KB 사업방법서 정의 Hit 보정 (A4200_1 ONLY)
+        # 조건: kb/A4200_1/사업방법서 + 기존 검색 실패 시에만
+        if (self.insurer == 'kb' and
+            coverage_code == 'A4200_1' and
+            '사업방법서' in self.text_data and
+            hits_by_doc_type['사업방법서'] == 0):
+
+            bm_pages = self.text_data['사업방법서']
+            hit_result = self._kb_bm_a4200_1_definition_hit(bm_pages)
+
+            if hit_result['hit']:
+                # doc_type hit = 1
+                hits_by_doc_type['사업방법서'] = 1
+
+                # evidence 1개 추가
+                evidence = {
+                    'doc_type': '사업방법서',
+                    'file_path': hit_result['file_path'],
+                    'page': hit_result['page'],
+                    'snippet': hit_result['snippet'],
+                    'match_keyword': 'kb_bm_definition_hit'
+                }
+                all_evidences.append(evidence)
+                fallback_flags.append('kb_bm_definition_hit')
+
         # Flags 생성
         flags = []
         # policy_only flag: 약관만 있고 다른 문서는 0건
@@ -565,6 +661,7 @@ def create_evidence_pack(
             coverage_name_raw=coverage_name_raw,
             coverage_name_canonical=coverage_name_canonical if coverage_name_canonical else None,
             mapping_status=mapping_status,
+            coverage_code=coverage_code if coverage_code else None,
             max_evidences_per_type=3
         )
 
