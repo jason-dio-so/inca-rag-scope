@@ -6,7 +6,7 @@ coverage_name_raw,insurer,source_page,coverage_code,coverage_name_canonical,mapp
 암진단비(유사암제외),meritz,3,A4200_1,암진단비(유사암제외),matched,exact
 유사암진단비,meritz,3,A4210,유사암진단비,matched,normalized
 5대고액치료비암진단비,meritz,3,A4209,고액암진단비,matched,normalized_alias
-재진단암진단비(1년대기형),meritz,3,,,unmatched,none
+재진단암진단비(1년대기형),meritz,3,A4200_5,재진단암진단비(1년대기형),matched,alias
 뇌혈관질환진단비,meritz,3,A4101,뇌혈관질환진단비,matched,normalized_alias
 뇌졸중진단비,meritz,3,A4103,뇌졸중진단비,matched,normalized_alias
 뇌출혈진단비,meritz,3,A4102,뇌출혈진단비,matched,normalized_alias
@@ -23,8 +23,8 @@ coverage_name_raw,insurer,source_page,coverage_code,coverage_name_canonical,mapp
 허혈성심장질환수술비,meritz,3,A5107_1,허혈성심장질환수술비,matched,normalized
 상해수술비,meritz,3,A5300,상해수술비,matched,normalized
 질병수술비,meritz,4,A5100,질병수술비,matched,normalized
-(10년갱신)갱신형다빈치로봇암수술비(암(특정암제외)),meritz,4,,,unmatched,none
-(10년갱신)갱신형다빈치로봇암수술비(특정암),meritz,4,,,unmatched,none
+(10년갱신)갱신형다빈치로봇암수술비(암(특정암제외)),meritz,4,A5200_6,(10년갱신)갱신형다빈치로봇암수술비(암특정암제외),matched,alias
+(10년갱신)갱신형다빈치로봇암수술비(특정암),meritz,4,A5200_7,(10년갱신)갱신형다빈치로봇암수술비(특정암),matched,alias
 골절(치아파절제외)진단비Ⅱ,meritz,4,A4301_1,골절진단비(치아파절제외),matched,alias
 신화상치료비(화상수술비),meritz,4,,,unmatched,none
 신화상치료비(화상진단비),meritz,4,,,unmatched,none
@@ -32,4 +32,4 @@ coverage_name_raw,insurer,source_page,coverage_code,coverage_name_canonical,mapp
 항암방사선약물치료비,meritz,4,A9617_1,항암방사선약물치료비(최초1회한),matched,normalized_alias
 혈전용해치료비Ⅱ(뇌졸중),meritz,4,A9640_1,혈전용해치료비,matched,alias
 혈전용해치료비Ⅱ(특정심장질환),meritz,4,A9640_1,혈전용해치료비,matched,alias
-(10년갱신)갱신형표적항암약물허가치료비Ⅱ,meritz,4,,,unmatched,none
+(10년갱신)갱신형표적항암약물허가치료비Ⅱ,meritz,4,A9619_3,(10년갱신)갱신형표적항암약물허가치료비Ⅱ,matched,alias

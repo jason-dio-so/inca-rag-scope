@@ -3,12 +3,18 @@
   "canonical_name": "암진단비(유사암제외)",
   "insurers": [
     "db",
+    "hanwha",
     "meritz",
     "samsung"
   ],
-  "count": 3,
+  "count": 4,
   "doc_type_coverage": {
     "db": {},
+    "hanwha": {
+      "약관": 0,
+      "사업방법서": 0,
+      "상품요약서": 0
+    },
     "meritz": {
       "약관": 3,
       "사업방법서": 0,
@@ -23,6 +29,11 @@
   "slot_status": {
     "payout_amount": {
       "db": {
+        "status": "unknown",
+        "refs": [],
+        "has_text": false
+      },
+      "hanwha": {
         "status": "unknown",
         "refs": [],
         "has_text": false
@@ -45,6 +56,11 @@
     },
     "waiting_period": {
       "db": {
+        "status": "unknown",
+        "refs": [],
+        "has_text": false
+      },
+      "hanwha": {
         "status": "unknown",
         "refs": [],
         "has_text": false
@@ -73,6 +89,11 @@
         ],
         "has_text": true
       },
+      "hanwha": {
+        "status": "unknown",
+        "refs": [],
+        "has_text": false
+      },
       "meritz": {
         "status": "found",
         "refs": [
@@ -98,6 +119,11 @@
           "약관 p.9"
         ],
         "has_text": true
+      },
+      "hanwha": {
+        "status": "unknown",
+        "refs": [],
+        "has_text": false
       },
       "meritz": {
         "status": "found",
@@ -127,6 +153,11 @@
         ],
         "has_text": true
       },
+      "hanwha": {
+        "status": "unknown",
+        "refs": [],
+        "has_text": false
+      },
       "meritz": {
         "status": "found",
         "refs": [
@@ -154,6 +185,11 @@
           "약관 p.9"
         ],
         "has_text": true
+      },
+      "hanwha": {
+        "status": "unknown",
+        "refs": [],
+        "has_text": false
       },
       "meritz": {
         "status": "found",

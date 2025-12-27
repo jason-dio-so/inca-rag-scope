@@ -1,0 +1,26 @@
+insurer,raw_coverage_name,suggested_canonical_name,suggested_coverage_code,reason
+hanwha,유사암(8대) 진단비,유사암(8대)진단비,A4210_2,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,암(4대특정암 제외) 진단비,암(4대특정암제외)진단비,A4200_2,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,4대특정암 진단비,4대특정암진단비,A4209_2,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,4대특정암 진단비(제자리암),4대특정암진단비(제자리암),A4209_3,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,4대특정암 진단비(기타피부암),4대특정암진단비(기타피부암),A4209_4,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,4대특정암 진단비(갑상선암),4대특정암진단비(갑상선암),A4209_5,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,4대특정암 진단비(경계성종양),4대특정암진단비(경계성종양),A4209_6,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,암(4대특정암 제외) 치료비(1회한),암(4대특정암제외)치료비(1회한),A9600_1,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,4대특정암 치료비(1회한),4대특정암치료비(1회한),A9600_2,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,표적항암약물허가치료비(Ⅰ)(1회한)(갱신형),표적항암약물허가치료비(Ⅰ)(1회한),A9619_2,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,키트루다(CAR-T)면역항암치료비(1회한)(갱신형),키트루다(CAR-T)면역항암치료비(1회한),A9620_1,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,암(특정암 제외) 입원일당,암(특정암제외)입원일당,A6200_2,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,특정암 진단비,특정암진단비,A4209_7,unmatched cancer coverage with scope evidence (9 hits약관)
+hanwha,암(4대특정암 제외) 수술비(1회한),암(4대특정암제외)수술비(1회한),A5200_2,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,4대특정암 수술비(1회한),4대특정암수술비(1회한),A5200_3,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,표적항암면역치료비(Ⅰ)(1회한)(갱신형),표적항암면역치료비(Ⅰ)(1회한),A9621_1,unmatched cancer coverage with scope evidence (0 hits)
+hanwha,신재진단암(기타피부암 제외) 진단비(1회한)(갱신형),신재진단암(기타피부암제외)진단비(1회한),A4200_3,unmatched cancer coverage with scope evidence (0 hits)
+db,계속받는암진단비(유사암,대장점막내암및전립선암제외),계속받는암진단비(유사암대장점막내암전립선암제외),A4200_4,unmatched cancer coverage with scope evidence
+db,다빈치로봇암수술비(연간1회한,특정암),다빈치로봇암수술비(연간1회한특정암),A5200_4,unmatched cancer coverage with scope evidence
+db,다빈치로봇암수술비(연간1회한,특정암제외),다빈치로봇암수술비(연간1회한특정암제외),A5200_5,unmatched cancer coverage with scope evidence
+meritz,재진단암진단비(1년대기형),재진단암진단비(1년대기형),A4200_5,unmatched cancer coverage with scope evidence
+meritz,암직접치료입원일당(Ⅱ)(요양병원제외, 1일이상),암직접치료입원일당(Ⅱ)(요양병원제외),A6200_3,unmatched cancer coverage with scope evidence
+meritz,(10년갱신)갱신형다빈치로봇암수술비(암(특정암제외)),(10년갱신)갱신형다빈치로봇암수술비(암특정암제외),A5200_6,unmatched cancer coverage with scope evidence
+meritz,(10년갱신)갱신형다빈치로봇암수술비(특정암),(10년갱신)갱신형다빈치로봇암수술비(특정암),A5200_7,unmatched cancer coverage with scope evidence
+meritz,(10년갱신)갱신형표적항암약물허가치료비Ⅱ,(10년갱신)갱신형표적항암약물허가치료비Ⅱ,A9619_3,unmatched cancer coverage with scope evidence

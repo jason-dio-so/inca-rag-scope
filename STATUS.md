@@ -1,16 +1,29 @@
-# REBOOT STEP 1 - 완료 보고서
+# REBOOT STEP NEXT - 완료 보고서
 
 ## 프로젝트 정보
 
 - **디렉토리**: `inca-rag-scope/`
 - **작업일**: 2025-12-27
-- **목표**: Scope-first 접근으로 1개 보험사 가입설계서에서 담보 추출 및 canonical 매핑 검증
+- **목표**: 전체 보험사 파이프라인 실행 + A4200_1 전체 비교
 
-## 선택한 보험사 및 PDF
+## 완료된 보험사 현황
 
-- **보험사**: 삼성화재 (samsung)
-- **가입설계서 경로**: `data/sources/insurers/samsung/가입설계서/삼성_가입설계서_2511.pdf`
-- **상품명**: 무배당 삼성화재 건강보험 마이헬스 파트너(2508.12)3종(납입면제해약환급금 미지급형Ⅱ)
+### 전체 완료 (4개)
+- **samsung** (삼성화재): 41개 담보, 33 matched / 8 unmatched
+- **meritz** (메리츠화재): 41개 담보, 33 matched / 8 unmatched
+- **db** (DB손해보험): 41개 담보, 33 matched / 8 unmatched
+- **hanwha** (한화생명): 37개 담보, 6 matched / 31 unmatched (신규 완료)
+
+### Evidence 수집 결과
+- **samsung**: 41개 담보 중 40개 evidence 발견
+- **meritz**: 41개 담보 중 36개 evidence 발견
+- **db**: 41개 담보 중 37개 evidence 발견
+- **hanwha**: 37개 담보 중 9개 evidence 발견
+
+### A4200_1 (암진단비) 전체 비교
+- **참여 보험사**: 4개 (samsung, meritz, db, hanwha)
+- **보고서**: `reports/a4200_1_all_insurers.md`
+- **Evidence 발견**: samsung (complete), meritz (complete), db (partial), hanwha (none)
 
 ## 추출된 Scope 담보 수
 
@@ -1471,3 +1484,32 @@ pytest tests/test_multi_insurer_a4200_1.py -v
 - **사업방법서 = 0**: 2개 보험사 (Meritz, DB)
 - **Tests**: 10 passed
 - **Status**: ✅ REBOOT STEP 7 완료, A4200_1 전 보험사 비교 및 품질 개선 완성
+
+---
+
+# REBOOT STEP 12 - Cancer Canonical Re-Evaluation (FAIL)
+
+## 작업 일시
+
+- **Date**: 2025-12-27
+- **목표**: Excel canonical 업데이트 후 암 담보 매칭률 재평가
+
+## 재실행 결과
+
+| Insurer | Total Cancer | Matched | Match Rate | A42xx Matched |
+|---|---|---|---|---|
+| hanwha | 18 | 1 | 5.6% | 1 |
+| db | 11 | 8 | 72.7% | 3 |
+| meritz | 11 | 6 | 54.5% | 3 |
+
+## STEP11 Expected vs Actual
+
+| Insurer | Expected | Actual | Delta | Status |
+|---|---|---|---|---|
+| hanwha | 23 | 1 | -22 | FAIL |
+| db | 29 | 8 | -21 | FAIL |
+| meritz | 27 | 6 | -21 | FAIL |
+
+## 결론
+
+**FAIL**: Excel canonical update NOT reflected in mapping results.

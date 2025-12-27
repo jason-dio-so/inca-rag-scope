@@ -185,6 +185,23 @@ class EvidenceSearcher:
         elif '재진단' in coverage_name and '재진단암' not in coverage_name:
             variants.append(coverage_name.replace('재진단', '재진단암'))
 
+        # STEP 4-λ Fallback #2: Bracket / Suffix Normalization (Hanwha)
+        # 괄호 제거 버전 추가
+        if '(' in coverage_name and ')' in coverage_name:
+            # 괄호 전체 제거
+            no_bracket = re.sub(r'\([^)]*\)', '', coverage_name)
+            variants.append(no_bracket)
+
+            # 괄호 내부만 제거 (외부 유지)
+            inside_bracket = re.sub(r'[()]', '', coverage_name)
+            variants.append(inside_bracket)
+
+        # suffix 제거 (fallback용 - 더 공격적)
+        fallback_suffixes = ['담보', '보장', '특약', '갱신형', '비갱신형']
+        for suffix in fallback_suffixes:
+            if coverage_name.endswith(suffix):
+                variants.append(coverage_name[:-len(suffix)])
+
         # 중복 제거, 순서 유지
         seen = set()
         unique_variants = []
@@ -257,6 +274,90 @@ class EvidenceSearcher:
                     snippets.append(snippet)
 
         return snippets
+
+    def _extract_core_tokens(self, coverage_name: str) -> List[str]:
+        """
+        STEP 4-λ Fallback #1: 담보명에서 핵심 토큰 추출
+
+        Args:
+            coverage_name: 담보명 (raw 또는 canonical)
+
+        Returns:
+            List[str]: 핵심 토큰 (한글 2자 이상만)
+        """
+        # 제외 토큰 리스트
+        exclude_tokens = {'비', '형', '담보', '보장', '특약', '갱신', '무배당', '갱신형', '비갱신형'}
+
+        # 괄호 제거
+        no_bracket = re.sub(r'\([^)]*\)', '', coverage_name)
+
+        # 한글 토큰만 추출 (연속된 한글 2자 이상)
+        tokens = re.findall(r'[가-힣]{2,}', no_bracket)
+
+        # 제외 토큰 필터링
+        core_tokens = [t for t in tokens if t not in exclude_tokens]
+
+        return core_tokens
+
+    def _fallback_token_and_search(
+        self,
+        coverage_name: str,
+        doc_type: str,
+        pages: List[Dict],
+        max_evidences: int = 3
+    ) -> List[Dict]:
+        """
+        STEP 4-λ Fallback #1: Token-AND Search
+
+        Args:
+            coverage_name: 담보명
+            doc_type: 문서 타입
+            pages: 페이지 데이터 목록
+            max_evidences: 최대 evidence 수
+
+        Returns:
+            List[Dict]: fallback evidences
+        """
+        core_tokens = self._extract_core_tokens(coverage_name)
+
+        # 핵심 토큰이 2개 미만이면 fallback 불가
+        if len(core_tokens) < 2:
+            return []
+
+        fallback_evidences = []
+
+        for page_data in pages:
+            if len(fallback_evidences) >= max_evidences:
+                break
+
+            text = page_data['text']
+            page_lines = text.split('\n')
+
+            for i, line in enumerate(page_lines):
+                if len(fallback_evidences) >= max_evidences:
+                    break
+
+                # 동일 라인 내 핵심 토큰 >= 2개 동시 존재 검사
+                token_count = sum(1 for token in core_tokens if token in line)
+
+                if token_count >= 2:
+                    # Context 추출
+                    start = max(0, i - 2)
+                    end = min(len(page_lines), i + 3)
+                    snippet_lines = page_lines[start:end]
+                    snippet = '\n'.join(snippet_lines).strip()
+
+                    if snippet:
+                        evidence = {
+                            'doc_type': doc_type,
+                            'file_path': page_data['file_path'],
+                            'page': page_data['page'],
+                            'snippet': snippet[:500],
+                            'match_keyword': f"token_and({','.join(core_tokens[:2])})"
+                        }
+                        fallback_evidences.append(evidence)
+
+        return fallback_evidences
 
     def search_coverage_evidence(
         self,
@@ -367,11 +468,36 @@ class EvidenceSearcher:
 
             all_evidences.extend(doc_type_evidences)
 
+        # STEP 4-λ Fallback #1: Token-AND Search (Hanwha only)
+        # 조건: phrase/variant 검색 실패 시에만 발동
+        fallback_flags = []
+        if self.insurer == 'hanwha' and len(all_evidences) == 0:
+            for doc_type in sorted_doc_types:
+                pages = self.text_data[doc_type]
+                fallback_evidences = self._fallback_token_and_search(
+                    coverage_name_raw,
+                    doc_type,
+                    pages,
+                    max_evidences=max_evidences_per_type
+                )
+
+                if fallback_evidences:
+                    # 문서 타입별 hit 수 업데이트
+                    normalized_doc_type = '상품요약서' if doc_type == '상품설명서' else doc_type
+                    if normalized_doc_type in hits_by_doc_type:
+                        hits_by_doc_type[normalized_doc_type] += len(fallback_evidences)
+
+                    all_evidences.extend(fallback_evidences)
+                    fallback_flags.append('fallback_token_and')
+
         # Flags 생성
         flags = []
         # policy_only flag: 약관만 있고 다른 문서는 0건
         if hits_by_doc_type['약관'] >= 1 and hits_by_doc_type['사업방법서'] == 0 and hits_by_doc_type['상품요약서'] == 0:
             flags.append('policy_only')
+
+        # fallback flags 추가
+        flags.extend(fallback_flags)
 
         return {
             'evidences': all_evidences,

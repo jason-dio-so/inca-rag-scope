@@ -9,8 +9,12 @@ Step 1: Extract Scope from 가입설계서 (Subscription Proposal)
 """
 
 import csv
+import argparse
 from pathlib import Path
 from typing import List, Dict
+import pdfplumber
+import re
+from .hardening import hardening_correction
 
 
 class ScopeExtractor:
@@ -24,27 +28,94 @@ class ScopeExtractor:
 
     def extract_coverages(self) -> List[Dict[str, str]]:
         """
-        PDF에서 담보 목록 추출
+        PDF에서 담보 목록 추출 (텍스트 + 테이블 혼합)
 
         Returns:
             List[Dict]: [{"coverage_name_raw": str, "insurer": str, "source_page": int}]
-
-        NOTE: 실제 PDF 파싱은 추후 구현
-        현재는 placeholder로 구조만 정의
         """
-        # TODO: PDF 파싱 로직
-        # - PyPDF2, pdfplumber 등 사용
-        # - 요약 장표 테이블 탐지
-        # - 담보명 컬럼 추출
-
         coverages = []
+        seen = set()
 
-        # Placeholder: 실제 파싱 결과로 대체 예정
-        # coverages.append({
-        #     "coverage_name_raw": "일반암진단비",
-        #     "insurer": self.insurer,
-        #     "source_page": 3
-        # })
+        with pdfplumber.open(self.pdf_path) as pdf:
+            for page_num, page in enumerate(pdf.pages, start=1):
+                # Method 1: 텍스트 라인 기반 (KB, 현대, 롯데)
+                text = page.extract_text() or ""
+                lines = text.split('\n')
+
+                for i, line in enumerate(lines):
+                    triggers = ['순번', '담보명', '보장명', '가입담보']
+                    if any(t in line for t in triggers) and ('보험료' in line or '가입금액' in line or '납기' in line):
+                        for j in range(i+1, min(i+60, len(lines))):
+                            row = lines[j].strip()
+                            if not row or '보장보험료' in row or '합계' in row or '※' in row:
+                                break
+
+                            coverage_name = None
+                            match = re.match(r'^(\d+)\s+(.+)', row)
+                            if match:
+                                coverage_name = match.group(2).split()[0]
+
+                            match = re.match(r'^(\d+)\.\s*(.+)', row)
+                            if match:
+                                full = match.group(2)
+                                parts = re.split(r'\s+\d+[만천백억,원]+', full)
+                                coverage_name = parts[0].strip() if parts else None
+
+                            if coverage_name:
+                                if len(coverage_name) < 3 or re.match(r'^[\d,]+', coverage_name):
+                                    continue
+                                if coverage_name in ['(기본)', '기본계약']:
+                                    continue
+                                if coverage_name not in seen:
+                                    seen.add(coverage_name)
+                                    coverages.append({
+                                        "coverage_name_raw": coverage_name,
+                                        "insurer": self.insurer,
+                                        "source_page": page_num
+                                    })
+
+                # Method 2: 테이블 기반 (흥국)
+                tables = page.extract_tables()
+                for table in tables:
+                    if not table or len(table) < 3:
+                        continue
+
+                    # 담보명+보험료 컬럼이 모두 있는 테이블만 (실제 보장 테이블)
+                    header_text = ' '.join(str(cell) for row in table[:2] for cell in row if cell)
+                    header_normalized = header_text.replace(' ', '')  # 띄어쓰기 제거
+                    if not (('담보' in header_normalized or '보장' in header_normalized) and '보험료' in header_text):
+                        continue
+
+                    # 담보명 컬럼 찾기 (띄어쓰기 무시)
+                    coverage_col_idx = None
+                    for row_idx in range(min(2, len(table))):
+                        for col_idx, cell in enumerate(table[row_idx]):
+                            cell_text = str(cell).replace(' ', '') if cell else ''
+                            if '담보명' in cell_text or '보장명' in cell_text:
+                                coverage_col_idx = col_idx
+                                break
+                        if coverage_col_idx is not None:
+                            break
+
+                    if coverage_col_idx is not None:
+                        start_row = 2 if len(table) > 2 else 1  # 헤더 스킵
+                        for row in table[start_row:]:
+                            if len(row) > coverage_col_idx and row[coverage_col_idx]:
+                                coverage_name = str(row[coverage_col_idx]).strip()
+
+                                # 필터링
+                                if len(coverage_name) < 3 or re.match(r'^[\d,]+', coverage_name):
+                                    continue
+                                if any(x in coverage_name for x in ['합계', '보험료', '광화문', '준법감시', '설계번호', '피보험자', '구분', '담 보', '담보 명', '가입금액', '☞', '※', '▶']):
+                                    continue
+
+                                if coverage_name not in seen:
+                                    seen.add(coverage_name)
+                                    coverages.append({
+                                        "coverage_name_raw": coverage_name,
+                                        "insurer": self.insurer,
+                                        "source_page": page_num
+                                    })
 
         return coverages
 
@@ -90,19 +161,75 @@ class ScopeExtractor:
 
 def main():
     """
-    CLI 실행 예시
+    CLI 실행
 
     Usage:
-        python run.py
+        python -m pipeline.step1_extract_scope.run --insurer lotte
     """
-    # Placeholder: 실제 경로로 대체 필요
-    PDF_PATH = "path/to/가입설계서.pdf"  # TODO: 실제 PDF 경로
-    INSURER = "삼성생명"  # TODO: 실제 보험사명
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--insurer', required=True, help='보험사 코드 (소문자)')
+    args = parser.parse_args()
 
-    extractor = ScopeExtractor(pdf_path=PDF_PATH, insurer=INSURER)
-    output_path = extractor.run()
+    insurer = args.insurer.lower()
+    base_dir = Path(__file__).parent.parent.parent
+    pdf_dir = base_dir / "data" / "sources" / "insurers" / insurer / "가입설계서"
 
-    print(f"\n✓ Scope extraction completed: {output_path}")
+    if not pdf_dir.exists():
+        pdf_dir = base_dir / "data" / "sources" / "insurers" / insurer
+
+    pdf_files = sorted(list(pdf_dir.glob("*.pdf")))
+    if not pdf_files:
+        raise FileNotFoundError(f"No PDF found in {pdf_dir}")
+
+    # STEP 1: 기본 추출
+    all_coverages = []
+    seen = set()
+
+    for pdf_path in pdf_files:
+        print(f"\n[Step 1] Processing: {pdf_path.name}")
+        extractor = ScopeExtractor(pdf_path=str(pdf_path), insurer=insurer)
+        coverages = extractor.extract_coverages()
+
+        # 중복 제거하며 병합
+        for cov in coverages:
+            cov_name = cov['coverage_name_raw']
+            if cov_name not in seen:
+                seen.add(cov_name)
+                all_coverages.append(cov)
+
+        print(f"  - Extracted {len(coverages)} coverages (unique: {len(seen)})")
+
+    extracted_total = len(all_coverages)
+    print(f"\n[Step 1] Initial extraction: {extracted_total} coverages")
+
+    # STEP 2: 보정 루프 (extracted_total < 30 무조건 실행)
+    declared_count = 0
+    pages_found = []
+
+    if extracted_total < 30:
+        print(f"\n[Step 1] ⚠️  Extracted count ({extracted_total}) < 30, starting hardening correction...")
+        all_coverages, declared_count, pages_found = hardening_correction(insurer, pdf_files)
+        final_total = len(all_coverages)
+        print(f"\n[Step 1] After correction: {final_total} coverages")
+    else:
+        final_total = extracted_total
+        pages_found = sorted(set(cov['source_page'] for cov in all_coverages))
+
+    # STEP 3: 최종 저장 및 판정
+    output_path = extractor.save_to_csv(all_coverages)
+
+    print(f"\n[Step 1] Final result:")
+    print(f"  - Total PDFs processed: {len(pdf_files)}")
+    print(f"  - Unique coverages: {final_total}")
+    print(f"  - Pages: {pages_found}")
+    print(f"  - Output: {output_path}")
+
+    # 성공/실패 판정
+    if final_total >= 30:
+        print(f"\n✓ OK: insurer={insurer} extracted={final_total} declared={declared_count if declared_count else 'N/A'} pages={pages_found}")
+    else:
+        print(f"\n✗ FAIL: insurer={insurer} extracted={final_total} declared={declared_count if declared_count else 'N/A'} pages={pages_found}")
+        print("  manual review required")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,46 @@
+coverage_name_raw,insurer,source_page,coverage_code,coverage_name_canonical,mapping_status,match_type
+일반상해사망(기본),kb,2,A1300,상해사망,matched,alias
+일반상해후유장해(20~100%)(기본),kb,2,,,unmatched,none
+보험료납입면제대상보장(8대기본),kb,2,,,unmatched,none
+일반상해후유장해(3%~100%),kb,2,A3300_1,상해후유장해(3-100%),matched,normalized_alias
+질병사망,kb,2,A1100,질병사망,matched,normalized_alias
+암진단비(유사암제외),kb,2,A4200_1,암진단비(유사암제외),matched,exact
+유사암진단비,kb,2,A4210,유사암진단비,matched,normalized
+재진단암진단비,kb,2,A4299_1,재진단암진단비,matched,normalized
+뇌혈관질환진단비,kb,2,A4101,뇌혈관질환진단비,matched,normalized_alias
+뇌졸중진단비,kb,2,A4103,뇌졸중진단비,matched,normalized_alias
+뇌출혈진단비,kb,2,A4102,뇌출혈진단비,matched,normalized_alias
+심장질환(특정Ⅰ),kb,2,,,unmatched,none
+심장질환(특정Ⅱ),kb,2,,,unmatched,none
+허혈성심장질환진단비,kb,2,A4105,허혈성심장질환진단비,matched,normalized
+부정맥질환(Ⅰ49)진단비,kb,2,,,unmatched,none
+심근병증진단비,kb,2,A4104_1,심장질환진단비,matched,normalized_alias
+심장판막협착증(대동맥판막)진단비,kb,2,A4104_1,심장질환진단비,matched,alias
+골절진단비Ⅱ(치아파절제외),kb,2,A4301_1,골절진단비(치아파절제외),matched,alias
+화상진단비,kb,2,A4302,화상진단비,matched,normalized_alias
+질병수술비,kb,2,A5100,질병수술비,matched,normalized
+암수술비(유사암제외),kb,2,A5200,암수술비(유사암제외),matched,exact
+유사암수술비,kb,2,A5298_001,유사암수술비,matched,normalized_alias
+다빈치로봇,kb,2,,,unmatched,none
+뇌혈관질환수술비,kb,3,A5104_1,뇌혈관질환수술비,matched,normalized_alias
+허혈성심장질환수술비,kb,3,A5107_1,허혈성심장질환수술비,matched,normalized
+상해수술비,kb,3,A5300,상해수술비,matched,normalized
+항암방사선치료비,kb,3,A9617_1,항암방사선약물치료비(최초1회한),matched,normalized_alias
+항암약물치료비,kb,3,A9617_1,항암방사선약물치료비(최초1회한),matched,normalized_alias
+표적항암약물허가치료비(3대특정암)(최초1회한)Ⅱ(갱신형),kb,3,,,unmatched,none
+표적항암약물허가치료비(림프종·백혈병,kb,3,,,unmatched,none
+특정항암호르몬약물허가치료비(최초1회한)Ⅱ(갱신형),kb,3,,,unmatched,none
+카티(CAR-T)항암약물허가치료비(연간1회한)(갱신형),kb,3,,,unmatched,none
+혈전용해치료비Ⅱ(최초1회한)(특정심장질환),kb,3,,,unmatched,none
+혈전용해치료비Ⅱ(최초1회한)(뇌졸중),kb,3,,,unmatched,none
+질병입원일당(1일이상),kb,3,A6100_1,질병입원비,matched,alias
+상해입원일당(1일이상)Ⅱ,kb,3,A6300_1,상해입원비,matched,alias
+"암직접치료입원일당(요양제외,1일이상180일한도)",kb,3,A6200,"암직접치료입원일당(1-180,요양병원제외)",matched,alias
+일반상해80%이상후유장해시,kb,4,,,unmatched,none
+질병80%이상후유장해시,kb,4,,,unmatched,none
+암보장개시일(계약일로부터 그날을 포함하여 90일이 지난날의 다음날) 이후에,kb,4,,,unmatched,none
+뇌졸중으로 진단확정된 경우,kb,4,,,unmatched,none
+급성심근경색증으로 진단확정된 경우,kb,4,,,unmatched,none
+말기폐질환으로 진단확정된 경우,kb,4,,,unmatched,none
+말기간경화로 진단확정된 경우,kb,4,,,unmatched,none
+말기신부전증으로 진단확정된 경우,kb,4,,,unmatched,none

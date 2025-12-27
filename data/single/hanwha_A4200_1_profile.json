@@ -1,0 +1,48 @@
+{
+  "coverage_code": "A4200_1",
+  "canonical_name": "암진단비(유사암제외)",
+  "raw_name": "암 진단비(유사암 제외)",
+  "insurer": "hanwha",
+  "doc_type_coverage": {
+    "약관": 0,
+    "사업방법서": 0,
+    "상품요약서": 0
+  },
+  "payout_amount": {
+    "text": null,
+    "refs": [],
+    "status": "unknown",
+    "reason": "no evidence lines matched regex"
+  },
+  "waiting_period": {
+    "text": null,
+    "refs": [],
+    "status": "unknown",
+    "reason": "no evidence lines matched regex"
+  },
+  "reduction_period": {
+    "text": null,
+    "refs": [],
+    "status": "unknown",
+    "reason": "no evidence lines matched regex"
+  },
+  "excluded_cancer": {
+    "text": null,
+    "refs": [],
+    "status": "unknown",
+    "reason": "no evidence lines matched regex"
+  },
+  "definition_excerpt": {
+    "text": null,
+    "refs": [],
+    "status": "unknown",
+    "reason": "no evidence lines matched regex"
+  },
+  "payment_condition_excerpt": {
+    "text": null,
+    "refs": [],
+    "status": "unknown",
+    "reason": "no evidence lines matched regex"
+  },
+  "evidence_refs": []
+}

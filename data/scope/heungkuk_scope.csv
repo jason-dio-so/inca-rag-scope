@@ -1,0 +1,39 @@
+coverage_name_raw,insurer,source_page
+일반상해후유장해(80%이상),heungkuk,7
+질병후유장해(80%이상)(감액없음),heungkuk,7
+일반상해사망,heungkuk,7
+질병사망(감액없음),heungkuk,7
+일반상해후유장해(3~100%),heungkuk,7
+골절진단비(치아파절제외),heungkuk,7
+화상진단비,heungkuk,7
+뇌졸중진단비,heungkuk,7
+허혈성심질환진단비,heungkuk,7
+주요심장염증질환진단비,heungkuk,7
+뇌혈관질환진단비,heungkuk,7
+심장판막협착증(대동맥판막)진단비,heungkuk,7
+뇌출혈진단비,heungkuk,7
+특정심혈관질환(기타심장부정맥)진단비Ⅲ,heungkuk,7
+특정심혈관질환(기타심장부정맥제외)진단비Ⅲ,heungkuk,7
+심근병증(허혈성제외)진단비,heungkuk,7
+뇌졸중 혈전용해치료비(1회한),heungkuk,7
+특정허혈성심질환 혈전용해치료비(1회한),heungkuk,7
+암진단비(유사암제외),heungkuk,7
+유사암진단비,heungkuk,7
+재진단암Ⅲ진단비,heungkuk,7
+고액치료비암진단비,heungkuk,7
+항암방사선약물치료비,heungkuk,8
+[갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년),heungkuk,8
+[갱신형]카티(CAR-T) 항암약물허가치료비(연간1회한)(갱신형_10년),heungkuk,8
+암직접치료입원비(요양병원제외)(1일-180일),heungkuk,8
+암수술비(유사암제외),heungkuk,8
+유사암수술비,heungkuk,8
+"[갱신형]다빈치및레보아이로봇 암수술비(갑상선암 및 전립선암 제외)(최초1회한)(갱
+신형_10년)",heungkuk,8
+"[갱신형]다빈치및레보아이로봇 암수술비(갑상선암 및 전립선암)(최초1회한)(갱신형
+_10년)",heungkuk,8
+일반상해입원비(1일-180일),heungkuk,8
+질병입원비(1일-180일),heungkuk,8
+상해수술비,heungkuk,8
+질병수술비,heungkuk,8
+뇌혈관질환수술비,heungkuk,8
+허혈성심질환수술비,heungkuk,8
