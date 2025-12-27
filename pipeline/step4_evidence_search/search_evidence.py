@@ -148,6 +148,43 @@ class EvidenceSearcher:
         if '4대특정암' in coverage_name:
             variants.append(coverage_name.replace('4대특정암', '특정암'))
 
+        # Rule (d): Top-6 suffix variants (θ)
+        # 1. 치료비 ↔ 치료
+        if '치료비' in coverage_name:
+            variants.append(coverage_name.replace('치료비', '치료'))
+        elif '치료' in coverage_name and '치료비' not in coverage_name:
+            variants.append(coverage_name.replace('치료', '치료비'))
+
+        # 2. 입원일당 ↔ 입원
+        if '입원일당' in coverage_name:
+            variants.append(coverage_name.replace('입원일당', '입원'))
+        elif '입원' in coverage_name and '입원일당' not in coverage_name:
+            variants.append(coverage_name.replace('입원', '입원일당'))
+
+        # 3. 수술비 ↔ 수술
+        if '수술비' in coverage_name:
+            variants.append(coverage_name.replace('수술비', '수술'))
+        elif '수술' in coverage_name and '수술비' not in coverage_name:
+            variants.append(coverage_name.replace('수술', '수술비'))
+
+        # 4. 항암치료 ↔ 항암
+        if '항암치료' in coverage_name:
+            variants.append(coverage_name.replace('항암치료', '항암'))
+        elif '항암' in coverage_name and '항암치료' not in coverage_name:
+            variants.append(coverage_name.replace('항암', '항암치료'))
+
+        # 5. 표적항암 ↔ 표적
+        if '표적항암' in coverage_name:
+            variants.append(coverage_name.replace('표적항암', '표적'))
+        elif '표적' in coverage_name and '표적항암' not in coverage_name:
+            variants.append(coverage_name.replace('표적', '표적항암'))
+
+        # 6. 재진단암 ↔ 재진단
+        if '재진단암' in coverage_name:
+            variants.append(coverage_name.replace('재진단암', '재진단'))
+        elif '재진단' in coverage_name and '재진단암' not in coverage_name:
+            variants.append(coverage_name.replace('재진단', '재진단암'))
+
         # 중복 제거, 순서 유지
         seen = set()
         unique_variants = []
