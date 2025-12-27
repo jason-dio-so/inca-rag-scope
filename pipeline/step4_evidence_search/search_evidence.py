@@ -94,6 +94,70 @@ class EvidenceSearcher:
 
         return unique_variants[:4]  # 최대 4개
 
+    def _generate_hanwha_query_variants(self, coverage_name: str) -> List[str]:
+        """
+        한화 전용: 담보명에서 query variants 생성 (암 용어 브릿지)
+
+        Args:
+            coverage_name: 담보명 (raw 또는 canonical)
+
+        Returns:
+            List[str]: query variants (최대 6개)
+        """
+        variants = [coverage_name]  # 원본 포함
+
+        # Rule (a): 끝 suffix 제거 - 담보, 특약, 보장, 보장특약
+        suffixes = ['보장특약', '담보', '특약', '보장']  # 긴 것부터 매칭
+        for suffix in suffixes:
+            if coverage_name.endswith(suffix):
+                variants.append(coverage_name[:-len(suffix)])
+                break
+
+        # Rule (b): 진단비 <-> 진단 변환
+        if '진단비' in coverage_name:
+            variants.append(coverage_name.replace('진단비', '진단'))
+        elif '진단' in coverage_name and '진단비' not in coverage_name:
+            variants.append(coverage_name.replace('진단', '진단비'))
+
+        # Rule (c): 암 용어 브릿지 (hanwha-specific)
+        # 4대유사암 ↔ 유사암(4대) ↔ 유사암
+        if '유사암(4대)' in coverage_name or '유사암(8대)' in coverage_name:
+            variants.append(coverage_name.replace('유사암(4대)', '4대유사암'))
+            variants.append(coverage_name.replace('유사암(8대)', '8대유사암'))
+            variants.append(coverage_name.replace('유사암(4대)', '유사암'))
+            variants.append(coverage_name.replace('유사암(8대)', '유사암'))
+        if '4대유사암' in coverage_name:
+            variants.append(coverage_name.replace('4대유사암', '유사암(4대)'))
+            variants.append(coverage_name.replace('4대유사암', '유사암'))
+        if '8대유사암' in coverage_name:
+            variants.append(coverage_name.replace('8대유사암', '유사암(8대)'))
+            variants.append(coverage_name.replace('8대유사암', '유사암'))
+
+        # 통합암(4대유사암제외) variants
+        if '통합암(4대유사암제외)' in coverage_name:
+            variants.append(coverage_name.replace('통합암(4대유사암제외)', '통합암'))
+            variants.append(coverage_name.replace('통합암(4대유사암제외)', '4대유사암제외'))
+            variants.append(coverage_name.replace('통합암(4대유사암제외)', '유사암제외'))
+
+        # 4대유사암제외 variants
+        if '4대유사암제외' in coverage_name:
+            variants.append(coverage_name.replace('4대유사암제외', '유사암제외'))
+            variants.append(coverage_name.replace('4대유사암제외', '유사암'))
+
+        # 4대특정암 ↔ 특정암
+        if '4대특정암' in coverage_name:
+            variants.append(coverage_name.replace('4대특정암', '특정암'))
+
+        # 중복 제거, 순서 유지
+        seen = set()
+        unique_variants = []
+        for v in variants:
+            if v not in seen:
+                seen.add(v)
+                unique_variants.append(v)
+
+        return unique_variants[:6]  # 최대 6개
+
     def _load_all_text_data(self) -> Dict[str, List[Dict]]:
         """
         모든 JSONL 파일 로드
@@ -193,6 +257,20 @@ class EvidenceSearcher:
             expanded_keywords = []
             for kw in keywords:
                 variants = self._generate_hyundai_query_variants(kw)
+                expanded_keywords.extend(variants)
+            # 중복 제거
+            seen = set()
+            keywords = []
+            for kw in expanded_keywords:
+                if kw not in seen:
+                    seen.add(kw)
+                    keywords.append(kw)
+
+        # 한화 전용: query variants 생성
+        if self.insurer == 'hanwha':
+            expanded_keywords = []
+            for kw in keywords:
+                variants = self._generate_hanwha_query_variants(kw)
                 expanded_keywords.extend(variants)
             # 중복 제거
             seen = set()
