@@ -25,33 +25,45 @@ from core.compare_types import CoverageCard, Evidence, CompareStats
 
 def _select_diverse_evidences(evidences: List[Evidence], max_count: int = 3) -> List[Evidence]:
     """
-    STEP 6-ε.1: Doc-Type Diversity Evidence Selection with Fill-up + Fallback Priority LOCK
+    STEP 6-ε.2: Doc-Type Diversity Evidence Selection with Dedup + Real-Fallback Priority LOCK
 
     Args:
         evidences: 전체 evidence 목록
         max_count: 최대 선택 개수 (기본 3)
 
     Returns:
-        List[Evidence]: 선택된 evidence (최대 max_count개)
+        List[Evidence]: 선택된 evidence (최대 max_count개, 중복 제거됨)
 
     규칙:
-        Rule 6-ε.1: 항상 max_count까지 채우기 (Fill-up)
-        Rule 6-ε.2: Evidence 정렬 우선순위 (Deterministic)
+        Rule 6-ε.2.1: Evidence Dedup (LOCK)
+            - (doc_type, file_path, page, snippet) 기준 중복 제거
+        Rule 6-ε.2.2: Fallback 판정 보정 (LOCK)
+            - 'fallback_' 포함 OR 'token_and(' 시작 → fallback
+        Rule 6-ε.2.3: Evidence Selection Priority (최종 LOCK)
             1. Non-fallback 우선
             2. doc_type priority: 약관 > 사업방법서 > 상품요약서
-            3. page 오름차순 (앞 페이지 우선)
-            4. (동률) file_path 문자열 오름차순 (완전결정성 확보용)
-        Rule 6-ε.3: Fallback 판정 (엄격)
-            - match_keyword에 'fallback_' 포함 시 fallback으로 간주
+            3. page 오름차순
+            4. file_path 오름차순
+            5. snippet 오름차순 (동률 방지)
+        Rule 6-ε.2.4: Fill-up 유지 (LOCK)
+            - 중복 제거 후에도 max_count까지 보충
     """
     if not evidences:
         return []
 
-    # Helper: fallback 판정 (Rule 6-ε.3)
-    def is_fallback(ev: Evidence) -> bool:
-        return bool(ev.match_keyword and 'fallback_' in ev.match_keyword.lower())
+    # Helper: dedup key (Rule 6-ε.2.1)
+    def dedup_key(ev: Evidence) -> tuple:
+        return (ev.doc_type, ev.file_path, ev.page, ev.snippet)
 
-    # Helper: doc_type priority index (Rule 6-ε.2)
+    # Helper: fallback 판정 (Rule 6-ε.2.2 — 보정)
+    def is_fallback(ev: Evidence) -> bool:
+        if not ev.match_keyword:
+            return False
+        mk_lower = ev.match_keyword.lower()
+        # 'fallback_' 포함 OR 'token_and(' 시작
+        return 'fallback_' in mk_lower or ev.match_keyword.startswith('token_and(')
+
+    # Helper: doc_type priority index
     doc_type_priority_map = {
         '약관': 0,
         '사업방법서': 1,
@@ -61,18 +73,28 @@ def _select_diverse_evidences(evidences: List[Evidence], max_count: int = 3) -> 
     def doc_type_priority_index(ev: Evidence) -> int:
         return doc_type_priority_map.get(ev.doc_type, 999)
 
-    # Helper: sort key (Rule 6-ε.2)
+    # Helper: sort key (Rule 6-ε.2.3)
     def sort_key(ev: Evidence):
         return (
             is_fallback(ev),           # 1. Non-fallback 우선
             doc_type_priority_index(ev),  # 2. doc_type priority
             ev.page,                   # 3. page 오름차순
-            ev.file_path               # 4. file_path 오름차순 (완전결정성)
+            ev.file_path,              # 4. file_path 오름차순
+            ev.snippet                 # 5. snippet 오름차순 (동률 방지)
         )
+
+    # 중복 제거 (Rule 6-ε.2.1)
+    seen_keys = set()
+    unique_evidences = []
+    for ev in evidences:
+        key = dedup_key(ev)
+        if key not in seen_keys:
+            seen_keys.add(key)
+            unique_evidences.append(ev)
 
     # 1차 선택 (Diversity pass): 약관/사업방법서/상품요약서 각 1개씩
     by_doc_type = {}
-    for ev in evidences:
+    for ev in unique_evidences:
         doc_type = ev.doc_type
         if doc_type not in by_doc_type:
             by_doc_type[doc_type] = []
@@ -90,11 +112,11 @@ def _select_diverse_evidences(evidences: List[Evidence], max_count: int = 3) -> 
         if doc_type in by_doc_type and len(selected) < max_count:
             selected.append(by_doc_type[doc_type][0])
 
-    # 2차 보충 (Fill-up pass): max_count까지 채우기 (Rule 6-ε.1)
+    # 2차 보충 (Fill-up pass): max_count까지 채우기 (Rule 6-ε.2.4)
     if len(selected) < max_count:
-        # 선택되지 않은 evidence pool 구축
+        # 선택되지 않은 evidence pool 구축 (이미 중복 제거된 unique_evidences 사용)
         selected_set = set(id(ev) for ev in selected)
-        remaining = [ev for ev in evidences if id(ev) not in selected_set]
+        remaining = [ev for ev in unique_evidences if id(ev) not in selected_set]
 
         # 정렬 후 부족분 채우기
         remaining.sort(key=sort_key)
