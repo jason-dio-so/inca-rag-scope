@@ -54,6 +54,46 @@ class EvidenceSearcher:
         text = re.sub(r'[^가-힣a-zA-Z0-9()]', '', text)
         return text.lower()
 
+    def _generate_hyundai_query_variants(self, coverage_name: str) -> List[str]:
+        """
+        현대 전용: 담보명에서 query variants 생성 (suffix 제거)
+
+        Args:
+            coverage_name: 담보명 (raw 또는 canonical)
+
+        Returns:
+            List[str]: query variants (최대 4개)
+        """
+        variants = [coverage_name]  # 원본 포함
+
+        # Rule (a): 끝 suffix 제거 - 담보, 특약, 보장, 보장특약
+        suffixes = ['보장특약', '담보', '특약', '보장']  # 긴 것부터 매칭
+        for suffix in suffixes:
+            if coverage_name.endswith(suffix):
+                variants.append(coverage_name[:-len(suffix)])
+                break
+
+        # Rule (b): 진단비 <-> 진단 변환
+        if '진단비' in coverage_name:
+            variants.append(coverage_name.replace('진단비', '진단'))
+        elif '진단' in coverage_name and '진단비' not in coverage_name:
+            variants.append(coverage_name.replace('진단', '진단비'))
+
+        # Rule (c): 공백 정리 (연속 공백 → 1개, 양끝 trim)
+        cleaned = re.sub(r'\s+', ' ', coverage_name).strip()
+        if cleaned != coverage_name:
+            variants.append(cleaned)
+
+        # 중복 제거, 순서 유지
+        seen = set()
+        unique_variants = []
+        for v in variants:
+            if v not in seen:
+                seen.add(v)
+                unique_variants.append(v)
+
+        return unique_variants[:4]  # 최대 4개
+
     def _load_all_text_data(self) -> Dict[str, List[Dict]]:
         """
         모든 JSONL 파일 로드
@@ -147,6 +187,20 @@ class EvidenceSearcher:
         else:
             # Unmatched는 raw만
             keywords = [coverage_name_raw]
+
+        # 현대 전용: query variants 생성
+        if self.insurer == 'hyundai':
+            expanded_keywords = []
+            for kw in keywords:
+                variants = self._generate_hyundai_query_variants(kw)
+                expanded_keywords.extend(variants)
+            # 중복 제거
+            seen = set()
+            keywords = []
+            for kw in expanded_keywords:
+                if kw not in seen:
+                    seen.add(kw)
+                    keywords.append(kw)
 
         # 문서 타입별 hit 카운트 초기화 (필수 3개 타입)
         hits_by_doc_type = {
