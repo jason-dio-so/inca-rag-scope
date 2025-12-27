@@ -1,0 +1,10 @@
+schema_version: manifest_v1
+insurer_code: LOTTE
+doc_type: 상품요약서
+plan:
+  gender: M
+  age_min: null
+  age_max: null
+document:
+  meta:
+    subtype: standard

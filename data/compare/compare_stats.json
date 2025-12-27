@@ -1,0 +1,9 @@
+{
+  "total_codes_compared": 25,
+  "both_matched_count": 15,
+  "either_unmatched_count": 0,
+  "evidence_found_both": 15,
+  "evidence_missing_any": 0,
+  "only_in_a": 4,
+  "only_in_b": 6
+}

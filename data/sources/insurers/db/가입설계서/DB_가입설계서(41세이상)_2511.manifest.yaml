@@ -1,0 +1,9 @@
+schema_version: manifest_v1
+insurer_code: DB
+doc_type: 가입설계서
+plan:
+  gender: U
+  age_min: 41
+  age_max: 99
+product:
+  product_version: "2511"

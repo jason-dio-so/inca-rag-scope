@@ -1,0 +1,176 @@
+{
+  "coverage_code": "A4200_1",
+  "canonical_name": "암진단비(유사암제외)",
+  "insurers": [
+    "db",
+    "meritz",
+    "samsung"
+  ],
+  "count": 3,
+  "doc_type_coverage": {
+    "db": {},
+    "meritz": {
+      "약관": 3,
+      "사업방법서": 0,
+      "상품요약서": 3
+    },
+    "samsung": {
+      "약관": 3,
+      "사업방법서": 3,
+      "상품요약서": 3
+    }
+  },
+  "slot_status": {
+    "payout_amount": {
+      "db": {
+        "status": "unknown",
+        "refs": [],
+        "has_text": false
+      },
+      "meritz": {
+        "status": "found",
+        "refs": [
+          "상품요약서 p.1"
+        ],
+        "has_text": true
+      },
+      "samsung": {
+        "status": "found",
+        "refs": [
+          "사업방법서 p.10",
+          "상품요약서 p.5"
+        ],
+        "has_text": true
+      }
+    },
+    "waiting_period": {
+      "db": {
+        "status": "unknown",
+        "refs": [],
+        "has_text": false
+      },
+      "meritz": {
+        "status": "found",
+        "refs": [
+          "약관 p.17",
+          "상품요약서 p.1"
+        ],
+        "has_text": true
+      },
+      "samsung": {
+        "status": "found",
+        "refs": [
+          "상품요약서 p.5"
+        ],
+        "has_text": true
+      }
+    },
+    "reduction_period": {
+      "db": {
+        "status": "found",
+        "refs": [
+          "약관 p.9"
+        ],
+        "has_text": true
+      },
+      "meritz": {
+        "status": "found",
+        "refs": [
+          "약관 p.17",
+          "상품요약서 p.1"
+        ],
+        "has_text": true
+      },
+      "samsung": {
+        "status": "found",
+        "refs": [
+          "사업방법서 p.7",
+          "사업방법서 p.10",
+          "상품요약서 p.5"
+        ],
+        "has_text": true
+      }
+    },
+    "excluded_cancer": {
+      "db": {
+        "status": "found",
+        "refs": [
+          "약관 p.9"
+        ],
+        "has_text": true
+      },
+      "meritz": {
+        "status": "found",
+        "refs": [
+          "약관 p.17",
+          "상품요약서 p.1"
+        ],
+        "has_text": true
+      },
+      "samsung": {
+        "status": "found",
+        "refs": [
+          "약관 p.5",
+          "약관 p.6",
+          "사업방법서 p.7",
+          "사업방법서 p.10",
+          "상품요약서 p.5"
+        ],
+        "has_text": true
+      }
+    },
+    "definition_excerpt": {
+      "db": {
+        "status": "found",
+        "refs": [
+          "약관 p.9"
+        ],
+        "has_text": true
+      },
+      "meritz": {
+        "status": "found",
+        "refs": [
+          "약관 p.17",
+          "상품요약서 p.1"
+        ],
+        "has_text": true
+      },
+      "samsung": {
+        "status": "found",
+        "refs": [
+          "약관 p.5",
+          "약관 p.6",
+          "사업방법서 p.7",
+          "사업방법서 p.10",
+          "상품요약서 p.5"
+        ],
+        "has_text": true
+      }
+    },
+    "payment_condition_excerpt": {
+      "db": {
+        "status": "found",
+        "refs": [
+          "약관 p.9"
+        ],
+        "has_text": true
+      },
+      "meritz": {
+        "status": "found",
+        "refs": [
+          "약관 p.17",
+          "상품요약서 p.1"
+        ],
+        "has_text": true
+      },
+      "samsung": {
+        "status": "found",
+        "refs": [
+          "사업방법서 p.10",
+          "상품요약서 p.5"
+        ],
+        "has_text": true
+      }
+    }
+  }
+}

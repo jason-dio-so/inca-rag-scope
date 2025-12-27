@@ -1,0 +1,33 @@
+=== SCOPE LINE COUNTS ===
+      42 data/scope/samsung_scope.csv
+      35 data/scope/meritz_scope.csv
+      77 total
+
+=== MAPPED LINE COUNTS ===
+      42 data/scope/samsung_scope_mapped.csv
+      35 data/scope/meritz_scope_mapped.csv
+      77 total
+
+=== CARDS LINE COUNTS ===
+      41 data/compare/samsung_coverage_cards.jsonl
+      34 data/compare/meritz_coverage_cards.jsonl
+      75 total
+
+=== EVIDENCE PACK LINE COUNTS ===
+      41 data/evidence_pack/samsung_evidence_pack.jsonl
+      34 data/evidence_pack/meritz_evidence_pack.jsonl
+      75 total
+
+=== COMPARE LINE COUNT ===
+      25 data/compare/samsung_vs_meritz_compare.jsonl
+
+=== STATS JSON ===
+{
+  "total_codes_compared": 25,
+  "both_matched_count": 15,
+  "either_unmatched_count": 0,
+  "evidence_found_both": 15,
+  "evidence_missing_any": 0,
+  "only_in_a": 4,
+  "only_in_b": 6
+}
