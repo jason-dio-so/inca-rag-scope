@@ -45,14 +45,17 @@ class TestEvidenceSearch:
 
         # Evidence 검색 시도 (scope gate는 상위 레벨에서 처리)
         # 여기서는 scope_gate.is_in_scope()가 False를 반환하는 것만 확인
-        evidences = self.searcher.search_coverage_evidence(
+        result = self.searcher.search_coverage_evidence(
             coverage_name_raw=fake_coverage,
             mapping_status="unmatched"
         )
 
         # Evidence가 없거나 있어도 무관 (scope gate는 pipeline에서 처리)
         # 이 테스트는 scope_gate가 정상 동작하는지만 확인
-        assert isinstance(evidences, list)
+        assert isinstance(result, dict)
+        assert 'evidences' in result
+        assert 'hits_by_doc_type' in result
+        assert 'flags' in result
 
     def test_matched_coverage_has_evidence(self):
         """2. Matched 담보는 evidences가 1개 이상 생성됨"""
@@ -65,12 +68,17 @@ class TestEvidenceSearch:
         assert self.scope_gate.is_in_scope(coverage_name_raw) is True
 
         # Evidence 검색
-        evidences = self.searcher.search_coverage_evidence(
+        result = self.searcher.search_coverage_evidence(
             coverage_name_raw=coverage_name_raw,
             coverage_name_canonical=coverage_name_canonical,
             mapping_status="matched",
-            max_evidences=3
+            max_evidences_per_type=3
         )
+
+        # Result 구조 확인
+        assert isinstance(result, dict)
+        assert 'evidences' in result
+        evidences = result['evidences']
 
         # Evidence가 1개 이상 있어야 함
         assert len(evidences) >= 1, f"No evidence found for '{coverage_name_raw}'"
@@ -89,11 +97,16 @@ class TestEvidenceSearch:
         coverage_name_raw = "질병 사망"
 
         # Evidence 검색
-        evidences = self.searcher.search_coverage_evidence(
+        result = self.searcher.search_coverage_evidence(
             coverage_name_raw=coverage_name_raw,
             mapping_status="matched",
-            max_evidences=3
+            max_evidences_per_type=3
         )
+
+        # Result 구조 확인
+        assert isinstance(result, dict)
+        assert 'evidences' in result
+        evidences = result['evidences']
 
         if len(evidences) > 0:
             # 첫 번째 evidence의 doc_type이 우선순위가 높아야 함

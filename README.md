@@ -13,13 +13,13 @@
 pytest -q
 
 # 파이프라인 실행 (예: 삼성화재)
-python -m pipeline.step1_load_scope.load_scope --insurer samsung       # 1. Scope 로드
-python -m pipeline.step2_pdf_extract.extract_all --insurer samsung     # 2. PDF 추출
-python -m pipeline.step3_search.search_coverage --insurer samsung      # 3. 담보 검색
-python -m pipeline.step4_evidence.build_evidence --insurer samsung     # 4. 증거 구축
-python -m pipeline.step5_validation.validate_evidence --insurer samsung # 5. 검증
-python -m pipeline.step6_report.generate_report --insurer samsung      # 6. 보고서 생성
-python -m pipeline.step7_compare.compare_insurers --insurers samsung,meritz,db # 7. 보험사 비교
+python -m pipeline.step1_extract_scope.run --insurer samsung              # 1. Scope 추출
+python -m pipeline.step2_canonical_mapping.map_to_canonical --insurer samsung  # 2. Canonical 매핑
+python -m pipeline.step3_extract_text.extract_pdf_text --insurer samsung  # 3. PDF 텍스트 추출
+python -m pipeline.step4_evidence_search.search_evidence --insurer samsung # 4. Evidence 검색
+python -m pipeline.step5_build_cards.build_cards --insurer samsung        # 5. Coverage Cards 생성
+python -m pipeline.step6_build_report.build_report --insurer samsung      # 6. 보고서 생성
+python -m pipeline.step7_compare.compare_insurers --insurer-a samsung --insurer-b meritz # 7. 보험사 비교
 ```
 
 ## 프로젝트 목적
