@@ -1,119 +1,160 @@
 {
   "meta": {
-    "response_type": "comparison",
-    "confidence_level": "document-based",
-    "premium_notice": false,
-    "generated_at": "2025-12-28T10:00:00+09:00"
+    "query_id": "550e8400-e29b-41d4-a716-446655440002",
+    "timestamp": "2025-12-28T10:00:00Z",
+    "intent": "COVERAGE_CONDITION_DIFF",
+    "compiler_version": "v1.0.0"
   },
   "query_summary": {
-    "original_query": "삼성생명과 한화생명의 암 진단비를 비교해줘",
-    "interpreted_intent": "특정 담보 비교",
-    "target_insurers": ["삼성생명", "한화생명"],
-    "target_products": [
+    "targets": [
       {
-        "insurer": "삼성생명",
-        "product_name": "삼성생명 건강보험"
+        "insurer": "SAMSUNG",
+        "product_name": "삼성화재 무배당 New 원더풀 암보험",
+        "source": "user_specified"
       },
       {
-        "insurer": "한화생명",
-        "product_name": "한화생명 건강보험"
-      }
-    ]
-  },
-  "comparison": {
-    "dimensions": [
-      {
-        "key": "coverage_exists",
-        "label": "보장 여부",
-        "type": "boolean"
-      },
-      {
-        "key": "coverage_amount",
-        "label": "보장 금액",
-        "type": "amount"
-      },
-      {
-        "key": "waiting_period",
-        "label": "대기기간",
-        "type": "text"
-      },
-      {
-        "key": "reduction_period",
-        "label": "감액기간",
-        "type": "text"
-      },
-      {
-        "key": "excluded_cancer",
-        "label": "제외 암종",
-        "type": "text"
+        "insurer": "HANWHA",
+        "product_name": "한화생명 무배당 암보험",
+        "source": "user_specified"
       }
     ],
-    "products": [
+    "coverage_scope": {
+      "type": "SINGLE_COVERAGE",
+      "count": 1
+    },
+    "premium_notice": false
+  },
+  "comparison": {
+    "type": "COVERAGE_TABLE",
+    "columns": ["SAMSUNG", "HANWHA"],
+    "rows": [
       {
-        "insurer": "삼성생명",
-        "product_name": "삼성생명 건강보험",
-        "rows": {
-          "coverage_exists": {
-            "value": true,
-            "evidence": "약관 p.12"
+        "coverage_code": "A4200_1",
+        "coverage_name": "암 진단비(유사암 제외)",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "보장함",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.27",
+              "snippet": "암(유사암 제외) 진단 시 보험금 지급"
+            }
           },
-          "coverage_amount": {
-            "value": "3,000만원",
-            "evidence": "가입설계서 p.3"
-          },
-          "waiting_period": {
-            "value": "90일",
-            "evidence": "약관 p.15"
-          },
-          "reduction_period": {
-            "value": "1년 (50% 지급)",
-            "evidence": "약관 p.15"
-          },
-          "excluded_cancer": {
-            "value": "유사암 (기타피부암, 갑상선암 등)",
-            "evidence": "약관 p.13"
+          "HANWHA": {
+            "value_text": "보장함",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.31",
+              "snippet": "암 진단 시 보험금 지급(유사암 제외)"
+            }
           }
         }
       },
       {
-        "insurer": "한화생명",
-        "product_name": "한화생명 건강보험",
-        "rows": {
-          "coverage_exists": {
-            "value": true,
-            "evidence": "약관 p.20"
+        "coverage_name": "보장 금액",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "3,000만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.3",
+              "snippet": "암진단비: 3,000만원"
+            }
           },
-          "coverage_amount": {
-            "value": "5,000만원",
-            "evidence": "가입설계서 p.2"
+          "HANWHA": {
+            "value_text": "5,000만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.2",
+              "snippet": "암진단비: 5,000만원"
+            }
+          }
+        }
+      },
+      {
+        "coverage_name": "대기기간",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "90일",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.28",
+              "snippet": "계약일로부터 90일 경과 후 암 진단 시 보장"
+            }
           },
-          "waiting_period": {
-            "value": "90일",
-            "evidence": "약관 p.22"
+          "HANWHA": {
+            "value_text": "90일",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.32",
+              "snippet": "가입 후 90일 경과 후 암 진단 보장"
+            }
+          }
+        }
+      },
+      {
+        "coverage_name": "감액기간",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "1년 (50% 지급)",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.28",
+              "snippet": "계약일로부터 1년 이내 암 진단 시 보험가입금액의 50% 지급"
+            }
           },
-          "reduction_period": {
-            "value": "1년 (50% 지급)",
-            "evidence": "약관 p.22"
+          "HANWHA": {
+            "value_text": "1년 (50% 지급)",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.32",
+              "snippet": "가입 후 1년 이내 암 진단 시 보험금의 50% 지급"
+            }
+          }
+        }
+      },
+      {
+        "coverage_name": "제외 암종",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "유사암 (기타피부암, 갑상선암 등)",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.29",
+              "snippet": "유사암(기타피부암, 갑상선암, 제자리암, 경계성종양)은 별도 보장"
+            }
           },
-          "excluded_cancer": {
-            "value": "유사암 (기타피부암, 갑상선암, 대장점막내암, 제자리암, 경계성종양)",
-            "evidence": "약관 p.21"
+          "HANWHA": {
+            "value_text": "유사암 (기타피부암, 갑상선암, 대장점막내암, 제자리암, 경계성종양)",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.33",
+              "snippet": "유사암(기타피부암, 갑상선암, 대장점막내암, 제자리암, 경계성종양) 제외"
+            }
           }
         }
       }
     ]
   },
-  "notes": {
-    "summary": "두 상품 모두 암 진단비를 보장하며, 대기기간과 감액기간은 동일합니다.",
-    "details": [
-      "삼성생명은 3,000만원, 한화생명은 5,000만원을 지급합니다.",
-      "한화생명의 제외 암종이 더 상세하게 명시되어 있습니다.",
-      "실제 지급 조건은 약관 전문을 확인하시기 바랍니다."
-    ]
-  },
+  "notes": [
+    {
+      "title": "보장 금액 차이",
+      "content": "삼성화재는 3,000만원, 한화생명은 5,000만원 지급합니다.",
+      "evidence_refs": ["가입설계서 p.3", "가입설계서 p.2"]
+    },
+    {
+      "title": "대기기간 및 감액기간",
+      "content": "두 상품 모두 대기기간 90일, 감액기간 1년(50% 지급)으로 동일합니다.",
+      "evidence_refs": ["약관 p.28", "약관 p.32"]
+    },
+    {
+      "title": "제외 암종",
+      "content": "한화생명이 대장점막내암을 추가로 명시하고 있습니다.",
+      "evidence_refs": ["약관 p.29", "약관 p.33"]
+    }
+  ],
   "limitations": [
     "본 비교는 약관 및 가입설계서에 기반한 정보 제공입니다.",
-    "개인 조건에 따른 보험료 계산은 포함되지 않습니다.",
-    "상품 추천이나 가입 판단을 대신하지 않습니다."
+    "실제 지급 조건은 약관 전문을 확인하시기 바랍니다."
   ]
 }

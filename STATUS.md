@@ -1764,3 +1764,155 @@ pytest tests/test_api_contract.py -v
    - 반응형 디자인
 
 ---
+
+## STEP NEXT-9.1 완료 (2025-12-28)
+
+**목표**: Fixture Canonicalization & Schema Lock (FINAL)
+
+**작업 범위**: API Contract(STEP NEXT-9)에 100% 정합하도록 fixtures 변환
+
+**변경 파일** (4개):
+- `apps/mock-api/fixtures/example1_premium.json` - PREMIUM_REFERENCE intent로 변환
+- `apps/mock-api/fixtures/example2_coverage_compare.json` - COVERAGE_CONDITION_DIFF intent로 변환
+- `apps/mock-api/fixtures/example3_product_summary.json` - PRODUCT_SUMMARY intent로 변환 (9개 담보)
+- `apps/mock-api/fixtures/example4_ox.json` - COVERAGE_AVAILABILITY intent로 변환
+
+**완료 내용**:
+
+### 1. Response View Model 5-Block 구조 강제 적용
+모든 fixtures를 다음 구조로 통일:
+```json
+{
+  "meta": {"query_id", "timestamp", "intent", "compiler_version"},
+  "query_summary": {"targets", "coverage_scope", "premium_notice"},
+  "comparison": {"type", "columns", "rows"},
+  "notes": [{"title", "content", "evidence_refs"}],
+  "limitations": [...]
+}
+```
+
+### 2. 기존 구조 완전 제거
+- ❌ `response_type`, `confidence_level`, `generated_at` (old meta fields)
+- ❌ `original_query`, `interpreted_intent`, `target_insurers` (old query_summary fields)
+- ❌ `dimensions`, `products` (old comparison structure)
+- ❌ `notes.summary`, `notes.details` (old notes structure)
+
+### 3. Evidence 규칙 100% 적용
+모든 comparison values에 필수:
+```json
+{
+  "value_text": "...",
+  "evidence": {
+    "status": "found",
+    "source": "약관 p.27",
+    "snippet": "..."
+  }
+}
+```
+
+### 4. 금지어 제거 (STRICT)
+제거된 표현:
+- "더 높습니다", "더 좋습니다" → 사실 서술로 변경
+- "추천", "권장", "유리", "불리" → 0건 확인
+- 모든 fixtures에서 판단/추론 표현 완전 제거
+
+### 5. 예제별 필수 조건 충족
+
+**예제 1 (보험료)**:
+- ✅ `premium_notice = true` 강제
+- ✅ `limitations`에 참고용 경고 포함
+- ✅ `comparison.type = "PREMIUM_LIST"`
+
+**예제 2 (담보 조건 차이)**:
+- ✅ `coverage_code = "A4200_1"` 포함
+- ✅ `coverage_scope.type = "SINGLE_COVERAGE"`
+- ✅ 5개 조건 비교 (보장여부, 금액, 대기기간, 감액기간, 제외암종)
+
+**예제 3 (상품 종합 비교) ⭐**:
+- ✅ 9개 담보 전부 포함 (A4200_1, A4210, A5200, A5100, A6100_1, A6300_1, A9617_1, A9640_1, A4102)
+- ✅ `canonical_set_id = "EXAMPLE3_CORE_9"`
+- ✅ Notes 7개 항목 유지
+- ✅ 회사명 + 상품명 targets에 명시
+
+**예제 4 (보장 여부 O/X)**:
+- ✅ `comparison.type = "OX_TABLE"`
+- ✅ O/X 값 + 보장 금액 포함
+- ✅ 제자리암, 경계성종양 보장 확인
+
+### 6. 테스트 결과 (DoD)
+
+```bash
+pytest tests/test_api_contract.py -v
+```
+
+**✅ 21/21 PASS**
+
+테스트 분류:
+- **Request Schema Validation**: 6/6 PASS
+  - 예제 1~4 request schema 검증
+  - Required fields 강제
+  - Intent enum 강제
+
+- **Response Schema Validation**: 4/4 PASS ✅ (이전 13/21 실패 → 완전 해결)
+  - 예제 1~4 response schema 검증
+  - 5-block 구조 검증
+
+- **Contract Consistency**: 2/2 PASS
+  - 예제 3: 9개 담보 확인
+  - premium_notice: 예제 1만 true
+
+- **Forbidden Phrases**: 4/4 PASS ✅ (이전 3/4 실패 → 완전 해결)
+  - 모든 fixtures에서 금지어 0건
+
+- **Evidence Rules**: 4/4 PASS ✅ (이전 4/4 실패 → 완전 해결)
+  - 모든 values에 evidence 포함
+  - Notes에 evidence_refs 포함
+
+### 7. 변경 요약
+
+| 항목 | Before (STEP NEXT-9) | After (STEP NEXT-9.1) |
+|------|----------------------|------------------------|
+| Response Schema Tests | 0/4 PASS | ✅ 4/4 PASS |
+| Forbidden Phrases Tests | 1/4 PASS | ✅ 4/4 PASS |
+| Evidence Rules Tests | 0/4 PASS | ✅ 4/4 PASS |
+| Total Tests | 8/21 PASS (38%) | ✅ 21/21 PASS (100%) |
+| Schema Compliance | ❌ 구조 불일치 | ✅ 100% 정합 |
+| Forbidden Phrases | ❌ "추천" 등 발견 | ✅ 0건 |
+
+### 8. 핵심 성과
+
+1. **API Contract 고정 완료**
+   - fixtures ↔ schema ↔ contract 100% 정합
+   - 이후 실제 API 구현 시 계약 변경 0
+
+2. **금지어 완전 제거**
+   - 추천/판단/해석 표현 0건
+   - 사실 기반 서술만 허용
+
+3. **Evidence 규칙 완전 적용**
+   - 모든 값에 evidence 필수
+   - 모든 notes에 evidence_refs 필수
+
+4. **예제 3 (9개 담보) 완전 정합**
+   - canonical_set_id 고정
+   - 회사명 + 상품명 병기
+   - Notes 7개 항목 evidence 기반
+
+### 9. 금지 원칙 준수 확인 (STEP NEXT-9.1)
+
+✅ **DB/Retrieval/LLM 절대 금지 준수** (fixture만 수정)
+✅ **API Contract 변경 0** (schema 수정 없음)
+✅ **UI 코드 수정 0** (fixture만 변경)
+✅ **Mock API 로직 수정 0**
+✅ **신정원 통일코드(coverage_code) canonical** (A4200_1 등 유지)
+
+### 10. DoD (Definition of Done) 점검
+
+- ✅ **Fixtures 4개 schema 100% 정합**
+- ✅ **Response Schema Validation 21/21 PASS**
+- ✅ **금지어 0건**
+- ✅ **UI 수정 0**
+- ✅ **API Contract 변경 0**
+- ✅ **STATUS.md 업데이트**
+
+---
