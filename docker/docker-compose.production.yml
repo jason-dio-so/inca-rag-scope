@@ -1,0 +1,84 @@
+# inca-rag-scope Production Database
+# Version: 1.0
+# Purpose: Single source of truth for inca-rag-scope operational PostgreSQL database
+#
+# IMPORTANT:
+# - This compose file ONLY manages the database container
+# - NO application/API/worker/loader containers included
+# - NO schema/migration/seed scripts included
+# - Database is a storage layer ONLY (no business logic)
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: inca_rag_scope_db
+    restart: unless-stopped
+
+    environment:
+      # Database credentials (from .env)
+      POSTGRES_DB: ${POSTGRES_DB:-inca_rag_scope}
+      POSTGRES_USER: ${POSTGRES_USER:-inca_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+
+      # Locale and timezone
+      TZ: Asia/Seoul
+      LANG: ko_KR.UTF-8
+      LC_ALL: ko_KR.UTF-8
+
+    volumes:
+      # Single volume for all PostgreSQL data
+      - inca_rag_scope_postgres_data:/var/lib/postgresql/data
+
+    ports:
+      # Expose on host port 5432 (standard PostgreSQL port)
+      - "${POSTGRES_PORT:-5432}:5432"
+
+    networks:
+      - inca_rag_scope_net
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-inca_admin} -d ${POSTGRES_DB:-inca_rag_scope}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    command:
+      # PostgreSQL tuning for production
+      - postgres
+      - -c
+      - max_connections=100
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - effective_cache_size=1GB
+      - -c
+      - maintenance_work_mem=64MB
+      - -c
+      - checkpoint_completion_target=0.9
+      - -c
+      - wal_buffers=16MB
+      - -c
+      - default_statistics_target=100
+      - -c
+      - random_page_cost=1.1
+      - -c
+      - effective_io_concurrency=200
+      - -c
+      - work_mem=4MB
+      - -c
+      - min_wal_size=1GB
+      - -c
+      - max_wal_size=4GB
+
+volumes:
+  # Single volume for PostgreSQL data
+  # IMPORTANT: This volume persists all database data
+  # Backup/restore operations should target this volume
+  inca_rag_scope_postgres_data:
+    driver: local
+
+networks:
+  # Dedicated network for inca-rag-scope services
+  inca_rag_scope_net:
+    driver: bridge
