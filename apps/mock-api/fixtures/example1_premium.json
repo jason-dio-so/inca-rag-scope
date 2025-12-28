@@ -1,63 +1,131 @@
 {
   "meta": {
-    "response_type": "comparison",
-    "confidence_level": "document-based",
-    "premium_notice": true,
-    "generated_at": "2025-12-28T10:00:00+09:00"
+    "query_id": "550e8400-e29b-41d4-a716-446655440001",
+    "timestamp": "2025-12-28T10:00:00Z",
+    "intent": "PREMIUM_REFERENCE",
+    "compiler_version": "v1.0.0"
   },
   "query_summary": {
-    "original_query": "삼성생명 건강보험 보험료 얼마인가요?",
-    "interpreted_intent": "보험료 비교",
-    "target_insurers": ["삼성생명"],
-    "target_products": [
+    "targets": [
       {
-        "insurer": "삼성생명",
-        "product_name": "삼성생명 건강보험"
-      }
-    ]
-  },
-  "comparison": {
-    "dimensions": [
-      {
-        "key": "monthly_premium",
-        "label": "월 보험료 (참고)",
-        "type": "amount"
+        "insurer": "SAMSUNG",
+        "product_name": "삼성화재 무배당 New 원더풀 암보험",
+        "source": "user_specified"
       },
       {
-        "key": "premium_conditions",
-        "label": "보험료 산출 조건",
-        "type": "text"
+        "insurer": "HANWHA",
+        "product_name": "한화생명 무배당 암보험",
+        "source": "user_specified"
+      },
+      {
+        "insurer": "MERITZ",
+        "product_name": "메리츠화재 무배당 암보험",
+        "source": "user_specified"
+      },
+      {
+        "insurer": "DB",
+        "product_name": "DB손해보험 무배당 암보험",
+        "source": "user_specified"
       }
     ],
-    "products": [
+    "coverage_scope": {
+      "type": "MULTI_COVERAGE",
+      "count": 2
+    },
+    "premium_notice": true
+  },
+  "comparison": {
+    "type": "PREMIUM_LIST",
+    "columns": ["SAMSUNG", "HANWHA", "MERITZ", "DB"],
+    "rows": [
       {
-        "insurer": "삼성생명",
-        "product_name": "삼성생명 건강보험",
-        "rows": {
-          "monthly_premium": {
-            "value": "약 50,000원 (예시)",
-            "evidence": "가입설계서 p.1 (특정 조건 기준)"
+        "coverage_name": "월 보험료",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "약 48,500원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.1",
+              "snippet": "월납 보험료: 48,500원 (30세 남성, 20년납, 표준체 기준)"
+            }
           },
-          "premium_conditions": {
-            "value": "30세 남성, 표준체, 20년 납입 기준",
-            "evidence": "가입설계서 p.1"
+          "HANWHA": {
+            "value_text": "약 52,300원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.1",
+              "snippet": "월납 보험료: 52,300원 (30세 남성, 20년납, 표준체 기준)"
+            }
+          },
+          "MERITZ": {
+            "value_text": "약 46,800원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.1",
+              "snippet": "월납 보험료: 46,800원 (30세 남성, 20년납, 표준체 기준)"
+            }
+          },
+          "DB": {
+            "value_text": "약 50,100원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.1",
+              "snippet": "월납 보험료: 50,100원 (30세 남성, 20년납, 표준체 기준)"
+            }
+          }
+        }
+      },
+      {
+        "coverage_name": "보험료 산출 조건",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "30세 남성, 표준체, 20년납",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.1"
+            }
+          },
+          "HANWHA": {
+            "value_text": "30세 남성, 표준체, 20년납",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.1"
+            }
+          },
+          "MERITZ": {
+            "value_text": "30세 남성, 표준체, 20년납",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.1"
+            }
+          },
+          "DB": {
+            "value_text": "30세 남성, 표준체, 20년납",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.1"
+            }
           }
         }
       }
     ]
   },
-  "notes": {
-    "summary": "보험료는 개인별 조건에 따라 크게 달라집니다.",
-    "details": [
-      "표시된 보험료는 특정 조건 (30세 남성, 표준체, 20년 납입) 기준 예시입니다.",
-      "실제 보험료는 나이, 성별, 건강상태, 납입기간, 특약 구성 등에 따라 달라집니다.",
-      "정확한 보험료는 보험사 또는 설계사를 통해 직접 확인하시기 바랍니다."
-    ]
-  },
+  "notes": [
+    {
+      "title": "보험료 산출 기준",
+      "content": "표시된 보험료는 30세 남성, 표준체, 20년 납입 기준입니다. 실제 보험료는 나이, 성별, 건강상태, 납입기간, 특약 구성에 따라 달라집니다.",
+      "evidence_refs": ["가입설계서 p.1"]
+    },
+    {
+      "title": "보험료 변동 가능성",
+      "content": "가입설계서상 보험료는 작성 시점 기준이며, 상품 개정 시 변경될 수 있습니다.",
+      "evidence_refs": ["가입설계서 p.1"]
+    }
+  ],
   "limitations": [
     "⚠️ 본 시스템은 개인별 보험료 계산 기능을 제공하지 않습니다.",
-    "⚠️ 표시된 보험료는 문서상 예시이며, 실제 가입 보험료와 다를 수 있습니다.",
-    "본 비교는 약관 및 가입설계서에 기반한 정보 제공입니다.",
-    "상품 추천이나 가입 판단을 대신하지 않습니다."
+    "⚠️ 표시된 보험료는 참고용이며, 실제 가입 보험료와 다를 수 있습니다.",
+    "정확한 보험료는 보험사 또는 설계사를 통해 직접 확인하시기 바랍니다.",
+    "본 비교는 약관 및 가입설계서에 기반한 정보 제공입니다."
   ]
 }
