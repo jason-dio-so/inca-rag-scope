@@ -3,8 +3,33 @@
 ## 프로젝트 정보
 
 - **디렉토리**: `inca-rag-scope/`
-- **작업일**: 2025-12-27
-- **목표**: 전체 보험사 파이프라인 실행 + A4200_1 전체 비교
+- **작업일**: 2025-12-27 ~ 2025-12-28
+- **목표**: 전체 보험사 파이프라인 실행 + A4200_1 전체 비교 + UI 개발 직전 합의
+
+---
+
+## STEP NEXT-4 완료 (2025-12-28)
+
+**목표**: UI Mock (텍스트 와이어프레임) 완성
+
+**산출물**:
+- `docs/ui/STEP_NEXT_1_RESPONSE_VIEW_MODEL.md` - Response View Model 명세서 (초안)
+- `docs/ui/STEP_NEXT_2_RESPONSE_VIEW_MODEL_AND_UX.md` - Response View Model 및 UX 최종 명세서
+- `docs/ui/STEP_NEXT_3_UI_SKELETON.md` - UI Skeleton 및 View Model 매핑
+- `docs/ui/STEP_NEXT_4_UI_MOCK.md` - UI Mock (텍스트 와이어프레임)
+
+**완료 내용**:
+- 예제 1~4 모두 UI 렌더링 완료 (텍스트 와이어프레임)
+- 예제 3번 (9개 담보 종합 비교) 최우선 반영
+- ChatGPT 스타일 단일 패널 레이아웃 채택
+- 회사명 + 상품명 노출 위치 고정 (Query Summary)
+- Premium notice 강제 표시 UI 정의
+- Evidence 기반 값 표시 일관성 확보
+- 추천/추론 표현 0건 검증 완료
+
+**다음 단계**: UI 개발 착수 또는 고객 검토
+
+---
 
 ## 완료된 보험사 현황
 
