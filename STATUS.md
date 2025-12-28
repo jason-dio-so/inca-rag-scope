@@ -27,7 +27,45 @@
 - Evidence 기반 값 표시 일관성 확보
 - 추천/추론 표현 0건 검증 완료
 
-**다음 단계**: UI 개발 착수 또는 고객 검토
+---
+
+## STEP NEXT-5 완료 (2025-12-28)
+
+**목표**: UI 프로토타입 (Fixture 기반 실렌더링) 구현
+
+**산출물**:
+- `apps/web-prototype/index.html` - ChatGPT 스타일 UI 프로토타입 (HTML+CSS+JS)
+- `apps/web-prototype/fixtures/example1_premium.json` - 보험료 비교 예제
+- `apps/web-prototype/fixtures/example2_coverage_compare.json` - 담보 조건 비교 예제
+- `apps/web-prototype/fixtures/example3_product_summary.json` - 상품 종합 비교 예제 (9개 담보)
+- `apps/web-prototype/fixtures/example4_ox.json` - 보장 여부 O/X 예제
+- `docs/ui/STEP_NEXT_5_UI_PROTOTYPE_RUNBOOK.md` - 실행 가이드
+
+**완료 내용**:
+- Response View Model (JSON) → ChatGPT 스타일 화면 렌더링 완료
+- 예제 1~4 버튼 클릭으로 즉시 전환 가능
+- 예제 3에서 9개 담보 + Evidence 모달 + Notes 7개 항목 모두 동작 확인
+- Premium notice 강제 표시 (예제 1)
+- Evidence Viewer 모달 구현 (placeholder snippet)
+- 확인 불가 처리 일관성 (회색 표시)
+- 추천/추론 표현 0건
+- 로컬 브라우저에서 직접 실행 가능 (No Server Required)
+
+**실행 방법**:
+```bash
+cd apps/web-prototype
+open index.html  # 브라우저에서 직접 열기
+```
+
+**검증 완료**:
+- ✅ 예제 1~4 모두 화면 깨짐 없이 렌더링
+- ✅ 예제 3 (종합 비교): 9개 담보 테이블 + 7개 상세 Notes
+- ✅ Evidence 클릭 → 모달 팝업
+- ✅ 회사명 + 상품명 항상 표시
+- ✅ Premium notice 조건부 강제 표시
+- ✅ 금지 표현 (추천/추론) 0건
+
+**다음 단계**: 고객 검토 (예제 3 중심 데모) 또는 실제 API 연동
 
 ---
 

@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>보험 상품 비교 도우미 - UI Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .chat-stream {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .intro-section {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .intro-section h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .intro-section p {
+            margin-bottom: 12px;
+            color: #666;
+        }
+
+        .collapsible {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+
+        .collapsible summary {
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .collapsible[open] summary {
+            margin-bottom: 12px;
+        }
+
+        .collapsible ul {
+            list-style-position: inside;
+            color: #555;
+        }
+
+        .collapsible ul li {
+            margin-bottom: 8px;
+        }
+
+        .example-questions {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .example-questions h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        .example-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .example-btn:hover {
+            background-color: #e8e8e8;
+        }
+
+        .example-btn.active {
+            background-color: #e0f2ff;
+            border-color: #0066cc;
+        }
+
+        .message-bubble {
+            margin-bottom: 20px;
+        }
+
+        .user-message {
+            background-color: #e8f5e9;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            max-width: 80%;
+        }
+
+        .system-response {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .premium-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .premium-notice h4 {
+            color: #856404;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .premium-notice p {
+            color: #856404;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .query-summary ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .query-summary li {
+            padding: 6px 0;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow-x: auto;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            min-width: 600px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .comparison-table th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+
+        .comparison-table .company-header {
+            background-color: #f0f0f0;
+            font-weight: 700;
+        }
+
+        .evidence {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            cursor: pointer;
+        }
+
+        .evidence:hover {
+            color: #0066cc;
+            text-decoration: underline;
+        }
+
+        .value-check {
+            color: #4caf50;
+            font-size: 18px;
+        }
+
+        .value-cross {
+            color: #f44336;
+            font-size: 18px;
+        }
+
+        .value-unavailable {
+            color: #999;
+        }
+
+        .notes-section {
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        .notes-summary {
+            margin-bottom: 12px;
+        }
+
+        .notes-details {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 12px;
+        }
+
+        .notes-details summary {
+            cursor: pointer;
+            font-weight: 600;
+            padding: 8px;
+        }
+
+        .notes-details ul {
+            list-style-position: inside;
+            margin-top: 12px;
+            padding-left: 8px;
+        }
+
+        .notes-details li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .limitations-section {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        .limitations-section summary {
+            cursor: pointer;
+            font-weight: 600;
+            padding: 8px;
+            color: #856404;
+        }
+
+        .limitations-section ul {
+            list-style-position: inside;
+            margin-top: 12px;
+            padding-left: 8px;
+        }
+
+        .limitations-section li {
+            margin-bottom: 8px;
+            color: #856404;
+            line-height: 1.5;
+        }
+
+        .footer-timestamp {
+            font-size: 12px;
+            color: #999;
+            margin-top: 16px;
+            text-align: right;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-header h4 {
+            font-size: 18px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+        }
+
+        .evidence-detail {
+            margin-bottom: 12px;
+        }
+
+        .evidence-detail label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 4px;
+            color: #555;
+        }
+
+        .evidence-detail .value {
+            padding: 8px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .snippet {
+            background-color: #f5f5f5;
+            border-left: 3px solid #0066cc;
+            padding: 12px;
+            margin-top: 12px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+        }
+
+        .btn-primary {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+
+        .btn-primary:hover {
+            background-color: #0052a3;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-table {
+                font-size: 14px;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💬 보험 상품 비교 도우미</h1>
+            <p>Response View Model 렌더링 프로토타입</p>
+        </div>
+
+        <div class="chat-stream" id="chatStream">
+            <!-- Intro Section -->
+            <div class="intro-section">
+                <h2>시스템 안내</h2>
+                <p>저는 보험 약관과 가입설계서를 기반으로 객관적인 정보를 제공합니다.</p>
+
+                <details class="collapsible">
+                    <summary>상세 안내 ▼</summary>
+                    <div>
+                        <h4>✅ 제가 할 수 있는 것</h4>
+                        <ul>
+                            <li>여러 보험사 상품의 보장 내용 비교</li>
+                            <li>특정 담보 보장 여부 확인</li>
+                            <li>문서 기반 사실 정보 제공 (출처 명시)</li>
+                        </ul>
+
+                        <h4 style="margin-top: 16px;">❌ 제가 할 수 없는 것</h4>
+                        <ul>
+                            <li>개인 맞춤 상품 추천</li>
+                            <li>개인별 보험료 계산</li>
+                            <li>문서에 없는 내용 추론</li>
+                        </ul>
+                    </div>
+                </details>
+            </div>
+
+            <!-- Example Questions -->
+            <div class="example-questions">
+                <h3>📌 예제 선택</h3>
+                <button class="example-btn" onclick="loadExample('example1_premium')">
+                    예제 1: 보험료 비교 (보험료 경고)
+                </button>
+                <button class="example-btn" onclick="loadExample('example2_coverage_compare')">
+                    예제 2: 담보 조건 비교 (5개 조건)
+                </button>
+                <button class="example-btn" onclick="loadExample('example3_product_summary')">
+                    예제 3: 상품 종합 비교 ⭐ (9개 담보)
+                </button>
+                <button class="example-btn" onclick="loadExample('example4_ox')">
+                    예제 4: 보장 여부 확인 (O/X)
+                </button>
+            </div>
+
+            <!-- Response Area -->
+            <div id="responseArea"></div>
+        </div>
+    </div>
+
+    <!-- Evidence Modal -->
+    <div id="evidenceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="modalTitle">Evidence 상세</h4>
+                <button class="modal-close" onclick="closeEvidenceModal()">×</button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentData = null;
+
+        async function loadExample(exampleName) {
+            try {
+                const response = await fetch(`./fixtures/${exampleName}.json`);
+                const data = await response.json();
+                currentData = data;
+                renderResponse(data);
+
+                // Highlight active button
+                document.querySelectorAll('.example-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+            } catch (error) {
+                console.error('Failed to load example:', error);
+                alert('예제 로딩 실패: ' + error.message);
+            }
+        }
+
+        function renderResponse(data) {
+            const responseArea = document.getElementById('responseArea');
+
+            let html = '';
+
+            // User Message
+            html += `
+                <div class="message-bubble">
+                    <div class="user-message">
+                        ${data.query_summary.original_query}
+                    </div>
+                </div>
+            `;
+
+            // System Response Card
+            html += '<div class="system-response">';
+
+            // Premium Notice (if applicable)
+            if (data.meta.premium_notice) {
+                html += `
+                    <div class="premium-notice">
+                        <h4>⚠️ 보험료 안내</h4>
+                        <p>보험료는 개인별 조건 (나이, 성별, 건강상태 등)에 따라 달라집니다.
+                        본 시스템은 개인별 보험료 계산 기능을 제공하지 않으며, 문서상 예시만 표시합니다.</p>
+                        <p style="margin-top: 8px;">정확한 보험료는 보험사 또는 설계사를 통해 확인하시기 바랍니다.</p>
+                    </div>
+                `;
+            }
+
+            // Query Summary
+            html += renderQuerySummary(data.query_summary);
+
+            // Comparison
+            html += renderComparison(data.comparison);
+
+            // Notes
+            html += renderNotes(data.notes);
+
+            // Limitations
+            html += renderLimitations(data.limitations);
+
+            // Footer
+            html += `
+                <div class="footer-timestamp">
+                    생성 시각: ${new Date(data.meta.generated_at).toLocaleString('ko-KR')}
+                </div>
+            `;
+
+            html += '</div>'; // End system-response
+
+            responseArea.innerHTML = html;
+        }
+
+        function renderQuerySummary(querySummary) {
+            let html = `
+                <div class="section query-summary">
+                    <h3>📋 비교 대상 상품</h3>
+                    <ul>
+            `;
+
+            querySummary.target_products.forEach(product => {
+                html += `<li>• ${product.insurer} ${product.product_name}</li>`;
+            });
+
+            html += `
+                    </ul>
+                </div>
+            `;
+
+            return html;
+        }
+
+        function renderComparison(comparison) {
+            let html = `
+                <div class="section comparison">
+                    <h3>📊 보장 비교표</h3>
+                    <div class="comparison-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>담보</th>
+            `;
+
+            // Company headers
+            comparison.products.forEach(product => {
+                html += `
+                    <th class="company-header">
+                        ${product.insurer}<br>
+                        <span style="font-weight: 400; font-size: 13px;">${product.product_name}</span>
+                    </th>
+                `;
+            });
+
+            html += `
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            // Rows for each dimension
+            comparison.dimensions.forEach(dimension => {
+                html += `<tr>`;
+                html += `<td><strong>${dimension.label}</strong></td>`;
+
+                comparison.products.forEach(product => {
+                    const row = product.rows[dimension.key];
+                    html += `<td>`;
+
+                    if (row) {
+                        // Render value based on type
+                        if (dimension.type === 'boolean') {
+                            if (row.value === true) {
+                                html += '<span class="value-check">✓</span>';
+                            } else if (row.value === false) {
+                                html += '<span class="value-cross">✗</span>';
+                            } else {
+                                html += '<span class="value-unavailable">확인 불가</span>';
+                            }
+                        } else if (row.value === '확인 불가' || row.value === null) {
+                            html += '<span class="value-unavailable">확인 불가</span>';
+                        } else {
+                            html += row.value;
+                        }
+
+                        // Evidence
+                        if (row.evidence) {
+                            const evidenceData = JSON.stringify({
+                                label: dimension.label,
+                                insurer: product.insurer,
+                                value: row.value,
+                                evidence: row.evidence
+                            }).replace(/"/g, '&quot;');
+                            html += `<div class="evidence" onclick='showEvidence(${evidenceData})'>📄 ${row.evidence}</div>`;
+                        } else {
+                            html += '<div class="evidence value-unavailable">📄 확인 불가</div>';
+                        }
+                    } else {
+                        html += '<span class="value-unavailable">확인 불가</span>';
+                        html += '<div class="evidence value-unavailable">📄 확인 불가</div>';
+                    }
+
+                    html += `</td>`;
+                });
+
+                html += `</tr>`;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            return html;
+        }
+
+        function renderNotes(notes) {
+            let html = `
+                <div class="section notes-section">
+                    <h3>📝 요약</h3>
+                    <div class="notes-summary">
+                        ${notes.summary}
+                    </div>
+            `;
+
+            if (notes.details && notes.details.length > 0) {
+                html += `
+                    <details class="notes-details">
+                        <summary>상세 내용 펼치기 ▼</summary>
+                        <ul>
+                `;
+
+                notes.details.forEach(detail => {
+                    html += `<li>${detail}</li>`;
+                });
+
+                html += `
+                        </ul>
+                    </details>
+                `;
+            }
+
+            html += `</div>`;
+
+            return html;
+        }
+
+        function renderLimitations(limitations) {
+            let html = `
+                <div class="section limitations-section">
+                    <details>
+                        <summary>⚠️ 주의사항 펼치기 ▼</summary>
+                        <ul>
+            `;
+
+            limitations.forEach(limitation => {
+                html += `<li>${limitation}</li>`;
+            });
+
+            html += `
+                        </ul>
+                    </details>
+                </div>
+            `;
+
+            return html;
+        }
+
+        function showEvidence(evidenceData) {
+            const modal = document.getElementById('evidenceModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            modalTitle.textContent = `📄 ${evidenceData.label} - ${evidenceData.insurer}`;
+
+            let bodyHtml = `
+                <div class="evidence-detail">
+                    <label>값</label>
+                    <div class="value">${evidenceData.value}</div>
+                </div>
+
+                <div class="evidence-detail">
+                    <label>문서 출처</label>
+                    <div class="value">${evidenceData.evidence}</div>
+                </div>
+
+                <div class="snippet">
+                    [Snippet Placeholder]
+
+                    문서 종류에 따른 실제 원문 발췌가 여기에 표시됩니다.
+                    현재는 프로토타입이므로 placeholder로 대체합니다.
+
+                    실제 구현 시:
+                    - 약관/가입설계서/사업방법서 구분
+                    - 페이지 번호
+                    - 전후 맥락 포함 발췌문
+                </div>
+
+                <button class="btn-primary" onclick="alert('원문 보기는 실제 구현 시 PDF 뷰어로 연결됩니다.')">
+                    원문 보기
+                </button>
+            `;
+
+            modalBody.innerHTML = bodyHtml;
+            modal.classList.add('active');
+        }
+
+        function closeEvidenceModal() {
+            const modal = document.getElementById('evidenceModal');
+            modal.classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('evidenceModal');
+            if (event.target === modal) {
+                closeEvidenceModal();
+            }
+        }
+
+        // Load example 3 by default on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Highlight example 3 button
+            const buttons = document.querySelectorAll('.example-btn');
+            if (buttons.length >= 3) {
+                buttons[2].classList.add('active');
+            }
+            loadExample('example3_product_summary');
+        });
+    </script>
+</body>
+</html>
