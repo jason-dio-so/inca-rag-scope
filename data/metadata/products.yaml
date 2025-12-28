@@ -1,0 +1,330 @@
+# PRODUCT VARIANT METADATA – inca-rag-scope
+# Version: 1.0
+# Date: 2025-12-28
+# Status: SSOT (Single Source of Truth)
+#
+# This file defines ALL product/variant/document relationships.
+# NO filename parsing or insurer-specific if-else logic is allowed.
+# All pipeline and DB loader code MUST read this file as the canonical source.
+
+insurers:
+  # ============================================================================
+  # LOTTE: Gender variants (Male/Female) - ALL doc types separated
+  # ============================================================================
+  - insurer_key: lotte
+    insurer_name_kr: 롯데손해보험
+    insurer_type: 손해보험
+    products:
+      - product_key: lotte_health_2024
+        product_name_raw: 롯데 Super Health 보험
+        product_name_display: 롯데 슈퍼헬스
+        has_variants: true
+
+        variants:
+          - variant_key: MALE
+            variant_display_name: 남
+            variant_attrs:
+              gender: M
+
+          - variant_key: FEMALE
+            variant_display_name: 여
+            variant_attrs:
+              gender: F
+
+        documents:
+          # Male documents (all 4 doc types)
+          - doc_type: 약관
+            file_path: data/sources/insurers/lotte/policy/lotte_policy_male.pdf
+            variant_key: MALE
+            structure_type: standard
+
+          - doc_type: 사업방법서
+            file_path: data/sources/insurers/lotte/business/lotte_business_male.pdf
+            variant_key: MALE
+            structure_type: standard
+
+          - doc_type: 상품요약서
+            file_path: data/sources/insurers/lotte/summary/lotte_summary_male.pdf
+            variant_key: MALE
+            structure_type: standard
+
+          - doc_type: 가입설계서
+            file_path: data/sources/insurers/lotte/proposal/lotte_proposal_male.pdf
+            variant_key: MALE
+            structure_type: standard
+
+          # Female documents (all 4 doc types)
+          - doc_type: 약관
+            file_path: data/sources/insurers/lotte/policy/lotte_policy_female.pdf
+            variant_key: FEMALE
+            structure_type: standard
+
+          - doc_type: 사업방법서
+            file_path: data/sources/insurers/lotte/business/lotte_business_female.pdf
+            variant_key: FEMALE
+            structure_type: standard
+
+          - doc_type: 상품요약서
+            file_path: data/sources/insurers/lotte/summary/lotte_summary_female.pdf
+            variant_key: FEMALE
+            structure_type: standard
+
+          - doc_type: 가입설계서
+            file_path: data/sources/insurers/lotte/proposal/lotte_proposal_female.pdf
+            variant_key: FEMALE
+            structure_type: standard
+
+  # ============================================================================
+  # DB: Age variants (U40/O40) - Only 가입설계서 separated, others shared
+  # ============================================================================
+  - insurer_key: db
+    insurer_name_kr: DB손해보험
+    insurer_type: 손해보험
+    products:
+      - product_key: db_life_2024
+        product_name_raw: DB 무배당 실속건강보험
+        product_name_display: DB 실속건강
+        has_variants: true
+
+        variants:
+          - variant_key: U40
+            variant_display_name: 40세이하
+            variant_attrs:
+              age_range: "20-39"
+
+          - variant_key: O40
+            variant_display_name: 40세이상
+            variant_attrs:
+              age_range: "40-79"
+
+        documents:
+          # Shared documents (variant_key: null means shared across all variants)
+          - doc_type: 약관
+            file_path: data/sources/insurers/db/policy/db_policy.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 사업방법서
+            file_path: data/sources/insurers/db/business/db_business.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 상품요약서
+            file_path: data/sources/insurers/db/summary/db_summary.pdf
+            variant_key: null
+            structure_type: standard
+
+          # Age-specific proposals
+          - doc_type: 가입설계서
+            file_path: data/sources/insurers/db/proposal/db_proposal_u40.pdf
+            variant_key: U40
+            structure_type: standard
+
+          - doc_type: 가입설계서
+            file_path: data/sources/insurers/db/proposal/db_proposal_o40.pdf
+            variant_key: O40
+            structure_type: standard
+
+  # ============================================================================
+  # KB: No variants - Single product, all documents shared
+  # ============================================================================
+  - insurer_key: kb
+    insurer_name_kr: KB손해보험
+    insurer_type: 손해보험
+    products:
+      - product_key: kb_health_2024
+        product_name_raw: KB 무배당 건강보험
+        product_name_display: KB 건강보험
+        has_variants: false
+        variants: []
+
+        documents:
+          - doc_type: 약관
+            file_path: data/sources/insurers/kb/policy/kb_policy.pdf
+            variant_key: null
+            structure_type: kb_profile
+
+          - doc_type: 사업방법서
+            file_path: data/sources/insurers/kb/business/kb_business.pdf
+            variant_key: null
+            structure_type: kb_profile
+
+          - doc_type: 상품요약서
+            file_path: data/sources/insurers/kb/summary/kb_summary.pdf
+            variant_key: null
+            structure_type: kb_profile
+
+          - doc_type: 가입설계서
+            file_path: data/sources/insurers/kb/proposal/kb_proposal.pdf
+            variant_key: null
+            structure_type: kb_profile
+
+  # ============================================================================
+  # MERITZ: No variants - Single product, custom structure profile
+  # ============================================================================
+  - insurer_key: meritz
+    insurer_name_kr: 메리츠화재
+    insurer_type: 손해보험
+    products:
+      - product_key: meritz_health_2024
+        product_name_raw: 메리츠 건강보험
+        product_name_display: 메리츠 건강보험
+        has_variants: false
+        variants: []
+
+        documents:
+          - doc_type: 약관
+            file_path: data/sources/insurers/meritz/policy/meritz_policy.pdf
+            variant_key: null
+            structure_type: meritz_profile
+
+          - doc_type: 사업방법서
+            file_path: data/sources/insurers/meritz/business/meritz_business.pdf
+            variant_key: null
+            structure_type: meritz_profile
+
+          - doc_type: 상품요약서
+            file_path: data/sources/insurers/meritz/summary/meritz_summary.pdf
+            variant_key: null
+            structure_type: meritz_profile
+
+          - doc_type: 가입설계서
+            file_path: data/sources/insurers/meritz/proposal/meritz_proposal.pdf
+            variant_key: null
+            structure_type: meritz_profile
+
+  # ============================================================================
+  # SAMSUNG: No variants - Standard structure
+  # ============================================================================
+  - insurer_key: samsung
+    insurer_name_kr: 삼성화재
+    insurer_type: 손해보험
+    products:
+      - product_key: samsung_health_2024
+        product_name_raw: 삼성 건강보험
+        product_name_display: 삼성 건강보험
+        has_variants: false
+        variants: []
+
+        documents:
+          - doc_type: 약관
+            file_path: data/sources/insurers/samsung/policy/samsung_policy.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 사업방법서
+            file_path: data/sources/insurers/samsung/business/samsung_business.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 상품요약서
+            file_path: data/sources/insurers/samsung/summary/samsung_summary.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 가입설계서
+            file_path: data/sources/insurers/samsung/proposal/samsung_proposal.pdf
+            variant_key: null
+            structure_type: standard
+
+  # ============================================================================
+  # HANWHA: No variants - Standard structure
+  # ============================================================================
+  - insurer_key: hanwha
+    insurer_name_kr: 한화손해보험
+    insurer_type: 손해보험
+    products:
+      - product_key: hanwha_health_2024
+        product_name_raw: 한화 건강보험
+        product_name_display: 한화 건강보험
+        has_variants: false
+        variants: []
+
+        documents:
+          - doc_type: 약관
+            file_path: data/sources/insurers/hanwha/policy/hanwha_policy.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 사업방법서
+            file_path: data/sources/insurers/hanwha/business/hanwha_business.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 상품요약서
+            file_path: data/sources/insurers/hanwha/summary/hanwha_summary.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 가입설계서
+            file_path: data/sources/insurers/hanwha/proposal/hanwha_proposal.pdf
+            variant_key: null
+            structure_type: standard
+
+  # ============================================================================
+  # HYUNDAI: No variants - Standard structure
+  # ============================================================================
+  - insurer_key: hyundai
+    insurer_name_kr: 현대해상
+    insurer_type: 손해보험
+    products:
+      - product_key: hyundai_health_2024
+        product_name_raw: 현대 건강보험
+        product_name_display: 현대 건강보험
+        has_variants: false
+        variants: []
+
+        documents:
+          - doc_type: 약관
+            file_path: data/sources/insurers/hyundai/policy/hyundai_policy.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 사업방법서
+            file_path: data/sources/insurers/hyundai/business/hyundai_business.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 상품요약서
+            file_path: data/sources/insurers/hyundai/summary/hyundai_summary.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 가입설계서
+            file_path: data/sources/insurers/hyundai/proposal/hyundai_proposal.pdf
+            variant_key: null
+            structure_type: standard
+
+  # ============================================================================
+  # HEUNGKUK: No variants - Standard structure
+  # ============================================================================
+  - insurer_key: heungkuk
+    insurer_name_kr: 흥국화재
+    insurer_type: 손해보험
+    products:
+      - product_key: heungkuk_health_2024
+        product_name_raw: 흥국 건강보험
+        product_name_display: 흥국 건강보험
+        has_variants: false
+        variants: []
+
+        documents:
+          - doc_type: 약관
+            file_path: data/sources/insurers/heungkuk/policy/heungkuk_policy.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 사업방법서
+            file_path: data/sources/insurers/heungkuk/business/heungkuk_business.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 상품요약서
+            file_path: data/sources/insurers/heungkuk/summary/heungkuk_summary.pdf
+            variant_key: null
+            structure_type: standard
+
+          - doc_type: 가입설계서
+            file_path: data/sources/insurers/heungkuk/proposal/heungkuk_proposal.pdf
+            variant_key: null
+            structure_type: standard
