@@ -1,0 +1,211 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CompareResponse (Response View Model)",
+  "description": "Response schema for insurance comparison API (5-block structure)",
+  "type": "object",
+  "required": ["meta", "query_summary", "comparison", "notes", "limitations"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["query_id", "timestamp", "intent"],
+      "properties": {
+        "query_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique query identifier (UUID v4)"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Response generation timestamp (ISO 8601)"
+        },
+        "intent": {
+          "type": "string",
+          "enum": [
+            "PRODUCT_SUMMARY",
+            "COVERAGE_CONDITION_DIFF",
+            "COVERAGE_AVAILABILITY",
+            "PREMIUM_REFERENCE"
+          ],
+          "description": "Request intent"
+        },
+        "compiler_version": {
+          "type": "string",
+          "description": "Compiler version used"
+        }
+      },
+      "description": "Block 1: Metadata"
+    },
+    "query_summary": {
+      "type": "object",
+      "required": ["targets", "coverage_scope", "premium_notice"],
+      "properties": {
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["insurer", "product_name", "source"],
+            "properties": {
+              "insurer": {
+                "type": "string",
+                "description": "Insurer code"
+              },
+              "product_name": {
+                "type": "string",
+                "description": "Product name (Korean)"
+              },
+              "source": {
+                "type": "string",
+                "enum": ["user_specified", "auto_selected"],
+                "description": "Product selection method"
+              }
+            }
+          },
+          "minItems": 1,
+          "description": "Comparison target products"
+        },
+        "coverage_scope": {
+          "type": "object",
+          "required": ["type", "count"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["CANONICAL_SET", "SINGLE_COVERAGE", "MULTI_COVERAGE"],
+              "description": "Coverage scope type"
+            },
+            "canonical_set_id": {
+              "type": "string",
+              "description": "Canonical set ID (e.g., EXAMPLE3_CORE_9)"
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Number of coverages"
+            }
+          },
+          "description": "Coverage scope information"
+        },
+        "premium_notice": {
+          "type": "boolean",
+          "description": "Show premium reference notice (true for example 1)"
+        }
+      },
+      "description": "Block 2: Query Summary"
+    },
+    "comparison": {
+      "type": "object",
+      "required": ["type", "columns", "rows"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["COVERAGE_TABLE", "OX_TABLE", "PREMIUM_LIST"],
+          "description": "Comparison table type"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Column headers (insurer codes)"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["values"],
+            "properties": {
+              "coverage_code": {
+                "type": "string",
+                "pattern": "^A[0-9]{4}(_[0-9]+)?$",
+                "description": "Canonical coverage code"
+              },
+              "coverage_name": {
+                "type": "string",
+                "description": "Coverage name (Korean)"
+              },
+              "values": {
+                "type": "object",
+                "patternProperties": {
+                  "^[A-Z_]+$": {
+                    "type": "object",
+                    "required": ["value_text", "evidence"],
+                    "properties": {
+                      "value_text": {
+                        "type": "string",
+                        "description": "Display value"
+                      },
+                      "evidence": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": ["found", "unavailable"],
+                            "description": "Evidence availability status"
+                          },
+                          "source": {
+                            "type": "string",
+                            "description": "Evidence source (e.g., 약관 p.27)"
+                          },
+                          "snippet": {
+                            "type": "string",
+                            "maxLength": 200,
+                            "description": "Evidence snippet (max 200 chars)"
+                          },
+                          "reason": {
+                            "type": "string",
+                            "description": "Reason for unavailable status"
+                          }
+                        },
+                        "description": "Evidence object"
+                      }
+                    },
+                    "description": "Value for insurer (key = insurer code)"
+                  }
+                },
+                "description": "Values by insurer"
+              }
+            }
+          },
+          "minItems": 1,
+          "description": "Comparison rows"
+        }
+      },
+      "description": "Block 3: Comparison Data"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "content", "evidence_refs"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Note title"
+          },
+          "content": {
+            "type": "string",
+            "description": "Note content (fact-only, no recommendations)"
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "Evidence references"
+          }
+        }
+      },
+      "description": "Block 4: Notes (evidence-based facts only)"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Block 5: System limitations and disclaimers"
+    }
+  }
+}

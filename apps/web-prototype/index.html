@@ -478,10 +478,89 @@
 
     <script>
         let currentData = null;
+        const API_BASE_URL = 'http://localhost:8001';
+
+        // Intent mapping for each example
+        const EXAMPLE_TO_REQUEST = {
+            'example1_premium': {
+                intent: 'PREMIUM_REFERENCE',
+                insurers: ['SAMSUNG', 'HANWHA', 'MERITZ', 'DB'],
+                products: [
+                    {insurer: 'SAMSUNG', product_name: '삼성화재 무배당 New 원더풀 암보험'},
+                    {insurer: 'HANWHA', product_name: '한화생명 무배당 암보험'},
+                    {insurer: 'MERITZ', product_name: '메리츠화재 무배당 암보험'},
+                    {insurer: 'DB', product_name: 'DB손해보험 무배당 암보험'}
+                ],
+                target_coverages: [],
+                options: {premium_reference_only: true, include_notes: false, include_evidence: false},
+                debug: {force_example: 'example1_premium'}
+            },
+            'example2_coverage_compare': {
+                intent: 'COVERAGE_CONDITION_DIFF',
+                insurers: ['SAMSUNG', 'HANWHA'],
+                products: [
+                    {insurer: 'SAMSUNG', product_name: '삼성화재 무배당 New 원더풀 암보험'},
+                    {insurer: 'HANWHA', product_name: '한화생명 무배당 암보험'}
+                ],
+                target_coverages: [{coverage_code: 'A4210', coverage_name_raw: '암 직접치료 입원일당'}],
+                debug: {force_example: 'example2_coverage_compare'}
+            },
+            'example3_product_summary': {
+                intent: 'PRODUCT_SUMMARY',
+                insurers: ['SAMSUNG', 'HANWHA'],
+                products: [
+                    {insurer: 'SAMSUNG', product_name: '삼성화재 무배당 New 원더풀 암보험'},
+                    {insurer: 'HANWHA', product_name: '한화생명 무배당 암보험'}
+                ],
+                target_coverages: [
+                    {coverage_code: 'A4200_1'},
+                    {coverage_code: 'A4210'},
+                    {coverage_code: 'A5200'},
+                    {coverage_code: 'A5100'},
+                    {coverage_code: 'A6100_1'},
+                    {coverage_code: 'A6300_1'},
+                    {coverage_code: 'A9617_1'},
+                    {coverage_code: 'A9640_1'},
+                    {coverage_code: 'A4102'}
+                ],
+                debug: {force_example: 'example3_product_summary'}
+            },
+            'example4_ox': {
+                intent: 'COVERAGE_AVAILABILITY',
+                insurers: ['SAMSUNG', 'HANWHA'],
+                products: [
+                    {insurer: 'SAMSUNG', product_name: '삼성화재 무배당 New 원더풀 암보험'},
+                    {insurer: 'HANWHA', product_name: '한화생명 무배당 암보험'}
+                ],
+                target_coverages: [
+                    {coverage_name_raw: '제자리암'},
+                    {coverage_name_raw: '경계성종양'}
+                ],
+                debug: {force_example: 'example4_ox'}
+            }
+        };
 
         async function loadExample(exampleName) {
             try {
-                const response = await fetch(`./fixtures/${exampleName}.json`);
+                // Get request for this example
+                const request = EXAMPLE_TO_REQUEST[exampleName];
+                if (!request) {
+                    throw new Error(`Unknown example: ${exampleName}`);
+                }
+
+                // Call API
+                const response = await fetch(`${API_BASE_URL}/compare`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(request)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status} ${response.statusText}`);
+                }
+
                 const data = await response.json();
                 currentData = data;
                 renderResponse(data);
@@ -491,7 +570,7 @@
                 event.target.classList.add('active');
             } catch (error) {
                 console.error('Failed to load example:', error);
-                alert('예제 로딩 실패: ' + error.message);
+                alert('예제 로딩 실패: ' + error.message + '\n\nMock API 서버가 실행 중인지 확인하세요.\n(cd apps/mock-api && uvicorn server:app --port 8001 --reload)');
             }
         }
 
