@@ -1,0 +1,3 @@
+NAME                    STATUS              CONFIG FILES
+inca-rag-final          running(1)          /Users/cheollee/inca-RAG-final/docker-compose.step14.yml
+insurance-ontology-v2   running(2)          /Users/cheollee/insurance-ontology-v2/docker-compose-demo-v2.yml
