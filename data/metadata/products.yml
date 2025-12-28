@@ -1,0 +1,494 @@
+# Products Metadata Baseline
+# Version: 1.0
+# Date: 2025-12-28
+# Purpose: Single source of truth for insurers, products, variants, and documents
+#
+# Rules:
+# - All keys must be globally unique
+# - File paths must exist in repository
+# - Variants describe data-level differences (not code logic)
+# - LOTTE: Male/Female variants across all doc types
+# - DB: Age-based variants ONLY for 가입설계서 (약관/요약서/사업방법서 have no variant)
+
+---
+
+# ============================================================================
+# INSURERS (8)
+# ============================================================================
+insurers:
+  - insurer_key: samsung
+    insurer_name_ko: 삼성생명
+    insurer_name_en: Samsung Life Insurance
+    insurer_type: 생명
+
+  - insurer_key: hyundai
+    insurer_name_ko: 현대해상
+    insurer_name_en: Hyundai Marine & Fire Insurance
+    insurer_type: 손해
+
+  - insurer_key: lotte
+    insurer_name_ko: 롯데손해보험
+    insurer_name_en: Lotte Insurance
+    insurer_type: 손해
+
+  - insurer_key: db
+    insurer_name_ko: DB손해보험
+    insurer_name_en: DB Insurance
+    insurer_type: 손해
+
+  - insurer_key: kb
+    insurer_name_ko: KB손해보험
+    insurer_name_en: KB Insurance
+    insurer_type: 손해
+
+  - insurer_key: meritz
+    insurer_name_ko: 메리츠화재
+    insurer_name_en: Meritz Fire & Marine Insurance
+    insurer_type: 손해
+
+  - insurer_key: hanwha
+    insurer_name_ko: 한화생명
+    insurer_name_en: Hanwha Life Insurance
+    insurer_type: 생명
+
+  - insurer_key: heungkuk
+    insurer_name_ko: 흥국생명
+    insurer_name_en: Heungkuk Life Insurance
+    insurer_type: 생명
+
+# ============================================================================
+# PRODUCTS (8 products, 1 per insurer)
+# ============================================================================
+products:
+  - product_key: samsung_health_v1
+    insurer_key: samsung
+    product_name_raw: 삼성 건강보험
+    product_name_display: 삼성생명 건강보험
+    notes: null
+
+  - product_key: hyundai_health_v1
+    insurer_key: hyundai
+    product_name_raw: 현대 건강보험
+    product_name_display: 현대해상 건강보험
+    notes: null
+
+  - product_key: lotte_health_v1
+    insurer_key: lotte
+    product_name_raw: 롯데 건강보험
+    product_name_display: 롯데손해보험 건강보험
+    notes: Gender-based variants (Male/Female) across all document types
+
+  - product_key: db_health_v1
+    insurer_key: db
+    product_name_raw: DB 건강보험
+    product_name_display: DB손해보험 건강보험
+    notes: Age-based variants ONLY for 가입설계서 (40세이하/41세이상)
+
+  - product_key: kb_health_v1
+    insurer_key: kb
+    product_name_raw: KB 건강보험
+    product_name_display: KB손해보험 건강보험
+    notes: null
+
+  - product_key: meritz_health_v1
+    insurer_key: meritz
+    product_name_raw: 메리츠 건강보험
+    product_name_display: 메리츠화재 건강보험
+    notes: null
+
+  - product_key: hanwha_health_v1
+    insurer_key: hanwha
+    product_name_raw: 한화 건강보험
+    product_name_display: 한화생명 건강보험
+    notes: null
+
+  - product_key: heungkuk_health_v1
+    insurer_key: heungkuk
+    product_name_raw: 흥국 건강보험
+    product_name_display: 흥국생명 건강보험
+    notes: null
+
+# ============================================================================
+# VARIANTS (10 total: LOTTE 2 gender + DB 2 age)
+# ============================================================================
+variants:
+  # LOTTE Gender Variants (applies to ALL doc types)
+  - variant_key: LOTTE_MALE
+    product_key: lotte_health_v1
+    variant_attrs:
+      sex: M
+    variant_display_name: 남
+    applies_to_doc_types:
+      - 약관
+      - 사업방법서
+      - 상품요약서
+      - 가입설계서
+
+  - variant_key: LOTTE_FEMALE
+    product_key: lotte_health_v1
+    variant_attrs:
+      sex: F
+    variant_display_name: 여
+    applies_to_doc_types:
+      - 약관
+      - 사업방법서
+      - 상품요약서
+      - 가입설계서
+
+  # DB Age Variants (applies ONLY to 가입설계서)
+  - variant_key: DB_AGE_U40
+    product_key: db_health_v1
+    variant_attrs:
+      age_band: UNDER_41
+      age_display: 40세이하
+    variant_display_name: 40세이하
+    applies_to_doc_types:
+      - 가입설계서
+
+  - variant_key: DB_AGE_O40
+    product_key: db_health_v1
+    variant_attrs:
+      age_band: OVER_40
+      age_display: 41세이상
+    variant_display_name: 41세이상
+    applies_to_doc_types:
+      - 가입설계서
+
+# ============================================================================
+# DOCUMENTS (42 total)
+# ============================================================================
+# File path convention: data/evidence_text/{insurer}/{doc_type}/{filename}.page.jsonl
+# variant_key: null means document applies to base product (no variant)
+# variant_key: non-null means document is variant-specific
+
+documents:
+  # ------------------------------------------------------------------------
+  # SAMSUNG (5 documents, no variants)
+  # ------------------------------------------------------------------------
+  - document_key: samsung_policy_v1
+    product_key: samsung_health_v1
+    variant_key: null
+    doc_type: 약관
+    file_path: data/evidence_text/samsung/약관/삼성_약관.page.jsonl
+    doc_title_raw: 삼성_약관
+    structure_type: null
+
+  - document_key: samsung_business_v1
+    product_key: samsung_health_v1
+    variant_key: null
+    doc_type: 사업방법서
+    file_path: data/evidence_text/samsung/사업방법서/삼성_사업설명서.page.jsonl
+    doc_title_raw: 삼성_사업설명서
+    structure_type: null
+
+  - document_key: samsung_summary_v1
+    product_key: samsung_health_v1
+    variant_key: null
+    doc_type: 상품요약서
+    file_path: data/evidence_text/samsung/상품요약서/삼성_상품요약서.page.jsonl
+    doc_title_raw: 삼성_상품요약서
+    structure_type: null
+
+  - document_key: samsung_summary_easy_v1
+    product_key: samsung_health_v1
+    variant_key: null
+    doc_type: 상품요약서
+    file_path: data/evidence_text/samsung/상품요약서/삼성_쉬운요약서.page.jsonl
+    doc_title_raw: 삼성_쉬운요약서
+    structure_type: null
+
+  - document_key: samsung_proposal_v1
+    product_key: samsung_health_v1
+    variant_key: null
+    doc_type: 가입설계서
+    file_path: data/evidence_text/samsung/가입설계서/삼성_가입설계서_2511.page.jsonl
+    doc_title_raw: 삼성_가입설계서_2511
+    structure_type: null
+
+  # ------------------------------------------------------------------------
+  # HYUNDAI (4 documents, no variants)
+  # ------------------------------------------------------------------------
+  - document_key: hyundai_policy_v1
+    product_key: hyundai_health_v1
+    variant_key: null
+    doc_type: 약관
+    file_path: data/evidence_text/hyundai/약관/현대_약관.page.jsonl
+    doc_title_raw: 현대_약관
+    structure_type: null
+
+  - document_key: hyundai_business_v1
+    product_key: hyundai_health_v1
+    variant_key: null
+    doc_type: 사업방법서
+    file_path: data/evidence_text/hyundai/사업방법서/현대_사업방법서.page.jsonl
+    doc_title_raw: 현대_사업방법서
+    structure_type: null
+
+  - document_key: hyundai_summary_v1
+    product_key: hyundai_health_v1
+    variant_key: null
+    doc_type: 상품요약서
+    file_path: data/evidence_text/hyundai/상품요약서/현대_상품요약서.page.jsonl
+    doc_title_raw: 현대_상품요약서
+    structure_type: null
+
+  - document_key: hyundai_proposal_v1
+    product_key: hyundai_health_v1
+    variant_key: null
+    doc_type: 가입설계서
+    file_path: data/evidence_text/hyundai/가입설계서/현대_가입설계서_2511.page.jsonl
+    doc_title_raw: 현대_가입설계서_2511
+    structure_type: null
+
+  # ------------------------------------------------------------------------
+  # LOTTE (8 documents, 2 variants × 4 doc types)
+  # ------------------------------------------------------------------------
+  # Male Variant
+  - document_key: lotte_policy_male_v1
+    product_key: lotte_health_v1
+    variant_key: LOTTE_MALE
+    doc_type: 약관
+    file_path: data/evidence_text/lotte/약관/롯데_약관(남).page.jsonl
+    doc_title_raw: 롯데_약관(남)
+    structure_type: null
+
+  - document_key: lotte_business_male_v1
+    product_key: lotte_health_v1
+    variant_key: LOTTE_MALE
+    doc_type: 사업방법서
+    file_path: data/evidence_text/lotte/사업방법서/롯데_사업방법서(남).page.jsonl
+    doc_title_raw: 롯데_사업방법서(남)
+    structure_type: null
+
+  - document_key: lotte_summary_male_v1
+    product_key: lotte_health_v1
+    variant_key: LOTTE_MALE
+    doc_type: 상품요약서
+    file_path: data/evidence_text/lotte/상품요약서/롯데_상품요약서(남).page.jsonl
+    doc_title_raw: 롯데_상품요약서(남)
+    structure_type: null
+
+  - document_key: lotte_proposal_male_v1
+    product_key: lotte_health_v1
+    variant_key: LOTTE_MALE
+    doc_type: 가입설계서
+    file_path: data/evidence_text/lotte/가입설계서/롯데_가입설계서(남)_2511.page.jsonl
+    doc_title_raw: 롯데_가입설계서(남)_2511
+    structure_type: null
+
+  # Female Variant
+  - document_key: lotte_policy_female_v1
+    product_key: lotte_health_v1
+    variant_key: LOTTE_FEMALE
+    doc_type: 약관
+    file_path: data/evidence_text/lotte/약관/롯데_약관(여).page.jsonl
+    doc_title_raw: 롯데_약관(여)
+    structure_type: null
+
+  - document_key: lotte_business_female_v1
+    product_key: lotte_health_v1
+    variant_key: LOTTE_FEMALE
+    doc_type: 사업방법서
+    file_path: data/evidence_text/lotte/사업방법서/롯데_사업방법서(여).page.jsonl
+    doc_title_raw: 롯데_사업방법서(여)
+    structure_type: null
+
+  - document_key: lotte_summary_female_v1
+    product_key: lotte_health_v1
+    variant_key: LOTTE_FEMALE
+    doc_type: 상품요약서
+    file_path: data/evidence_text/lotte/상품요약서/롯데_상품요약서(여).page.jsonl
+    doc_title_raw: 롯데_상품요약서(여)
+    structure_type: null
+
+  - document_key: lotte_proposal_female_v1
+    product_key: lotte_health_v1
+    variant_key: LOTTE_FEMALE
+    doc_type: 가입설계서
+    file_path: data/evidence_text/lotte/가입설계서/롯데_가입설계서(여)_2511.page.jsonl
+    doc_title_raw: 롯데_가입설계서(여)_2511
+    structure_type: null
+
+  # ------------------------------------------------------------------------
+  # DB (6 documents: 3 no-variant + 2 age-variant 가입설계서)
+  # ------------------------------------------------------------------------
+  - document_key: db_policy_v1
+    product_key: db_health_v1
+    variant_key: null
+    doc_type: 약관
+    file_path: data/evidence_text/db/약관/DB_약관.page.jsonl
+    doc_title_raw: DB_약관
+    structure_type: null
+
+  - document_key: db_business_v1
+    product_key: db_health_v1
+    variant_key: null
+    doc_type: 사업방법서
+    file_path: data/evidence_text/db/사업방법서/DB_사업방법서.page.jsonl
+    doc_title_raw: DB_사업방법서
+    structure_type: null
+
+  - document_key: db_summary_v1
+    product_key: db_health_v1
+    variant_key: null
+    doc_type: 상품요약서
+    file_path: data/evidence_text/db/상품요약서/DB_상품요약서.page.jsonl
+    doc_title_raw: DB_상품요약서
+    structure_type: null
+
+  # Age Variants (가입설계서 only)
+  - document_key: db_proposal_u40_v1
+    product_key: db_health_v1
+    variant_key: DB_AGE_U40
+    doc_type: 가입설계서
+    file_path: data/evidence_text/db/가입설계서/DB_가입설계서(40세이하)_2511.page.jsonl
+    doc_title_raw: DB_가입설계서(40세이하)_2511
+    structure_type: null
+
+  - document_key: db_proposal_o40_v1
+    product_key: db_health_v1
+    variant_key: DB_AGE_O40
+    doc_type: 가입설계서
+    file_path: data/evidence_text/db/가입설계서/DB_가입설계서(41세이상)_2511.page.jsonl
+    doc_title_raw: DB_가입설계서(41세이상)_2511
+    structure_type: null
+
+  # ------------------------------------------------------------------------
+  # KB (4 documents, no variants)
+  # ------------------------------------------------------------------------
+  - document_key: kb_policy_v1
+    product_key: kb_health_v1
+    variant_key: null
+    doc_type: 약관
+    file_path: data/evidence_text/kb/약관/KB_약관.page.jsonl
+    doc_title_raw: KB_약관
+    structure_type: null
+
+  - document_key: kb_business_v1
+    product_key: kb_health_v1
+    variant_key: null
+    doc_type: 사업방법서
+    file_path: data/evidence_text/kb/사업방법서/KB_사업방법서.page.jsonl
+    doc_title_raw: KB_사업방법서
+    structure_type: null
+
+  - document_key: kb_summary_v1
+    product_key: kb_health_v1
+    variant_key: null
+    doc_type: 상품요약서
+    file_path: data/evidence_text/kb/상품요약서/KB_상품요약서.page.jsonl
+    doc_title_raw: KB_상품요약서
+    structure_type: null
+
+  - document_key: kb_proposal_v1
+    product_key: kb_health_v1
+    variant_key: null
+    doc_type: 가입설계서
+    file_path: data/evidence_text/kb/가입설계서/KB_가입설계서.page.jsonl
+    doc_title_raw: KB_가입설계서
+    structure_type: null
+
+  # ------------------------------------------------------------------------
+  # MERITZ (4 documents, no variants)
+  # ------------------------------------------------------------------------
+  - document_key: meritz_policy_v1
+    product_key: meritz_health_v1
+    variant_key: null
+    doc_type: 약관
+    file_path: data/evidence_text/meritz/약관/메리츠_약관.page.jsonl
+    doc_title_raw: 메리츠_약관
+    structure_type: null
+
+  - document_key: meritz_business_v1
+    product_key: meritz_health_v1
+    variant_key: null
+    doc_type: 사업방법서
+    file_path: data/evidence_text/meritz/사업방법서/메리츠_사업설명서.page.jsonl
+    doc_title_raw: 메리츠_사업설명서
+    structure_type: null
+
+  - document_key: meritz_summary_v1
+    product_key: meritz_health_v1
+    variant_key: null
+    doc_type: 상품요약서
+    file_path: data/evidence_text/meritz/상품요약서/메리츠_상품요약서.page.jsonl
+    doc_title_raw: 메리츠_상품요약서
+    structure_type: null
+
+  - document_key: meritz_proposal_v1
+    product_key: meritz_health_v1
+    variant_key: null
+    doc_type: 가입설계서
+    file_path: data/evidence_text/meritz/가입설계서/메리츠_가입설계서_2511.page.jsonl
+    doc_title_raw: 메리츠_가입설계서_2511
+    structure_type: null
+
+  # ------------------------------------------------------------------------
+  # HANWHA (4 documents, no variants)
+  # ------------------------------------------------------------------------
+  - document_key: hanwha_policy_v1
+    product_key: hanwha_health_v1
+    variant_key: null
+    doc_type: 약관
+    file_path: data/evidence_text/hanwha/약관/한화_약관.page.jsonl
+    doc_title_raw: 한화_약관
+    structure_type: null
+
+  - document_key: hanwha_business_v1
+    product_key: hanwha_health_v1
+    variant_key: null
+    doc_type: 사업방법서
+    file_path: data/evidence_text/hanwha/사업방법서/한화_사업방법서.page.jsonl
+    doc_title_raw: 한화_사업방법서
+    structure_type: null
+
+  - document_key: hanwha_summary_v1
+    product_key: hanwha_health_v1
+    variant_key: null
+    doc_type: 상품요약서
+    file_path: data/evidence_text/hanwha/상품요약서/한화_상품요약서.page.jsonl
+    doc_title_raw: 한화_상품요약서
+    structure_type: null
+
+  - document_key: hanwha_proposal_v1
+    product_key: hanwha_health_v1
+    variant_key: null
+    doc_type: 가입설계서
+    file_path: data/evidence_text/hanwha/가입설계서/한화_가입설계서_2511.page.jsonl
+    doc_title_raw: 한화_가입설계서_2511
+    structure_type: null
+
+  # ------------------------------------------------------------------------
+  # HEUNGKUK (4 documents, no variants)
+  # ------------------------------------------------------------------------
+  - document_key: heungkuk_policy_v1
+    product_key: heungkuk_health_v1
+    variant_key: null
+    doc_type: 약관
+    file_path: data/evidence_text/heungkuk/약관/흥국_약관.page.jsonl
+    doc_title_raw: 흥국_약관
+    structure_type: null
+
+  - document_key: heungkuk_business_v1
+    product_key: heungkuk_health_v1
+    variant_key: null
+    doc_type: 사업방법서
+    file_path: data/evidence_text/heungkuk/사업방법서/흥국_사업방법서.page.jsonl
+    doc_title_raw: 흥국_사업방법서
+    structure_type: null
+
+  - document_key: heungkuk_summary_v1
+    product_key: heungkuk_health_v1
+    variant_key: null
+    doc_type: 상품요약서
+    file_path: data/evidence_text/heungkuk/상품요약서/흥국_상품요약서.page.jsonl
+    doc_title_raw: 흥국_상품요약서
+    structure_type: null
+
+  - document_key: heungkuk_proposal_v1
+    product_key: heungkuk_health_v1
+    variant_key: null
+    doc_type: 가입설계서
+    file_path: data/evidence_text/heungkuk/가입설계서/흥국_가입설계서_2511.page.jsonl
+    doc_title_raw: 흥국_가입설계서_2511
+    structure_type: null
