@@ -381,47 +381,37 @@ for insurer in insurers:
 
 ### 6.3 Variant Determination Strategy
 
-**LOTTE (Gender Variants)**:
-```python
-def determine_variant_lotte(coverage_name_raw, source_page, metadata):
-    # Strategy 1: Filename contains "(남)" or "(여)"
-    if "(남)" in metadata.get('filename', ''):
-        return 'lotte_male'
-    elif "(여)" in metadata.get('filename', ''):
-        return 'lotte_female'
+**Principle**: Variant assignment MUST come from **data sources** (metadata.json, scope CSV metadata), NOT from hardcoded logic.
 
-    # Strategy 2: Source page range
-    # Male: pages 2-5, Female: pages 6-9 (hypothetical)
-    if 2 <= source_page <= 5:
-        return 'lotte_male'
-    elif 6 <= source_page <= 9:
-        return 'lotte_female'
+**Data-Driven Approach**:
 
-    raise ValueError(f"Cannot determine variant for LOTTE: {coverage_name_raw}")
-```
+1. **Pre-populate variant_id in scope CSV** (STEP 1-7 enhancement):
+   - Scope CSV must include `variant_id` column
+   - Populated during STEP 2 extraction (from document metadata or manual tagging)
+   - Example: `samsung_scope_mapped.csv` → `variant_id` column = 'lotte_male', 'lotte_female', 'db_age_20_39', etc.
 
-**DB (Age Variants)**:
-```python
-def determine_variant_db(coverage_name_raw, source_page, metadata):
-    # Strategy: Source page range
-    # Age 20-39: pages 3-5
-    # Age 40-59: pages 6-8
-    # Age 60-79: pages 9-11
-    if 3 <= source_page <= 5:
-        return 'db_age_20_39'
-    elif 6 <= source_page <= 8:
-        return 'db_age_40_59'
-    elif 9 <= source_page <= 11:
-        return 'db_age_60_79'
+2. **Load variant_id directly from CSV**:
+   ```python
+   # Pseudocode - NO insurer-specific logic
+   with open(scope_file, 'r') as f:
+       reader = csv.DictReader(f)
+       for row in reader:
+           variant_id = row.get('variant_id')  # Directly from CSV (data-only)
+   ```
 
-    raise ValueError(f"Cannot determine variant for DB: {coverage_name_raw}")
-```
+3. **Fallback for missing variant_id**:
+   - If `variant_id` is NULL in CSV and product has NO variants → `variant_id = NULL`
+   - If `variant_id` is NULL in CSV and product HAS variants → **ERROR** (manual fix required)
 
-**KB/Meritz (No Variants)**:
-```python
-def determine_variant_kb_meritz(coverage_name_raw, source_page, metadata):
-    return None  # No variants
-```
+**Prohibited Patterns**:
+- ❌ Filename-based inference (`if "(남)" in filename`)
+- ❌ Page-range-based inference (`if 3 <= source_page <= 5`)
+- ❌ Insurer-specific if-else branches (`if insurer == 'lotte'`)
+
+**Correct Pattern**:
+- ✅ Read `variant_id` from CSV metadata
+- ✅ Validate against `product_variant` table (FK constraint)
+- ✅ Error if variant_id missing for multi-variant product
 
 ### 6.4 Idempotency
 
