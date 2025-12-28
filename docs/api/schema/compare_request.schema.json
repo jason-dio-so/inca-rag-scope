@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CompareRequest",
+  "description": "Request schema for insurance product comparison API",
+  "type": "object",
+  "required": ["intent", "insurers", "products"],
+  "properties": {
+    "intent": {
+      "type": "string",
+      "enum": [
+        "PRODUCT_SUMMARY",
+        "COVERAGE_CONDITION_DIFF",
+        "COVERAGE_AVAILABILITY",
+        "PREMIUM_REFERENCE"
+      ],
+      "description": "Intent classification for routing"
+    },
+    "insurers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z_]+$"
+      },
+      "minItems": 1,
+      "description": "List of insurer codes (uppercase)"
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["insurer", "product_name"],
+        "properties": {
+          "insurer": {
+            "type": "string",
+            "description": "Insurer code matching insurers array"
+          },
+          "product_name": {
+            "type": "string",
+            "description": "Product name in Korean (raw)"
+          }
+        }
+      },
+      "minItems": 1,
+      "description": "Product information for each insurer"
+    },
+    "target_coverages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "coverage_code": {
+            "type": "string",
+            "pattern": "^A[0-9]{4}(_[0-9]+)?$",
+            "description": "Canonical coverage code (신정원 통일코드)"
+          },
+          "coverage_name_raw": {
+            "type": "string",
+            "description": "Coverage name in Korean (raw)"
+          }
+        },
+        "anyOf": [
+          {"required": ["coverage_code"]},
+          {"required": ["coverage_name_raw"]}
+        ]
+      },
+      "description": "Target coverages for comparison"
+    },
+    "options": {
+      "type": "object",
+      "properties": {
+        "include_notes": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include notes section in response"
+        },
+        "include_evidence": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include evidence in comparison values"
+        },
+        "premium_reference_only": {
+          "type": "boolean",
+          "default": false,
+          "description": "Premium comparison only (example 1)"
+        }
+      },
+      "description": "Optional request parameters"
+    },
+    "debug": {
+      "type": "object",
+      "properties": {
+        "force_example": {
+          "type": "string",
+          "enum": ["example1", "example2", "example3", "example4"],
+          "description": "Force specific fixture for testing (mock API only)"
+        },
+        "compiler_version": {
+          "type": "string",
+          "description": "Request compiler version"
+        }
+      },
+      "description": "Debug options"
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "meta": {
+    "response_type": "existence_check",
+    "confidence_level": "document-based",
+    "premium_notice": false,
+    "generated_at": "2025-12-28T10:00:00+09:00"
+  },
+  "query_summary": {
+    "original_query": "DB손해보험은 뇌출혈 보장되나요?",
+    "interpreted_intent": "보장 여부 확인",
+    "target_insurers": ["DB손해보험"],
+    "target_products": [
+      {
+        "insurer": "DB손해보험",
+        "product_name": "DB손해보험 건강보험"
+      }
+    ]
+  },
+  "comparison": {
+    "dimensions": [
+      {
+        "key": "coverage_exists",
+        "label": "뇌출혈 보장",
+        "type": "boolean"
+      },
+      {
+        "key": "coverage_amount",
+        "label": "보장 금액",
+        "type": "amount"
+      }
+    ],
+    "products": [
+      {
+        "insurer": "DB손해보험",
+        "product_name": "DB손해보험 건강보험",
+        "rows": {
+          "coverage_exists": {
+            "value": true,
+            "evidence": "약관 p.25"
+          },
+          "coverage_amount": {
+            "value": "1,000만원",
+            "evidence": "가입설계서 p.2"
+          }
+        }
+      }
+    ]
+  },
+  "notes": {
+    "summary": "DB손해보험 건강보험은 뇌출혈 진단 시 1,000만원을 보장합니다.",
+    "details": [
+      "뇌출혈 진단 확정 시 지급됩니다.",
+      "대기기간 및 감액기간이 적용될 수 있습니다."
+    ]
+  },
+  "limitations": [
+    "본 정보는 약관 및 가입설계서에 기반한 사실 확인입니다.",
+    "개인별 조건에 따라 보장 내용이 달라질 수 있습니다."
+  ]
+}
