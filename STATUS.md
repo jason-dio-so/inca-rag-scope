@@ -1604,3 +1604,40 @@ pytest tests/test_multi_insurer_a4200_1.py -v
 ## 결론
 
 **FAIL**: Excel canonical update NOT reflected in mapping results.
+
+---
+
+## STEP NEXT-8 완료 (2025-12-28)
+
+**목표**: 고객 예제 → API 요청 매핑 명세 고정
+
+**산출물**:
+- `docs/api/STEP_NEXT_8_EXAMPLE_TO_API_MAPPING.md` - 예제별 API 요청 매핑 명세서 (FINAL)
+
+**완료 내용**:
+- 예제 1~4 각각에 대해 "입력 → API Request(JSON) → View Model" 경로 고정
+- 표준 요청 스키마 정의 (CompareRequest, PremiumRequest)
+- 각 예제별 필수/선택 파라미터 및 선택 유도 규칙 명시
+- intent 분류 규칙 4개로 제한 (PRODUCT_SUMMARY, COVERAGE_CONDITION_DIFF, COVERAGE_AVAILABILITY, PREMIUM_REFERENCE)
+- 파라미터 확보 규칙 (LLM 선택 유도 1회 제한, 실패 처리 규칙 포함)
+- 로깅/재현성 요구사항 정의 (canonical JSON, compiler version hash)
+- 금지 사항 및 실패 처리 규칙 명시
+
+**핵심 원칙**:
+- 신정원 통일코드(coverage_code)는 절대 기준(canonical)
+- LLM은 질의 정제/선택 유도만 (실행 쿼리는 rule-based compiler가 생성)
+- Evidence 없는 값은 출력 금지
+- 추천/판단/해석 금지
+- 회사명 + 상품명 병기 필수
+- 예제 1 보험료는 "참고용" (premium_notice 강제)
+- 새로운 응답 유형/매핑 타입 추가 금지
+
+**DoD 달성**:
+- ✅ 예제 1~4 각각에 대해 "입력 → API Request(JSON) → View Model" 경로가 문서로 고정됨
+- ✅ 각 예제에 대해 필수/선택 파라미터와 선택 유도 규칙이 명확함
+- ✅ intent 분류 규칙이 4개로만 제한됨
+- ✅ 모든 요청이 재현 가능한 로그 스키마를 가짐
+- ✅ 금지 사항/실패 처리 규칙이 포함됨
+- ✅ STATUS.md에 STEP NEXT-8 완료 요약 반영됨
+
+---
