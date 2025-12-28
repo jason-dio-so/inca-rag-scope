@@ -131,6 +131,31 @@ class Step9Loader:
         }
         return mapping.get(insurer_name_kr, insurer_name_kr.lower())
 
+    def _normalize_text(self, text: str) -> str:
+        """Normalize text for instance_key/evidence_key (trim + collapse spaces only)"""
+        import re
+        if not text:
+            return ""
+        # Trim and collapse multiple spaces to single space
+        normalized = re.sub(r'\s+', ' ', text.strip())
+        return normalized
+
+    def _build_instance_key(self, insurer_key: str, product_key: str,
+                           variant_key: str, coverage_code: str,
+                           coverage_name_raw: str) -> str:
+        """
+        Build deterministic instance_key for coverage_instance.
+        Format: {insurer_key}|{product_key}|{variant_key_or_}|{coverage_code_or_}|{coverage_name_raw}
+        - variant_key: "_" if NULL
+        - coverage_code: "_" if NULL (for unmatched)
+        - coverage_name_raw: normalized text (trim + collapse spaces)
+        """
+        variant_part = variant_key if variant_key else "_"
+        code_part = coverage_code if coverage_code else "_"
+        name_part = self._normalize_text(coverage_name_raw)
+
+        return f"{insurer_key}|{product_key}|{variant_part}|{code_part}|{name_part}"
+
     def _derive_product_key(self, product_name_raw: str) -> str:
         """Derive product_key from product_name_raw"""
         # Extract insurer prefix
@@ -257,7 +282,7 @@ class Step9Loader:
         """
         Load coverage_instance from scope_mapped.csv
         Schema: (instance_id UUID PK, insurer_id, product_id, variant_id, coverage_code,
-                 coverage_name_raw, source_page, mapping_status, match_type, created_at)
+                 coverage_name_raw, source_page, mapping_status, match_type, instance_key, created_at)
         """
         logger.info(f"Loading coverage_instance for {insurer_key} from {scope_mapped_path}...")
 
@@ -276,20 +301,20 @@ class Step9Loader:
 
         logger.info(f"  Read {len(rows)} rows from {scope_mapped_path}")
 
-        # UPSERT coverage_instance (idempotent)
-        # Unique constraint: (product_id, variant_id, coverage_code)
-        # For unmatched (coverage_code=NULL), we need different conflict strategy
+        # UPSERT coverage_instance (idempotent via instance_key)
+        # Natural key: instance_key (deterministic, loader-generated)
         upsert_sql = """
             INSERT INTO coverage_instance
             (insurer_id, product_id, variant_id, coverage_code,
-             coverage_name_raw, source_page, mapping_status, match_type, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (product_id, variant_id, coverage_code)
+             coverage_name_raw, source_page, mapping_status, match_type, instance_key, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (instance_key)
             DO UPDATE SET
                 coverage_name_raw = EXCLUDED.coverage_name_raw,
                 source_page = EXCLUDED.source_page,
                 mapping_status = EXCLUDED.mapping_status,
-                match_type = EXCLUDED.match_type
+                match_type = EXCLUDED.match_type,
+                updated_at = CURRENT_TIMESTAMP
         """
 
         inserted = 0
@@ -331,6 +356,7 @@ class Step9Loader:
 
             # variant_id: set to NULL for now (no variant info in scope_mapped.csv)
             variant_id = None
+            variant_key = None
 
             # source_page: convert to int or NULL
             source_page_int = None
@@ -339,6 +365,11 @@ class Step9Loader:
                     source_page_int = int(source_page)
                 except ValueError:
                     pass
+
+            # Build instance_key (natural key for idempotent upsert)
+            instance_key = self._build_instance_key(
+                insurer_key, product_key, variant_key, coverage_code, coverage_name_raw
+            )
 
             self.cursor.execute(
                 upsert_sql,
@@ -351,6 +382,7 @@ class Step9Loader:
                     source_page_int,
                     mapping_status,
                     match_type if match_type else None,
+                    instance_key,
                     datetime.now()
                 )
             )
@@ -366,7 +398,7 @@ class Step9Loader:
         """
         Load evidence_ref from evidence_pack.jsonl
         Schema: (evidence_id UUID PK, coverage_instance_id, document_id, doc_type,
-                 page INT, snippet TEXT, match_keyword, rank INT 1-3, created_at)
+                 page INT, snippet TEXT, match_keyword, rank INT 1-3, evidence_key, created_at)
         """
         logger.info(f"Loading evidence_ref for {insurer_key} from {pack_path}...")
 
@@ -379,15 +411,18 @@ class Step9Loader:
 
         logger.info(f"  Read {len(lines)} evidence pack entries")
 
-        # UPSERT evidence_ref (idempotent by coverage_instance_id + rank)
-        # No unique constraint on (coverage_instance_id, rank), so use simple INSERT
-        # Future: add unique constraint if needed
-        insert_sql = """
+        # UPSERT evidence_ref (idempotent via evidence_key)
+        # Natural key: evidence_key (deterministic, loader-generated)
+        upsert_sql = """
             INSERT INTO evidence_ref
             (coverage_instance_id, document_id, doc_type, page,
-             snippet, match_keyword, rank, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT DO NOTHING
+             snippet, match_keyword, rank, evidence_key, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (evidence_key)
+            DO UPDATE SET
+                snippet = EXCLUDED.snippet,
+                match_keyword = EXCLUDED.match_keyword,
+                updated_at = CURRENT_TIMESTAMP
         """
 
         inserted = 0
@@ -399,10 +434,10 @@ class Step9Loader:
             evidences = entry.get('evidences', [])
             coverage_name_raw = entry.get('coverage_name_raw', '')
 
-            # Find coverage_instance_id by matching coverage_name_raw + insurer
+            # Find coverage_instance_id AND instance_key by matching coverage_name_raw + insurer
             self.cursor.execute(
                 """
-                SELECT ci.instance_id
+                SELECT ci.instance_id, ci.instance_key
                 FROM coverage_instance ci
                 JOIN insurer i ON ci.insurer_id = i.insurer_id
                 WHERE i.insurer_name_kr = %s AND ci.coverage_name_raw = %s
@@ -417,6 +452,7 @@ class Step9Loader:
                 continue
 
             coverage_instance_id = result['instance_id']
+            instance_key = result['instance_key']
 
             # Rank evidences by doc_type priority (가입설계서 > 약관 > 사업방법서 > 상품요약서)
             doc_type_priority = {'가입설계서': 1, '약관': 2, '사업방법서': 3, '상품요약서': 3}
@@ -457,8 +493,12 @@ class Step9Loader:
                 # Assign rank (1-3)
                 rank = idx + 1
 
+                # Build evidence_key (natural key for idempotent upsert)
+                # Format: {instance_key}|{file_path}|{doc_type}|{page}|{rank}
+                evidence_key = f"{instance_key}|{file_path_normalized}|{doc_type}|{page}|{rank}"
+
                 self.cursor.execute(
-                    insert_sql,
+                    upsert_sql,
                     (
                         coverage_instance_id,
                         document_id,
@@ -467,13 +507,14 @@ class Step9Loader:
                         snippet[:500],  # Truncate snippet if needed
                         match_keyword,
                         rank,
+                        evidence_key,
                         datetime.now()
                     )
                 )
                 inserted += 1
 
         self.conn.commit()
-        logger.info(f"  Inserted {inserted} evidence refs (skipped {skipped}) for {insurer_key}")
+        logger.info(f"✅ Upserted {inserted} evidence refs (skipped {skipped}) for {insurer_key}")
 
     def load_amount_fact(self, insurer_key: str, cards_path: Path):
         """
@@ -596,7 +637,8 @@ class Step9Loader:
                     status = EXCLUDED.status,
                     value_text = EXCLUDED.value_text,
                     source_doc_type = EXCLUDED.source_doc_type,
-                    source_priority = EXCLUDED.source_priority
+                    source_priority = EXCLUDED.source_priority,
+                    updated_at = CURRENT_TIMESTAMP
             """
 
             self.cursor.execute(
