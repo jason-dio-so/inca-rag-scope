@@ -1,0 +1,11 @@
+insurance-ontology-v2-backend-demo-v2:latest e7125894efa9
+insurance-ontology-v2-frontend-demo-v2:latest 5980be33bb01
+inca-rag-final-api:latest d791e37ca677
+inca-rag-api:latest 5a68edcac64e
+inca-rag-web:latest 3e2def9ba935
+nginx:alpine 8491795299c8
+postgres:15-alpine b3968e348b48
+postgres:17-alpine ff4ccc02b97e
+postgres:16 d4c3314b2dd7
+pgvector/pgvector:pg16 0a07c4114ba6
+neo4j:5.12 211c4afab9a7

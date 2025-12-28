@@ -1,0 +1,12 @@
+IMAGE                                           ID             DISK USAGE   CONTENT SIZE   EXTRA
+inca-rag-api:latest                             5a68edcac64e        833MB          203MB        
+inca-rag-final-api:latest                       d791e37ca677        345MB         76.4MB   U    
+inca-rag-web:latest                             3e2def9ba935        318MB         80.1MB        
+insurance-ontology-v2-backend-demo-v2:latest    e7125894efa9       4.47GB         1.51GB   U    
+insurance-ontology-v2-frontend-demo-v2:latest   5980be33bb01        525MB          112MB   U    
+neo4j:5.12                                      211c4afab9a7        794MB          290MB   U    
+nginx:alpine                                    8491795299c8       81.9MB         23.9MB        
+pgvector/pgvector:pg16                          0a07c4114ba6        745MB          182MB   U    
+postgres:15-alpine                              b3968e348b48        386MB          108MB        
+postgres:16                                     d4c3314b2dd7        663MB          165MB        
+postgres:17-alpine                              ff4ccc02b97e        393MB          110MB   U    
