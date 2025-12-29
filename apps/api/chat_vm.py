@@ -26,17 +26,24 @@ from apps.api.dto import AmountAuditDTO
 
 
 # ============================================================================
-# Section Types (Union Discriminator)
+# Section Types (Union Discriminator) - MINIMIZED TO 5 CORE TYPES
 # ============================================================================
 
 SectionKind = Literal[
-    "table",
-    "explanation",
-    "common_notes",
-    "notices",
-    "evidence",
-    "disabled_notice"
+    "summary",              # Summary bullets (always first)
+    "comparison_table",     # Comparison table (all table types unified)
+    "insurer_explanations", # Insurer-by-insurer parallel explanations
+    "common_notes",         # Common notes/notices (unified)
+    "evidence_accordion"    # Evidence (collapsible accordion)
 ]
+
+# Legacy mapping (backward compat - to be removed)
+_LEGACY_SECTION_KINDS = {
+    "table": "comparison_table",
+    "explanation": "insurer_explanations",
+    "notices": "common_notes",
+    "evidence": "evidence_accordion"
+}
 
 
 # ============================================================================
@@ -68,18 +75,25 @@ class TableRow(BaseModel):
     is_header: bool = False
 
 
-class TableSection(BaseModel):
+class ComparisonTableSection(BaseModel):
     """
-    Table section for comparison data
+    Comparison table section (UNIFIED)
+
+    Replaces: TableSection (all table_kind variants)
 
     PRESENTATION RULES:
     - Headers are bolded
     - Cell styling is based on meta.status
     - NO color-based superiority (금지: 빨강=좋음, 파랑=나쁨)
     - NO sorting by amount
+
+    USAGE:
+    - Example 2: Coverage detail (보장개시/면책/감액/보장한도)
+    - Example 3: Integrated comparison (담보 × 보험사)
+    - Example 4: Eligibility matrix (하위개념 × 보험사, O/X)
     """
-    kind: Literal["table"] = "table"
-    table_kind: TableKind
+    kind: Literal["comparison_table"] = "comparison_table"
+    table_kind: TableKind  # For semantic context (not for rendering)
     title: Optional[str] = None
     columns: List[str]  # Column headers
     rows: List[TableRow]
@@ -95,16 +109,20 @@ class InsurerExplanation(BaseModel):
     text: str  # From ExplanationTemplateRegistry (NO forbidden words)
 
 
-class ExplanationSection(BaseModel):
+class InsurerExplanationsSection(BaseModel):
     """
-    Explanation section (parallel, fact-only)
+    Insurer explanations section (RENAMED for clarity)
+
+    Replaces: ExplanationSection
 
     RULES:
-    - Each insurer explanation is INDEPENDENT
+    - Each insurer explanation is INDEPENDENT (parallel blocks)
     - NO comparative sentences (e.g., "A는 B보다")
-    - NO forbidden words (더/보다/유리/불리/높다/낮다)
+    - NO forbidden words (validated by policy module)
+
+    FRONTEND COMPONENT: InsurerExplanationBlocks
     """
-    kind: Literal["explanation"] = "explanation"
+    kind: Literal["insurer_explanations"] = "insurer_explanations"
     title: Optional[str] = None
     explanations: List[InsurerExplanation]
 
@@ -115,35 +133,23 @@ class ExplanationSection(BaseModel):
 
 class CommonNotesSection(BaseModel):
     """
-    Common notes section (fact-only, NO comparisons)
+    Common notes section (UNIFIED with notices)
 
-    USAGE: 예시3 "공통사항" (모든 보험사 공통 특징)
+    Replaces: CommonNotesSection + NoticesSection
+
+    USAGE:
+    - 공통사항 (모든 보험사 공통 특징)
+    - 유의사항 (근거 기반 caveats)
+
     RULES:
     - Bullet list format
-    - NO comparisons (e.g., "모든 보험사가 동일")
-    - Factual observations only
+    - NO comparisons (e.g., "A가 B보다 우수")
+    - Factual observations only (validated by policy module)
+
+    FRONTEND COMPONENT: CommonNotes
     """
     kind: Literal["common_notes"] = "common_notes"
-    title: str = "공통사항"
-    bullets: List[str]
-
-
-# ============================================================================
-# Notices Section (예시3: 유의사항)
-# ============================================================================
-
-class NoticesSection(BaseModel):
-    """
-    Notices section (fact-based caveats)
-
-    USAGE: 예시3 "유의사항" (근거 기반 seeing)
-    RULES:
-    - Bullet list format
-    - Based on evidence (NOT inference)
-    - NO recommendations (e.g., "선택 시 고려")
-    """
-    kind: Literal["notices"] = "notices"
-    title: str = "유의사항"
+    title: str = "공통사항 및 유의사항"  # Unified title
     bullets: List[str]
 
 
@@ -161,53 +167,37 @@ class EvidenceItem(BaseModel):
     snippet: Optional[str] = None  # Max 400 chars
 
 
-class EvidenceSection(BaseModel):
+class EvidenceAccordionSection(BaseModel):
     """
-    Evidence section (collapsible)
+    Evidence accordion section (RENAMED for UI clarity)
+
+    Replaces: EvidenceSection
 
     PRESENTATION:
-    - Collapsed by default
+    - Accordion/collapsible (collapsed by default)
     - Expand on click
     - Grouped by insurer
+
+    FRONTEND COMPONENT: EvidenceAccordion
     """
-    kind: Literal["evidence"] = "evidence"
+    kind: Literal["evidence_accordion"] = "evidence_accordion"
     title: str = "근거 자료"
     items: List[EvidenceItem]
 
 
 # ============================================================================
-# Disabled Notice Section (예시1: 보험료 비교 불가)
-# ============================================================================
-
-class DisabledNoticeSection(BaseModel):
-    """
-    Disabled notice section
-
-    USAGE: 예시1 "보험료 비교" 요청 시 안내
-    RULES:
-    - NO estimation (추정 금지)
-    - NO calculation (계산 금지)
-    - Clear reason for disabled state
-    """
-    kind: Literal["disabled_notice"] = "disabled_notice"
-    title: str
-    message: str
-    reason: str  # e.g., "보험료 데이터 소스 미연동"
-    suggested_action: Optional[str] = None
-
-
-# ============================================================================
-# Section Union Type
+# Section Union Type (5 CORE TYPES ONLY)
 # ============================================================================
 
 Section = (
-    TableSection |
-    ExplanationSection |
+    ComparisonTableSection |
+    InsurerExplanationsSection |
     CommonNotesSection |
-    NoticesSection |
-    EvidenceSection |
-    DisabledNoticeSection
+    EvidenceAccordionSection
 )
+
+# Note: summary is part of AssistantMessageVM.summary_bullets (not a section)
+# Note: DisabledNoticeSection removed (use CommonNotesSection with appropriate bullets)
 
 
 # ============================================================================
@@ -258,30 +248,16 @@ class AssistantMessageVM(BaseModel):
     @classmethod
     def validate_no_forbidden_words_in_summary(cls, v: List[str]) -> List[str]:
         """
-        Enforce forbidden word policy in summary bullets
+        Enforce forbidden language policy in summary bullets
 
-        ALLOWED: "비교합니다", "확인합니다" (factual statements)
-        FORBIDDEN: "A가 B보다", "더 높다", "유리하다" (evaluative comparisons)
+        DELEGATES to: apps.api.policy.forbidden_language (SINGLE SOURCE)
         """
-        # Strict forbidden patterns (evaluative/comparative language)
-        FORBIDDEN_PATTERNS = [
-            r'(?<!을\s)(?<!를\s)더(?!\s*확인)',  # "더" (but allow "더 확인")
-            r'보다(?!\s*자세)',  # "보다" (but allow "보다 자세")
-            '반면', '그러나', '하지만',
-            '유리', '불리', '높다', '낮다', '많다', '적다',
-            r'차이(?!를\\s*확인)',  # "차이" (but allow "차이를 확인")
-            '우수', '열등', '좋', '나쁜',
-            '가장', '최고', '최저', '평균', '합계',
-            '추천', '제안', '권장', '선택', '판단'
-        ]
+        from apps.api.policy.forbidden_language import validate_text_list
 
-        import re
-        for bullet in v:
-            for pattern in FORBIDDEN_PATTERNS:
-                if re.search(pattern, bullet):
-                    raise ValueError(
-                        f"FORBIDDEN word in summary: pattern '{pattern}' matches in '{bullet}'"
-                    )
+        try:
+            validate_text_list(v)
+        except ValueError as e:
+            raise ValueError(f"Forbidden language in summary_bullets: {e}")
 
         return v
 
@@ -294,16 +270,22 @@ class ChatRequest(BaseModel):
     """
     Chat request from frontend
 
-    FLOW:
-    1. User input (natural language or FAQ template)
-    2. Intent router → determine kind (EX2/EX3/EX4/EX1_DISABLED)
+    FLOW (Production):
+    1. Frontend specifies `kind` (from FAQ button click) → 100% deterministic
+    2. If `kind` is None, fallback to intent router (keyword-based, lower accuracy)
     3. Slot validator → check required fields
     4. Compiler → generate CompareRequest
     5. Handler → execute query + build VM
+
+    CRITICAL: For production UI, always set `kind` from FAQ template selection.
     """
     request_id: uuid.UUID = Field(default_factory=uuid.uuid4)
-    message: str  # User input text
-    faq_template_id: Optional[str] = None  # If clicked from FAQ
+    message: str  # User input text (for display/logging)
+
+    # PRODUCTION: Set this from FAQ button click (deterministic)
+    kind: Optional[MessageKind] = None  # If set, skip intent router
+
+    faq_template_id: Optional[str] = None  # Legacy (use `kind` instead)
 
     # Optional slots (filled by user or FAQ template)
     coverage_names: Optional[List[str]] = None

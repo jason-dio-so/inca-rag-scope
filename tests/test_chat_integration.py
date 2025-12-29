@@ -30,6 +30,22 @@ from apps.api.chat_handlers import HandlerRegistry
 # Test: Intent Detection
 # ============================================================================
 
+def test_intent_routing_with_explicit_kind():
+    """Test intent routing with explicit kind (PRODUCTION flow)"""
+
+    request = ChatRequest(
+        message="암진단비 비교해주세요",
+        kind="EX2_DETAIL",  # Explicit kind (from FAQ button)
+        coverage_names=["암진단비"],
+        insurers=["삼성화재", "메리츠화재"]
+    )
+
+    # Router should return explicit kind (skip pattern matching)
+    routed_kind = IntentRouter.route(request)
+
+    assert routed_kind == "EX2_DETAIL"  # 100% deterministic
+
+
 def test_intent_detection_from_faq_template():
     """Test intent detection from FAQ template"""
 
@@ -154,17 +170,17 @@ def test_example2_handler_execution():
     assert len(vm.sections) >= 2  # At least table + explanation
 
     # Verify table section
-    table_sections = [s for s in vm.sections if s.kind == "table"]
+    table_sections = [s for s in vm.sections if s.kind == "comparison_table"]
     assert len(table_sections) == 1
     assert table_sections[0].table_kind == "COVERAGE_DETAIL"
 
     # Verify explanation section
-    explanation_sections = [s for s in vm.sections if s.kind == "explanation"]
+    explanation_sections = [s for s in vm.sections if s.kind == "insurer_explanations"]
     assert len(explanation_sections) == 1
     assert len(explanation_sections[0].explanations) == 2  # 2 insurers
 
     # Verify evidence section
-    evidence_sections = [s for s in vm.sections if s.kind == "evidence"]
+    evidence_sections = [s for s in vm.sections if s.kind == "evidence_accordion"]
     assert len(evidence_sections) == 1
 
 
@@ -196,18 +212,13 @@ def test_example3_handler_execution():
     assert vm.kind == "EX3_INTEGRATED"
     assert "통합" in vm.title
 
-    # Verify sections (table + explanation + common_notes + notices + evidence)
-    assert len(vm.sections) == 5
+    # Verify sections (table + explanation + common_notes + evidence) - UNIFIED to 4
+    assert len(vm.sections) == 4
 
-    # Verify common notes section
+    # Verify common notes section (now unified with notices)
     common_notes = [s for s in vm.sections if s.kind == "common_notes"]
     assert len(common_notes) == 1
-    assert len(common_notes[0].bullets) > 0
-
-    # Verify notices section
-    notices = [s for s in vm.sections if s.kind == "notices"]
-    assert len(notices) == 1
-    assert len(notices[0].bullets) > 0
+    assert len(common_notes[0].bullets) >= 2  # At least 2 bullets (common + notices)
 
 
 # ============================================================================
@@ -240,7 +251,7 @@ def test_example4_handler_execution():
     assert "보장" in vm.title
 
     # Verify table section
-    table_sections = [s for s in vm.sections if s.kind == "table"]
+    table_sections = [s for s in vm.sections if s.kind == "comparison_table"]
     assert len(table_sections) == 1
     assert table_sections[0].table_kind == "ELIGIBILITY_MATRIX"
 
@@ -269,11 +280,11 @@ def test_example1_disabled_handler():
     assert vm.kind == "EX1_PREMIUM_DISABLED"
     assert "불가" in vm.title or "제공" in vm.title
 
-    # Verify disabled notice section
-    disabled_sections = [s for s in vm.sections if s.kind == "disabled_notice"]
+    # Verify disabled notice section (now using CommonNotesSection)
+    disabled_sections = [s for s in vm.sections if s.kind == "common_notes"]
     assert len(disabled_sections) == 1
-    assert "보험료" in disabled_sections[0].message
-    assert len(disabled_sections[0].reason) > 0
+    assert len(disabled_sections[0].bullets) > 0
+    assert any("보험료" in bullet for bullet in disabled_sections[0].bullets)
 
 
 # ============================================================================
@@ -339,7 +350,7 @@ def test_forbidden_words_in_explanations():
 
     # Check explanation sections (use regex patterns)
     import re
-    explanation_sections = [s for s in vm.sections if s.kind == "explanation"]
+    explanation_sections = [s for s in vm.sections if s.kind == "insurer_explanations"]
     for section in explanation_sections:
         for exp in section.explanations:
             for pattern in FORBIDDEN_PATTERNS:

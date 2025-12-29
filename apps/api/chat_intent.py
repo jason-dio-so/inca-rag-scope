@@ -125,9 +125,19 @@ class IntentRouter:
         """
         Route request to MessageKind
 
+        PRIORITY (Production Hardening):
+        1. Explicit `kind` from request → 100% deterministic (NO router)
+        2. FAQ template → high confidence
+        3. Keyword patterns → fallback (lower accuracy)
+
         Returns:
             MessageKind for handler dispatch
         """
+        # Priority 1: Explicit kind (production flow)
+        if request.kind is not None:
+            return request.kind
+
+        # Priority 2-3: Detect from FAQ/keywords
         kind, confidence = IntentRouter.detect_intent(request)
         return kind
 

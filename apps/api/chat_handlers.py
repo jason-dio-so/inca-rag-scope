@@ -24,17 +24,15 @@ import uuid
 from apps.api.chat_vm import (
     AssistantMessageVM,
     MessageKind,
-    TableSection,
+    ComparisonTableSection,  # RENAMED from TableSection
     TableRow,
     TableCell,
     CellMeta,
-    ExplanationSection,
+    InsurerExplanationsSection,  # RENAMED from ExplanationSection
     InsurerExplanation,
-    CommonNotesSection,
-    NoticesSection,
-    EvidenceSection,
+    CommonNotesSection,  # UNIFIED (includes notices)
+    EvidenceAccordionSection,  # RENAMED from EvidenceSection
     EvidenceItem,
-    DisabledNoticeSection,
     ChatRequest
 )
 from apps.api.dto import AmountAuditDTO
@@ -150,7 +148,7 @@ class Example2Handler(BaseHandler):
         self,
         coverage_name: str,
         insurers: List[str]
-    ) -> TableSection:
+    ) -> ComparisonTableSection:
         """Build detail comparison table"""
 
         # Column headers: 항목 + Insurers
@@ -190,7 +188,7 @@ class Example2Handler(BaseHandler):
 
             rows.append(TableRow(cells=cells))
 
-        return TableSection(
+        return ComparisonTableSection(
             table_kind="COVERAGE_DETAIL",
             title=f"{coverage_name} 상세 비교",
             columns=columns,
@@ -201,7 +199,7 @@ class Example2Handler(BaseHandler):
         self,
         coverage_name: str,
         insurers: List[str]
-    ) -> ExplanationSection:
+    ) -> InsurerExplanationsSection:
         """Build parallel explanations (Step12)"""
 
         explanations = []
@@ -216,7 +214,7 @@ class Example2Handler(BaseHandler):
                 text=text
             ))
 
-        return ExplanationSection(
+        return InsurerExplanationsSection(
             title="보험사별 설명",
             explanations=explanations
         )
@@ -225,7 +223,7 @@ class Example2Handler(BaseHandler):
         self,
         coverage_name: str,
         insurers: List[str]
-    ) -> EvidenceSection:
+    ) -> EvidenceAccordionSection:
         """Build evidence section (collapsible)"""
 
         items = []
@@ -242,7 +240,7 @@ class Example2Handler(BaseHandler):
                 snippet="암진단비: 1천만원"  # Mock
             ))
 
-        return EvidenceSection(items=items)
+        return EvidenceAccordionSection(items=items)
 
     def _format_insurer_name(self, code: str) -> str:
         """Format insurer code to display name"""
@@ -308,8 +306,7 @@ class Example3Handler(BaseHandler):
         # Build sections
         table_section = self._build_integrated_table(coverage_names, insurers)
         explanation_section = self._build_explanation(coverage_names, insurers)
-        common_notes = self._build_common_notes(coverage_names, insurers)
-        notices = self._build_notices(coverage_names, insurers)
+        common_notes = self._build_common_and_notices(coverage_names, insurers)
         evidence_section = self._build_evidence(coverage_names, insurers)
 
         # Build VM
@@ -322,7 +319,6 @@ class Example3Handler(BaseHandler):
                 table_section,
                 explanation_section,
                 common_notes,
-                notices,
                 evidence_section
             ],
             lineage=self._get_audit_metadata()
@@ -332,7 +328,7 @@ class Example3Handler(BaseHandler):
         self,
         coverage_names: List[str],
         insurers: List[str]
-    ) -> TableSection:
+    ) -> ComparisonTableSection:
         """Build integrated comparison table"""
 
         # Columns: 담보 + Insurers
@@ -359,7 +355,7 @@ class Example3Handler(BaseHandler):
 
             rows.append(TableRow(cells=cells))
 
-        return TableSection(
+        return ComparisonTableSection(
             table_kind="INTEGRATED_COMPARE",
             title="통합 비교표",
             columns=columns,
@@ -370,7 +366,7 @@ class Example3Handler(BaseHandler):
         self,
         coverage_names: List[str],
         insurers: List[str]
-    ) -> ExplanationSection:
+    ) -> InsurerExplanationsSection:
         """Build parallel explanations"""
 
         explanations = []
@@ -385,44 +381,37 @@ class Example3Handler(BaseHandler):
                 text=text
             ))
 
-        return ExplanationSection(
+        return InsurerExplanationsSection(
             title="보험사별 설명",
             explanations=explanations
         )
 
-    def _build_common_notes(
+    def _build_common_and_notices(
         self,
         coverage_names: List[str],
         insurers: List[str]
     ) -> CommonNotesSection:
-        """Build common notes (fact-only, NO comparisons)"""
+        """Build common notes and notices (UNIFIED, fact-only, NO comparisons)"""
 
         bullets = [
+            # Common facts
             "모든 보험사에서 가입설계서에 금액을 명시하고 있습니다",
-            "면책기간과 감액기간은 별도 확인이 필요합니다"
-        ]
-
-        return CommonNotesSection(bullets=bullets)
-
-    def _build_notices(
-        self,
-        coverage_names: List[str],
-        insurers: List[str]
-    ) -> NoticesSection:
-        """Build notices (evidence-based, NO recommendations)"""
-
-        bullets = [
+            "면책기간과 감액기간은 별도 확인이 필요합니다",
+            # Notices (caveats)
             "가입설계서 기준이며 실제 약관과 다를 수 있습니다",
             "보장한도는 가입 당시 조건에 따라 달라질 수 있습니다"
         ]
 
-        return NoticesSection(bullets=bullets)
+        return CommonNotesSection(
+            title="공통사항 및 유의사항",
+            bullets=bullets
+        )
 
     def _build_evidence(
         self,
         coverage_names: List[str],
         insurers: List[str]
-    ) -> EvidenceSection:
+    ) -> EvidenceAccordionSection:
         """Build evidence section"""
 
         items = []
@@ -439,7 +428,7 @@ class Example3Handler(BaseHandler):
                     snippet=f"{coverage}: 1천만원"  # Mock
                 ))
 
-        return EvidenceSection(items=items)
+        return EvidenceAccordionSection(items=items)
 
     def _format_insurer_name(self, code: str) -> str:
         """Format insurer code to display name"""
@@ -512,7 +501,7 @@ class Example4Handler(BaseHandler):
         self,
         disease_name: str,
         insurers: List[str]
-    ) -> TableSection:
+    ) -> ComparisonTableSection:
         """Build eligibility matrix"""
 
         # Columns: 하위개념 + Insurers
@@ -537,7 +526,7 @@ class Example4Handler(BaseHandler):
 
             rows.append(TableRow(cells=cells))
 
-        return TableSection(
+        return ComparisonTableSection(
             table_kind="ELIGIBILITY_MATRIX",
             title="보장 가능 여부 매트릭스",
             columns=columns,
@@ -548,7 +537,7 @@ class Example4Handler(BaseHandler):
         self,
         disease_name: str,
         insurers: List[str]
-    ) -> ExplanationSection:
+    ) -> InsurerExplanationsSection:
         """Build definition excerpts"""
 
         explanations = []
@@ -562,7 +551,7 @@ class Example4Handler(BaseHandler):
                 text=text
             ))
 
-        return ExplanationSection(
+        return InsurerExplanationsSection(
             title="보험사별 정의",
             explanations=explanations
         )
@@ -571,7 +560,7 @@ class Example4Handler(BaseHandler):
         self,
         disease_name: str,
         insurers: List[str]
-    ) -> EvidenceSection:
+    ) -> EvidenceAccordionSection:
         """Build evidence (definitions/conditions)"""
 
         items = []
@@ -587,7 +576,7 @@ class Example4Handler(BaseHandler):
                 snippet=f"{disease_name} 정의: ..."  # Mock
             ))
 
-        return EvidenceSection(items=items)
+        return EvidenceAccordionSection(items=items)
 
     def _format_insurer_name(self, code: str) -> str:
         """Format insurer code to display name"""
@@ -605,7 +594,7 @@ class Example1DisabledHandler(BaseHandler):
     OUTPUT:
     - Title: "보험료 비교 (현재 제공 불가)"
     - Summary: Disabled reason
-    - DisabledNoticeSection: Clear explanation + suggested action
+    - CommonNotesSection: Clear explanation + alternative suggestion
 
     CRITICAL:
     - NO premium estimation
@@ -632,12 +621,15 @@ class Example1DisabledHandler(BaseHandler):
             "보험료 데이터 소스가 아직 연동되지 않았습니다"
         ]
 
-        # Build disabled notice
-        disabled_notice = DisabledNoticeSection(
+        # Build disabled notice (using CommonNotesSection)
+        disabled_notice = CommonNotesSection(
             title="보험료 비교 불가 안내",
-            message="보험료 비교 기능은 현재 제공되지 않습니다.",
-            reason="보험료 데이터 소스가 시스템에 연동되지 않았습니다. 향후 데이터 소스 확정 후 제공 예정입니다.",
-            suggested_action="담보 보장 내용 비교는 가능합니다. 상단 FAQ에서 '담보 상세 비교' 또는 '통합 비교'를 선택해주세요."
+            bullets=[
+                "보험료 비교 기능은 현재 제공되지 않습니다",
+                "보험료 데이터 소스가 시스템에 연동되지 않았습니다",
+                "향후 데이터 소스 확정 후 제공 예정입니다",
+                "담보 보장 내용 비교는 가능합니다 (상단 FAQ 참조)"
+            ]
         )
 
         # Build VM
