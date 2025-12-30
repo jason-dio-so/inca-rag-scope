@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>간단 테스트</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 4px; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>간단 API 테스트</h1>
+    <button onclick="test()">테스트 실행</button>
+    <div id="result"></div>
+
+    <script>
+        async function test() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>테스트 중...</p>';
+
+            console.log('Starting test...');
+
+            try {
+                console.log('Fetching http://localhost:8001/health');
+                const response = await fetch('http://localhost:8001/health');
+                console.log('Response received:', response);
+
+                const data = await response.json();
+                console.log('Data:', data);
+
+                result.innerHTML = `
+                    <p class="success">✅ 성공!</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+                result.innerHTML = `
+                    <p class="error">❌ 에러: ${error.message}</p>
+                    <p>콘솔을 확인하세요 (F12)</p>
+                `;
+            }
+        }
+
+        // 페이지 로드 시 자동 실행
+        window.onload = () => {
+            console.log('Page loaded, running auto test...');
+            test();
+        };
+    </script>
+</body>
+</html>

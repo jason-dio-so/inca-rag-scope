@@ -1,0 +1,881 @@
+#!/usr/bin/env python3
+"""
+Production API Server for Insurance Comparison
+STEP NEXT-10: Production Implementation
+
+IMMUTABLE RULES:
+1. NO LLM calls
+2. NO inference or interpretation
+3. NO recommendations
+4. Evidence REQUIRED for all values
+5. Deterministic query compilation
+6. Response View Model LOCKED (5-block structure)
+
+Database Tables:
+- insurer, product, product_variant, document (metadata)
+- coverage_canonical (Excel source of truth)
+- coverage_instance, evidence_ref, amount_fact (facts)
+"""
+
+import os
+import logging
+from datetime import datetime
+from typing import List, Optional, Dict, Any
+import uuid
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+import psycopg2
+import psycopg2.extras
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+logger = logging.getLogger(__name__)
+
+# Initialize FastAPI app
+app = FastAPI(
+    title="Insurance Comparison Production API",
+    version="1.0.0",
+    description="Production API for insurance coverage comparison (DB-backed, evidence-based)"
+)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost:9000",
+        "http://127.0.0.1:9000"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Database connection configuration
+DB_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://inca_admin:inca_secure_prod_2025_db_key@localhost:5432/inca_rag_scope"
+)
+
+# Compiler version (deterministic query generation)
+COMPILER_VERSION = "v1.0.0"
+
+# ============================================================================
+# Pydantic Models (API Contract)
+# ============================================================================
+
+class ProductInfo(BaseModel):
+    insurer: str
+    product_name: str
+
+class TargetCoverage(BaseModel):
+    coverage_code: Optional[str] = None
+    coverage_name_raw: Optional[str] = None
+
+class RequestOptions(BaseModel):
+    include_notes: bool = True
+    include_evidence: bool = True
+    premium_reference_only: bool = False
+
+class DebugOptions(BaseModel):
+    force_example: Optional[str] = None
+    compiler_version: Optional[str] = "v1.0.0"
+
+class CompareRequest(BaseModel):
+    intent: str = Field(..., pattern="^(PRODUCT_SUMMARY|COVERAGE_CONDITION_DIFF|COVERAGE_AVAILABILITY|PREMIUM_REFERENCE)$")
+    insurers: List[str] = Field(..., min_items=1)
+    products: List[ProductInfo] = Field(..., min_items=1)
+    target_coverages: List[TargetCoverage] = []
+    options: Optional[RequestOptions] = RequestOptions()
+    debug: Optional[DebugOptions] = DebugOptions()
+
+# ============================================================================
+# Database Connection Pool
+# ============================================================================
+
+class DBConnection:
+    """Simple database connection manager"""
+
+    @staticmethod
+    def get_connection():
+        """Get database connection"""
+        try:
+            conn = psycopg2.connect(DB_URL)
+            return conn
+        except Exception as e:
+            logger.error(f"Database connection failed: {e}")
+            raise HTTPException(status_code=500, detail="Database connection failed")
+
+# ============================================================================
+# Query Compiler (Deterministic)
+# ============================================================================
+
+class QueryCompiler:
+    """
+    Compile API requests into DB queries (deterministic, rule-based)
+
+    Rules:
+    1. Same request → same SQL → same results
+    2. NO LLM, NO inference
+    3. Intent-based routing
+    """
+
+    def __init__(self, request: CompareRequest):
+        self.request = request
+        self.intent = request.intent
+        self.insurers = request.insurers
+        self.products = request.products
+        self.target_coverages = request.target_coverages
+
+    def compile(self) -> Dict[str, Any]:
+        """
+        Compile request into query plan
+
+        Returns:
+            {
+                "intent": str,
+                "coverage_codes": List[str],
+                "insurer_filters": List[str],
+                "canonical_set_id": Optional[str]
+            }
+        """
+        if self.intent == "PRODUCT_SUMMARY":
+            return self._compile_product_summary()
+        elif self.intent == "COVERAGE_CONDITION_DIFF":
+            return self._compile_coverage_condition_diff()
+        elif self.intent == "COVERAGE_AVAILABILITY":
+            return self._compile_coverage_availability()
+        elif self.intent == "PREMIUM_REFERENCE":
+            return self._compile_premium_reference()
+        else:
+            raise HTTPException(status_code=400, detail=f"Unknown intent: {self.intent}")
+
+    def _compile_product_summary(self) -> Dict[str, Any]:
+        """
+        PRODUCT_SUMMARY: 9 core coverages (Example 3)
+
+        canonical_set_id: EXAMPLE3_CORE_9
+        coverage_codes: [A4200_1, A4210, A5200, A5100, A6100_1, A6300_1, A9617_1, A9640_1, A4102]
+        """
+        return {
+            "intent": "PRODUCT_SUMMARY",
+            "canonical_set_id": "EXAMPLE3_CORE_9",
+            "coverage_codes": [
+                "A4200_1",  # 암 진단비(유사암 제외)
+                "A4210",    # 유사암 진단비
+                "A5200",    # 암 수술비
+                "A5100",    # 질병 수술비
+                "A6100_1",  # 질병 입원일당
+                "A6300_1",  # 암 직접치료 입원일당
+                "A9617_1",  # 항암방사선약물치료비
+                "A9640_1",  # 항암약물허가치료비
+                "A4102",    # 뇌출혈 진단비
+            ],
+            "insurer_filters": self.insurers
+        }
+
+    def _compile_coverage_condition_diff(self) -> Dict[str, Any]:
+        """
+        COVERAGE_CONDITION_DIFF: Single coverage, 5 conditions (Example 2)
+
+        Conditions:
+        1. 보장 여부
+        2. 보장 금액
+        3. 대기기간
+        4. 감액기간
+        5. 제외 암종
+        """
+        # Extract coverage_code from target_coverages
+        coverage_code = None
+        if self.target_coverages and len(self.target_coverages) > 0:
+            coverage_code = self.target_coverages[0].coverage_code
+
+        if not coverage_code:
+            # Default to A4200_1 (암 진단비)
+            coverage_code = "A4200_1"
+
+        return {
+            "intent": "COVERAGE_CONDITION_DIFF",
+            "coverage_codes": [coverage_code],
+            "insurer_filters": self.insurers,
+            "comparison_aspects": [
+                "보장 여부",
+                "보장 금액",
+                "대기기간",
+                "감액기간",
+                "제외 암종"
+            ]
+        }
+
+    def _compile_coverage_availability(self) -> Dict[str, Any]:
+        """
+        COVERAGE_AVAILABILITY: O/X table (Example 4)
+
+        Coverage list from target_coverages or default set
+        """
+        coverage_codes = []
+        if self.target_coverages:
+            coverage_codes = [tc.coverage_code for tc in self.target_coverages if tc.coverage_code]
+
+        if not coverage_codes:
+            # Default to 2 coverages (제자리암, 경계성종양)
+            coverage_codes = ["A4220_1", "A4230_1"]
+
+        return {
+            "intent": "COVERAGE_AVAILABILITY",
+            "coverage_codes": coverage_codes,
+            "insurer_filters": self.insurers
+        }
+
+    def _compile_premium_reference(self) -> Dict[str, Any]:
+        """
+        PREMIUM_REFERENCE: Premium info (Example 1)
+
+        Always includes premium_notice = true
+        """
+        return {
+            "intent": "PREMIUM_REFERENCE",
+            "coverage_codes": [],  # Premium is product-level, not coverage-level
+            "insurer_filters": self.insurers,
+            "premium_notice": True
+        }
+
+# ============================================================================
+# Intent Handlers
+# ============================================================================
+
+class IntentHandler:
+    """Base class for intent handlers"""
+
+    def __init__(self, conn, query_plan: Dict[str, Any], request: CompareRequest):
+        self.conn = conn
+        self.cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        self.query_plan = query_plan
+        self.request = request
+
+    def handle(self) -> Dict[str, Any]:
+        """Handle intent and return Response View Model"""
+        raise NotImplementedError
+
+    def _get_insurer_id(self, insurer_key: str) -> Optional[str]:
+        """Get insurer_id from insurer_key"""
+        insurer_kr_map = {
+            'SAMSUNG': '삼성생명',
+            'HANWHA': '한화생명',
+            'MERITZ': '메리츠화재',
+            'DB': 'DB손해보험',
+            'KB': 'KB손해보험',
+            'LOTTE': '롯데손해보험',
+            'HYUNDAI': '현대해상',
+            'HEUNGKUK': '흥국생명'
+        }
+
+        insurer_kr = insurer_kr_map.get(insurer_key.upper())
+        if not insurer_kr:
+            return None
+
+        self.cursor.execute(
+            "SELECT insurer_id FROM insurer WHERE insurer_name_kr = %s",
+            (insurer_kr,)
+        )
+        result = self.cursor.fetchone()
+        return result['insurer_id'] if result else None
+
+    def _build_evidence(self, coverage_instance_id: str, rank: int = 1) -> Dict[str, Any]:
+        """
+        Build evidence object from evidence_ref
+
+        Returns:
+            {
+                "status": "found" | "not_found",
+                "source": str (if found),
+                "snippet": str (if found)
+            }
+        """
+        self.cursor.execute(
+            """
+            SELECT er.snippet, er.doc_type, er.page, d.file_path
+            FROM evidence_ref er
+            JOIN document d ON er.document_id = d.document_id
+            WHERE er.coverage_instance_id = %s AND er.rank = %s
+            LIMIT 1
+            """,
+            (coverage_instance_id, rank)
+        )
+        result = self.cursor.fetchone()
+
+        if result:
+            # Extract page reference
+            source_ref = f"{result['doc_type']} p.{result['page']}"
+            return {
+                "status": "found",
+                "source": source_ref,
+                "snippet": result['snippet']
+            }
+        else:
+            return {
+                "status": "not_found"
+            }
+
+class ProductSummaryHandler(IntentHandler):
+    """Handler for PRODUCT_SUMMARY intent (Example 3)"""
+
+    def handle(self) -> Dict[str, Any]:
+        """
+        Build Response View Model for PRODUCT_SUMMARY
+
+        Structure:
+        - meta
+        - query_summary
+        - comparison (COVERAGE_TABLE with 9 rows)
+        - notes
+        - limitations
+        """
+        coverage_codes = self.query_plan["coverage_codes"]
+        insurer_filters = self.query_plan["insurer_filters"]
+
+        # Build targets
+        targets = []
+        for product_info in self.request.products:
+            targets.append({
+                "insurer": product_info.insurer,
+                "product_name": product_info.product_name,
+                "source": "user_specified"
+            })
+
+        # Build comparison rows
+        rows = []
+        for coverage_code in coverage_codes:
+            # Get canonical name
+            self.cursor.execute(
+                "SELECT coverage_name_canonical FROM coverage_canonical WHERE coverage_code = %s",
+                (coverage_code,)
+            )
+            canonical_result = self.cursor.fetchone()
+            if not canonical_result:
+                continue
+
+            coverage_name = canonical_result['coverage_name_canonical']
+
+            # Get values for each insurer
+            values = {}
+            for insurer_key in insurer_filters:
+                insurer_id = self._get_insurer_id(insurer_key)
+                if not insurer_id:
+                    continue
+
+                # Find coverage_instance
+                self.cursor.execute(
+                    """
+                    SELECT ci.instance_id, af.value_text, af.evidence_id
+                    FROM coverage_instance ci
+                    LEFT JOIN amount_fact af ON ci.instance_id = af.coverage_instance_id
+                    WHERE ci.insurer_id = %s AND ci.coverage_code = %s
+                    LIMIT 1
+                    """,
+                    (insurer_id, coverage_code)
+                )
+                instance_result = self.cursor.fetchone()
+
+                if instance_result and instance_result['value_text']:
+                    # Build evidence
+                    evidence = self._build_evidence(instance_result['instance_id'])
+
+                    values[insurer_key.upper()] = {
+                        "value_text": instance_result['value_text'],
+                        "evidence": evidence
+                    }
+                else:
+                    # Not found
+                    values[insurer_key.upper()] = {
+                        "value_text": "확인 불가",
+                        "evidence": {
+                            "status": "not_found"
+                        }
+                    }
+
+            rows.append({
+                "coverage_code": coverage_code,
+                "coverage_name": coverage_name,
+                "values": values
+            })
+
+        # Build notes (from evidence)
+        notes = []
+        # Note: In production, notes should be extracted from evidence_ref
+        # For now, return empty to avoid inference
+
+        # Build response
+        return {
+            "meta": {
+                "query_id": str(uuid.uuid4()),
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "intent": "PRODUCT_SUMMARY",
+                "compiler_version": COMPILER_VERSION
+            },
+            "query_summary": {
+                "targets": targets,
+                "coverage_scope": {
+                    "type": "CANONICAL_SET",
+                    "canonical_set_id": self.query_plan["canonical_set_id"],
+                    "count": len(coverage_codes)
+                },
+                "premium_notice": False
+            },
+            "comparison": {
+                "type": "COVERAGE_TABLE",
+                "columns": [insurer.upper() for insurer in insurer_filters],
+                "rows": rows
+            },
+            "notes": notes,
+            "limitations": [
+                "본 비교는 약관 및 가입설계서에 기반한 정보 제공입니다.",
+                "대기기간, 감액기간, 면책사항 등 세부 조건은 약관을 직접 확인하시기 바랍니다.",
+                "개인 조건에 따른 보험료 계산은 포함되지 않습니다.",
+                "보장 내용은 가입 시점 및 특약 구성에 따라 달라질 수 있습니다."
+            ]
+        }
+
+class CoverageConditionDiffHandler(IntentHandler):
+    """Handler for COVERAGE_CONDITION_DIFF intent (Example 2)"""
+
+    def handle(self) -> Dict[str, Any]:
+        """
+        Build Response View Model for COVERAGE_CONDITION_DIFF
+
+        Structure:
+        - meta
+        - query_summary
+        - comparison (COVERAGE_TABLE with 5 condition rows)
+        - notes
+        - limitations
+        """
+        coverage_code = self.query_plan["coverage_codes"][0]
+        insurer_filters = self.query_plan["insurer_filters"]
+        comparison_aspects = self.query_plan["comparison_aspects"]
+
+        # Build targets
+        targets = []
+        for product_info in self.request.products:
+            targets.append({
+                "insurer": product_info.insurer,
+                "product_name": product_info.product_name,
+                "source": "user_specified"
+            })
+
+        # Get canonical name
+        self.cursor.execute(
+            "SELECT coverage_name_canonical FROM coverage_canonical WHERE coverage_code = %s",
+            (coverage_code,)
+        )
+        canonical_result = self.cursor.fetchone()
+        coverage_name = canonical_result['coverage_name_canonical'] if canonical_result else "Unknown"
+
+        # Build comparison rows (5 conditions)
+        rows = []
+
+        # Row 1: 보장 여부 (with coverage_code and coverage_name)
+        values_row1 = {}
+        for insurer_key in insurer_filters:
+            insurer_id = self._get_insurer_id(insurer_key)
+            if not insurer_id:
+                continue
+
+            self.cursor.execute(
+                """
+                SELECT ci.instance_id
+                FROM coverage_instance ci
+                WHERE ci.insurer_id = %s AND ci.coverage_code = %s
+                LIMIT 1
+                """,
+                (insurer_id, coverage_code)
+            )
+            instance_result = self.cursor.fetchone()
+
+            if instance_result:
+                evidence = self._build_evidence(instance_result['instance_id'])
+                values_row1[insurer_key.upper()] = {
+                    "value_text": "보장함",
+                    "evidence": evidence
+                }
+            else:
+                values_row1[insurer_key.upper()] = {
+                    "value_text": "확인 불가",
+                    "evidence": {"status": "not_found"}
+                }
+
+        rows.append({
+            "coverage_code": coverage_code,
+            "coverage_name": coverage_name,
+            "values": values_row1
+        })
+
+        # Rows 2-5: Other conditions (without coverage_code)
+        # Note: These conditions require parsing evidence snippets
+        # For production, this should be extracted from structured evidence
+        # For now, return placeholder structure to avoid inference
+
+        for aspect in comparison_aspects[1:]:  # Skip first aspect (보장 여부)
+            values = {}
+            for insurer_key in insurer_filters:
+                values[insurer_key.upper()] = {
+                    "value_text": "확인 불가",
+                    "evidence": {"status": "not_found"}
+                }
+
+            rows.append({
+                "coverage_name": aspect,
+                "values": values
+            })
+
+        # Build response
+        return {
+            "meta": {
+                "query_id": str(uuid.uuid4()),
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "intent": "COVERAGE_CONDITION_DIFF",
+                "compiler_version": COMPILER_VERSION
+            },
+            "query_summary": {
+                "targets": targets,
+                "coverage_scope": {
+                    "type": "SINGLE_COVERAGE",
+                    "count": 1
+                },
+                "premium_notice": False
+            },
+            "comparison": {
+                "type": "COVERAGE_TABLE",
+                "columns": [insurer.upper() for insurer in insurer_filters],
+                "rows": rows
+            },
+            "notes": [],
+            "limitations": [
+                "본 비교는 약관 및 가입설계서에 기반한 정보 제공입니다.",
+                "실제 지급 조건은 약관 전문을 확인하시기 바랍니다."
+            ]
+        }
+
+class CoverageAvailabilityHandler(IntentHandler):
+    """Handler for COVERAGE_AVAILABILITY intent (Example 4)"""
+
+    def handle(self) -> Dict[str, Any]:
+        """
+        Build Response View Model for COVERAGE_AVAILABILITY
+
+        Structure:
+        - meta
+        - query_summary
+        - comparison (OX_TABLE)
+        - notes
+        - limitations
+        """
+        coverage_codes = self.query_plan["coverage_codes"]
+        insurer_filters = self.query_plan["insurer_filters"]
+
+        # Build targets
+        targets = []
+        for product_info in self.request.products:
+            targets.append({
+                "insurer": product_info.insurer,
+                "product_name": product_info.product_name,
+                "source": "user_specified"
+            })
+
+        # Build O/X rows
+        rows = []
+        for coverage_code in coverage_codes:
+            # Get canonical name
+            self.cursor.execute(
+                "SELECT coverage_name_canonical FROM coverage_canonical WHERE coverage_code = %s",
+                (coverage_code,)
+            )
+            canonical_result = self.cursor.fetchone()
+            if not canonical_result:
+                continue
+
+            coverage_name = canonical_result['coverage_name_canonical']
+
+            # Get O/X for each insurer
+            values = {}
+            for insurer_key in insurer_filters:
+                insurer_id = self._get_insurer_id(insurer_key)
+                if not insurer_id:
+                    continue
+
+                self.cursor.execute(
+                    """
+                    SELECT ci.instance_id
+                    FROM coverage_instance ci
+                    WHERE ci.insurer_id = %s AND ci.coverage_code = %s
+                    LIMIT 1
+                    """,
+                    (insurer_id, coverage_code)
+                )
+                instance_result = self.cursor.fetchone()
+
+                if instance_result:
+                    evidence = self._build_evidence(instance_result['instance_id'])
+                    values[insurer_key.upper()] = {
+                        "value_text": "O",
+                        "evidence": evidence
+                    }
+                else:
+                    values[insurer_key.upper()] = {
+                        "value_text": "X",
+                        "evidence": {"status": "not_found"}
+                    }
+
+            rows.append({
+                "coverage_name": f"{coverage_name} 보장",
+                "values": values
+            })
+
+            # Add amount row (if available)
+            values_amount = {}
+            for insurer_key in insurer_filters:
+                insurer_id = self._get_insurer_id(insurer_key)
+                if not insurer_id:
+                    continue
+
+                self.cursor.execute(
+                    """
+                    SELECT ci.instance_id, af.value_text
+                    FROM coverage_instance ci
+                    LEFT JOIN amount_fact af ON ci.instance_id = af.coverage_instance_id
+                    WHERE ci.insurer_id = %s AND ci.coverage_code = %s
+                    LIMIT 1
+                    """,
+                    (insurer_id, coverage_code)
+                )
+                instance_result = self.cursor.fetchone()
+
+                if instance_result and instance_result['value_text']:
+                    evidence = self._build_evidence(instance_result['instance_id'])
+                    values_amount[insurer_key.upper()] = {
+                        "value_text": instance_result['value_text'],
+                        "evidence": evidence
+                    }
+                else:
+                    values_amount[insurer_key.upper()] = {
+                        "value_text": "확인 불가",
+                        "evidence": {"status": "not_found"}
+                    }
+
+            rows.append({
+                "coverage_name": f"{coverage_name} 보장 금액",
+                "values": values_amount
+            })
+
+        # Build response
+        return {
+            "meta": {
+                "query_id": str(uuid.uuid4()),
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "intent": "COVERAGE_AVAILABILITY",
+                "compiler_version": COMPILER_VERSION
+            },
+            "query_summary": {
+                "targets": targets,
+                "coverage_scope": {
+                    "type": "MULTI_COVERAGE",
+                    "count": len(coverage_codes)
+                },
+                "premium_notice": False
+            },
+            "comparison": {
+                "type": "OX_TABLE",
+                "columns": [insurer.upper() for insurer in insurer_filters],
+                "rows": rows
+            },
+            "notes": [],
+            "limitations": [
+                "본 정보는 약관 및 가입설계서에 기반한 사실 확인입니다.",
+                "대기기간, 감액기간, 면책사항 등 세부 조건은 약관을 직접 확인하시기 바랍니다."
+            ]
+        }
+
+class PremiumReferenceHandler(IntentHandler):
+    """Handler for PREMIUM_REFERENCE intent (Example 1)"""
+
+    def handle(self) -> Dict[str, Any]:
+        """
+        Build Response View Model for PREMIUM_REFERENCE
+
+        Structure:
+        - meta
+        - query_summary (premium_notice = true)
+        - comparison (PREMIUM_LIST)
+        - notes
+        - limitations (with premium warning)
+        """
+        insurer_filters = self.query_plan["insurer_filters"]
+
+        # Build targets
+        targets = []
+        for product_info in self.request.products:
+            targets.append({
+                "insurer": product_info.insurer,
+                "product_name": product_info.product_name,
+                "source": "user_specified"
+            })
+
+        # Build premium rows
+        # Note: Premium data should come from 가입설계서 evidence
+        # For production, this requires structured extraction
+        # For now, return placeholder structure
+
+        rows = [
+            {
+                "coverage_name": "월 보험료",
+                "values": {
+                    insurer_key.upper(): {
+                        "value_text": "확인 불가 (참고용)",
+                        "evidence": {"status": "not_found"}
+                    }
+                    for insurer_key in insurer_filters
+                }
+            },
+            {
+                "coverage_name": "보험료 산출 조건",
+                "values": {
+                    insurer_key.upper(): {
+                        "value_text": "확인 불가",
+                        "evidence": {"status": "not_found"}
+                    }
+                    for insurer_key in insurer_filters
+                }
+            }
+        ]
+
+        # Build response
+        return {
+            "meta": {
+                "query_id": str(uuid.uuid4()),
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "intent": "PREMIUM_REFERENCE",
+                "compiler_version": COMPILER_VERSION
+            },
+            "query_summary": {
+                "targets": targets,
+                "coverage_scope": {
+                    "type": "MULTI_COVERAGE",
+                    "count": 2
+                },
+                "premium_notice": True  # MANDATORY
+            },
+            "comparison": {
+                "type": "PREMIUM_LIST",
+                "columns": [insurer.upper() for insurer in insurer_filters],
+                "rows": rows
+            },
+            "notes": [],
+            "limitations": [
+                "⚠️ 본 시스템은 개인별 보험료 계산 기능을 제공하지 않습니다.",
+                "⚠️ 표시된 보험료는 참고용이며, 실제 가입 보험료와 다를 수 있습니다.",
+                "정확한 보험료는 보험사 또는 설계사를 통해 직접 확인하시기 바랍니다.",
+                "본 비교는 약관 및 가입설계서에 기반한 정보 제공입니다."
+            ]
+        }
+
+# ============================================================================
+# API Endpoints
+# ============================================================================
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    try:
+        conn = DBConnection.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        cursor.close()
+        conn.close()
+        db_status = "ok"
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        db_status = "error"
+
+    return {
+        "status": "ok" if db_status == "ok" else "degraded",
+        "version": "1.0.0",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "database": db_status
+    }
+
+@app.post("/compare")
+async def compare(request: CompareRequest):
+    """
+    Main comparison endpoint
+
+    Processing steps:
+    1. Validate request schema (Pydantic)
+    2. Compile request → query plan (deterministic)
+    3. Execute query plan → fetch DB data
+    4. Build Response View Model (5-block structure)
+    5. Return response
+
+    Rules:
+    - NO LLM
+    - NO inference
+    - Evidence REQUIRED for all values
+    - Deterministic results
+    """
+    try:
+        # Step 1: Compile query plan
+        compiler = QueryCompiler(request)
+        query_plan = compiler.compile()
+
+        logger.info(f"Query plan: {query_plan}")
+
+        # Step 2: Get DB connection
+        conn = DBConnection.get_connection()
+
+        try:
+            # Step 3: Route to intent handler
+            handler_map = {
+                "PRODUCT_SUMMARY": ProductSummaryHandler,
+                "COVERAGE_CONDITION_DIFF": CoverageConditionDiffHandler,
+                "COVERAGE_AVAILABILITY": CoverageAvailabilityHandler,
+                "PREMIUM_REFERENCE": PremiumReferenceHandler
+            }
+
+            handler_class = handler_map.get(request.intent)
+            if not handler_class:
+                raise HTTPException(status_code=400, detail=f"Unknown intent: {request.intent}")
+
+            handler = handler_class(conn, query_plan, request)
+            response = handler.handle()
+
+            return response
+
+        finally:
+            conn.close()
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error processing request: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+
+@app.get("/")
+async def root():
+    """Root endpoint with API info"""
+    return {
+        "name": "Insurance Comparison Production API",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "GET /health",
+            "compare": "POST /compare"
+        },
+        "compiler_version": COMPILER_VERSION,
+        "note": "Production API (DB-backed, evidence-based)"
+    }
+
+# Run with: uvicorn apps.api.server:app --host 0.0.0.0 --port 8001 --reload

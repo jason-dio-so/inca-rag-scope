@@ -86,7 +86,7 @@ class Step9Loader:
         # Load insurers
         self.cursor.execute("SELECT insurer_id, insurer_name_kr FROM insurer")
         for row in self.cursor.fetchall():
-            # Derive insurer_key from insurer_name_kr (삼성생명 -> samsung, etc.)
+            # Derive insurer_key from insurer_name_kr (삼성화재 -> samsung, etc.)
             insurer_key = self._derive_insurer_key(row['insurer_name_kr'])
             self.insurer_map[insurer_key] = row['insurer_id']
 
@@ -120,7 +120,7 @@ class Step9Loader:
     def _derive_insurer_key(self, insurer_name_kr: str) -> str:
         """Derive insurer_key from Korean name"""
         mapping = {
-            '삼성생명': 'samsung',
+            '삼성화재': 'samsung',
             '현대해상': 'hyundai',
             '롯데손해보험': 'lotte',
             'DB손해보험': 'db',
@@ -519,8 +519,12 @@ class Step9Loader:
     def load_amount_fact(self, insurer_key: str, cards_path: Path):
         """
         Load amount_fact from coverage_cards.jsonl
-        Schema: (amount_id UUID PK, coverage_instance_id, evidence_id,
-                 status ENUM, value_text TEXT, source_doc_type, source_priority, notes JSONB)
+
+        CRITICAL: This method ONLY maps the 'amount' field from coverage_cards.
+        It does NOT extract, infer, or calculate amounts from snippets.
+
+        For CONFIRMED amounts with embedded evidence_ref (from Step7),
+        creates evidence_ref entries in DB to satisfy FK constraint.
         """
         logger.info(f"Loading amount_fact for {insurer_key} from {cards_path}...")
 
@@ -535,12 +539,12 @@ class Step9Loader:
 
         inserted = 0
         skipped = 0
+        evidence_created = 0
 
         for line in lines:
             card = json.loads(line.strip())
 
             coverage_name_raw = card.get('coverage_name_raw', '')
-            evidences = card.get('evidences', [])
 
             # Find coverage_instance_id
             self.cursor.execute(
@@ -561,44 +565,27 @@ class Step9Loader:
 
             coverage_instance_id = result['instance_id']
 
-            # Extract amount_text from snippet (heuristic: look for "만원", "원" keywords)
-            # Priority: 가입설계서 > others
-            value_text = None
-            source_doc_type = None
-            evidence_id = None
+            # Get 'amount' field from card (NO extraction from snippets)
+            amount_data = card.get('amount')
 
-            # Try 가입설계서 first
-            for ev in evidences:
-                if ev.get('doc_type') == '가입설계서':
-                    snippet = ev.get('snippet', '')
-                    if '만원' in snippet or '원' in snippet:
-                        value_text = snippet[:200]
-                        source_doc_type = '가입설계서'
-                        break
-
-            # Fallback to other doc types
-            if not value_text:
-                for ev in evidences:
-                    snippet = ev.get('snippet', '')
-                    if '만원' in snippet or '원' in snippet:
-                        value_text = snippet[:200]
-                        source_doc_type = ev.get('doc_type', '')
-                        break
-
-            # Determine status based on value_text AND evidence_id availability
-            # Constraint: CONFIRMED requires evidence_id NOT NULL
-            if not value_text:
-                # No amount found, store as UNCONFIRMED
+            if not amount_data:
+                # Amount field missing → write UNCONFIRMED with NULL values
                 status = 'UNCONFIRMED'
                 value_text = None
                 source_doc_type = None
                 source_priority = None
+                evidence_id = None
             else:
-                # Amount found, but need to verify evidence_id exists
-                source_priority = 'PRIMARY' if source_doc_type == '가입설계서' else 'SECONDARY'
+                # Amount field exists → map fields directly
+                status = amount_data.get('status', 'UNCONFIRMED')
+                value_text = amount_data.get('value_text')
+                source_doc_type = amount_data.get('source_doc_type')
+                source_priority = amount_data.get('source_priority')
 
-                # Lookup evidence_id (required for CONFIRMED status)
-                if source_doc_type:
+                # Handle evidence_ref for CONFIRMED amounts
+                evidence_id = None
+                if status == 'CONFIRMED' and source_doc_type:
+                    # Try to find existing evidence_ref
                     self.cursor.execute(
                         """
                         SELECT evidence_id FROM evidence_ref
@@ -608,26 +595,35 @@ class Step9Loader:
                         (coverage_instance_id, source_doc_type)
                     )
                     ev_result = self.cursor.fetchone()
+
                     if ev_result:
                         evidence_id = ev_result['evidence_id']
-                        status = 'CONFIRMED'
                     else:
-                        # No evidence_id found, cannot use CONFIRMED
-                        # Constraint: UNCONFIRMED requires value_text=NULL
-                        status = 'UNCONFIRMED'
-                        evidence_id = None
-                        value_text = None  # MUST be NULL for UNCONFIRMED
-                        source_doc_type = None
-                        source_priority = None
-                else:
-                    status = 'UNCONFIRMED'
-                    evidence_id = None
-                    value_text = None
-                    source_doc_type = None
-                    source_priority = None
+                        # No evidence_ref found - try to create from amount.evidence_ref
+                        amount_evidence = amount_data.get('evidence_ref')
+                        if amount_evidence and isinstance(amount_evidence, dict):
+                            # Create evidence_ref for Step7 amount
+                            evidence_id = self._create_evidence_ref_for_amount(
+                                coverage_instance_id,
+                                insurer_key,
+                                amount_evidence
+                            )
+                            if evidence_id:
+                                evidence_created += 1
 
-            # UPSERT amount_fact (idempotent by coverage_instance_id)
-            upsert_sql = """
+                        if not evidence_id:
+                            # Still no evidence - downgrade to UNCONFIRMED
+                            logger.warning(
+                                f"No evidence_ref for {coverage_name_raw}, downgrading to UNCONFIRMED"
+                            )
+                            status = 'UNCONFIRMED'
+                            value_text = None
+                            source_doc_type = None
+                            source_priority = None
+
+            # UPSERT amount_fact
+            self.cursor.execute(
+                """
                 INSERT INTO amount_fact
                 (coverage_instance_id, evidence_id, status, value_text,
                  source_doc_type, source_priority, notes, created_at)
@@ -639,10 +635,7 @@ class Step9Loader:
                     source_doc_type = EXCLUDED.source_doc_type,
                     source_priority = EXCLUDED.source_priority,
                     updated_at = CURRENT_TIMESTAMP
-            """
-
-            self.cursor.execute(
-                upsert_sql,
+                """,
                 (
                     coverage_instance_id,
                     evidence_id,
@@ -654,18 +647,150 @@ class Step9Loader:
                     datetime.now()
                 )
             )
-            if self.cursor.rowcount > 0:
-                inserted += 1
-            else:
-                skipped += 1
+            inserted += 1
 
         self.conn.commit()
-        logger.info(f"✅ Upserted {inserted} amount facts (skipped {skipped}) for {insurer_key}")
+        logger.info(
+            f"✅ Upserted {inserted} amount facts for {insurer_key} "
+            f"(created {evidence_created} evidence_ref entries, skipped {skipped})"
+        )
+
+    def _create_evidence_ref_for_amount(
+        self,
+        coverage_instance_id: uuid.UUID,
+        insurer_key: str,
+        amount_evidence: dict
+    ) -> Optional[uuid.UUID]:
+        """
+        Create evidence_ref entry for Step7 amount evidence.
+
+        Args:
+            coverage_instance_id: Coverage instance UUID
+            insurer_key: Insurer key (e.g., 'samsung')
+            amount_evidence: Dict with doc_type, source, snippet
+
+        Returns:
+            evidence_id UUID if created, None if failed
+        """
+        try:
+            doc_type = amount_evidence.get('doc_type')
+            source = amount_evidence.get('source', '')
+            snippet = amount_evidence.get('snippet', '')
+
+            if not doc_type or not snippet:
+                return None
+
+            # Extract page number from source (e.g., "가입설계서 p.3" -> 3)
+            import re
+            page_match = re.search(r'p\.?(\d+)', source, re.IGNORECASE)
+            page = int(page_match.group(1)) if page_match else 1
+
+            # Get or create document_id for proposal document
+            document_id = self._get_or_create_proposal_document(insurer_key, doc_type)
+            if not document_id:
+                logger.warning(f"Could not get document_id for {insurer_key}/{doc_type}")
+                return None
+
+            # Create evidence_ref entry
+            self.cursor.execute(
+                """
+                INSERT INTO evidence_ref
+                (coverage_instance_id, document_id, doc_type, page, snippet, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING evidence_id
+                """,
+                (
+                    coverage_instance_id,
+                    document_id,
+                    doc_type,
+                    page,
+                    snippet[:5000],  # Truncate if needed
+                    datetime.now()
+                )
+            )
+            result = self.cursor.fetchone()
+            if result:
+                return result['evidence_id']
+
+        except Exception as e:
+            logger.error(f"Error creating evidence_ref for amount: {e}")
+
+        return None
+
+    def _get_or_create_proposal_document(
+        self,
+        insurer_key: str,
+        doc_type: str
+    ) -> Optional[uuid.UUID]:
+        """
+        Get or create document record for proposal document.
+
+        Args:
+            insurer_key: Insurer key
+            doc_type: Document type (가입설계서)
+
+        Returns:
+            document_id UUID if found/created, None if failed
+        """
+        try:
+            # Get insurer_id and product_id
+            insurer_kr = self._insurer_key_to_kr(insurer_key)
+            self.cursor.execute(
+                """
+                SELECT i.insurer_id, p.product_id
+                FROM insurer i
+                JOIN product p ON i.insurer_id = p.insurer_id
+                WHERE i.insurer_name_kr = %s
+                LIMIT 1
+                """,
+                (insurer_kr,)
+            )
+            result = self.cursor.fetchone()
+            if not result:
+                return None
+
+            insurer_id = result['insurer_id']
+            product_id = result['product_id']
+
+            # Try to find existing document
+            self.cursor.execute(
+                """
+                SELECT document_id FROM document
+                WHERE insurer_id = %s AND product_id = %s AND doc_type = %s
+                LIMIT 1
+                """,
+                (insurer_id, product_id, doc_type)
+            )
+            doc_result = self.cursor.fetchone()
+
+            if doc_result:
+                return doc_result['document_id']
+
+            # Create placeholder document
+            file_path = f"data/evidence_text/{insurer_key}/{doc_type}/{insurer_key}_proposal.pdf"
+            self.cursor.execute(
+                """
+                INSERT INTO document
+                (insurer_id, product_id, doc_type, file_path, created_at)
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING document_id
+                """,
+                (insurer_id, product_id, doc_type, file_path, datetime.now())
+            )
+            new_doc = self.cursor.fetchone()
+            if new_doc:
+                logger.info(f"Created placeholder document for {insurer_key}/{doc_type}")
+                return new_doc['document_id']
+
+        except Exception as e:
+            logger.error(f"Error getting/creating proposal document: {e}")
+
+        return None
 
     def _insurer_key_to_kr(self, insurer_key: str) -> str:
         """Convert insurer_key to Korean name"""
         mapping = {
-            'samsung': '삼성생명',
+            'samsung': '삼성화재',
             'hyundai': '현대해상',
             'lotte': '롯데손해보험',
             'db': 'DB손해보험',

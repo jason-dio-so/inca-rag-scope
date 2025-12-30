@@ -19,7 +19,9 @@ HANDLERS:
 
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+from pathlib import Path
 import uuid
+import json
 
 from apps.api.chat_vm import (
     AssistantMessageVM,
@@ -31,11 +33,81 @@ from apps.api.chat_vm import (
     InsurerExplanationsSection,  # RENAMED from ExplanationSection
     InsurerExplanation,
     CommonNotesSection,  # UNIFIED (includes notices)
+    BulletGroup,  # NEW (STEP NEXT-14-β)
     EvidenceAccordionSection,  # RENAMED from EvidenceSection
     EvidenceItem,
     ChatRequest
 )
-from apps.api.dto import AmountAuditDTO
+from apps.api.dto import AmountAuditDTO, AmountDTO
+from apps.api.presentation_utils import (
+    format_amount_for_display,
+    get_type_c_explanation_note,
+    should_show_type_c_note
+)  # STEP NEXT-17
+
+
+# ============================================================================
+# Helper Functions
+# ============================================================================
+
+def _load_coverage_card(insurer: str, coverage_canonical: str) -> Optional[Dict[str, Any]]:
+    """
+    Load coverage card from JSONL file
+
+    Args:
+        insurer: Insurer code (e.g., "kb", "samsung")
+        coverage_canonical: Canonical coverage name
+
+    Returns:
+        Coverage card dict or None if not found
+    """
+    cards_path = Path(f"data/compare/{insurer}_coverage_cards.jsonl")
+
+    if not cards_path.exists():
+        return None
+
+    try:
+        with open(cards_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                card = json.loads(line)
+                if card.get('coverage_name_canonical') == coverage_canonical:
+                    return card
+    except Exception:
+        return None
+
+    return None
+
+
+def _get_amount_from_card(card: Optional[Dict[str, Any]]) -> AmountDTO:
+    """
+    Extract AmountDTO from coverage card
+
+    Args:
+        card: Coverage card dict (may be None)
+
+    Returns:
+        AmountDTO with proper status and value
+    """
+    if not card or 'amount' not in card:
+        return AmountDTO(
+            status="NOT_AVAILABLE",
+            value_text=None,
+            source_doc_type=None,
+            source_priority=None,
+            evidence_ref=None,
+            notes=[]
+        )
+
+    amount_data = card['amount']
+
+    return AmountDTO(
+        status=amount_data.get('status', 'UNCONFIRMED'),
+        value_text=amount_data.get('value_text'),
+        source_doc_type=amount_data.get('source_doc_type'),
+        source_priority=amount_data.get('source_priority'),
+        evidence_ref=amount_data.get('evidence_ref'),
+        notes=amount_data.get('notes', [])
+    )
 
 
 # ============================================================================
@@ -171,17 +243,23 @@ class Example2Handler(BaseHandler):
             is_header=True
         ))
 
-        # Data rows (mock data for demo)
+        # Data rows (load real amounts from coverage_cards)
         for item in detail_items:
             cells = [TableCell(text=item)]  # First column = item name
 
             for ins in insurers:
-                # Mock data (in production, query from Step11)
                 if item == "보장한도":
-                    # Use mock amount data
+                    # Load real amount from coverage_cards.jsonl
+                    insurer_code = ins.lower().replace("손해보험", "").replace("화재", "").replace("해상", "")
+                    card = _load_coverage_card(insurer_code, coverage_name)
+                    amount = _get_amount_from_card(card)
+
+                    # Format amount using presentation layer
+                    display_text = format_amount_for_display(amount, ins)
+
                     cells.append(TableCell(
-                        text="1천만원",  # Mock
-                        meta=CellMeta(status="CONFIRMED")
+                        text=display_text,
+                        meta=CellMeta(status=amount.status) if amount.status else None
                     ))
                 else:
                     cells.append(TableCell(text="-"))  # Placeholder
@@ -200,14 +278,25 @@ class Example2Handler(BaseHandler):
         coverage_name: str,
         insurers: List[str]
     ) -> InsurerExplanationsSection:
-        """Build parallel explanations (Step12)"""
+        """Build parallel explanations (from real amount data)"""
 
         explanations = []
 
         for ins in insurers:
-            # Mock explanation (in production, call Step12)
             insurer_display = self._format_insurer_name(ins)
-            text = f"{insurer_display}의 {coverage_name}는 가입설계서에 1천만원으로 명시되어 있습니다."
+            insurer_code = ins.lower().replace("손해보험", "").replace("화재", "").replace("해상", "")
+
+            # Load real amount
+            card = _load_coverage_card(insurer_code, coverage_name)
+            amount = _get_amount_from_card(card)
+
+            # Build explanation based on actual status
+            if amount.status == "CONFIRMED" and amount.value_text:
+                text = f"{insurer_display}의 {coverage_name}는 가입설계서에 {amount.value_text}으로 명시되어 있습니다."
+            elif amount.status == "UNCONFIRMED":
+                text = f"{insurer_display}의 {coverage_name}는 금액이 명시되지 않았습니다."
+            else:  # NOT_AVAILABLE
+                text = f"{insurer_display}는 {coverage_name} 담보가 확인되지 않았습니다."
 
             explanations.append(InsurerExplanation(
                 insurer=insurer_display,
@@ -224,21 +313,28 @@ class Example2Handler(BaseHandler):
         coverage_name: str,
         insurers: List[str]
     ) -> EvidenceAccordionSection:
-        """Build evidence section (collapsible)"""
+        """Build evidence section (from real coverage cards)"""
 
         items = []
 
         for ins in insurers:
-            # Mock evidence (in production, query from amount_fact)
             insurer_display = self._format_insurer_name(ins)
-            items.append(EvidenceItem(
-                evidence_ref_id=f"ev_{ins}_{coverage_name}",
-                insurer=insurer_display,
-                coverage_name=coverage_name,
-                doc_type="가입설계서",
-                page=4,
-                snippet="암진단비: 1천만원"  # Mock
-            ))
+            insurer_code = ins.lower().replace("손해보험", "").replace("화재", "").replace("해상", "")
+
+            # Load real card
+            card = _load_coverage_card(insurer_code, coverage_name)
+
+            if card and card.get('evidences'):
+                # Use first evidence (typically 약관)
+                first_evidence = card['evidences'][0]
+                items.append(EvidenceItem(
+                    evidence_ref_id=f"ev_{ins}_{coverage_name}",
+                    insurer=insurer_display,
+                    coverage_name=coverage_name,
+                    doc_type=first_evidence.get('doc_type', '약관'),
+                    page=first_evidence.get('page', 1),
+                    snippet=first_evidence.get('snippet', '')[:200]  # Limit snippet length
+                ))
 
         return EvidenceAccordionSection(items=items)
 
@@ -342,15 +438,22 @@ class Example3Handler(BaseHandler):
             is_header=True
         ))
 
-        # Data rows (one per coverage)
+        # Data rows (one per coverage, load real amounts)
         for coverage in coverage_names:
             cells = [TableCell(text=coverage)]
 
             for ins in insurers:
-                # Mock data (in production, query from Step11)
+                # Load real amount from coverage_cards
+                insurer_code = ins.lower().replace("손해보험", "").replace("화재", "").replace("해상", "")
+                card = _load_coverage_card(insurer_code, coverage)
+                amount = _get_amount_from_card(card)
+
+                # Format using presentation layer
+                display_text = format_amount_for_display(amount, ins)
+
                 cells.append(TableCell(
-                    text="1천만원",  # Mock
-                    meta=CellMeta(status="CONFIRMED")
+                    text=display_text,
+                    meta=CellMeta(status=amount.status) if amount.status else None
                 ))
 
             rows.append(TableRow(cells=cells))
@@ -391,20 +494,42 @@ class Example3Handler(BaseHandler):
         coverage_names: List[str],
         insurers: List[str]
     ) -> CommonNotesSection:
-        """Build common notes and notices (UNIFIED, fact-only, NO comparisons)"""
+        """
+        Build common notes and notices (UNIFIED, fact-only, NO comparisons)
 
-        bullets = [
-            # Common facts
-            "모든 보험사에서 가입설계서에 금액을 명시하고 있습니다",
-            "면책기간과 감액기간은 별도 확인이 필요합니다",
-            # Notices (caveats)
-            "가입설계서 기준이며 실제 약관과 다를 수 있습니다",
-            "보장한도는 가입 당시 조건에 따라 달라질 수 있습니다"
+        STEP NEXT-14-β: Use groups for visual separation (예시3)
+        STEP NEXT-17: Add Type C explanation if applicable
+        """
+
+        # Build base common notes
+        common_bullets = [
+            "가입설계서의 금액 표기 방식은 보험사/상품 구조에 따라 다를 수 있습니다",
+            "면책기간과 감액기간은 별도 확인이 필요합니다"
+        ]
+
+        # STEP NEXT-17: Add Type C structure explanation if needed
+        if should_show_type_c_note(insurers):
+            common_bullets.append(get_type_c_explanation_note())
+
+        # Build grouped bullets (시각 분리용)
+        groups = [
+            BulletGroup(
+                title="공통사항",
+                bullets=common_bullets
+            ),
+            BulletGroup(
+                title="유의사항",
+                bullets=[
+                    "가입설계서 기준이며 실제 약관과 다를 수 있습니다",
+                    "보장한도는 가입 당시 조건에 따라 달라질 수 있습니다"
+                ]
+            )
         ]
 
         return CommonNotesSection(
             title="공통사항 및 유의사항",
-            bullets=bullets
+            bullets=[],  # LEGACY (empty for grouped mode)
+            groups=groups  # NEW (grouped bullets)
         )
 
     def _build_evidence(
@@ -412,21 +537,29 @@ class Example3Handler(BaseHandler):
         coverage_names: List[str],
         insurers: List[str]
     ) -> EvidenceAccordionSection:
-        """Build evidence section"""
+        """Build evidence section (from real coverage cards)"""
 
         items = []
 
         for coverage in coverage_names:
             for ins in insurers:
                 insurer_display = self._format_insurer_name(ins)
-                items.append(EvidenceItem(
-                    evidence_ref_id=f"ev_{ins}_{coverage}",
-                    insurer=insurer_display,
-                    coverage_name=coverage,
-                    doc_type="가입설계서",
-                    page=4,
-                    snippet=f"{coverage}: 1천만원"  # Mock
-                ))
+                insurer_code = ins.lower().replace("손해보험", "").replace("화재", "").replace("해상", "")
+
+                # Load real card
+                card = _load_coverage_card(insurer_code, coverage)
+
+                if card and card.get('evidences'):
+                    # Use first evidence
+                    first_evidence = card['evidences'][0]
+                    items.append(EvidenceItem(
+                        evidence_ref_id=f"ev_{ins}_{coverage}",
+                        insurer=insurer_display,
+                        coverage_name=coverage,
+                        doc_type=first_evidence.get('doc_type', '약관'),
+                        page=first_evidence.get('page', 1),
+                        snippet=first_evidence.get('snippet', '')[:200]
+                    ))
 
         return EvidenceAccordionSection(items=items)
 

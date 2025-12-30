@@ -131,6 +131,26 @@ class InsurerExplanationsSection(BaseModel):
 # Common Notes Section (예시3: 공통사항)
 # ============================================================================
 
+class BulletGroup(BaseModel):
+    """
+    Bullet group for visual separation (NEW in STEP NEXT-14-β)
+
+    USAGE: 예시3에서 공통사항/유의사항을 시각적으로 분리 렌더
+    """
+    title: str  # e.g., "공통사항", "유의사항"
+    bullets: List[str]
+
+    @field_validator('bullets')
+    @classmethod
+    def validate_no_forbidden_words_in_bullets(cls, v: List[str]) -> List[str]:
+        from apps.api.policy.forbidden_language import validate_text_list
+        try:
+            validate_text_list(v)
+        except ValueError as e:
+            raise ValueError(f"Forbidden language in group bullets: {e}")
+        return v
+
+
 class CommonNotesSection(BaseModel):
     """
     Common notes section (UNIFIED with notices)
@@ -147,10 +167,15 @@ class CommonNotesSection(BaseModel):
     - Factual observations only (validated by policy module)
 
     FRONTEND COMPONENT: CommonNotes
+
+    STEP NEXT-14-β EXTENSION:
+    - groups: Optional[List[BulletGroup]] for visual separation (예시3)
+    - Rendering priority: groups (if exists) > bullets (fallback)
     """
     kind: Literal["common_notes"] = "common_notes"
     title: str = "공통사항 및 유의사항"  # Unified title
-    bullets: List[str]
+    bullets: List[str] = []  # LEGACY (flat bullets, 호환성 유지)
+    groups: Optional[List[BulletGroup]] = None  # NEW (grouped bullets for 예시3)
 
 
 # ============================================================================

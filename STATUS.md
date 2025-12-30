@@ -1,8 +1,8 @@
 # inca-rag-scope - 작업 현황 보고서
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
-**최종 업데이트**: 2025-12-29
-**현재 상태**: ✅ STEP NEXT-14 완료 (ChatGPT-style UI Integration)
+**최종 업데이트**: 2025-12-30
+**현재 상태**: ✅ STEP NEXT-18B 완료 (Step7 Amount Extraction Improved)
 
 ---
 
@@ -10,6 +10,10 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **🔧 Data Re-extraction** | STEP NEXT-18B | ✅ 완료 | 2025-12-30 |
+| **📊 Presentation Reflect** | STEP NEXT-18A | ✅ 완료 | 2025-12-30 |
+| **🔧 Type Correction** | STEP NEXT-17C | ✅ 완료 | 2025-12-30 |
+| **🔍 Quality Gates** | STEP NEXT-17B | ✅ 완료 | 2025-12-30 |
 | **🎯 Chat UI** | STEP NEXT-14 | ✅ 완료 | 2025-12-29 |
 | **🚀 Production** | STEP NEXT-13 | ✅ 완료 | 2025-12-29 |
 | **Explanation Layer** | STEP NEXT-12 | ✅ 완료 | 2025-12-29 |
@@ -18,11 +22,195 @@
 | **API Layer** | STEP NEXT-9.1 | ✅ 완료 | 2025-12-28 |
 | **DB Schema** | STEP NEXT-10B-2C-3 | ✅ 완료 | 2025-12-29 |
 
-**운영 준비 상태**: ✅ **PRODUCTION READY + CHAT UI** (ChatGPT 스타일 UI 통합 완료)
+**운영 준비 상태**: ✅ **PRODUCTION READY + DATA RE-EXTRACTED** (Type 교정 + 데이터 재추출 완료, CONFIRMED 비율 대폭 개선)
 
 ---
 
-## 🎯 최신 완료 항목 (2025-12-29)
+## 🎯 최신 완료 항목 (2025-12-30)
+
+### STEP NEXT-18B — Step7 Amount Extraction Improvement & Re-extraction ✅
+
+**목표**: STEP NEXT-17C에서 교정된 Type A 분류 결과를 데이터 추출에 반영하여 CONFIRMED 금액 추출률 개선
+
+**주요 성과**:
+- ✅ **Step7 Amount Extraction Script 신규 생성** (pipeline/step7_amount_extraction/)
+  - 번호 접두사 제거: "1. 암진단비" → "암진단비"
+  - 괄호 담보명 추출: "기본계약(암진단비)" → "암진단비"
+  - 금액 패턴 우선순위 개선: N천만원, N백만원 패턴 지원
+- ✅ **Hyundai 재추출 완료**
+  - Before: 8/37 CONFIRMED (21.6%)
+  - After: **24/37 CONFIRMED (64.9%)** ← **3배 증가**
+- ✅ **KB 재추출 완료**
+  - Before: 10/45 CONFIRMED (22.2%)
+  - After: **25/45 CONFIRMED (55.6%)** ← **2.5배 증가**
+- ✅ **DB 반영 완료** (step9_loader reset_then_load)
+- ✅ **Audit 검증 PASS**
+  - TYPE_MAP_DIFF: 0 (정합 유지)
+  - Step7 miss candidates: 57 → 16 (71% 감소)
+  - 전체 평균 CONFIRMED: 66.7% → 74.7% (+8.0%p)
+
+**성공 케이스**:
+- Hyundai "암진단비(유사암제외)": UNCONFIRMED → CONFIRMED "3천만원"
+- KB "골절진단비Ⅱ(치아파절제외)": UNCONFIRMED → CONFIRMED "10만원"
+- KB "상해입원일당(1일이상)Ⅱ": UNCONFIRMED → CONFIRMED "5천원"
+
+**완료 정의 달성**:
+- ✅ Step7 로직 개선 반영 (번호 접두사, 괄호 담보명)
+- ✅ coverage_cards.jsonl 재생성 (hyundai, kb)
+- ⚠️ CONFIRMED ≥ 90% (부분 달성: 64.9%, 55.6%)
+  - 가입설계서 구조상 한계 (메인 테이블 외 담보, 보험가입금액 참조 혼재)
+- ✅ Audit PASS (TYPE_MAP_DIFF = 0)
+- ✅ Completion 문서 작성 (STEP_NEXT_18B_COMPLETION.md)
+
+**산출물**:
+- 신규: pipeline/step7_amount_extraction/extract_and_enrich_amounts.py
+- 갱신: data/compare/{hyundai,kb}_coverage_cards.jsonl
+- 문서: STEP_NEXT_18B_COMPLETION.md
+
+**Next Steps (제안)**:
+- STEP NEXT-18C: 잔존 UNCONFIRMED 케이스 구조 분석 (가입설계서 전체 페이지 파싱)
+
+---
+
+### STEP NEXT-18A — Type Correction Reflected in Presentation Layer ✅
+
+**목표**: Type 교정 결과를 Presentation Layer에 반영 + 테스트 검증
+
+**주요 성과**:
+- ✅ **Type Map 검증** (config/amount_lineage_type_map.json)
+  - hyundai: A, kb: A 확인 (STEP 17C 변경사항 유지)
+- ✅ **Presentation Layer 갱신** (apps/api/presentation_utils.py)
+  - is_type_c_insurer("hyundai") → False (was True)
+  - is_type_c_insurer("kb") → False (was True)
+  - UNCONFIRMED 금액 표시: "보험가입금액 기준" → "금액 미표기" (hyundai/kb)
+- ✅ **테스트 수정 완료** (tests/test_presentation_utils.py)
+  - Type C 테스트에서 hyundai/kb 제외
+  - hyundai/kb는 Type A로 테스트 (STEP 17C 반영)
+  - 전체 테스트 통과: 214 passed, 58 xfailed
+- ✅ **Audit 재실행** (tools/audit/run_step_next_17b_audit.py)
+  - TYPE_MAP_DIFF: 0 discrepancies (정합 유지)
+  - 57 Step7 miss candidates (변화 없음 - 데이터 미재추출)
+
+**핵심 발견**:
+- 📊 **Type Map의 이중 역할**:
+  - Presentation용 (완료 ✅): UI 메시지 결정 (UNCONFIRMED 시 표시 텍스트)
+  - Extraction용 (미완 ⏸️): PDF 파싱 전략 (현재 코드베이스에 미존재)
+- 🔍 **데이터 미재추출**:
+  - coverage_cards.jsonl은 **정적 산출물**
+  - STEP 17C 이전 Type C 로직으로 생성된 파일 그대로 유지
+  - CONFIRMED 비율: hyundai 21.6%, kb 22.2% (변화 없음)
+- ⏭️ **실제 개선은 다음 STEP**:
+  - Step7 로직 개선 + 재추출 시에만 CONFIRMED 비율 증가 예상
+
+**변경 파일**:
+- `tests/test_presentation_utils.py` - hyundai/kb Type A로 수정
+- (NO data files changed - coverage_cards.jsonl unchanged)
+
+**다음 단계 (STEP NEXT-18B)**:
+1. Step7 추출 로직 개선:
+   - 번호 접두사 제거 (`^\d+\s+`)
+   - 괄호 담보명 추출 (`기본계약\(([^)]+)\)`)
+2. hyundai/kb coverage_cards.jsonl 재생성
+3. CONFIRMED 비율 검증 (21.6%/22.2% → ~90%+ 예상)
+
+**참고**: `STEP_NEXT_18A_COMPLETION.md`
+
+---
+
+## 🎯 이전 완료 항목 (2025-12-30)
+
+### STEP NEXT-17C — Type Map Correction + Step7 Miss Triage ✅
+
+**목표**: Type 오분류 교정 + Step7 Miss 후보 트리아지 (증거 기반)
+
+**주요 성과**:
+- ✅ **Type 재판정 완료** (docs/audit/TYPE_REVIEW_STEP17C.md)
+  - hyundai: C → A (증거: Page 4 표 구조 "담보명|가입금액|보험료")
+  - kb: C → A (증거: Page 3 표 구조 "보장명|가입금액|보험료")
+  - hanwha: C 유지 (UNKNOWN - 증거 부족, 추가 조사 필요)
+- ✅ **Config 교정 완료** (config/amount_lineage_type_map.json)
+  - 변경 전: hyundai=C, kb=C
+  - 변경 후: hyundai=A, kb=A
+  - TYPE_MAP_DIFF_REPORT: 불일치 2건 → 0건 (100% 정합)
+- ✅ **Step7 Miss 트리아지 15개 완료** (docs/audit/STEP7_MISS_TRIAGE_STEP17C.md)
+  - TRUE_MISS_TABLE: 3개 (20%) - 진짜 추출 누락
+  - FALSE_POSITIVE: 10개 (67%) - 다른 담보 금액 오탐
+  - NAME_MISMATCH: 2개 (13%) - 담보명 정규화 이슈
+- ✅ **Step7 개선 타겟 확정** (docs/audit/STEP7_MISS_TARGETS.md)
+  - Target 1: hyundai/상해사망 - 괄호 담보명 "기본계약(상해사망)"
+  - Target 2-3: kb/뇌혈관질환수술비, 허혈성심장질환수술비 - 번호 접두사 "209 ", "213 "
+- ✅ **회귀 테스트 정리** (tests/test_step7_miss_candidates_regression.py 헤더 업데이트)
+
+**핵심 발견**:
+- 🎯 **Type 교정 영향 예측**:
+  - hyundai: CONFIRMED 21.6% → ~90%+ 예상 (Type A 재추출 시)
+  - kb: CONFIRMED 22.2% → ~90%+ 예상 (Type A 재추출 시)
+- 🔍 **Step7 개선 패턴 식별**:
+  - 패턴 1: KB 번호 접두사 (`\d+\s+`) → 2개 타겟
+  - 패턴 2: Hyundai 괄호 담보명 (`기본계약(...)`) → 1개 타겟
+- 📊 **False Positive 비율 높음** (67%):
+  - 원인: 금액 탐지 시 담보명 근접성 미검증
+  - 개선: 문맥 윈도우 + 담보명 거리 체크 필요
+
+**다음 단계 (STEP 18 or Step7 Improvement)**:
+1. Step11 재추출 (hyundai/kb Type A 로직 적용)
+2. Step7 개선:
+   - 번호 접두사 제거 로직 추가
+   - 괄호 담보명 추출 로직 추가
+3. 3개 타겟 검증 (UNCONFIRMED → CONFIRMED 전환 확인)
+4. Hanwha 추가 조사 (PDF 페이지 확장/OCR/패턴 확장)
+
+**Lock 상태**: ✅ Step7/11/12/13 로직 불변 (이번 STEP은 분석/교정만)
+
+**참고**:
+- `docs/audit/TYPE_REVIEW_STEP17C.md`
+- `docs/audit/TYPE_MAP_PATCH_NOTES.md`
+- `docs/audit/STEP7_MISS_TRIAGE_STEP17C.md`
+- `docs/audit/STEP7_MISS_TARGETS.md`
+
+---
+
+## 🎯 이전 완료 항목 (2025-12-30)
+
+### STEP NEXT-17B — All-Insurers Verification + Regression Gates ✅
+
+**목표**: 전 보험사 Type 분류 검증 + Step7 Miss 탐지 + 회귀 방지 게이트
+
+**주요 성과**:
+- ✅ **4개 Audit Reports 생성** (docs/audit/)
+  - AMOUNT_STATUS_DASHBOARD.md: 8개 보험사 가입금액 추출 품질 대시보드
+  - INSURER_TYPE_BY_EVIDENCE.md: PDF 문서 구조 기반 Type 판정 (증거 포함)
+  - TYPE_MAP_DIFF_REPORT.md: Config vs Evidence 차이 분석
+  - STEP7_MISS_CANDIDATES.md: 57개 Step7 누락 후보 탐지
+- ✅ **Audit Script**: tools/audit/run_step_next_17b_audit.py (단일 실행, deterministic)
+- ✅ **Regression Tests 2개 추가**
+  - test_audit_amount_status_dashboard_smoke.py: 데이터 무결성 검증 (6 PASS)
+  - test_step7_miss_candidates_regression.py: 57 XFAIL 게이트 (향후 개선 추적)
+- ✅ **전체 테스트 통과**: 214 passed, 58 xfailed (회귀 방지 확인)
+
+**핵심 발견**:
+- 🚨 **Type 오분류 2건**: hyundai/kb가 Config=C이나 Evidence=A/B로 판정
+  - hyundai CONFIRMED: 21.6%, kb CONFIRMED: 22.2% (낮은 추출률)
+  - 원인: Type 오분류로 인한 잘못된 추출 전략 적용 가능성
+- 📊 **추출 품질 분포**:
+  - 우수: samsung(100%), db(100%), meritz(97.1%), heungkuk(94.4%)
+  - 개선필요: hanwha(10.8%), hyundai(21.6%), kb(22.2%)
+- 🔍 **Step7 Miss 후보 57건**: hyundai(13), kb(24), lotte(20)
+  - 주요 담보: 사망, 표적항암약물치료, 카티항암치료, 뇌혈관질환
+
+**다음 단계**:
+1. hyundai/kb Type 분류 수동 검증 + config 업데이트 (필요시 Step11 재실행)
+2. 57개 miss 후보 수동 리뷰 (진짜 miss vs false positive 판별)
+3. Step7 추출 로직 개선 (진짜 miss 확정 시)
+4. Hanwha 심층 분석 (10.8% CONFIRMED 원인 파악)
+
+**Lock 상태**: ✅ Step7/11/12/13 로직 불변 (검증 전용)
+
+**참고**: `STEP_NEXT_17B_COMPLETION.md` 참조
+
+---
+
+## 🎯 이전 완료 항목 (2025-12-29)
 
 ### STEP NEXT-14 — ChatGPT-style UI Integration ✅
 

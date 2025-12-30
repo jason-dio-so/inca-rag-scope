@@ -1,0 +1,32 @@
+[
+  {
+    "path": "pipeline/step7_amount/run.py",
+    "sha256": "dc7403a2957eab2c08fa7adeac9776641d5df6ba2a2457f91c7d1fd22c024c86",
+    "size": 2731
+  },
+  {
+    "path": "pipeline/step7_amount/proposal_profile.py",
+    "sha256": "8aeb7e96f529f56a986a318bc8b65f063ef05b09bbf75ed0f502d1da8d429bd8",
+    "size": 1374
+  },
+  {
+    "path": "pipeline/step7_amount/extract_proposal_amount.py",
+    "sha256": "6c5fc05ab2094f32fec4e8faf2bc7a6071b4f7b6a906985dd4a949f9b261c138",
+    "size": 3118
+  },
+  {
+    "path": "pipeline/step7_amount/__init__.py",
+    "sha256": "c3a248e456bd91dcabcb9bcf135141972d03188f1690c670468d85df6877b799",
+    "size": 377
+  },
+  {
+    "path": "pipeline/step7_amount_integration/__init__.py",
+    "sha256": "d71702f779be4c1c224979747fd3c90f89724294c4b8b7257d62657a75f94774",
+    "size": 262
+  },
+  {
+    "path": "pipeline/step7_amount_integration/integrate_amount.py",
+    "sha256": "153ade81037198c7fb087d580ec97458766673b1b9c73b12ae1131285237342f",
+    "size": 2028
+  }
+]

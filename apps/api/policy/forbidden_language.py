@@ -90,7 +90,7 @@ EVALUATIVE_FORBIDDEN_PATTERNS: List[str] = [
     r'(?:선택|판단|결론)(?:하세요|합니다|하다)',  # "선택하세요", "판단합니다"
 
     # Calculations/Aggregations (evaluative context)
-    r'(?:평균|합계|총합)(?:은|입니다)',  # "평균은", "합계입니다"
+    r'(?:평균|합계|총합)(?:은|는|입니다)',  # "평균은", "합계는", "합계입니다"
     r'차이(?:는|가)\s+[0-9]',  # "차이는 100만원" (calculation)
 ]
 

@@ -1,0 +1,26 @@
+{
+  "timestamp": "20251229-002809",
+  "insurers": {
+    "samsung": {
+      "type": "A",
+      "stats": {
+        "total": 41,
+        "primary": 41,
+        "secondary": 0,
+        "unconfirmed": 0,
+        "primary_pct": 100.0,
+        "secondary_pct": 0.0,
+        "unconfirmed_pct": 0.0,
+        "coverage_pct": 100.0
+      },
+      "schema_valid": true,
+      "forbidden_valid": true,
+      "type_expectations_met": true,
+      "validation_summary": {
+        "schema_violations": 0,
+        "forbidden_violations": 0,
+        "type_warnings": 0
+      }
+    }
+  }
+}
