@@ -112,9 +112,51 @@ class ScopeGate:
 
 # Utility functions
 
+def resolve_scope_csv(insurer: str, scope_dir: Optional[Path] = None) -> Path:
+    """
+    STEP NEXT-18X: Canonical scope CSV resolver with fallback priority
+
+    Priority (SSOT contract):
+    1. {insurer}_scope_mapped.sanitized.csv (highest priority - sanitized SSOT)
+    2. {insurer}_scope_mapped.csv (middle fallback - raw mapping)
+    3. {insurer}_scope.csv (last fallback - original scope)
+
+    Args:
+        insurer: 보험사명 (예: "samsung")
+        scope_dir: scope CSV 디렉토리 (기본값: data/scope)
+
+    Returns:
+        Path: 존재하는 최우선 scope CSV 경로
+
+    Raises:
+        FileNotFoundError: 모든 fallback이 실패한 경우
+    """
+    if scope_dir is None:
+        scope_dir = Path(__file__).parent.parent / "data" / "scope"
+    else:
+        scope_dir = Path(scope_dir)
+
+    # Priority order
+    candidates = [
+        scope_dir / f"{insurer}_scope_mapped.sanitized.csv",  # 1st priority
+        scope_dir / f"{insurer}_scope_mapped.csv",            # 2nd priority
+        scope_dir / f"{insurer}_scope.csv"                     # 3rd priority
+    ]
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    # All failed
+    raise FileNotFoundError(
+        f"No scope CSV found for insurer '{insurer}'. Tried:\n" +
+        "\n".join(f"  - {c}" for c in candidates)
+    )
+
+
 def load_scope_gate(insurer: str, scope_dir: Optional[str] = None) -> ScopeGate:
     """
-    보험사별 Scope Gate 로드
+    보험사별 Scope Gate 로드 (STEP NEXT-18X: Use canonical resolver)
 
     Args:
         insurer: 보험사명 (예: "삼성생명")
@@ -123,14 +165,8 @@ def load_scope_gate(insurer: str, scope_dir: Optional[str] = None) -> ScopeGate:
     Returns:
         ScopeGate: 초기화된 scope gate 인스턴스
     """
-    if scope_dir is None:
-        # 기본 경로: inca-rag-scope/data/scope
-        scope_dir = Path(__file__).parent.parent / "data" / "scope"
-    else:
-        scope_dir = Path(scope_dir)
-
-    scope_csv = scope_dir / f"{insurer}_scope.csv"
-
+    scope_dir_path = Path(scope_dir) if scope_dir else None
+    scope_csv = resolve_scope_csv(insurer, scope_dir_path)
     return ScopeGate(str(scope_csv))
 
 

@@ -25,9 +25,15 @@ import argparse
 import csv
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from core.scope_gate import resolve_scope_csv
 
 
 @dataclass
@@ -345,7 +351,10 @@ def main():
 
     # Paths
     proposal_dir = project_root / 'data' / 'evidence_text' / insurer / '가입설계서'
-    scope_mapped_csv = project_root / 'data' / 'scope' / f'{insurer}_scope_mapped.csv'
+
+    # STEP NEXT-18X: Use canonical resolver
+    scope_mapped_csv = resolve_scope_csv(insurer, project_root / 'data' / 'scope')
+
     coverage_cards_jsonl = project_root / 'data' / 'compare' / f'{insurer}_coverage_cards.jsonl'
     output_jsonl = project_root / 'data' / 'compare' / f'{insurer}_coverage_cards.jsonl'
 
