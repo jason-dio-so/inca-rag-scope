@@ -3,8 +3,21 @@
 STEP NEXT-DB-2C: STEP 9 Loader (SIMPLIFIED VERSION - facts only)
 ================================================================
 
+⚠️  DEPRECATED: This version contains extraction logic violations.
+    Use apps/loader/step9_loader.py instead.
+
 Simplified implementation focusing on core functionality.
 """
+
+import sys
+import warnings
+
+warnings.warn(
+    "step9_loader_simple.py is DEPRECATED due to lineage violations. "
+    "Use step9_loader.py instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 import argparse
 import csv

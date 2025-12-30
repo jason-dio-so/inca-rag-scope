@@ -215,10 +215,17 @@ def test_example3_handler_execution():
     # Verify sections (table + explanation + common_notes + evidence) - UNIFIED to 4
     assert len(vm.sections) == 4
 
-    # Verify common notes section (now unified with notices)
+    # Verify common notes section (now using groups for 예시3)
     common_notes = [s for s in vm.sections if s.kind == "common_notes"]
     assert len(common_notes) == 1
-    assert len(common_notes[0].bullets) >= 2  # At least 2 bullets (common + notices)
+
+    # STEP NEXT-14-β: 예시3 uses groups for visual separation
+    assert common_notes[0].groups is not None
+    assert len(common_notes[0].groups) == 2  # 공통사항 + 유의사항
+    assert common_notes[0].groups[0].title == "공통사항"
+    assert common_notes[0].groups[1].title == "유의사항"
+    assert len(common_notes[0].groups[0].bullets) >= 1
+    assert len(common_notes[0].groups[1].bullets) >= 1
 
 
 # ============================================================================

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 테스트</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .status.ok {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.fail {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Production API 테스트</h1>
+
+        <div class="test-section">
+            <h2>1. Health Check <span id="health-status" class="status"></span></h2>
+            <button onclick="testHealth()">Health Check 실행</button>
+            <div id="health-result" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Example 1 - 보험료 참고 <span id="ex1-status" class="status"></span></h2>
+            <button onclick="testExample1()">PREMIUM_REFERENCE 테스트</button>
+            <div id="ex1-result" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Example 2 - 담보 조건 비교 <span id="ex2-status" class="status"></span></h2>
+            <button onclick="testExample2()">COVERAGE_CONDITION_DIFF 테스트</button>
+            <div id="ex2-result" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Example 3 - 상품 요약 <span id="ex3-status" class="status"></span></h2>
+            <button onclick="testExample3()">PRODUCT_SUMMARY 테스트</button>
+            <div id="ex3-result" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>5. Example 4 - O/X 테이블 <span id="ex4-status" class="status"></span></h2>
+            <button onclick="testExample4()">COVERAGE_AVAILABILITY 테스트</button>
+            <div id="ex4-result" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>6. 전체 테스트 실행</h2>
+            <button onclick="runAllTests()" style="background: #28a745;">모든 테스트 실행</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8001';
+
+        async function testHealth() {
+            const resultDiv = document.getElementById('health-result');
+            const statusSpan = document.getElementById('health-status');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>⏳ 테스트 중...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+
+                if (response.ok && data.status === 'ok') {
+                    statusSpan.className = 'status ok';
+                    statusSpan.textContent = '✓ OK';
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Health Check 성공!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    throw new Error('Health check failed');
+                }
+            } catch (error) {
+                statusSpan.className = 'status fail';
+                statusSpan.textContent = '✗ FAIL';
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Health Check 실패</p>
+                    <p>에러: ${error.message}</p>
+                    <p>API 서버가 실행 중인지 확인하세요: ${API_BASE_URL}</p>
+                `;
+            }
+        }
+
+        async function testExample1() {
+            await testCompare('ex1', 'PREMIUM_REFERENCE', {
+                intent: "PREMIUM_REFERENCE",
+                insurers: ["SAMSUNG", "HANWHA"],
+                products: [
+                    {insurer: "SAMSUNG", product_name: "삼성생명 무배당 암보험"},
+                    {insurer: "HANWHA", product_name: "한화생명 무배당 암보험"}
+                ],
+                target_coverages: []
+            });
+        }
+
+        async function testExample2() {
+            await testCompare('ex2', 'COVERAGE_CONDITION_DIFF', {
+                intent: "COVERAGE_CONDITION_DIFF",
+                insurers: ["SAMSUNG", "HANWHA"],
+                products: [
+                    {insurer: "SAMSUNG", product_name: "삼성생명 무배당 암보험"},
+                    {insurer: "HANWHA", product_name: "한화생명 무배당 암보험"}
+                ],
+                target_coverages: [{coverage_code: "A4200_1"}]
+            });
+        }
+
+        async function testExample3() {
+            await testCompare('ex3', 'PRODUCT_SUMMARY', {
+                intent: "PRODUCT_SUMMARY",
+                insurers: ["SAMSUNG", "HANWHA"],
+                products: [
+                    {insurer: "SAMSUNG", product_name: "삼성생명 무배당 암보험"},
+                    {insurer: "HANWHA", product_name: "한화생명 무배당 암보험"}
+                ],
+                target_coverages: []
+            });
+        }
+
+        async function testExample4() {
+            await testCompare('ex4', 'COVERAGE_AVAILABILITY', {
+                intent: "COVERAGE_AVAILABILITY",
+                insurers: ["SAMSUNG", "HANWHA"],
+                products: [
+                    {insurer: "SAMSUNG", product_name: "삼성생명 무배당 암보험"},
+                    {insurer: "HANWHA", product_name: "한화생명 무배당 암보험"}
+                ],
+                target_coverages: [{coverage_code: "A4220_1"}, {coverage_code: "A4230_1"}]
+            });
+        }
+
+        async function testCompare(exampleId, intentName, requestBody) {
+            const resultDiv = document.getElementById(`${exampleId}-result`);
+            const statusSpan = document.getElementById(`${exampleId}-status`);
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>⏳ 테스트 중...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/compare`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusSpan.className = 'status ok';
+                    statusSpan.textContent = '✓ OK';
+
+                    // 응답 요약
+                    const summary = `
+                        <p class="success">✅ ${intentName} 테스트 성공!</p>
+                        <h3>응답 요약:</h3>
+                        <ul>
+                            <li><strong>Intent:</strong> ${data.meta?.intent || 'N/A'}</li>
+                            <li><strong>Query ID:</strong> ${data.meta?.query_id || 'N/A'}</li>
+                            <li><strong>Timestamp:</strong> ${data.meta?.timestamp || 'N/A'}</li>
+                            <li><strong>Comparison Type:</strong> ${data.comparison?.type || 'N/A'}</li>
+                            <li><strong>Columns:</strong> ${data.comparison?.columns?.join(', ') || 'N/A'}</li>
+                            <li><strong>Rows:</strong> ${data.comparison?.rows?.length || 0}개</li>
+                        </ul>
+                        <details>
+                            <summary><strong>전체 응답 보기</strong></summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    `;
+                    resultDiv.innerHTML = summary;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${data.detail || 'Unknown error'}`);
+                }
+            } catch (error) {
+                statusSpan.className = 'status fail';
+                statusSpan.textContent = '✗ FAIL';
+                resultDiv.innerHTML = `
+                    <p class="error">❌ ${intentName} 테스트 실패</p>
+                    <p>에러: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function runAllTests() {
+            console.log('Running all tests...');
+            await testHealth();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testExample1();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testExample2();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testExample3();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testExample4();
+            alert('모든 테스트 완료! 결과를 확인하세요.');
+        }
+
+        // 페이지 로드 시 자동으로 Health Check 실행
+        window.addEventListener('load', () => {
+            testHealth();
+        });
+    </script>
+</body>
+</html>
