@@ -1,26 +1,21 @@
 #!/usr/bin/env python3
 """
-KB Step7 Extraction Miss - Regression Gate
-STEP NEXT-17-KB: Document known extraction failure
+KB Step7 Extraction - Regression Gate
+STEP NEXT-18X-FIX: ✅ FIXED - KB amount extraction now working
 
 PURPOSE:
-Document that KB 암진단비(유사암제외) amount extraction is currently FAILING
-despite the amount being explicitly present in the proposal document.
-
-THIS TEST IS EXPECTED TO FAIL (xfail) UNTIL STEP7 IS FIXED.
+Regression test to ensure KB 암진단비(유사암제외) amount extraction continues to work.
 
 EVIDENCE:
 - Document: data/sources/insurers/kb/가입설계서/KB_가입설계서.pdf
 - Page 2, Line 16: "70 암진단비(유사암제외) 3천만원 36,420 20년/100세"
-- Current Step7 result: status=UNCONFIRMED, value_text=None
-- Expected Step7 result: status=CONFIRMED, value_text="3천만원"
+- Current Step7 result: status=CONFIRMED, value_text="3천만원" ✅
+- Expected Step7 result: status=CONFIRMED, value_text="3천만원" ✅
 
 USAGE:
-This test serves as a regression gate. When Step7 is fixed in a future STEP,
-this test will PASS and confirm the fix is working.
+This test serves as a regression gate to ensure KB extraction continues to work.
 
-Current state: XFAIL (expected failure)
-Future state: PASS (after Step7 fix)
+Current state: ✅ PASS (fixed in STEP NEXT-18X-FIX)
 """
 
 import json
@@ -28,10 +23,6 @@ import pytest
 from pathlib import Path
 
 
-@pytest.mark.xfail(
-    reason="KB 암진단비 3천만원 extraction not yet implemented (Step7 miss)",
-    strict=True
-)
 def test_kb_cancer_diagnosis_amount_extraction():
     """
     REGRESSION GATE: KB 암진단비(유사암제외) should extract "3천만원"

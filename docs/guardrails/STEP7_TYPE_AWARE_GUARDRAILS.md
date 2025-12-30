@@ -215,10 +215,12 @@ Expected: 61 passed
 
 - `config/amount_lineage_type_map.json` - Insurer type map (A/B/C)
 
-### Reports
+### Reports (REMOVED)
 
-- `reports/step7_amount_validation_{insurer}.md` - Per-insurer validation report
-- `reports/amount_validation_stats_{timestamp}.json` - Consolidated statistics
+- ~~`reports/step7_amount_validation_{insurer}.md`~~ (REMOVED)
+- ~~`reports/amount_validation_stats_{timestamp}.json`~~ (REMOVED)
+
+**Current SSOT**: `docs/audit/AMOUNT_STATUS_DASHBOARD.md`
 
 ---
 
@@ -268,9 +270,10 @@ Forbidden: ✅ PASS
 
 ## Reference
 
-- Type definition report: `reports/amount_lineage_typing_20251229-001053.md`
+- Type definition report: ~~`reports/amount_lineage_typing_20251229-001053.md`~~ (REMOVED)
 - Completion report: `STEP_NEXT_10B_2C_4_COMPLETION.md`
 - Lineage snapshot: `docs/lineage_snapshots/pre_10b2c4/`
+- **Current SSOT**: `docs/audit/AMOUNT_STATUS_DASHBOARD.md`
 
 ---
 

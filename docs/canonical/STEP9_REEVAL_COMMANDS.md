@@ -104,11 +104,14 @@ wc -l data/evidence_pack/db_evidence_pack.jsonl
 wc -l data/evidence_pack/meritz_evidence_pack.jsonl
 ```
 
-### Check Reports
+### Check Reports (REMOVED - use coverage_cards)
 ```bash
-ls -lh reports/hanwha_scope_report.md
-ls -lh reports/db_scope_report.md
-ls -lh reports/meritz_scope_report.md
+# ~~ls -lh reports/hanwha_scope_report.md~~ (REMOVED)
+# ~~ls -lh reports/db_scope_report.md~~ (REMOVED)
+# ~~ls -lh reports/meritz_scope_report.md~~ (REMOVED)
+
+# Current SSOT:
+ls -lh data/compare/*_coverage_cards.jsonl
 ```
 
 ## Success Criteria

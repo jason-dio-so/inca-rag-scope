@@ -32,8 +32,9 @@ class TestConsistency:
 
     def test_cards_match_scope_data_count(self):
         """Cards JSONL line count matches scope data rows (excluding header)"""
-        samsung_scope = BASE_DIR / "data" / "scope" / "samsung_scope.csv"
-        meritz_scope = BASE_DIR / "data" / "scope" / "meritz_scope.csv"
+        # STEP NEXT-18X-FIX: Use sanitized scope files (canonical source)
+        samsung_scope = BASE_DIR / "data" / "scope" / "samsung_scope_mapped.sanitized.csv"
+        meritz_scope = BASE_DIR / "data" / "scope" / "meritz_scope_mapped.sanitized.csv"
         samsung_cards = BASE_DIR / "data" / "compare" / "samsung_coverage_cards.jsonl"
         meritz_cards = BASE_DIR / "data" / "compare" / "meritz_coverage_cards.jsonl"
 
@@ -101,15 +102,6 @@ class TestConsistency:
 
         assert codes_in_both + codes_only == total, \
             f"Inconsistent stats: {codes_in_both} + {codes_only} != {total}"
-
-    def test_snapshot_file_exists(self):
-        """Consistency snapshot file exists"""
-        snapshot = BASE_DIR / "reports" / "step5_consistency_snapshot.txt"
-        assert snapshot.exists(), "Consistency snapshot not found"
-
-        content = snapshot.read_text()
-        assert "=== STATS JSON ===" in content, "Snapshot missing stats section"
-        assert "total_codes_compared" in content, "Snapshot missing stats data"
 
     def test_locked_values_match_snapshot(self):
         """Key values match the consistency snapshot"""

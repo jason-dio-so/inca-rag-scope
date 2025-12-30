@@ -126,17 +126,17 @@ STEP 6-γ 검증 결과, KB 사업방법서는 "암진단비" 텍스트가 28 pa
 M  pipeline/step4_evidence_search/search_evidence.py
 M  data/evidence_pack/kb_evidence_pack.jsonl
 M  data/compare/kb_coverage_cards.jsonl
-M  reports/a4200_1_8insurers.md
+~~M  reports/a4200_1_8insurers.md~~ (REMOVED)
 ```
 
 ---
 
-## 산출물
+## 산출물 (Historical)
 
 1. **Code**: `pipeline/step4_evidence_search/search_evidence.py` (STEP 6-δ rule added)
-2. **Evidence Pack**: `data/evidence_pack/kb_evidence_pack.jsonl` (regenerated)
-3. **Coverage Cards**: `data/compare/kb_coverage_cards.jsonl` (regenerated)
-4. **Report**: `reports/a4200_1_8insurers.md` (KB 사업방법서 hit=1 반영)
+2. **Evidence Pack**: ~~`data/evidence_pack/kb_evidence_pack.jsonl`~~ (REMOVED - integrated into coverage_cards)
+3. **Coverage Cards**: `data/compare/kb_coverage_cards.jsonl` (✅ SSOT)
+4. **Report**: ~~`reports/a4200_1_8insurers.md`~~ (REMOVED)
 
 ---
 

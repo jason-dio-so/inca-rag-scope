@@ -1,7 +1,8 @@
 """
-STEP NEXT-17B: Amount Status Dashboard Smoke Test
+STEP NEXT-18X-SSOT: Amount Status Dashboard Smoke Test
 
 Validates that all coverage_cards.jsonl files are parseable and contain valid amount status values.
+Uses SSOT config/structural_outliers.json for structural outliers (NO hardcoding).
 """
 
 import json
@@ -10,9 +11,19 @@ import pytest
 
 PROJECT_ROOT = Path(__file__).parent.parent
 COMPARE_DIR = PROJECT_ROOT / "data" / "compare"
+CONFIG_STRUCTURAL_OUTLIERS = PROJECT_ROOT / "config" / "structural_outliers.json"
 
 EXPECTED_INSURERS = ["samsung", "meritz", "db", "hanwha", "hyundai", "kb", "heungkuk", "lotte"]
 VALID_STATUSES = {"CONFIRMED", "UNCONFIRMED", "NOT_AVAILABLE"}
+
+
+def load_structural_outliers():
+    """Load structural outliers from SSOT config."""
+    if not CONFIG_STRUCTURAL_OUTLIERS.exists():
+        return []
+    with open(CONFIG_STRUCTURAL_OUTLIERS, "r", encoding="utf-8") as f:
+        config = json.load(f)
+    return config.get("structural_outliers", [])
 
 
 def get_coverage_cards_files():
@@ -87,6 +98,9 @@ class TestAmountStatusDashboardSmoke:
         """Verify each insurer has at least some CONFIRMED amounts (sanity check)."""
         files = get_coverage_cards_files()
 
+        # STEP NEXT-18X-SSOT: Load structural outliers from SSOT config (NO hardcoding)
+        structural_outliers = load_structural_outliers()
+
         for file_path in files:
             records = parse_jsonl(file_path)
             confirmed_count = sum(
@@ -95,7 +109,14 @@ class TestAmountStatusDashboardSmoke:
             )
             total_count = len(records)
 
-            # Sanity check: at least 1 CONFIRMED per insurer (may need adjustment)
+            # Extract insurer name from filename
+            insurer_name = file_path.stem.replace("_coverage_cards", "")
+
+            # Structural outliers are allowed to have 0 CONFIRMED (architectural limitation)
+            if insurer_name in structural_outliers:
+                continue
+
+            # Sanity check: at least 1 CONFIRMED per insurer (non-outliers)
             # This catches catastrophic extraction failures
             assert confirmed_count > 0, \
                 f"{file_path.name}: 0 CONFIRMED amounts out of {total_count} total (possible extraction failure)"

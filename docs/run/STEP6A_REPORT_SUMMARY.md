@@ -1,10 +1,12 @@
-# STEP 6-α — Multi-Insurer Report Summary
+# STEP 6-α — Multi-Insurer Report Summary (Historical)
 
 ## Overview
 
 **Coverage Code**: A4200_1
-**Report File**: `reports/a4200_1_8insurers.md`
+**Report File**: ~~`reports/a4200_1_8insurers.md`~~ (REMOVED)
 **Date**: 2025-12-27
+
+⚠️ **Note**: This is a historical record. Current SSOT is `data/compare/*_coverage_cards.jsonl`
 
 ## Metrics
 
@@ -33,11 +35,11 @@
 - **All 3 doc types** (약관 + 사업방법서 + 상품요약서): 6 insurers
 - **Policy only** (약관만): 1 insurers
 
-## Verification Commands
+## Verification Commands (Historical)
 
 ```bash
-# View generated report
-cat reports/a4200_1_8insurers.md
+# View generated report (REMOVED)
+# cat reports/a4200_1_8insurers.md
 ```
 
 ## Constraints Verified

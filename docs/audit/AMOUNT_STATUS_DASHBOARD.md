@@ -9,10 +9,10 @@
 | Insurer | IN-SCOPE CONFIRMED | IN-SCOPE UNCONFIRMED | IN-SCOPE Total | CONFIRMED % |
 |---------|-------------------|---------------------|---------------|-------------|
 | db | 26 | 0 | 26 | 100.0% |
-| hanwha | 1 | 22 | 23 | 4.3% |
+| hanwha | 4 | 19 | 23 | 17.4% |
 | heungkuk | 0 | 30 | 30 | 0.0% |
 | hyundai | 24 | 1 | 25 | 96.0% |
-| kb | 25 | 0 | 25 | 100.0% |
+| kb | 22 | 3 | 25 | 88.0% |
 | lotte | 30 | 0 | 30 | 100.0% |
 | meritz | 26 | 0 | 26 | 100.0% |
 | samsung | 33 | 0 | 33 | 100.0% |
@@ -34,7 +34,10 @@
 
 ## Structural Outliers (Separate Tracking)
 
-**Hanwha & Heungkuk**: Known structural mismatches (담보명 divergence)
+**SSOT Source**: config/structural_outliers.json
+**Outliers**: hanwha, heungkuk
+
+**Known structural mismatches (담보명 divergence)**:
 - OUT-OF-SCOPE count elevated due to proposal-to-canonical naming gaps
 - NOT a KPI contamination issue - architectural limitation
 
@@ -58,24 +61,19 @@ _10년) (mapping_status=unmatched, amount_status=UNCONFIRMED)
 
 ## KPI Interpretation
 
-- **IN-SCOPE CONFIRMED**: Amount extracted for matched (canonical) coverages
-- **IN-SCOPE UNCONFIRMED**: Extraction attempted but failed for matched coverages
-- **OUT-OF-SCOPE**: Excluded from KPI (unmatched or structural outliers)
+- **IN-SCOPE**: mapping_status == 'matched' (canonical coverage_code mapped)
+- **KPI Scope**: ALL IN-SCOPE coverages (NO insurer exclusion)
+- **KPI Denominator**: CONFIRMED + UNCONFIRMED + NOT_AVAILABLE (within IN-SCOPE only)
 
-## Target: ≥90% IN-SCOPE CONFIRMED (Structural Outliers Excluded)
+## Target: ≥90% IN-SCOPE CONFIRMED
 
-**KPI Scope**: Excludes hanwha/heungkuk (structural outliers)
-**KPI Base**: 165 coverages (164 CONFIRMED, 1 UNCONFIRMED)
-**KPI CONFIRMED %**: 99.4%
-**Status**: ✅ PASS
-
-### ALL-Insurers IN-SCOPE (Including Structural Outliers)
-- Total: 218 coverages
-- CONFIRMED: 165 (75.7%)
-- Note: Hanwha (1/23) and Heungkuk (0/30) have known structural issues
+**KPI Scope**: ALL insurers with IN-SCOPE coverages (mapping_status == 'matched')
+**KPI Base**: 218 coverages (165 CONFIRMED, 53 UNCONFIRMED, 0 NOT_AVAILABLE)
+**KPI CONFIRMED %**: 75.7%
+**Status**: ❌ FAIL
 
 ## Next Steps
 
 - If KPI < 90%: Review IN-SCOPE UNCONFIRMED cases for Step7 pattern misses
-- Structural outliers (hanwha/heungkuk): Separate architecture improvement (not blocking KPI)
-- OUT-OF-SCOPE cases: Separate architecture improvement (not blocking)
+- Structural patterns (hanwha/heungkuk): See Structural Outliers section above for architectural notes
+- OUT-OF-SCOPE cases: Covered in separate section, not part of KPI

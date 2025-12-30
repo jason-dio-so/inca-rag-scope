@@ -1,13 +1,15 @@
 """
 Step 8: Multi-Insurer Comparison (All Insurers)
+STEP NEXT-18X-SSOT: NO reports/
 
 입력:
 - data/compare/*_coverage_cards.jsonl (모든 보험사)
 
-출력:
+출력 (SSOT):
 - data/compare/all_insurers_matrix.json
 - data/compare/all_insurers_stats.json
-- reports/all_insurers_overview.md
+
+Legacy *.md output removed (no reports/)
 """
 
 import argparse
@@ -276,10 +278,10 @@ def main():
     # Input
     cards_dir = base_dir / "data" / "compare"
 
-    # Output
+    # Output (SSOT only)
     output_matrix = base_dir / "data" / "compare" / "all_insurers_matrix.json"
     output_stats = base_dir / "data" / "compare" / "all_insurers_stats.json"
-    output_report = base_dir / "reports" / "all_insurers_overview.md"
+    # NO reports/ output (STEP NEXT-18X-SSOT-LOCK-2)
 
     print(f"[Step 8] Multi-Insurer Comparison")
     print(f"[Step 8] Loading coverage cards from: {cards_dir}")
@@ -297,27 +299,26 @@ def main():
     print(f"[Step 8] Calculating statistics...")
     stats = calculate_stats(all_cards, matrix)
 
-    print(f"[Step 8] Generating reports...")
+    print(f"[Step 8] Writing SSOT outputs...")
 
-    # Save matrix
+    # Save matrix (SSOT)
     output_matrix.parent.mkdir(parents=True, exist_ok=True)
     with open(output_matrix, 'w', encoding='utf-8') as f:
         json.dump(matrix, f, ensure_ascii=False, indent=2)
 
-    # Save stats
+    # Save stats (SSOT)
     with open(output_stats, 'w', encoding='utf-8') as f:
         json.dump(stats, f, ensure_ascii=False, indent=2)
 
-    # Generate markdown report
-    generate_markdown_report(all_cards, matrix, stats, str(output_report))
+    # Legacy markdown report removed (STEP NEXT-18X-SSOT-LOCK-2)
+    # Use coverage_cards SSOT instead
 
     print(f"\n[Step 8] Multi-insurer comparison completed:")
     print(f"  - Total insurers: {stats['total_insurers']}")
     print(f"  - Total canonical codes: {stats['total_canonical_codes']}")
     print(f"  - Common to all: {len(stats['codes_common_to_all'])}")
-    print(f"\n✓ Matrix: {output_matrix}")
-    print(f"✓ Stats: {output_stats}")
-    print(f"✓ Report: {output_report}")
+    print(f"\n✓ Matrix (SSOT): {output_matrix}")
+    print(f"✓ Stats (SSOT): {output_stats}")
 
 
 if __name__ == "__main__":
