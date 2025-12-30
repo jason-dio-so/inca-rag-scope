@@ -18,11 +18,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.scope_gate import load_scope_gate
 
 
-# 경로 설정
+# 경로 설정 (STEP NEXT-18X-SSOT: legacy reports removed)
 BASE_DIR = Path(__file__).parent.parent
 MATRIX_JSON = BASE_DIR / "data" / "compare" / "all_insurers_matrix.json"
 STATS_JSON = BASE_DIR / "data" / "compare" / "all_insurers_stats.json"
-OVERVIEW_MD = BASE_DIR / "reports" / "all_insurers_overview.md"
 
 
 class TestMultiInsurer:
@@ -40,16 +39,10 @@ class TestMultiInsurer:
             with open(STATS_JSON, 'r', encoding='utf-8') as f:
                 self.stats = json.load(f)
 
-        self.report = ""
-        if OVERVIEW_MD.exists():
-            with open(OVERVIEW_MD, 'r', encoding='utf-8') as f:
-                self.report = f.read()
-
     def test_files_exist(self):
-        """Multi-insurer files exist"""
+        """Multi-insurer files exist (SSOT: JSON only, no legacy reports)"""
         assert MATRIX_JSON.exists(), f"Matrix not found: {MATRIX_JSON}"
         assert STATS_JSON.exists(), f"Stats not found: {STATS_JSON}"
-        assert OVERVIEW_MD.exists(), f"Report not found: {OVERVIEW_MD}"
 
     def test_matrix_sorted_by_coverage_code(self):
         """1. Matrix sorted by coverage_code"""
@@ -76,25 +69,6 @@ class TestMultiInsurer:
                     if raw_name:
                         assert scope_gates[insurer].is_in_scope(raw_name), \
                             f"Out-of-scope coverage in {insurer}: {raw_name}"
-
-    def test_no_forbidden_phrases_in_report(self):
-        """3. No forbidden phrases in report"""
-        forbidden_phrases = [
-            '추천',
-            '종합의견',
-            '유리',
-            '불리',
-            '권장',
-            '제안',
-            '판단',
-            '평가',
-            '요약하면',
-            '결론적으로'
-        ]
-
-        for phrase in forbidden_phrases:
-            assert phrase not in self.report, \
-                f"Forbidden phrase '{phrase}' found in multi-insurer report"
 
     def test_stats_have_required_fields(self):
         """Stats have required fields"""

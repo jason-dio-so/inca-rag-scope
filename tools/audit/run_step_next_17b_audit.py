@@ -22,10 +22,20 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 COMPARE_DIR = PROJECT_ROOT / "data" / "compare"
 SOURCES_DIR = PROJECT_ROOT / "data" / "sources" / "insurers"
 CONFIG_TYPE_MAP = PROJECT_ROOT / "config" / "amount_lineage_type_map.json"
+CONFIG_STRUCTURAL_OUTLIERS = PROJECT_ROOT / "config" / "structural_outliers.json"
 AUDIT_DIR = PROJECT_ROOT / "docs" / "audit"
 
 # Ensure audit dir exists
 AUDIT_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def load_structural_outliers() -> list:
+    """Load structural outliers from SSOT config."""
+    if not CONFIG_STRUCTURAL_OUTLIERS.exists():
+        return []
+    with open(CONFIG_STRUCTURAL_OUTLIERS, "r", encoding="utf-8") as f:
+        config = json.load(f)
+    return config.get("structural_outliers", [])
 
 # Type evidence patterns
 TYPE_AB_PATTERNS = [
@@ -173,18 +183,24 @@ def generate_amount_status_dashboard(insurers: List[str]) -> str:
         f"| **TOTAL** | **{out_scope_total_confirmed}** | **{out_scope_total_unconfirmed}** | **{out_scope_total_all}** |"
     )
 
+    # Load structural outliers from SSOT
+    structural_outliers = load_structural_outliers()
+
     report_lines.extend([
         "",
         "## Structural Outliers (Separate Tracking)",
         "",
-        "**Hanwha & Heungkuk**: Known structural mismatches (담보명 divergence)",
+        f"**SSOT Source**: config/structural_outliers.json",
+        f"**Outliers**: {', '.join(structural_outliers) if structural_outliers else 'None'}",
+        "",
+        "**Known structural mismatches (담보명 divergence)**:",
         "- OUT-OF-SCOPE count elevated due to proposal-to-canonical naming gaps",
         "- NOT a KPI contamination issue - architectural limitation",
         "",
     ])
 
     # Show structural outliers
-    for insurer in ["hanwha", "heungkuk"]:
+    for insurer in structural_outliers:
         if insurer in insurer_details:
             details = insurer_details[insurer]["out_scope_details"]
             if details:
@@ -194,47 +210,35 @@ def generate_amount_status_dashboard(insurers: List[str]) -> str:
                     report_lines.append(f"- {item['coverage_name']} (mapping_status={item['mapping_status']}, amount_status={item['amount_status']})")
                 report_lines.append("")
 
-    # Compute KPI excluding structural outliers (hanwha, heungkuk)
-    structural_outliers = ["hanwha", "heungkuk"]
-    kpi_totals_confirmed = 0
-    kpi_totals_unconfirmed = 0
-    kpi_totals_all = 0
+    # Compute KPI for ALL IN-SCOPE coverages (NO insurer exclusion)
+    kpi_totals_confirmed = in_scope_total_confirmed
+    kpi_totals_unconfirmed = in_scope_total_unconfirmed
+    kpi_totals_all = in_scope_total_all
+    kpi_totals_not_available = in_scope_totals.get("NOT_AVAILABLE", 0)
 
-    for insurer in insurers:
-        if insurer in structural_outliers:
-            continue
-        details = insurer_details[insurer]
-        in_scope_stats = details["in_scope"]
-        kpi_totals_confirmed += in_scope_stats.get("CONFIRMED", 0)
-        kpi_totals_unconfirmed += in_scope_stats.get("UNCONFIRMED", 0)
-        kpi_totals_all += sum(in_scope_stats.values())
-
-    kpi_confirmed_pct = (kpi_totals_confirmed / kpi_totals_all * 100) if kpi_totals_all > 0 else 0.0
+    # KPI denominator: CONFIRMED + UNCONFIRMED + NOT_AVAILABLE (within IN-SCOPE only)
+    kpi_denominator = kpi_totals_confirmed + kpi_totals_unconfirmed + kpi_totals_not_available
+    kpi_confirmed_pct = (kpi_totals_confirmed / kpi_denominator * 100) if kpi_denominator > 0 else 0.0
 
     report_lines.extend([
         "## KPI Interpretation",
         "",
-        "- **IN-SCOPE CONFIRMED**: Amount extracted for matched (canonical) coverages",
-        "- **IN-SCOPE UNCONFIRMED**: Extraction attempted but failed for matched coverages",
-        "- **OUT-OF-SCOPE**: Excluded from KPI (unmatched or structural outliers)",
+        "- **IN-SCOPE**: mapping_status == 'matched' (canonical coverage_code mapped)",
+        "- **KPI Scope**: ALL IN-SCOPE coverages (NO insurer exclusion)",
+        "- **KPI Denominator**: CONFIRMED + UNCONFIRMED + NOT_AVAILABLE (within IN-SCOPE only)",
         "",
-        "## Target: ≥90% IN-SCOPE CONFIRMED (Structural Outliers Excluded)",
+        "## Target: ≥90% IN-SCOPE CONFIRMED",
         "",
-        f"**KPI Scope**: Excludes hanwha/heungkuk (structural outliers)",
-        f"**KPI Base**: {kpi_totals_all} coverages ({kpi_totals_confirmed} CONFIRMED, {kpi_totals_unconfirmed} UNCONFIRMED)",
+        f"**KPI Scope**: ALL insurers with IN-SCOPE coverages (mapping_status == 'matched')",
+        f"**KPI Base**: {kpi_denominator} coverages ({kpi_totals_confirmed} CONFIRMED, {kpi_totals_unconfirmed} UNCONFIRMED, {kpi_totals_not_available} NOT_AVAILABLE)",
         f"**KPI CONFIRMED %**: {kpi_confirmed_pct:.1f}%",
         f"**Status**: {'✅ PASS' if kpi_confirmed_pct >= 90 else '❌ FAIL'}",
-        "",
-        f"### ALL-Insurers IN-SCOPE (Including Structural Outliers)",
-        f"- Total: {in_scope_total_all} coverages",
-        f"- CONFIRMED: {in_scope_total_confirmed} ({in_scope_total_confirmed_pct:.1f}%)",
-        f"- Note: Hanwha ({insurer_details['hanwha']['in_scope'].get('CONFIRMED', 0)}/{sum(insurer_details['hanwha']['in_scope'].values())}) and Heungkuk ({insurer_details['heungkuk']['in_scope'].get('CONFIRMED', 0)}/{sum(insurer_details['heungkuk']['in_scope'].values())}) have known structural issues",
         "",
         "## Next Steps",
         "",
         "- If KPI < 90%: Review IN-SCOPE UNCONFIRMED cases for Step7 pattern misses",
-        "- Structural outliers (hanwha/heungkuk): Separate architecture improvement (not blocking KPI)",
-        "- OUT-OF-SCOPE cases: Separate architecture improvement (not blocking)",
+        "- Structural patterns (hanwha/heungkuk): See Structural Outliers section above for architectural notes",
+        "- OUT-OF-SCOPE cases: Covered in separate section, not part of KPI",
         "",
     ])
 

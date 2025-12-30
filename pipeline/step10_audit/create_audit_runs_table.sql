@@ -1,8 +1,14 @@
 -- ======================================
--- Audit Runs Metadata Table
+-- ⛔️ DEPRECATED — DO NOT USE ⛔️
 -- ======================================
--- Purpose: Track Step7 amount pipeline audit runs for compliance and lineage
--- Lock: Ensures each production load is tied to a frozen, audited snapshot
+-- STEP NEXT-18X-SSOT-FINAL-A:
+--     •    This table schema is no longer used.
+--     •    SSOT moved to docs/audit/AMOUNT_STATUS_DASHBOARD.md
+--     •    DO NOT CREATE THIS TABLE
+--
+-- Historical Context:
+--     Track Step7 amount pipeline audit runs for compliance and lineage
+--     Replaced by coverage_cards SSOT + audit dashboard workflow
 
 CREATE TABLE IF NOT EXISTS audit_runs (
     audit_run_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -13,8 +19,8 @@ CREATE TABLE IF NOT EXISTS audit_runs (
     freeze_tag TEXT,           -- e.g., 'freeze/pre-10b2g2-20251229-024400'
 
     -- Report paths (frozen snapshots)
-    report_json_path TEXT NOT NULL,  -- e.g., 'reports/step7_gt_audit_all_20251229-025007.json'
-    report_md_path TEXT NOT NULL,    -- e.g., 'reports/step7_gt_audit_all_20251229-025007.md'
+    report_json_path TEXT NOT NULL,  -- ~~reports/~~ (REMOVED) - now docs/audit/
+    report_md_path TEXT NOT NULL,    -- ~~reports/~~ (REMOVED) - now docs/audit/
 
     -- Audit results summary
     total_insurers INT NOT NULL DEFAULT 8,

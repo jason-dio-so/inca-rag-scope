@@ -135,13 +135,35 @@ def sanitize_scope_mapped(
                 row['mapping_status'] = mapping_status.strip().lower()
             kept_rows.append(row)
 
-    # Write sanitized output
+    # Write sanitized output with CSV integrity hardening
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     with open(output_csv, 'w', encoding='utf-8', newline='') as f:
         if kept_rows:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            # STEP NEXT-18X-FIX: Enable quoting to prevent line breaks/commas breaking columns
+            writer = csv.DictWriter(
+                f,
+                fieldnames=fieldnames,
+                quoting=csv.QUOTE_MINIMAL,
+                escapechar='\\'
+            )
             writer.writeheader()
-            writer.writerows(kept_rows)
+
+            # STEP NEXT-18X-FIX: Validate each row before writing
+            for idx, row in enumerate(kept_rows):
+                # Check column integrity
+                if set(row.keys()) != set(fieldnames):
+                    missing = set(fieldnames) - set(row.keys())
+                    extra = set(row.keys()) - set(fieldnames)
+                    error_msg = f"Row {idx+1} column mismatch: missing={missing}, extra={extra}"
+                    raise ValueError(error_msg)
+
+                # Validate mapping_status is normalized
+                mapping_status = row.get('mapping_status', '')
+                if mapping_status and mapping_status != mapping_status.strip().lower():
+                    error_msg = f"Row {idx+1} has non-normalized mapping_status: '{mapping_status}'"
+                    raise ValueError(error_msg)
+
+                writer.writerow(row)
 
     # Write filtered-out audit trail
     filtered_out_jsonl.parent.mkdir(parents=True, exist_ok=True)

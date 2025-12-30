@@ -1,0 +1,5 @@
+{
+  "structural_outliers": ["hanwha", "heungkuk"],
+  "description": "STEP NEXT-18X-SSOT: SSOT for structural outliers (proposal-to-canonical naming gaps)",
+  "rationale": "These insurers have elevated OUT-OF-SCOPE coverage counts due to known 담보명 divergence between proposal PDFs and canonical mapping. This is an architectural limitation, not a KPI contamination issue."
+}

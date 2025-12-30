@@ -1,14 +1,15 @@
 """
-Step 7: Compare Insurers
+Step 7: Compare Insurers (STEP NEXT-18X-SSOT: NO reports/)
 
 입력:
 - data/compare/{INSURER_A}_coverage_cards.jsonl
 - data/compare/{INSURER_B}_coverage_cards.jsonl
 
-출력:
+출력 (SSOT):
 - data/compare/{INSURER_A}_vs_{INSURER_B}_compare.jsonl
-- reports/{INSURER_A}_vs_{INSURER_B}_report.md
 - data/compare/compare_stats.json
+
+Legacy *.md output removed (no reports/)
 """
 
 import argparse
@@ -29,11 +30,10 @@ def compare_insurers(
     cards_a_jsonl: str,
     cards_b_jsonl: str,
     output_compare_jsonl: str,
-    output_report_md: str,
     output_stats_json: str
 ):
     """
-    두 보험사 비교
+    두 보험사 비교 (SSOT: JSONL + JSON only)
 
     Args:
         insurer_a: 보험사 A
@@ -41,7 +41,6 @@ def compare_insurers(
         cards_a_jsonl: 보험사 A coverage cards
         cards_b_jsonl: 보험사 B coverage cards
         output_compare_jsonl: 비교 결과 JSONL
-        output_report_md: 비교 리포트 MD
         output_stats_json: 통계 JSON
     """
     # Cards 로드
@@ -175,60 +174,8 @@ def compare_insurers(
     with open(output_stats_json, 'w', encoding='utf-8') as f:
         json.dump(stats, f, ensure_ascii=False, indent=2)
 
-    # 마크다운 리포트 생성
-    md_lines = []
-    md_lines.append(f"# {insurer_a.upper()} vs {insurer_b.upper()} Comparison Report")
-    md_lines.append("")
-    md_lines.append("## Summary")
-    md_lines.append("")
-    md_lines.append(f"- **Total Coverage Codes Compared**: {stats['total_codes_compared']}")
-    md_lines.append(f"- **Both Matched**: {stats['both_matched_count']}")
-    md_lines.append(f"- **Either Unmatched**: {stats['either_unmatched_count']}")
-    md_lines.append(f"- **Evidence Found in Both**: {stats['evidence_found_both']}")
-    md_lines.append(f"- **Evidence Missing in Any**: {stats['evidence_missing_any']}")
-    md_lines.append(f"- **Only in {insurer_a.upper()}**: {stats['only_in_a']}")
-    md_lines.append(f"- **Only in {insurer_b.upper()}**: {stats['only_in_b']}")
-    md_lines.append("")
-
-    # 비교 테이블
-    md_lines.append("## Coverage Comparison")
-    md_lines.append("")
-    md_lines.append(f"| Code | Canonical Name | {insurer_a.upper()} | {insurer_b.upper()} | Notes |")
-    md_lines.append("|---|---|---|---|---|")
-
-    for row in compare_rows:
-        code = row['coverage_code']
-        canonical = row['canonical_name']
-
-        a_info = row.get(insurer_a)
-        b_info = row.get(insurer_b)
-
-        a_cell = ""
-        if a_info:
-            a_name = a_info['raw_name']
-            a_ev = "✓" if a_info['evidence_found'] else "✗"
-            a_cell = f"{a_name} ({a_ev})"
-        else:
-            a_cell = "-"
-
-        b_cell = ""
-        if b_info:
-            b_name = b_info['raw_name']
-            b_ev = "✓" if b_info['evidence_found'] else "✗"
-            b_cell = f"{b_name} ({b_ev})"
-        else:
-            b_cell = "-"
-
-        notes_str = ", ".join(row['notes']) if row['notes'] else "-"
-
-        md_lines.append(f"| {code} | {canonical} | {a_cell} | {b_cell} | {notes_str} |")
-
-    md_lines.append("")
-
-    # 리포트 저장
-    Path(output_report_md).parent.mkdir(parents=True, exist_ok=True)
-    with open(output_report_md, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(md_lines))
+    # STEP NEXT-18X-SSOT: Legacy report generation removed
+    # SSOT: compare_jsonl + stats_json only
 
     return stats
 
@@ -249,12 +196,11 @@ def main():
     cards_a_jsonl = base_dir / "data" / "compare" / f"{insurer_a}_coverage_cards.jsonl"
     cards_b_jsonl = base_dir / "data" / "compare" / f"{insurer_b}_coverage_cards.jsonl"
 
-    # 출력 파일
+    # 출력 파일 (SSOT: no reports/)
     output_compare_jsonl = base_dir / "data" / "compare" / f"{insurer_a}_vs_{insurer_b}_compare.jsonl"
-    output_report_md = base_dir / "reports" / f"{insurer_a}_vs_{insurer_b}_report.md"
     output_stats_json = base_dir / "data" / "compare" / "compare_stats.json"
 
-    print(f"[Step 7] Compare Insurers")
+    print(f"[Step 7] Compare Insurers (SSOT: JSONL + JSON only)")
     print(f"[Step 7] {insurer_a.upper()} vs {insurer_b.upper()}")
     print(f"[Step 7] Input A: {cards_a_jsonl}")
     print(f"[Step 7] Input B: {cards_b_jsonl}")
@@ -266,7 +212,6 @@ def main():
         str(cards_a_jsonl),
         str(cards_b_jsonl),
         str(output_compare_jsonl),
-        str(output_report_md),
         str(output_stats_json)
     )
 
@@ -277,7 +222,6 @@ def main():
     print(f"  - Evidence found both: {stats['evidence_found_both']}")
     print(f"  - Evidence missing any: {stats['evidence_missing_any']}")
     print(f"\n✓ Compare JSONL: {output_compare_jsonl}")
-    print(f"✓ Report MD: {output_report_md}")
     print(f"✓ Stats JSON: {output_stats_json}")
 
 

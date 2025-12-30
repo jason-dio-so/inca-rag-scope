@@ -58,10 +58,10 @@ class AmountDTO:
 
 def normalize_coverage_name_for_matching(raw_name: str) -> str:
     """
-    STEP NEXT-18B: 담보명 정규화 (매칭용)
+    STEP NEXT-18B + NEXT-19: 담보명 정규화 (매칭용)
 
     Improvements:
-    1. 번호 접두사 제거: ^\d+\s* → ""
+    1. 번호 접두사 제거: ^\d+\s* → "" (only line numbers, not content)
     2. 괄호 담보명 추출: 기본계약(담보명) → 담보명
     3. 공백/특수문자 제거
 
@@ -71,8 +71,12 @@ def normalize_coverage_name_for_matching(raw_name: str) -> str:
     Returns:
         normalized: 정규화된 담보명
     """
-    # 1. 번호 접두사 제거: "1. 암진단비", "2 상해사망" → "암진단비", "상해사망"
-    normalized = re.sub(r'^\d+\.?\s*', '', raw_name)
+    # 1. 번호 접두사 제거 (STEP NEXT-19 FIX)
+    #    Only remove line numbers (e.g., "1. ", "251 ")
+    #    Do NOT remove content numbers (e.g., "4대", "8대")
+    #    Pattern: ^\d{2,}\s+ (2+ digits + space = line number like "251 ")
+    #             OR ^\d{1,2}\.\s+ (1-2 digits + dot + space = "1. ", "10. ")
+    normalized = re.sub(r'^(\d{2,}\s+|\d{1,2}\.\s+)', '', raw_name)
 
     # 2. 괄호 담보명 추출: "기본계약(암진단비)" → "암진단비"
     #    단, 괄호가 담보명의 일부인 경우는 유지 (예: "암진단비(유사암제외)")
@@ -128,6 +132,66 @@ def extract_amount_from_line(line_text: str) -> Optional[str]:
     return None
 
 
+def is_amount_fragment(line_text: str) -> bool:
+    """
+    STEP NEXT-19: Check if line is a partial amount (e.g., "1," or "000만원")
+
+    Args:
+        line_text: Line to check
+
+    Returns:
+        True if line looks like amount fragment
+    """
+    stripped = line_text.strip()
+
+    # Fragment patterns:
+    # - Trailing comma + digits: "1,", "2,", "100,"
+    # - Leading digits + unit: "000만원", "000원"
+
+    # Pattern 1: N, (trailing comma)
+    if re.fullmatch(r'\d+,', stripped):
+        return True
+
+    # Pattern 2: NNN만원 or NNN원 (leading zeros suggest continuation)
+    if re.fullmatch(r'\d{3,}만?원', stripped):
+        return True
+
+    return False
+
+
+def merge_amount_fragments(lines: List[str], start_idx: int) -> Tuple[Optional[str], int]:
+    """
+    STEP NEXT-19: Merge multi-line amount fragments
+
+    Args:
+        lines: All lines
+        start_idx: Starting index
+
+    Returns:
+        (merged_amount or None, lines_consumed)
+    """
+    if start_idx >= len(lines):
+        return None, 0
+
+    first_line = lines[start_idx].strip()
+
+    # STEP NEXT-19 FIX: Only merge "N," pattern (trailing comma)
+    #   Do NOT try to merge "000만원" (complete amount, just missing prefix)
+    comma_match = re.fullmatch(r'(\d+),', first_line)
+    if comma_match and start_idx + 1 < len(lines):
+        next_line = lines[start_idx + 1].strip()
+        # Check for "NNN만원" or "NNN원" pattern
+        #   Must be EXACTLY 3 digits (e.g., "000", not "1000")
+        unit_match = re.fullmatch(r'(\d{3})(만?원)', next_line)
+        if unit_match:
+            # Merge: "1," + "000만원" → "1,000만원"
+            merged = f"{comma_match.group(1)},{unit_match.group(1)}{unit_match.group(2)}"
+            return merged, 2
+
+    # No merge needed
+    return None, 0
+
+
 def extract_proposal_amount_pairs(proposal_page_jsonl: Path) -> List[ProposalAmountPair]:
     """
     가입설계서 page.jsonl에서 (담보명, 금액) 페어 추출
@@ -163,17 +227,50 @@ def extract_proposal_amount_pairs(proposal_page_jsonl: Path) -> List[ProposalAmo
                 i = 0
                 while i < len(lines):
                     line_text = lines[i].strip()
-                    i += 1
 
                     # 헤더 라인 스킵
                     if any(hdr in line_text for hdr in ['담보가입현황', '가입금액', '보험료', '납입기간', '피보험자']):
+                        i += 1
                         continue
 
-                    # 빈 라인, 짧은 라인 스킵
+                    # STEP NEXT-19: Check for multi-line amount pattern FIRST
+                    #   Do this BEFORE skipping short lines, because "1," is only 2 chars
+                    merged_amount, consumed = merge_amount_fragments(lines, i)
+                    if merged_amount:
+                        # Look back for coverage name (should be 1-2 lines before)
+                        coverage_candidate = None
+                        for lookback in range(1, 4):
+                            if i - lookback >= 0:
+                                prev_line = lines[i - lookback].strip()
+                                # Skip numeric-only lines (e.g., "1", "2" - row numbers)
+                                if re.fullmatch(r'\d+', prev_line):
+                                    continue
+                                # Check for Korean text
+                                if re.search(r'[가-힣]', prev_line) and len(prev_line) >= 3:
+                                    coverage_candidate = prev_line
+                                    break
+
+                        if coverage_candidate:
+                            pairs.append(ProposalAmountPair(
+                                coverage_name_raw=coverage_candidate,
+                                amount_text=merged_amount,
+                                page_num=page_num,
+                                line_text=f"{coverage_candidate} / {merged_amount}"
+                            ))
+                        # STEP NEXT-19 DEBUG
+                        else:
+                            # Lookback failed - log for debugging
+                            pass
+
+                        i += consumed
+                        continue
+
+                    # 빈 라인, 짧은 라인 스킵 (AFTER merge check)
                     if len(line_text) < 3:
+                        i += 1
                         continue
 
-                    # 금액 패턴 체크
+                    # 금액 패턴 체크 (single-line)
                     amount = extract_amount_from_line(line_text)
 
                     if amount:
@@ -190,15 +287,17 @@ def extract_proposal_amount_pairs(proposal_page_jsonl: Path) -> List[ProposalAmo
                                 page_num=page_num,
                                 line_text=line_text
                             ))
+                        i += 1
                     else:
                         # Case 2: 담보명과 금액이 다른 라인에 있는 경우 (테이블 row spanning)
-                        if i < len(lines):
-                            next_line = lines[i].strip()
+                        if i + 1 < len(lines):
+                            next_line = lines[i + 1].strip()
                             next_amount = extract_amount_from_line(next_line)
 
                             if next_amount:
                                 # 숫자만 있는 라인 제외 (보험료 라인 등)
                                 if re.match(r'^[\d,\s]+$', line_text):
+                                    i += 1
                                     continue
 
                                 # 담보명 검증
@@ -209,7 +308,10 @@ def extract_proposal_amount_pairs(proposal_page_jsonl: Path) -> List[ProposalAmo
                                         page_num=page_num,
                                         line_text=f"{line_text} / {next_line}"
                                     ))
-                                    i += 1  # 다음 라인 스킵
+                                    i += 2  # Skip both lines
+                                    continue
+
+                        i += 1
 
             except json.JSONDecodeError:
                 continue

@@ -1,10 +1,22 @@
-# Step7 Amount Pipeline LOCK
+# ⛔️ DEPRECATED — DO NOT USE ⛔️
 
-**Status**: 🔒 LOCKED
+**STEP NEXT-18X-SSOT-FINAL-A**: This document is obsolete.
+
+**Current SSOT**:
+- Coverage: `data/compare/*_coverage_cards.jsonl`
+- Audit: `docs/audit/AMOUNT_STATUS_DASHBOARD.md`
+
+**Deprecated Workflow**: step10_audit freeze/lock/preserve workflow is no longer used.
+
+---
+
+# Step7 Amount Pipeline LOCK (Historical Record Only)
+
+**Status**: 🔒 LOCKED (DEPRECATED)
 **Lock Date**: 2025-12-29
 **Frozen Commit**: `c6fad903c4782c9b78c44563f0f47bf13f9f3417`
 **Freeze Tag**: `freeze/pre-10b2g2-20251229-024400`
-**Audit Report**: `reports/step7_gt_audit_all_20251229-025007.md`
+**Audit Report**: ~~reports/step7_gt_audit_all_20251229-025007.md~~ (removed)
 
 ---
 
@@ -55,19 +67,11 @@ python pipeline/step10_audit/audit_step7_amount_gt.py
 - `mismatch_type_count >= 0` (type errors allowed but tracked)
 - All 8 insurers audited
 
-### 2. Preserve Audit Metadata
+### 2. Preserve Audit Metadata (DEPRECATED)
 
-```bash
-python -m pipeline.step10_audit.preserve_audit_run \
-    --report-json "reports/step7_gt_audit_all_20251229-025007.json" \
-    --report-md "reports/step7_gt_audit_all_20251229-025007.md"
-```
+~~python -m pipeline.step10_audit.preserve_audit_run~~ (removed)
 
-This creates an `audit_runs` record linking:
-- Git commit + freeze tag
-- Audit report paths (immutable)
-- Pass/fail status
-- Coverage (8 insurers, 240 rows)
+**Current SSOT**: `docs/audit/AMOUNT_STATUS_DASHBOARD.md`
 
 ### 3. Load to DB
 
@@ -94,9 +98,9 @@ python -m apps.loader.step9_loader --mode upsert
 | MISMATCH_TYPE | 0 ✅ |
 | Audit Status | **PASS** ✅ |
 
-**Frozen Reports** (DO NOT DELETE):
-- `reports/step7_gt_audit_all_20251229-025007.json`
-- `reports/step7_gt_audit_all_20251229-025007.md`
+**Frozen Reports** (REMOVED):
+- ~~`reports/step7_gt_audit_all_20251229-025007.json`~~ (REMOVED)
+- ~~`reports/step7_gt_audit_all_20251229-025007.md`~~ (REMOVED)
 
 ---
 

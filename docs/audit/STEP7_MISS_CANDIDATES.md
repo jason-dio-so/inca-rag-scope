@@ -10,7 +10,7 @@ These are CANDIDATES requiring manual review before confirming as true misses.
 
 ## Summary
 
-**Total Candidates**: 38
+**Total Candidates**: 42
 
 ## Candidates List
 
@@ -316,6 +316,38 @@ These are CANDIDATES requiring manual review before confirming as true misses.
 - **Status**: UNCONFIRMED
 - **Page**: 11
 - **Evidence Snippet**: 30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 보장내용 납입 및 만기 가입금액 보험료(원) 선택 특정심혈관질환(기타심장부정맥제외)진단비Ⅲ 20년납 100세만기 100만원 1,076 보험기간 중 특정심혈관질환(기타심장부정맥제외)으로 진단확정시 금액 지급 ※ 최초 1회 ※ 계약일로부터 30일미만 발생시 가입금액의 10%지급 ※ 계약일로부터 ...
+- **Label**: MISS_CANDIDATE
+
+### Candidate 39
+- **Insurer**: kb
+- **Coverage**: 질병사망
+- **Status**: UNCONFIRMED
+- **Page**: 2
+- **Evidence Snippet**: 서_가입담보(계약자용) KB 닥터플러스 건강보험(세만기)(해약환급금미지급형)(무배당)(25.08)(24882) 계약 내용 보험료 청약번호 RQ25-53381446 할인후초회보험료 130,188원 계약사항 20년납   100세만기   |  세만기 | 8대납입면제기본  | 납입후50%지급형 | 기본플랜 1회 보험료 130,188원 납입형태 월납 통합고객님 피보...
+- **Label**: MISS_CANDIDATE
+
+### Candidate 40
+- **Insurer**: kb
+- **Coverage**: 질병사망
+- **Status**: UNCONFIRMED
+- **Page**: 4
+- **Evidence Snippet**: 서_가입설계(계약자용) KB 닥터플러스 건강보험(세만기)(해약환급금미지급형)(무배당)(25.08)(24882) 계약 내용 보험료 청약번호 RQ25-53381446 할인후초회보험료 130,188원 계약사항 20년납   100세만기   |  세만기 | 8대납입면제기본  | 납입후50%지급형 | 기본플랜 1회 보험료 130,188원 납입형태 월납 보장보험료 13...
+- **Label**: MISS_CANDIDATE
+
+### Candidate 41
+- **Insurer**: kb
+- **Coverage**: 상해사망
+- **Status**: UNCONFIRMED
+- **Page**: 2
+- **Evidence Snippet**: 서_가입담보(계약자용) KB 닥터플러스 건강보험(세만기)(해약환급금미지급형)(무배당)(25.08)(24882) 계약 내용 보험료 청약번호 RQ25-53381446 할인후초회보험료 130,188원 계약사항 20년납   100세만기   |  세만기 | 8대납입면제기본  | 납입후50%지급형 | 기본플랜 1회 보험료 130,188원 납입형태 월납 통합고객님 피보...
+- **Label**: MISS_CANDIDATE
+
+### Candidate 42
+- **Insurer**: kb
+- **Coverage**: 상해사망
+- **Status**: UNCONFIRMED
+- **Page**: 4
+- **Evidence Snippet**: 서_가입설계(계약자용) KB 닥터플러스 건강보험(세만기)(해약환급금미지급형)(무배당)(25.08)(24882) 계약 내용 보험료 청약번호 RQ25-53381446 할인후초회보험료 130,188원 계약사항 20년납   100세만기   |  세만기 | 8대납입면제기본  | 납입후50%지급형 | 기본플랜 1회 보험료 130,188원 납입형태 월납 보장보험료 13...
 - **Label**: MISS_CANDIDATE
 
 ## Next Steps

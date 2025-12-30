@@ -1,6 +1,16 @@
-# Step7 Amount DB Load Guide
+# ⛔️ DEPRECATED — DO NOT USE ⛔️
 
-**Quick Reference**: How to load Step7 amount results to DB with full audit compliance
+**STEP NEXT-18X-SSOT-FINAL-A**: This workflow is obsolete.
+
+**Current SSOT**:
+- Coverage: `data/compare/*_coverage_cards.jsonl`
+- Audit: `docs/audit/AMOUNT_STATUS_DASHBOARD.md`
+
+**Deprecated Workflow**: step10_audit validate/preserve/load workflow is no longer used.
+
+---
+
+# Step7 Amount DB Load Guide (Historical Record Only)
 
 ---
 
@@ -15,35 +25,17 @@
 
 ## 🚀 Load Procedure (3 Steps)
 
-### Step 1: Validate Lock Compliance
+### Step 1: Validate Lock Compliance (DEPRECATED)
 
-```bash
-python -m pipeline.step10_audit.validate_amount_lock
-```
+~~python -m pipeline.step10_audit.validate_amount_lock~~ (removed)
 
-**Expected Output**:
-```
-✅ PASS - Freeze Tag
-✅ PASS - Audit Reports
-✅ PASS - Coverage Cards
-✅ PASS - Git Working Dir
-✅ PASS - Type-C Guardrails
-
-🎉 All validations PASSED
-✅ SAFE TO LOAD Step7 amounts to DB
-```
-
-**If FAILED**: Fix issues before proceeding. DO NOT load.
+**Current SSOT**: `docs/audit/AMOUNT_STATUS_DASHBOARD.md`
 
 ---
 
-### Step 2: Preserve Audit Metadata
+### Step 2: Preserve Audit Metadata (DEPRECATED)
 
-```bash
-python -m pipeline.step10_audit.preserve_audit_run \
-    --report-json "reports/step7_gt_audit_all_20251229-025007.json" \
-    --report-md "reports/step7_gt_audit_all_20251229-025007.md"
-```
+~~python -m pipeline.step10_audit.preserve_audit_run~~ (removed)
 
 **What it does**:
 - Creates `audit_runs` table record

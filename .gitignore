@@ -24,4 +24,8 @@ data/evidence_text/**
 .vscode/
 .idea/
 
-# Tracked: data/scope/*.csv, data/compare/*.jsonl, reports/*.md, STATUS.md
+# Legacy reports removed (STEP NEXT-18X-SSOT)
+reports/
+reports/*.md
+
+# Tracked: data/scope/*.csv, data/compare/*.jsonl, docs/audit/*.md, STATUS.md

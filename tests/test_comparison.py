@@ -18,10 +18,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.scope_gate import load_scope_gate
 
 
-# 경로 설정
+# 경로 설정 (STEP NEXT-18X-SSOT: legacy reports removed)
 BASE_DIR = Path(__file__).parent.parent
 COMPARE_JSONL = BASE_DIR / "data" / "compare" / "samsung_vs_meritz_compare.jsonl"
-COMPARE_REPORT = BASE_DIR / "reports" / "samsung_vs_meritz_report.md"
 COMPARE_STATS = BASE_DIR / "data" / "compare" / "compare_stats.json"
 
 
@@ -38,20 +37,14 @@ class TestComparison:
                         row = json.loads(line)
                         self.compare_rows.append(row)
 
-        self.report_content = ""
-        if COMPARE_REPORT.exists():
-            with open(COMPARE_REPORT, 'r', encoding='utf-8') as f:
-                self.report_content = f.read()
-
         self.stats = {}
         if COMPARE_STATS.exists():
             with open(COMPARE_STATS, 'r', encoding='utf-8') as f:
                 self.stats = json.load(f)
 
     def test_comparison_files_exist(self):
-        """비교 파일들이 존재하는지 확인"""
+        """비교 파일들이 존재하는지 확인 (SSOT: JSONL + stats only)"""
         assert COMPARE_JSONL.exists(), f"Compare JSONL not found: {COMPARE_JSONL}"
-        assert COMPARE_REPORT.exists(), f"Compare report not found: {COMPARE_REPORT}"
         assert COMPARE_STATS.exists(), f"Compare stats not found: {COMPARE_STATS}"
 
     def test_coverage_code_sorting(self):
@@ -83,25 +76,6 @@ class TestComparison:
                 raw_name = meritz_info['raw_name']
                 assert meritz_gate.is_in_scope(raw_name), \
                     f"Out-of-scope Meritz coverage in compare: {raw_name}"
-
-    def test_no_forbidden_phrases_in_report(self):
-        """3. report에 "추천/종합의견" 같은 문구가 없는지(금지어 검사)"""
-        forbidden_phrases = [
-            '추천',
-            '종합의견',
-            '권장',
-            '제안',
-            '판단',
-            '평가',
-            '요약하면',
-            '결론적으로',
-            '생각됩니다',
-            '것으로 보입니다'
-        ]
-
-        for phrase in forbidden_phrases:
-            assert phrase not in self.report_content, \
-                f"Forbidden phrase '{phrase}' found in comparison report"
 
     def test_stats_correctness(self):
         """통계가 올바르게 계산되었는지"""
@@ -144,15 +118,6 @@ class TestComparison:
             # 적어도 하나의 보험사 정보는 있어야 함
             assert 'samsung' in row or 'meritz' in row, \
                 "Compare row must have at least one insurer info"
-
-    def test_report_has_summary(self):
-        """리포트에 Summary 섹션이 있는지"""
-        assert "## Summary" in self.report_content, \
-            "Report missing Summary section"
-
-        # 통계 숫자가 리포트에 포함되어 있는지
-        assert f"**Total Coverage Codes Compared**: {self.stats['total_codes_compared']}" in self.report_content, \
-            "Total codes count missing in report"
 
 
 if __name__ == "__main__":

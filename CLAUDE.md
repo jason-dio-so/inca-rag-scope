@@ -4,11 +4,12 @@
 가입설계서 30~40개 보장 scope에 대한 **근거 자료 자동 수집 + 사실 비교** 파이프라인.
 보험사별 약관/사업방법서/상품요약서에서 "scope 내 담보"만 검색 → 원문 추출 → 보험사 간 사실 대조표 생성.
 
-## Canonical Truth (절대 기준)
-**`data/sources/mapping/담보명mapping자료.xlsx`** ONLY
-- 모든 담보명, 보험사별 표기, scope 판정의 단일 출처
+## Input Contract (Canonical Truth for Mapping)
+**`data/sources/mapping/담보명mapping자료.xlsx`**
+- 담보명 매핑의 단일 출처 (INPUT contract)
 - 이 파일에 없는 담보는 처리 금지
 - 수동 편집은 허용, 코드로 생성/변경 금지
+- **주의**: 이는 INPUT이며, SSOT(Single Source of Truth)가 아님
 
 ## Scope Gate (철칙)
 1. **Scope 내 담보만 처리**: mapping 파일에 정의된 담보만
@@ -21,14 +22,55 @@
 - **policy_only 플래그 유지**: 약관에만 존재하는 담보 구분
 - 검색 결과는 원문 그대로 보존 (요약/해석 금지)
 
-## 산출물 고정 경로
+## SSOT (Single Source of Truth) — FINAL CONTRACT
+
+**Coverage SSOT**:
 ```
-data/scope/{insurer}_scope.csv           # 보험사별 scope 담보 목록
-data/evidence_pack/{insurer}_pack.jsonl  # 담보별 원문 증거
-data/compare/*.jsonl                     # 보험사 간 비교 데이터
-reports/{timestamp}_*.md                 # 사실 비교 보고서
-STATUS.md                                # 진행 상황 (매 STEP 갱신)
+data/compare/*_coverage_cards.jsonl
 ```
+- 담보별 카드 (mapping_status, evidence_status, amount)
+- 모든 coverage 관련 검증의 기준
+
+**Audit Aggregate SSOT**:
+```
+docs/audit/AMOUNT_STATUS_DASHBOARD.md
+```
+- KPI 집계 및 품질 검증의 기준
+
+---
+
+## Input/Intermediate Files (NOT SSOT)
+
+**Sanitized Scope (INPUT)**:
+```
+data/scope/{insurer}_scope_mapped.sanitized.csv
+```
+- Pipeline INPUT contract (sanitized)
+- SSOT가 아님 (coverage_cards가 SSOT)
+
+**Stats (보조)**:
+```
+data/compare/*.json
+```
+- 통계 보조 파일 (SSOT 아님)
+
+**Status Tracking**:
+```
+STATUS.md
+```
+- 진행 상황 기록 (historical log)
+
+---
+
+## DEPRECATED (완전 제거됨)
+
+**❌ DO NOT USE**:
+- `reports/*.md` — STEP NEXT-18X-SSOT에서 완전 제거
+- `data/evidence_pack/` — Step5+에서 coverage_cards로 통합
+- `pipeline/step10_audit/*` — STEP NEXT-18X-SSOT-FINAL-A에서 DEPRECATED
+- `pipeline/step6_build_report/` — 제거됨
+- `pipeline/step9_single_compare/` — 제거됨
+- `pipeline/step10_multi_single_compare/` — 제거됨
 
 ## 금지 사항
 - LLM 요약/추론/생성
@@ -57,14 +99,21 @@ git status -sb
 ls data/scope | head
 ```
 
-## Architecture (7 STEP)
-1. **load_scope**: mapping → scope.csv
-2. **pdf_extract**: PDF → 페이지 텍스트
-3. **search**: 담보명 검색 → 매칭 페이지
-4. **evidence**: 원문 추출 → pack.jsonl
-5. **validation**: 증거 품질 체크
-6. **report**: 보험사별 단일 보고서
-7. **compare**: 보험사 간 대조표
+## Pipeline Architecture (Active Steps)
+
+**Current Pipeline** (SSOT-based):
+1. **step1_sanitize_scope**: mapping → sanitized scope (INPUT contract)
+2. **step5_build_cards**: scope → coverage_cards.jsonl (SSOT 생성)
+3. **step7_amount_extraction**: cards + PDF → amount enrichment
+4. **tools/audit/run_step_next_17b_audit.py**: generate AMOUNT_STATUS_DASHBOARD.md (Audit SSOT)
+
+**Legacy Steps** (historical, not part of current pipeline):
+- ~~step2_pdf_extract~~, ~~step3_search~~, ~~step4_evidence~~ (Step5에 통합됨)
+- ~~step6_build_report~~ (제거됨)
+- ~~step7_compare~~ (실행 금지, JSONL 출력만 남음)
+- ~~step8_multi_compare~~ (실행 금지)
+- ~~step9_single_compare~~, ~~step10_multi_single_compare~~ (제거됨)
+- ~~step10_audit~~ (DEPRECATED)
 
 ## Working Directory
 `/Users/cheollee/inca-rag-scope`

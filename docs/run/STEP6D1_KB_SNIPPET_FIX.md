@@ -138,9 +138,9 @@ ALL REQUIRED: True
 ## 산출물
 
 1. **Code**: `pipeline/step4_evidence_search/search_evidence.py` (snippet 선택 로직 개선)
-2. **Evidence Pack**: `data/evidence_pack/kb_evidence_pack.jsonl` (재생성)
-3. **Coverage Cards**: `data/compare/kb_coverage_cards.jsonl` (재생성)
-4. **Report**: `reports/a4200_1_8insurers.md` (STEP 6-δ.1 반영)
+2. **Evidence Pack**: ~~`data/evidence_pack/kb_evidence_pack.jsonl`~~ (REMOVED - integrated into coverage_cards)
+3. **Coverage Cards**: `data/compare/kb_coverage_cards.jsonl` (✅ SSOT)
+4. **Report**: ~~`reports/a4200_1_8insurers.md`~~ (REMOVED)
 
 ---
 
