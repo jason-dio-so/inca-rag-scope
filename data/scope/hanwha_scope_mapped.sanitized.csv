@@ -1,0 +1,38 @@
+coverage_name_raw,insurer,source_page,coverage_code,coverage_name_canonical,mapping_status,match_type
+보험료 납입면제(Ⅱ),hanwha,3,,,unmatched,none
+유사암(8대) 진단비,hanwha,3,A4210_2,유사암(8대)진단비,matched,alias
+상해 후유장해(3-100%),hanwha,3,A3300_1,상해후유장해(3-100%),matched,normalized_alias
+암 진단비(유사암 제외),hanwha,3,A4200_1,암진단비(유사암제외),matched,normalized_alias
+뇌출혈 진단비(재진단형),hanwha,3,,,unmatched,none
+뇌졸중 진단비,hanwha,3,A4103,뇌졸중진단비,matched,normalized_alias
+암(4대특정암 제외) 진단비,hanwha,3,A4200_2,암(4대특정암제외)진단비,matched,alias
+4대특정암 진단비,hanwha,3,A4209_2,4대특정암진단비,matched,alias
+4대특정암 진단비(제자리암),hanwha,3,A4209_3,4대특정암진단비(제자리암),matched,alias
+4대특정암 진단비(기타피부암),hanwha,3,A4209_4,4대특정암진단비(기타피부암),matched,alias
+4대특정암 진단비(갑상선암),hanwha,3,A4209_5,4대특정암진단비(갑상선암),matched,alias
+4대특정암 진단비(경계성종양),hanwha,3,A4209_6,4대특정암진단비(경계성종양),matched,alias
+혈전용해 치료비(최초 1회한),hanwha,3,A9640_1,혈전용해치료비,matched,normalized_alias
+암(4대특정암 제외) 치료비(1회한),hanwha,3,A9600_1,암(4대특정암제외)치료비(1회한),matched,alias
+4대특정암 치료비(1회한),hanwha,3,A9600_2,4대특정암치료비(1회한),matched,alias
+뇌혈관질환 치료비(최초 1회한),hanwha,3,,,unmatched,none
+표적항암약물허가치료비(Ⅰ)(1회한)(갱신형),hanwha,3,A9619_2,표적항암약물허가치료비(Ⅰ)(1회한),matched,alias
+키트루다(CAR-T)면역항암치료비(1회한)(갱신형),hanwha,3,A9620_1,키트루다(CAR-T)면역항암치료비(1회한),matched,alias
+허혈성심장질환 진단비,hanwha,3,A4105,허혈성심장질환진단비,matched,alias
+급성심근경색증 진단비,hanwha,3,,,unmatched,none
+상해 입원일당,hanwha,3,,,unmatched,none
+질병 입원일당,hanwha,3,,,unmatched,none
+암(특정암 제외) 입원일당,hanwha,3,A6200_2,암(특정암제외)입원일당,matched,alias
+특정암 진단비,hanwha,3,A4209_7,특정암진단비,matched,alias
+상해 통원치료비,hanwha,3,,,unmatched,none
+질병 통원치료비(요양병원 제외),hanwha,3,,,unmatched,none
+골절 진단비,hanwha,3,,,unmatched,none
+깁스치료비,hanwha,4,,,unmatched,none
+화상 진단비,hanwha,4,A4302,화상진단비,matched,normalized_alias
+암(4대특정암 제외) 수술비(1회한),hanwha,4,A5200_2,암(4대특정암제외)수술비(1회한),matched,alias
+4대특정암 수술비(1회한),hanwha,4,A5200_3,4대특정암수술비(1회한),matched,alias
+표적항암면역치료비(Ⅰ)(1회한)(갱신형),hanwha,4,A9621_1,표적항암면역치료비(Ⅰ)(1회한),matched,alias
+신재진단암(기타피부암 제외) 진단비(1회한)(갱신형),hanwha,4,A4200_3,신재진단암(기타피부암제외)진단비(1회한),matched,alias
+심장판막증 수술비(최초 1회한),hanwha,4,,,unmatched,none
+대동맥류 수술비(최초 1회한),hanwha,4,,,unmatched,none
+뇌혈관질환(1회당 180일한) 입원일당,hanwha,4,,,unmatched,none
+허혈성심장질환(1회당 180일한) 입원일당,hanwha,4,,,unmatched,none

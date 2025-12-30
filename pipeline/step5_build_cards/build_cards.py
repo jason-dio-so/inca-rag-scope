@@ -19,7 +19,7 @@ from typing import List
 # 프로젝트 루트를 path에 추가
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from core.scope_gate import load_scope_gate
+from core.scope_gate import load_scope_gate, resolve_scope_csv
 from core.compare_types import CoverageCard, Evidence, CompareStats
 
 
@@ -267,8 +267,8 @@ def main():
     insurer = args.insurer
     base_dir = Path(__file__).parent.parent.parent
 
-    # 입력 파일
-    scope_mapped_csv = base_dir / "data" / "scope" / f"{insurer}_scope_mapped.csv"
+    # STEP NEXT-18X: Use canonical resolver
+    scope_mapped_csv = resolve_scope_csv(insurer, base_dir / "data" / "scope")
     evidence_pack_jsonl = base_dir / "data" / "evidence_pack" / f"{insurer}_evidence_pack.jsonl"
 
     # 출력 파일
