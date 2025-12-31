@@ -1,0 +1,80 @@
+{
+  "insurer": "hanwha",
+  "document_type": "가입설계서",
+  "pdf_version": "2511",
+
+  "summary_table": {
+    "exists": true,
+    "reliable": true,
+    "priority": 1,
+    "pages": [3, 4],
+    "table_name_candidates": ["순번"],
+    "columns": {
+      "sequence_number": ["순번"],
+      "coverage_name": ["가입담보"],
+      "coverage_amount": ["가입금액"],
+      "premium": ["보험료"],
+      "payment_period": ["만기/납기"],
+      "term": ["만기/납기"]
+    },
+    "structure": {
+      "row_count": "33 (page 3) + 7 (page 4) = 40 total",
+      "col_count": "5 columns",
+      "header_pattern": "순번 | 가입담보 | 가입금액 | 보험료 | 만기/납기"
+    },
+    "notes": "요약 테이블이 페이지 3-4에 존재. 순번 컬럼으로 명확히 식별 가능. 담보명/가입금액/보험료/만기납기 모두 포함. SSOT로 사용."
+  },
+
+  "detail_table": {
+    "exists": true,
+    "priority": 2,
+    "pages": [5, 6, 7, 8, 9, 10],
+    "table_name_candidates": ["가입담보 및 보장내용"],
+    "columns": {
+      "coverage_name_and_desc": ["가입담보 및 보장내용"],
+      "coverage_amount": ["가입금액"],
+      "premium": ["보험료"],
+      "payment_period": ["만기/납기"]
+    },
+    "structure": {
+      "row_count": "15-23 rows per page",
+      "col_count": "5 columns",
+      "header_pattern": "가입담보 및 보장내용 | 가입금액 | 보험료 | 만기/납기"
+    },
+    "notes": "상세 테이블은 페이지 5-10에 존재. **CRITICAL**: '가입담보 및 보장내용' merged column에 담보명 + 보장설명문이 섞여 있음. 요약 테이블 우선 사용 필수."
+  },
+
+  "extraction_policy": {
+    "coverage_name_source": "summary_table",
+    "amount_source": "summary_table",
+    "premium_source": "summary_table",
+    "period_source": "summary_table",
+    "fallback_to_detail": false,
+    "detail_used_only_when_no_summary": true
+  },
+
+  "known_risks": [
+    "**CRITICAL**: Detail table의 '가입담보 및 보장내용' merged column",
+    "Benefit description texts (보험가입금액 지급, 보험금을 지급하지 않는, 진단확정, 치료를 목적으로, etc.) appear in same column as coverage names",
+    "44-γ fix: Hanwha-specific filters to remove benefit descriptions",
+    "Length filter: 100+ char texts rejected (descriptions, not coverage names)"
+  ],
+
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 3,
+      "snippet": "순번 | 가입담보 | 가입금액 | 보험료 | 만기/납기"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 5,
+      "snippet": "가입담보 및 보장내용 | 가입금액 | 보험료 | 만기/납기"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 5,
+      "snippet": "보험기간 중 상해의 직접 결과로써 사망한 경우(질병으로 인한 [benefit description in merged column]"
+    }
+  ]
+}

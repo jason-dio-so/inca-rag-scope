@@ -1,0 +1,74 @@
+{
+  "insurer": "db",
+  "document_type": "가입설계서",
+  "pdf_version": "2511",
+
+  "summary_table": {
+    "exists": true,
+    "reliable": true,
+    "priority": 1,
+    "pages": [4],
+    "table_name_candidates": ["가입담보"],
+    "columns": {
+      "sequence_number": ["No."],
+      "coverage_name": ["가입담보"],
+      "coverage_amount": ["가입금액"],
+      "premium": ["보험료(원)"],
+      "payment_period": ["납기/만기(갱신종료시기)"],
+      "term": ["납기/만기(갱신종료시기)"]
+    },
+    "structure": {
+      "row_count": "34 rows",
+      "col_count": "6 columns",
+      "header_pattern": "고객님님 보장내용 | No. | 가입담보 | 가입금액 | 보험료(원) | 납기/만기(갱신종료시기)"
+    },
+    "notes": "요약 테이블이 페이지 4에 존재. 담보명/가입금액/보험료/납기만기 모두 포함. SSOT로 사용."
+  },
+
+  "detail_table": {
+    "exists": true,
+    "priority": 2,
+    "pages": [7, 8, 9],
+    "table_name_candidates": ["가입담보[만기/납기]"],
+    "columns": {
+      "coverage_name_and_desc": ["가입담보[만기/납기]"],
+      "coverage_amount": ["가입금액(만원)"],
+      "premium": ["보험료(원)"],
+      "description": ["보장(보상)내용"]
+    },
+    "structure": {
+      "row_count": "19-24 rows per page",
+      "col_count": "4 columns",
+      "header_pattern": "가입담보[만기/납기] | 가입금액(만원) | 보험료(원) | 보장(보상)내용"
+    },
+    "notes": "상세 테이블은 페이지 7-9에 존재. 보장내용 설명문 포함. 요약 테이블 우선 사용."
+  },
+
+  "extraction_policy": {
+    "coverage_name_source": "summary_table",
+    "amount_source": "summary_table",
+    "premium_source": "summary_table",
+    "period_source": "summary_table",
+    "fallback_to_detail": true,
+    "detail_used_only_when_no_summary": true
+  },
+
+  "known_risks": [
+    "Multiple age-specific PDFs (40세이하/41세이상)",
+    "Potential for age-dependent coverage variations",
+    "Detail table has different structure (4 cols vs 6 cols in summary)"
+  ],
+
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 4,
+      "snippet": "고객님님 보장내용 | No. | 가입담보 | 가입금액 | 보험료(원) | 납기/만기(갱신종료시기) [34 rows, 6 columns]"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 7,
+      "snippet": "가입담보[만기/납기] | 가입금액(만원) | 보험료(원) | 보장(보상)내용 [19 rows, 4 columns]"
+    }
+  ]
+}

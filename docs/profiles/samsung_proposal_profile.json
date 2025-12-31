@@ -1,0 +1,72 @@
+{
+  "insurer": "samsung",
+  "document_type": "가입설계서",
+  "pdf_version": "2511",
+
+  "summary_table": {
+    "exists": true,
+    "reliable": true,
+    "priority": 1,
+    "pages": [2, 3],
+    "table_name_candidates": ["담보가입현황"],
+    "columns": {
+      "coverage_name": ["담보가입현황"],
+      "coverage_amount": ["가입금액"],
+      "premium": ["보험료(원)"],
+      "payment_period": ["납입기간/보험기간"],
+      "term": ["납입기간/보험기간"]
+    },
+    "structure": {
+      "row_count": "31 (page 2) + 18 (page 3) = 49 total",
+      "col_count": "5-6 columns",
+      "header_pattern": "피보험자(1/1) : 통합고객 | 담보가입현황 | 가입금액 | 보험료(원) | 납입기간/보험기간"
+    },
+    "notes": "요약 테이블이 페이지 2-3에 존재. 담보명/가입금액/보험료/납입기간 모두 포함. SSOT로 사용 가능."
+  },
+
+  "detail_table": {
+    "exists": true,
+    "priority": 2,
+    "pages": [4, 5, 6, 7],
+    "table_name_candidates": ["담보별 보장내용"],
+    "columns": {
+      "coverage_name_and_desc": ["담보별 보장내용"],
+      "coverage_amount": ["가입금액"],
+      "premium": ["보험료(원)"],
+      "payment_period": ["납입기간\n보험기간"]
+    },
+    "structure": {
+      "row_count": "5-14 rows per page",
+      "col_count": "7 columns",
+      "header_pattern": "담보별 보장내용 | 가입금액 | 보험료(원) | 납입기간\n보험기간"
+    },
+    "notes": "상세 테이블은 페이지 4-7에 존재. 보장내용 설명문 포함. 요약 테이블 우선 사용."
+  },
+
+  "extraction_policy": {
+    "coverage_name_source": "summary_table",
+    "amount_source": "summary_table",
+    "premium_source": "summary_table",
+    "period_source": "summary_table",
+    "fallback_to_detail": true,
+    "detail_used_only_when_no_summary": true
+  },
+
+  "known_risks": [
+    "요약 테이블 헤더 '피보험자(1/1) : 통합고객'이 merged column으로 보임",
+    "상세 테이블은 7개 컬럼으로 요약과 구조 다름"
+  ],
+
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 2,
+      "snippet": "피보험자(1/1) : 통합고객 | 담보가입현황 | 가입금액 | 보험료(원) | 납입기간/보험기간"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 4,
+      "snippet": "담보별 보장내용 | 가입금액 | 보험료(원) | 납입기간\n보험기간"
+    }
+  ]
+}
