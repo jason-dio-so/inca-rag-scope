@@ -1,12 +1,25 @@
 {
+  "profile_version": "v3",
+  "builder_version": "step-next-45d",
+  "generated_at": "2026-01-01T02:23:12.932815+09:00",
+  "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "hyundai",
-  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/hyundai/가입설계서/현대_가입설계서_2511.pdf",
+  "variant": "default",
+  "source_pdf_path": "data/sources/insurers/hyundai/가입설계서/현대_가입설계서_2511.pdf",
+  "pdf_fingerprint": {
+    "file_size_bytes": 850806,
+    "page_count": 11,
+    "sha256_first_2mb": "6cd0a919834de3747a2f5de07ce5ff50080c15597d4b194dd5fc868992091ac4",
+    "source_basename": "현대_가입설계서_2511.pdf"
+  },
+  "pdf_path": "data/sources/insurers/hyundai/가입설계서/현대_가입설계서_2511.pdf",
   "total_pages": 11,
   "summary_table": {
     "exists": true,
     "pages": [
       2,
-      3
+      3,
+      10
     ],
     "table_signatures": [
       {
@@ -120,6 +133,82 @@
           "is_variant": false
         },
         "detection_pass": "A"
+      },
+      {
+        "page": 10,
+        "table_index": 1,
+        "row_count": 14,
+        "col_count": 17,
+        "header_row_index": 0,
+        "header_row": [
+          "●",
+          "갱신담보 보험료 예시표",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 0,
+          "coverage_amount_text": 4,
+          "premium_text": 10,
+          "period_text": 0,
+          "mapping_method": "content_pattern",
+          "mapping_confidence": 1.0
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 10,
+          "table_index": 1,
+          "row_count": 14,
+          "col_count": 17,
+          "detection_method": "pattern_based_passB",
+          "pattern_scores": {
+            "amount_ratio": 0.45,
+            "premium_period_ratio": 0.64,
+            "korean_ratio": 0.73,
+            "clause_ratio": 0.18
+          },
+          "header_snippet": "● 갱신담보 보험료 예시표                갱신차수    0차(현재)  1차  2차  3차  4차  … 최종갱신  담보명  갱신\n주기  보험료 증가율 보험료 증가율 보험료 증가율 보험료 증가율 보험료 증가율  보험료 증가율",
+          "sample_rows": [
+            "표적항암약물허가치료(갱신형\n)담보 |  | 10 |  | 241원 | 0.0% | 522원 | 116.6% | 1,458원 | 179.3% | 2,861원 | 96.2% | 5,562원 | 94.4% | … | 13,226원 | 41.3%",
+            "카티(CAR-T)항암약물허가치\n료(연간1회한)(갱신형)담보 |  | 10 |  | 37원 | 0.0% | 43원 | 16.2% | 98원 | 127.9% | 229원 | 133.7% | 234원 | 2.2% | … | 418원 | 34.8%",
+            "로봇암수술(다빈치및레보아이\n)(갑상선암및전립선암제외)(최\n초1회한)(갱신형)담보 |  | 10 |  | 410원 | 0.0% | 635원 | 54.9% | 695원 | 9.4% | 1,170원 | 68.3% | 1,365원 | 16.7% | … | 715원 | 32.4%"
+          ],
+          "is_variant": true
+        },
+        "detection_pass": "B"
       }
     ],
     "primary_signatures": [
@@ -236,7 +325,84 @@
         "detection_pass": "A"
       }
     ],
-    "variant_signatures": []
+    "variant_signatures": [
+      {
+        "page": 10,
+        "table_index": 1,
+        "row_count": 14,
+        "col_count": 17,
+        "header_row_index": 0,
+        "header_row": [
+          "●",
+          "갱신담보 보험료 예시표",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 0,
+          "coverage_amount_text": 4,
+          "premium_text": 10,
+          "period_text": 0,
+          "mapping_method": "content_pattern",
+          "mapping_confidence": 1.0
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 10,
+          "table_index": 1,
+          "row_count": 14,
+          "col_count": 17,
+          "detection_method": "pattern_based_passB",
+          "pattern_scores": {
+            "amount_ratio": 0.45,
+            "premium_period_ratio": 0.64,
+            "korean_ratio": 0.73,
+            "clause_ratio": 0.18
+          },
+          "header_snippet": "● 갱신담보 보험료 예시표                갱신차수    0차(현재)  1차  2차  3차  4차  … 최종갱신  담보명  갱신\n주기  보험료 증가율 보험료 증가율 보험료 증가율 보험료 증가율 보험료 증가율  보험료 증가율",
+          "sample_rows": [
+            "표적항암약물허가치료(갱신형\n)담보 |  | 10 |  | 241원 | 0.0% | 522원 | 116.6% | 1,458원 | 179.3% | 2,861원 | 96.2% | 5,562원 | 94.4% | … | 13,226원 | 41.3%",
+            "카티(CAR-T)항암약물허가치\n료(연간1회한)(갱신형)담보 |  | 10 |  | 37원 | 0.0% | 43원 | 16.2% | 98원 | 127.9% | 229원 | 133.7% | 234원 | 2.2% | … | 418원 | 34.8%",
+            "로봇암수술(다빈치및레보아이\n)(갑상선암및전립선암제외)(최\n초1회한)(갱신형)담보 |  | 10 |  | 410원 | 0.0% | 635원 | 54.9% | 695원 | 9.4% | 1,170원 | 68.3% | 1,365원 | 16.7% | … | 715원 | 32.4%"
+          ],
+          "is_variant": true
+        },
+        "detection_pass": "B"
+      }
+    ]
   },
   "detail_table": {
     "exists": false,
@@ -269,6 +435,26 @@
         "30. |  | 질병수술담보 | 10만원 | 2,561 |  | 20년납100세만기"
       ],
       "is_variant": false
+    },
+    {
+      "page": 10,
+      "table_index": 1,
+      "row_count": 14,
+      "col_count": 17,
+      "detection_method": "pattern_based_passB",
+      "pattern_scores": {
+        "amount_ratio": 0.45,
+        "premium_period_ratio": 0.64,
+        "korean_ratio": 0.73,
+        "clause_ratio": 0.18
+      },
+      "header_snippet": "● 갱신담보 보험료 예시표                갱신차수    0차(현재)  1차  2차  3차  4차  … 최종갱신  담보명  갱신\n주기  보험료 증가율 보험료 증가율 보험료 증가율 보험료 증가율 보험료 증가율  보험료 증가율",
+      "sample_rows": [
+        "표적항암약물허가치료(갱신형\n)담보 |  | 10 |  | 241원 | 0.0% | 522원 | 116.6% | 1,458원 | 179.3% | 2,861원 | 96.2% | 5,562원 | 94.4% | … | 13,226원 | 41.3%",
+        "카티(CAR-T)항암약물허가치\n료(연간1회한)(갱신형)담보 |  | 10 |  | 37원 | 0.0% | 43원 | 16.2% | 98원 | 127.9% | 229원 | 133.7% | 234원 | 2.2% | … | 418원 | 34.8%",
+        "로봇암수술(다빈치및레보아이\n)(갑상선암및전립선암제외)(최\n초1회한)(갱신형)담보 |  | 10 |  | 410원 | 0.0% | 635원 | 54.9% | 695원 | 9.4% | 1,170원 | 68.3% | 1,365원 | 16.7% | … | 715원 | 32.4%"
+      ],
+      "is_variant": true
     }
   ],
   "detection_metadata": {
@@ -276,13 +462,8 @@
       2,
       3
     ],
-    "passB_pages": []
-  },
-  "known_anomalies_v3": [
-    {
-      "page": 10,
-      "table_index": 1,
-      "reason": "Renewal premium example table (갱신담보 보험료 예시표), not a coverage summary table. Page 10 was incorrectly detected by Pass B but removed in STEP NEXT-45-C-β-5."
-    }
-  ]
+    "passB_pages": [
+      10
+    ]
+  }
 }

@@ -1,0 +1,707 @@
+{
+  "profile_version": "v3",
+  "builder_version": "step-next-45d",
+  "generated_at": "2026-01-01T02:22:58.647758+09:00",
+  "source_manifest": "data/manifests/proposal_pdfs_v1.json",
+  "insurer": "db",
+  "variant": "under40",
+  "source_pdf_path": "data/sources/insurers/db/가입설계서/DB_가입설계서(40세이하)_2511.pdf",
+  "pdf_fingerprint": {
+    "file_size_bytes": 474492,
+    "page_count": 14,
+    "sha256_first_2mb": "a8b6e7169a38039c419df12958961eee0fd33e1fff344b481529729f786644ed",
+    "source_basename": "DB_가입설계서(40세이하)_2511.pdf"
+  },
+  "pdf_path": "data/sources/insurers/db/가입설계서/DB_가입설계서(40세이하)_2511.pdf",
+  "total_pages": 14,
+  "summary_table": {
+    "exists": true,
+    "pages": [
+      4,
+      5,
+      7,
+      8,
+      9
+    ],
+    "table_signatures": [
+      {
+        "page": 7,
+        "table_index": 2,
+        "row_count": 19,
+        "col_count": 4,
+        "header_row_index": 1,
+        "header_row": [
+          "보험료납입면제대상보장\n(11대사유)",
+          "10",
+          "142",
+          "피보험자가 납입기간 중 약관에서 정한 암(유사암제외), 뇌혈관질환, 허혈성심\n장질환, 만성간질환, 만성신부전증(중기이상), 만성당뇨합병증, 상해50%이상후\n유장해, 질병50%이상후유장해로 진단확정될경우, 또는 5대장기이식수술, 조혈\n모세포이식수술, 각막이식수술을 받을 경우 보험가입금액을 지급(최초 1회에\n한함)(단, 암의 경우 계약일로부터 90일이 지난날의 다음날부터 보장함)"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 3,
+          "coverage_amount": 3,
+          "premium": 0,
+          "period": 3
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 7,
+          "table_index": 2,
+          "row_count": 19,
+          "col_count": 4,
+          "header_snippet": "선 택 계 약 보험료납입면제대상보장\n(11대사유) 10 142 피보험자가 납입기간 중 약관에서 정한 암(유사암제외), 뇌혈관질환, 허혈성심\n장질환, 만성간질환, 만성신부전증(중기이상), 만성당뇨합병증, 상해50%이상후\n유장해, 질병50%이상후유장해로 진단확정될경우, 또는 5대장기이식수술, 조혈\n모세포이식수술, 각막이식수술을 받을 경우 보험가입금액을 지급(최",
+          "sample_rows": [
+            "20년만기20년납 |  |  | ",
+            "상해사망 | 1,000 | 870 | 피보험자가 보험기간 중 상해사고로 사망한 경우 보험가입금액 지급",
+            "100세만기20년납 |  |  | "
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      },
+      {
+        "page": 8,
+        "table_index": 0,
+        "row_count": 24,
+        "col_count": 4,
+        "header_row_index": 0,
+        "header_row": [
+          "가입담보[만기/납기]",
+          "가입금액(만원)",
+          "보험료(원)",
+          "보장(보상)내용"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 3,
+          "coverage_amount": 1,
+          "premium": 2,
+          "period": 0
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 8,
+          "table_index": 0,
+          "row_count": 24,
+          "col_count": 4,
+          "header_snippet": "가입담보[만기/납기] 가입금액(만원) 보험료(원) 보장(보상)내용 선 택 계 약 고액치료비암진단비 1,000 3,020 피보험자가 보장개시일(계약일로부터 90일이 지난날의 다음날, 계약일 현재\n보험나이 15세 미만 피보험자의 경우 1회 보험료를 받은 때) 이후에 고액치료\n비암으로 진단확정된 경우 보험가입금액 지급(최초 1회에 한함)\n※ 고액치료비암 : 골 ",
+          "sample_rows": [
+            "고액치료비암진단비 | 1,000 | 3,020 | 피보험자가 보장개시일(계약일로부터 90일이 지난날의 다음날, 계약일 현재\n보험나이 15세 미만 피보험자의 경우 1회 보험료를 받은 때) 이후에 고액치료\n비암으로 진단확정된 경우 보험가입금액 지급(최초 1회에 한함)\n※ 고액치료비암 : 골 및 관절연골의 악성신생물(암)/ 뇌 및 중추신경계의 기타\n부위의 악성신생물(암)/ 림프, 조혈 및 관련조직의 악성신생물(암)/ 식도의 악\n성신생물(암)/ 췌장의 악성신생물(암) (자세한 내용은 약관 참조)",
+            "100세만기20년납 |  |  | ",
+            "암수술비\n(유사암제외)(최초1회한) | 500 | 7,225 | 보장개시일(계약일로부터 90일이 지난날의 다음날, 계약일 현재 보험나이 15\n세 미만 피보험자의 경우 1회 보험료를 받은 때)이후에 진단확정된 암(유사암\n제외)으로 수술시 가입금액의 지급 (수술1회한)"
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      },
+      {
+        "page": 9,
+        "table_index": 0,
+        "row_count": 22,
+        "col_count": 4,
+        "header_row_index": 0,
+        "header_row": [
+          "가입담보[만기/납기]",
+          "가입금액(만원)",
+          "보험료(원)",
+          "보장(보상)내용"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 3,
+          "coverage_amount": 1,
+          "premium": 2,
+          "period": 0
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 9,
+          "table_index": 0,
+          "row_count": 22,
+          "col_count": 4,
+          "header_snippet": "가입담보[만기/납기] 가입금액(만원) 보험료(원) 보장(보상)내용 선 택 계 약 뇌혈관질환수술비 500 1,700 피보험자가 보험기간 중 약관에서 정한 뇌혈관질환으로 진단확정되고 그 치료\n를 직접목적으로 수술을 받은 경우 매수술시마다 가입금액 지급(가입 후 1년\n미만 수술시 50%지급)",
+          "sample_rows": [
+            "뇌혈관질환수술비 | 500 | 1,700 | 피보험자가 보험기간 중 약관에서 정한 뇌혈관질환으로 진단확정되고 그 치료\n를 직접목적으로 수술을 받은 경우 매수술시마다 가입금액 지급(가입 후 1년\n미만 수술시 50%지급)",
+            "100세만기20년납 |  |  | ",
+            "허혈심장질환진단비 | 1,000 | 6,080 | 피보험자가 보험기간 중 허혈심장질환으로 진단확정된 경우 보험가입금액을\n지급(1회한, 가입 후 1년미만시 가입금액의 50%지급)"
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      },
+      {
+        "page": 4,
+        "table_index": 0,
+        "row_count": 34,
+        "col_count": 6,
+        "header_row_index": 0,
+        "header_row": [
+          "",
+          "고객님님 보장내용",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 1,
+          "coverage_amount": null,
+          "premium": null,
+          "period": null
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 4,
+          "table_index": 0,
+          "row_count": 34,
+          "col_count": 6,
+          "header_snippet": "고객님님 보장내용 No. 가입담보 가입금액 보험료(원) 납기/만기(갱신종료시기) 1. 상해사망·후유장해(20-100%) 1백만원 132 20년/100세",
+          "sample_rows": [
+            "1. |  | 상해사망·후유장해(20-100%) | 1백만원 | 132 | 20년/100세",
+            "2. |  | 보험료납입면제대상보장(11대사유) | 10만원 | 142 | 20년/20년",
+            "3. |  | 상해사망 | 1천만원 | 870 | 20년/100세"
+          ],
+          "is_variant": true
+        },
+        "detection_pass": "A"
+      },
+      {
+        "page": 5,
+        "table_index": 0,
+        "row_count": 21,
+        "col_count": 15,
+        "header_row_index": 2,
+        "header_row": [
+          "만기/납기",
+          "",
+          "",
+          "100세만기 / 20년납",
+          "",
+          "",
+          "",
+          "",
+          "납입보험료",
+          "",
+          "",
+          "162,840원",
+          "",
+          "",
+          ""
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 0,
+          "coverage_amount_text": null,
+          "premium_text": null,
+          "period_text": 0,
+          "mapping_method": "content_pattern",
+          "mapping_confidence": 0.5
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 5,
+          "table_index": 0,
+          "row_count": 21,
+          "col_count": 15,
+          "detection_method": "pattern_based_passB",
+          "pattern_scores": {
+            "amount_ratio": 0.28,
+            "premium_period_ratio": 0.44,
+            "korean_ratio": 0.67,
+            "clause_ratio": 0.22
+          },
+          "header_snippet": " 가입조건              계 약 자        피보험자수   1명    만기/납기   100세만기 / 20년납     납입보험료   162,840원   ",
+          "sample_rows": [
+            "판매 플랜 |  |  | 10종_(15-40세)_무해지_납중0%/납후50%_납면적용\nB_세만기(프리미엄_골드클래스) |  |  |  |  | 보장보험료 |  |  | 162,843원 |  |  | ",
+            "납입 방법 |  |  | 월납 |  |  |  |  | 적립보험료 |  |  | 0원 |  |  | ",
+            " |  |  |  |  |  |  |  | 합계보험료 |  |  | 162,843원 |  |  | "
+          ],
+          "is_variant": true
+        },
+        "detection_pass": "B"
+      }
+    ],
+    "primary_signatures": [
+      {
+        "page": 7,
+        "table_index": 2,
+        "row_count": 19,
+        "col_count": 4,
+        "header_row_index": 1,
+        "header_row": [
+          "보험료납입면제대상보장\n(11대사유)",
+          "10",
+          "142",
+          "피보험자가 납입기간 중 약관에서 정한 암(유사암제외), 뇌혈관질환, 허혈성심\n장질환, 만성간질환, 만성신부전증(중기이상), 만성당뇨합병증, 상해50%이상후\n유장해, 질병50%이상후유장해로 진단확정될경우, 또는 5대장기이식수술, 조혈\n모세포이식수술, 각막이식수술을 받을 경우 보험가입금액을 지급(최초 1회에\n한함)(단, 암의 경우 계약일로부터 90일이 지난날의 다음날부터 보장함)"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 3,
+          "coverage_amount": 3,
+          "premium": 0,
+          "period": 3
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 7,
+          "table_index": 2,
+          "row_count": 19,
+          "col_count": 4,
+          "header_snippet": "선 택 계 약 보험료납입면제대상보장\n(11대사유) 10 142 피보험자가 납입기간 중 약관에서 정한 암(유사암제외), 뇌혈관질환, 허혈성심\n장질환, 만성간질환, 만성신부전증(중기이상), 만성당뇨합병증, 상해50%이상후\n유장해, 질병50%이상후유장해로 진단확정될경우, 또는 5대장기이식수술, 조혈\n모세포이식수술, 각막이식수술을 받을 경우 보험가입금액을 지급(최",
+          "sample_rows": [
+            "20년만기20년납 |  |  | ",
+            "상해사망 | 1,000 | 870 | 피보험자가 보험기간 중 상해사고로 사망한 경우 보험가입금액 지급",
+            "100세만기20년납 |  |  | "
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      },
+      {
+        "page": 8,
+        "table_index": 0,
+        "row_count": 24,
+        "col_count": 4,
+        "header_row_index": 0,
+        "header_row": [
+          "가입담보[만기/납기]",
+          "가입금액(만원)",
+          "보험료(원)",
+          "보장(보상)내용"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 3,
+          "coverage_amount": 1,
+          "premium": 2,
+          "period": 0
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 8,
+          "table_index": 0,
+          "row_count": 24,
+          "col_count": 4,
+          "header_snippet": "가입담보[만기/납기] 가입금액(만원) 보험료(원) 보장(보상)내용 선 택 계 약 고액치료비암진단비 1,000 3,020 피보험자가 보장개시일(계약일로부터 90일이 지난날의 다음날, 계약일 현재\n보험나이 15세 미만 피보험자의 경우 1회 보험료를 받은 때) 이후에 고액치료\n비암으로 진단확정된 경우 보험가입금액 지급(최초 1회에 한함)\n※ 고액치료비암 : 골 ",
+          "sample_rows": [
+            "고액치료비암진단비 | 1,000 | 3,020 | 피보험자가 보장개시일(계약일로부터 90일이 지난날의 다음날, 계약일 현재\n보험나이 15세 미만 피보험자의 경우 1회 보험료를 받은 때) 이후에 고액치료\n비암으로 진단확정된 경우 보험가입금액 지급(최초 1회에 한함)\n※ 고액치료비암 : 골 및 관절연골의 악성신생물(암)/ 뇌 및 중추신경계의 기타\n부위의 악성신생물(암)/ 림프, 조혈 및 관련조직의 악성신생물(암)/ 식도의 악\n성신생물(암)/ 췌장의 악성신생물(암) (자세한 내용은 약관 참조)",
+            "100세만기20년납 |  |  | ",
+            "암수술비\n(유사암제외)(최초1회한) | 500 | 7,225 | 보장개시일(계약일로부터 90일이 지난날의 다음날, 계약일 현재 보험나이 15\n세 미만 피보험자의 경우 1회 보험료를 받은 때)이후에 진단확정된 암(유사암\n제외)으로 수술시 가입금액의 지급 (수술1회한)"
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      },
+      {
+        "page": 9,
+        "table_index": 0,
+        "row_count": 22,
+        "col_count": 4,
+        "header_row_index": 0,
+        "header_row": [
+          "가입담보[만기/납기]",
+          "가입금액(만원)",
+          "보험료(원)",
+          "보장(보상)내용"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 3,
+          "coverage_amount": 1,
+          "premium": 2,
+          "period": 0
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 9,
+          "table_index": 0,
+          "row_count": 22,
+          "col_count": 4,
+          "header_snippet": "가입담보[만기/납기] 가입금액(만원) 보험료(원) 보장(보상)내용 선 택 계 약 뇌혈관질환수술비 500 1,700 피보험자가 보험기간 중 약관에서 정한 뇌혈관질환으로 진단확정되고 그 치료\n를 직접목적으로 수술을 받은 경우 매수술시마다 가입금액 지급(가입 후 1년\n미만 수술시 50%지급)",
+          "sample_rows": [
+            "뇌혈관질환수술비 | 500 | 1,700 | 피보험자가 보험기간 중 약관에서 정한 뇌혈관질환으로 진단확정되고 그 치료\n를 직접목적으로 수술을 받은 경우 매수술시마다 가입금액 지급(가입 후 1년\n미만 수술시 50%지급)",
+            "100세만기20년납 |  |  | ",
+            "허혈심장질환진단비 | 1,000 | 6,080 | 피보험자가 보험기간 중 허혈심장질환으로 진단확정된 경우 보험가입금액을\n지급(1회한, 가입 후 1년미만시 가입금액의 50%지급)"
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      }
+    ],
+    "variant_signatures": [
+      {
+        "page": 4,
+        "table_index": 0,
+        "row_count": 34,
+        "col_count": 6,
+        "header_row_index": 0,
+        "header_row": [
+          "",
+          "고객님님 보장내용",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 1,
+          "coverage_amount": null,
+          "premium": null,
+          "period": null
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 4,
+          "table_index": 0,
+          "row_count": 34,
+          "col_count": 6,
+          "header_snippet": "고객님님 보장내용 No. 가입담보 가입금액 보험료(원) 납기/만기(갱신종료시기) 1. 상해사망·후유장해(20-100%) 1백만원 132 20년/100세",
+          "sample_rows": [
+            "1. |  | 상해사망·후유장해(20-100%) | 1백만원 | 132 | 20년/100세",
+            "2. |  | 보험료납입면제대상보장(11대사유) | 10만원 | 142 | 20년/20년",
+            "3. |  | 상해사망 | 1천만원 | 870 | 20년/100세"
+          ],
+          "is_variant": true
+        },
+        "detection_pass": "A"
+      },
+      {
+        "page": 5,
+        "table_index": 0,
+        "row_count": 21,
+        "col_count": 15,
+        "header_row_index": 2,
+        "header_row": [
+          "만기/납기",
+          "",
+          "",
+          "100세만기 / 20년납",
+          "",
+          "",
+          "",
+          "",
+          "납입보험료",
+          "",
+          "",
+          "162,840원",
+          "",
+          "",
+          ""
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 0,
+          "coverage_amount_text": null,
+          "premium_text": null,
+          "period_text": 0,
+          "mapping_method": "content_pattern",
+          "mapping_confidence": 0.5
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 5,
+          "table_index": 0,
+          "row_count": 21,
+          "col_count": 15,
+          "detection_method": "pattern_based_passB",
+          "pattern_scores": {
+            "amount_ratio": 0.28,
+            "premium_period_ratio": 0.44,
+            "korean_ratio": 0.67,
+            "clause_ratio": 0.22
+          },
+          "header_snippet": " 가입조건              계 약 자        피보험자수   1명    만기/납기   100세만기 / 20년납     납입보험료   162,840원   ",
+          "sample_rows": [
+            "판매 플랜 |  |  | 10종_(15-40세)_무해지_납중0%/납후50%_납면적용\nB_세만기(프리미엄_골드클래스) |  |  |  |  | 보장보험료 |  |  | 162,843원 |  |  | ",
+            "납입 방법 |  |  | 월납 |  |  |  |  | 적립보험료 |  |  | 0원 |  |  | ",
+            " |  |  |  |  |  |  |  | 합계보험료 |  |  | 162,843원 |  |  | "
+          ],
+          "is_variant": true
+        },
+        "detection_pass": "B"
+      }
+    ]
+  },
+  "detail_table": {
+    "exists": false,
+    "pages": []
+  },
+  "known_anomalies": [],
+  "evidences": [
+    {
+      "page": 7,
+      "table_index": 2,
+      "row_count": 19,
+      "col_count": 4,
+      "header_snippet": "선 택 계 약 보험료납입면제대상보장\n(11대사유) 10 142 피보험자가 납입기간 중 약관에서 정한 암(유사암제외), 뇌혈관질환, 허혈성심\n장질환, 만성간질환, 만성신부전증(중기이상), 만성당뇨합병증, 상해50%이상후\n유장해, 질병50%이상후유장해로 진단확정될경우, 또는 5대장기이식수술, 조혈\n모세포이식수술, 각막이식수술을 받을 경우 보험가입금액을 지급(최",
+      "sample_rows": [
+        "20년만기20년납 |  |  | ",
+        "상해사망 | 1,000 | 870 | 피보험자가 보험기간 중 상해사고로 사망한 경우 보험가입금액 지급",
+        "100세만기20년납 |  |  | "
+      ],
+      "is_variant": false
+    },
+    {
+      "page": 8,
+      "table_index": 0,
+      "row_count": 24,
+      "col_count": 4,
+      "header_snippet": "가입담보[만기/납기] 가입금액(만원) 보험료(원) 보장(보상)내용 선 택 계 약 고액치료비암진단비 1,000 3,020 피보험자가 보장개시일(계약일로부터 90일이 지난날의 다음날, 계약일 현재\n보험나이 15세 미만 피보험자의 경우 1회 보험료를 받은 때) 이후에 고액치료\n비암으로 진단확정된 경우 보험가입금액 지급(최초 1회에 한함)\n※ 고액치료비암 : 골 ",
+      "sample_rows": [
+        "고액치료비암진단비 | 1,000 | 3,020 | 피보험자가 보장개시일(계약일로부터 90일이 지난날의 다음날, 계약일 현재\n보험나이 15세 미만 피보험자의 경우 1회 보험료를 받은 때) 이후에 고액치료\n비암으로 진단확정된 경우 보험가입금액 지급(최초 1회에 한함)\n※ 고액치료비암 : 골 및 관절연골의 악성신생물(암)/ 뇌 및 중추신경계의 기타\n부위의 악성신생물(암)/ 림프, 조혈 및 관련조직의 악성신생물(암)/ 식도의 악\n성신생물(암)/ 췌장의 악성신생물(암) (자세한 내용은 약관 참조)",
+        "100세만기20년납 |  |  | ",
+        "암수술비\n(유사암제외)(최초1회한) | 500 | 7,225 | 보장개시일(계약일로부터 90일이 지난날의 다음날, 계약일 현재 보험나이 15\n세 미만 피보험자의 경우 1회 보험료를 받은 때)이후에 진단확정된 암(유사암\n제외)으로 수술시 가입금액의 지급 (수술1회한)"
+      ],
+      "is_variant": false
+    },
+    {
+      "page": 9,
+      "table_index": 0,
+      "row_count": 22,
+      "col_count": 4,
+      "header_snippet": "가입담보[만기/납기] 가입금액(만원) 보험료(원) 보장(보상)내용 선 택 계 약 뇌혈관질환수술비 500 1,700 피보험자가 보험기간 중 약관에서 정한 뇌혈관질환으로 진단확정되고 그 치료\n를 직접목적으로 수술을 받은 경우 매수술시마다 가입금액 지급(가입 후 1년\n미만 수술시 50%지급)",
+      "sample_rows": [
+        "뇌혈관질환수술비 | 500 | 1,700 | 피보험자가 보험기간 중 약관에서 정한 뇌혈관질환으로 진단확정되고 그 치료\n를 직접목적으로 수술을 받은 경우 매수술시마다 가입금액 지급(가입 후 1년\n미만 수술시 50%지급)",
+        "100세만기20년납 |  |  | ",
+        "허혈심장질환진단비 | 1,000 | 6,080 | 피보험자가 보험기간 중 허혈심장질환으로 진단확정된 경우 보험가입금액을\n지급(1회한, 가입 후 1년미만시 가입금액의 50%지급)"
+      ],
+      "is_variant": false
+    },
+    {
+      "page": 4,
+      "table_index": 0,
+      "row_count": 34,
+      "col_count": 6,
+      "header_snippet": "고객님님 보장내용 No. 가입담보 가입금액 보험료(원) 납기/만기(갱신종료시기) 1. 상해사망·후유장해(20-100%) 1백만원 132 20년/100세",
+      "sample_rows": [
+        "1. |  | 상해사망·후유장해(20-100%) | 1백만원 | 132 | 20년/100세",
+        "2. |  | 보험료납입면제대상보장(11대사유) | 10만원 | 142 | 20년/20년",
+        "3. |  | 상해사망 | 1천만원 | 870 | 20년/100세"
+      ],
+      "is_variant": true
+    },
+    {
+      "page": 5,
+      "table_index": 0,
+      "row_count": 21,
+      "col_count": 15,
+      "detection_method": "pattern_based_passB",
+      "pattern_scores": {
+        "amount_ratio": 0.28,
+        "premium_period_ratio": 0.44,
+        "korean_ratio": 0.67,
+        "clause_ratio": 0.22
+      },
+      "header_snippet": " 가입조건              계 약 자        피보험자수   1명    만기/납기   100세만기 / 20년납     납입보험료   162,840원   ",
+      "sample_rows": [
+        "판매 플랜 |  |  | 10종_(15-40세)_무해지_납중0%/납후50%_납면적용\nB_세만기(프리미엄_골드클래스) |  |  |  |  | 보장보험료 |  |  | 162,843원 |  |  | ",
+        "납입 방법 |  |  | 월납 |  |  |  |  | 적립보험료 |  |  | 0원 |  |  | ",
+        " |  |  |  |  |  |  |  | 합계보험료 |  |  | 162,843원 |  |  | "
+      ],
+      "is_variant": true
+    }
+  ],
+  "detection_metadata": {
+    "passA_pages": [
+      4,
+      7,
+      8,
+      9
+    ],
+    "passB_pages": [
+      5
+    ]
+  }
+}

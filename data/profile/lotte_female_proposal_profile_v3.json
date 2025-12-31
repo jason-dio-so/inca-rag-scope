@@ -1,0 +1,164 @@
+{
+  "profile_version": "v3",
+  "builder_version": "step-next-45d",
+  "generated_at": "2026-01-01T02:23:20.327985+09:00",
+  "source_manifest": "data/manifests/proposal_pdfs_v1.json",
+  "insurer": "lotte",
+  "variant": "female",
+  "source_pdf_path": "data/sources/insurers/lotte/가입설계서/롯데_가입설계서(여)_2511.pdf",
+  "pdf_fingerprint": {
+    "file_size_bytes": 734233,
+    "page_count": 11,
+    "sha256_first_2mb": "2a84aef3657323e996eb7ae9b4e1ae18c05d91e01254193d41f3ece93ff6ce4e",
+    "source_basename": "롯데_가입설계서(여)_2511.pdf"
+  },
+  "pdf_path": "data/sources/insurers/lotte/가입설계서/롯데_가입설계서(여)_2511.pdf",
+  "total_pages": 11,
+  "summary_table": {
+    "exists": true,
+    "pages": [
+      2
+    ],
+    "table_signatures": [
+      {
+        "page": 2,
+        "table_index": 2,
+        "row_count": 31,
+        "col_count": 5,
+        "header_row_index": 0,
+        "header_row": [
+          "순번",
+          "담보명",
+          "가입금액",
+          "납기/만기",
+          "보험료(원)"
+        ],
+        "column_map": {
+          "has_row_number_column": true,
+          "row_number_column_index": 0,
+          "coverage_name": 1,
+          "coverage_amount": 2,
+          "premium": 4,
+          "period": 3
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 2,
+          "table_index": 2,
+          "row_count": 31,
+          "col_count": 5,
+          "header_snippet": "순번 담보명 가입금액 납기/만기 보험료(원) 1 상해후유장해(3~100%) 3,000만원 20년/100세 1,800 2 상해사망 1,000만원 20년/100세 290",
+          "sample_rows": [
+            "2 | 상해사망 | 1,000만원 | 20년/100세 | 290",
+            "21 | 질병사망 | 1,000만원 | 20년/80세 | 4,800",
+            "30 | 일반암진단비Ⅱ | 3,000만원 | 20년/100세 | 38,760"
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      }
+    ],
+    "primary_signatures": [
+      {
+        "page": 2,
+        "table_index": 2,
+        "row_count": 31,
+        "col_count": 5,
+        "header_row_index": 0,
+        "header_row": [
+          "순번",
+          "담보명",
+          "가입금액",
+          "납기/만기",
+          "보험료(원)"
+        ],
+        "column_map": {
+          "has_row_number_column": true,
+          "row_number_column_index": 0,
+          "coverage_name": 1,
+          "coverage_amount": 2,
+          "premium": 4,
+          "period": 3
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 2,
+          "table_index": 2,
+          "row_count": 31,
+          "col_count": 5,
+          "header_snippet": "순번 담보명 가입금액 납기/만기 보험료(원) 1 상해후유장해(3~100%) 3,000만원 20년/100세 1,800 2 상해사망 1,000만원 20년/100세 290",
+          "sample_rows": [
+            "2 | 상해사망 | 1,000만원 | 20년/100세 | 290",
+            "21 | 질병사망 | 1,000만원 | 20년/80세 | 4,800",
+            "30 | 일반암진단비Ⅱ | 3,000만원 | 20년/100세 | 38,760"
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      }
+    ],
+    "variant_signatures": []
+  },
+  "detail_table": {
+    "exists": false,
+    "pages": []
+  },
+  "known_anomalies": [],
+  "evidences": [
+    {
+      "page": 2,
+      "table_index": 2,
+      "row_count": 31,
+      "col_count": 5,
+      "header_snippet": "순번 담보명 가입금액 납기/만기 보험료(원) 1 상해후유장해(3~100%) 3,000만원 20년/100세 1,800 2 상해사망 1,000만원 20년/100세 290",
+      "sample_rows": [
+        "2 | 상해사망 | 1,000만원 | 20년/100세 | 290",
+        "21 | 질병사망 | 1,000만원 | 20년/80세 | 4,800",
+        "30 | 일반암진단비Ⅱ | 3,000만원 | 20년/100세 | 38,760"
+      ],
+      "is_variant": false
+    }
+  ],
+  "detection_metadata": {
+    "passA_pages": [
+      2
+    ],
+    "passB_pages": []
+  }
+}

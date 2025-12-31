@@ -1,0 +1,58 @@
+{
+  "insurer": "lotte",
+  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/lotte/가입설계서/롯데_가입설계서(남)_2511.pdf",
+  "reader_type": "pdfplumber",
+  "total_pages": 11,
+  "summary_table": {
+    "exists": true,
+    "pages": [
+      2
+    ],
+    "table_signatures": [
+      {
+        "page": 2,
+        "table_index": 2,
+        "row_count": 31,
+        "col_count": 5,
+        "header_rows": [
+          "순번",
+          "담보명",
+          "가입금액",
+          "납기/만기",
+          "보험료(원)"
+        ],
+        "column_map": {
+          "coverage_name": 1,
+          "coverage_amount": 2,
+          "period": 3,
+          "premium": 4
+        },
+        "evidence": {
+          "page": 2,
+          "snippet": "순번 담보명 가입금액 납기/만기 보험료(원) 1 상해후유장해(3~100%) 3,000만원 20년/100세 1,410 2 상해사망 1,000만원 20년/100세 810",
+          "sample_rows": [
+            "1 | 상해후유장해(3~100%) | 3,000만원 | 20년/100세 | 1,410",
+            "2 | 상해사망 | 1,000만원 | 20년/100세 | 810"
+          ]
+        }
+      }
+    ]
+  },
+  "detail_tables": {
+    "exists": false,
+    "pages": []
+  },
+  "structural_risks": [
+    "Merged header risk: 6 tables contain '보장내용/지급사유' (pages: [4, 5, 6, 7, 8, 9])"
+  ],
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 2,
+      "snippet": "순번 담보명 가입금액 납기/만기 보험료(원) 1 상해후유장해(3~100%) 3,000만원 20년/100세 1,410 2 상해사망 1,000만원 20년/100세 810",
+      "table_index": 2,
+      "row_count": 31,
+      "col_count": 5
+    }
+  ]
+}

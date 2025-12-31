@@ -1,33 +1,4 @@
 coverage_name_raw,insurer,source_page,coverage_code,coverage_name_canonical,mapping_status,match_type
-보험료 납입면제대상Ⅱ,samsung,2,,,unmatched,none
-암 진단비(유사암 제외),samsung,2,A4200_1,암진단비(유사암제외),matched,normalized_alias
-유사암 진단비(기타피부암)(1년50%),samsung,2,A4210,유사암진단비,matched,alias
-유사암 진단비(갑상선암)(1년50%),samsung,2,A4210,유사암진단비,matched,alias
-유사암 진단비(대장점막내암)(1년50%),samsung,2,A4210,유사암진단비,matched,alias
-유사암 진단비(제자리암)(1년50%),samsung,2,A4210,유사암진단비,matched,alias
-유사암 진단비(경계성종양)(1년50%),samsung,2,A4210,유사암진단비,matched,alias
-신재진단암(기타피부암 및 갑상선암 포함) 진단비(1년주기,5회한),samsung,,,unmatched,none
-뇌출혈 진단비,samsung,2,A4102,뇌출혈진단비,matched,normalized_alias
-뇌졸중 진단비(1년50%),samsung,2,A4103,뇌졸중진단비,matched,alias
-뇌혈관질환 진단비(1년50%),samsung,2,,,unmatched,none
-허혈성심장질환 진단비(1년50%),samsung,2,,,unmatched,none
-기타 심장부정맥 진단비(1년50%),samsung,2,A4104_1,심장질환진단비,matched,alias
-특정3대심장질환 진단비(1년50%),samsung,2,A4104_1,심장질환진단비,matched,alias
-골절 진단비(치아파절(깨짐, 부러짐) 제외),samsung,,,unmatched,none
-화상 진단비,samsung,2,A4302,화상진단비,matched,normalized_alias
-상해 입원일당(1일이상),samsung,2,A6300_1,상해입원비,matched,alias
-질병 입원일당(1일이상),samsung,2,A6100_1,질병입원비,matched,alias
-암 직접치료 입원일당Ⅱ(1일이상)(요양병원 제외),samsung,2,A6200,"암직접치료입원일당(1-180,요양병원제외)",matched,alias
-항암방사선·약물 치료비Ⅲ(암(기타피부암 및 갑상선암 제외)),samsung,2,A9617_1,항암방사선약물치료비(최초1회한),matched,alias
-항암방사선·약물 치료비Ⅲ(기타피부암 및 갑상선암),samsung,2,A9617_1,항암방사선약물치료비(최초1회한),matched,alias
-[갱신형] 표적항암약물허가 치료비(1년50%),samsung,2,,,unmatched,none
-혈전용해 치료비(뇌경색증),samsung,2,A9640_1,혈전용해치료비,matched,alias
-혈전용해 치료비(급성심근경색증),samsung,2,A9640_1,혈전용해치료비,matched,alias
-상해 입원 수술비(당일입원 제외),samsung,2,A5300,상해수술비,matched,alias
-상해 통원 수술비(외래 및 당일입원),samsung,2,A5300,상해수술비,matched,alias
-질병 입원 수술비Ⅱ(당일입원 제외),samsung,2,A5100,질병수술비,matched,alias
-질병 통원 수술비Ⅱ(외래 및 당일입원),samsung,2,A5100,질병수술비,matched,alias
-암 수술비(유사암 제외),samsung,2,A5200,암수술비(유사암제외),matched,alias
 기타피부암 수술비,samsung,3,A5298_001,유사암수술비,matched,alias
 제자리암 수술비,samsung,3,A5298_001,유사암수술비,matched,alias
 경계성종양 수술비,samsung,3,A5298_001,유사암수술비,matched,alias
@@ -35,8 +6,68 @@ coverage_name_raw,insurer,source_page,coverage_code,coverage_name_canonical,mapp
 대장점막내암 수술비,samsung,3,A5298_001,유사암수술비,matched,alias
 [갱신형] 암(특정암 제외) 다빈치로봇 수술비(1년 감액),samsung,3,A9630_1,다빈치로봇암수술비,matched,normalized_alias
 [갱신형] 특정암 다빈치로봇 수술비(1년 감액),samsung,3,A9630_1,다빈치로봇암수술비,matched,normalized_alias
-2대주요기관질병 관혈수술비Ⅱ(1년50%),samsung,3,,,unmatched,none
-2대주요기관질병 비관혈수술비Ⅱ(1년50%),samsung,3,,,unmatched,none
+2대주요기관질병 관혈수술비Ⅱ(1년50%),samsung,3,A5104_1,뇌혈관질환수술비,matched,suffix_normalized
+2대주요기관질병 비관혈수술비Ⅱ(1년50%),samsung,3,A5104_1,뇌혈관질환수술비,matched,suffix_normalized
 상해 후유장해(3~100%),samsung,3,A3300_1,상해후유장해(3-100%),matched,alias
 상해 사망,samsung,3,A1300,상해사망,matched,normalized_alias
 질병 사망,samsung,3,A1100,질병사망,matched,normalized_alias
+"상해 후유장해
+(3~100%)",samsung,4,A3300_1,상해후유장해(3-100%),matched,normalized_alias
+"유사암 진단비(기타피부
+암)(1년50%)",samsung,5,A4210,유사암진단비,matched,normalized_alias
+"유사암 진단비(갑상선
+암)(1년50%)",samsung,5,A4210,유사암진단비,matched,normalized_alias
+"유사암 진단비(대장점막
+내암)(1년50%)",samsung,5,A4210,유사암진단비,matched,normalized_alias
+"유사암 진단비(제자리
+암)(1년50%)",samsung,5,A4210,유사암진단비,matched,normalized_alias
+"유사암 진단비(경계성종
+양)(1년50%)",samsung,5,A4210,유사암진단비,matched,normalized_alias
+"신재진단암(기타피부암
+및 갑상선암 포함) 진단비
+(1년주기,5회한)",samsung,5,A4299_1,재진단암진단비,matched,normalized_alias
+"항암방사선·약물 치료비
+Ⅲ(암(기타피부암 및 갑상
+선암 제외))",samsung,5,A9617_1,항암방사선약물치료비(최초1회한),matched,normalized_alias
+"항암방사선·약물 치료비
+Ⅲ(기타피부암 및 갑상선
+암)",samsung,5,A9617_1,항암방사선약물치료비(최초1회한),matched,normalized_alias
+"[갱신형] 표적항암약물허
+가 치료비(1년50%)",samsung,5,A9619_1,표적항암약물허가치료비(최초1회한),matched,suffix_normalized
+뇌출혈 진단비,samsung,5,A4102,뇌출혈진단비,matched,normalized_alias
+뇌졸중 진단비(1년50%),samsung,5,A4103,뇌졸중진단비,matched,alias
+"허혈성심장질환 진단비(1
+년50%)",samsung,6,,,unmatched,none
+"기타 심장부정맥 진단비
+(1년50%)",samsung,6,A4104_1,심장질환진단비,matched,normalized_alias
+"특정3대심장질환 진단비
+(1년50%)",samsung,6,A4104_1,심장질환진단비,matched,normalized_alias
+"혈전용해 치료비(뇌경색
+증)",samsung,6,A9640_1,혈전용해치료비,matched,normalized_alias
+"혈전용해 치료비(급성심
+근경색증)",samsung,6,A9640_1,혈전용해치료비,matched,normalized_alias
+상해 입원일당(1일이상),samsung,6,A6300_1,상해입원비,matched,alias
+질병 입원일당(1일이상),samsung,6,A6100_1,질병입원비,matched,alias
+"암 직접치료 입원일당Ⅱ
+(1일이상)(요양병원 제
+외)",samsung,6,A6200,"암직접치료입원일당(1-180,요양병원제외)",matched,normalized_alias
+"상해 입원 수술비(당일입
+원 제외)",samsung,6,A5300,상해수술비,matched,normalized_alias
+"상해 통원 수술비(외래 및
+당일입원)",samsung,6,A5300,상해수술비,matched,normalized_alias
+"질병 입원 수술비Ⅱ(당일
+입원 제외)",samsung,6,A5100,질병수술비,matched,normalized_alias
+"질병 통원 수술비Ⅱ(외래
+및 당일입원)",samsung,6,A5100,질병수술비,matched,normalized_alias
+"[갱신형] 암(특정암 제외)
+다빈치로봇 수술비(1년
+감액)",samsung,7,A9630_1,다빈치로봇암수술비,matched,normalized_alias
+"[갱신형] 특정암 다빈치로
+봇 수술비(1년 감액)",samsung,7,A9630_1,다빈치로봇암수술비,matched,normalized_alias
+"2대주요기관질병 관혈수
+술비Ⅱ(1년50%)",samsung,7,A5104_1,뇌혈관질환수술비,matched,suffix_normalized
+"2대주요기관질병 비관혈
+수술비Ⅱ(1년50%)",samsung,7,A5104_1,뇌혈관질환수술비,matched,suffix_normalized
+"골절 진단비(치아파절(깨
+짐, 부러짐) 제외)",samsung,7,,,unmatched,none
+화상 진단비,samsung,7,A4302,화상진단비,matched,normalized_alias

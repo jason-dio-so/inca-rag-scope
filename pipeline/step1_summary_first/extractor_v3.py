@@ -1,13 +1,17 @@
 """
-STEP NEXT-45-C-β: Summary-First Extractor V3 with Hybrid Layout Support
+STEP NEXT-45-D: Extractor V3 with Fingerprint Gate
 
-Key improvements over V2:
+Constitutional upgrades (45-D):
+- Manifest-driven execution (--manifest flag)
+- PDF fingerprint gate (exit code 2 on mismatch)
+- Reproducibility enforcement (Profile regeneration required on PDF change)
+- Variant support (db: under40/over41, lotte: male/female)
+
+Previous enhancements (45-C-β):
 1. Profile-based column mapping (handles KB row-number column offset)
 2. Improved row filtering (totals, disclaimers, noise)
 3. Evidence-backed extraction
 4. Full parity with baseline coverage counts (target: 95%+)
-
-STEP NEXT-45-C-β additions:
 5. Hybrid layout extractor (PyMuPDF text blocks + regex parsing)
 6. Auto-trigger: switches to hybrid mode if >30% coverage names are empty
 """
@@ -15,6 +19,7 @@ STEP NEXT-45-C-β additions:
 import json
 import logging
 import re
+import sys
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
@@ -24,6 +29,10 @@ import pdfplumber
 from pipeline.step1_summary_first.hybrid_layout import (
     extract_summary_rows_hybrid,
     detect_summary_pages,
+)
+from pipeline.step1_summary_first.pdf_fingerprint import (
+    compute_pdf_fingerprint,
+    fingerprints_match
 )
 
 logger = logging.getLogger(__name__)
@@ -37,18 +46,69 @@ class ProposalFact:
 
 
 class ExtractorV3:
-    """Profile-based summary-first extractor"""
+    """Profile-based summary-first extractor + fingerprint gate (45-D)"""
 
-    def __init__(self, insurer: str, pdf_path: Path, profile_path: Path):
+    def __init__(self, insurer: str, pdf_path: Path, profile_path: Path, variant: str = "default"):
         self.insurer = insurer
         self.pdf_path = pdf_path
         self.profile_path = profile_path
+        self.variant = variant
         self.profile = self._load_profile()
+
+        # STEP NEXT-45-D: Fingerprint gate (HARD GATE)
+        self._verify_fingerprint()
 
     def _load_profile(self) -> Dict[str, Any]:
         """Load profile JSON"""
         with open(self.profile_path, 'r', encoding='utf-8') as f:
             return json.load(f)
+
+    def _verify_fingerprint(self):
+        """
+        STEP NEXT-45-D: Fingerprint gate (HARD GATE)
+
+        Verify that the current PDF matches the profile's fingerprint.
+        If mismatch, abort execution with exit code 2.
+
+        Constitutional rule:
+        - Profile must be regenerated when input PDF changes
+        - This gate enforces reproducibility
+        """
+        # Check if profile has fingerprint field (backward compat)
+        if "pdf_fingerprint" not in self.profile:
+            logger.error(
+                f"{self.insurer} ({self.variant}): Profile missing 'pdf_fingerprint' field. "
+                f"This profile was generated with old builder (< 45-D). "
+                f"Run profile_builder_v3 with manifest to regenerate."
+            )
+            sys.exit(2)
+
+        # Compute fingerprint of current PDF
+        current_fp = compute_pdf_fingerprint(str(self.pdf_path))
+        profile_fp = self.profile["pdf_fingerprint"]
+
+        # Check match
+        if not fingerprints_match(current_fp, profile_fp):
+            logger.error(
+                f"{self.insurer} ({self.variant}): Profile fingerprint mismatch.\n"
+                f"Current PDF fingerprint:\n"
+                f"  - file_size_bytes: {current_fp['file_size_bytes']}\n"
+                f"  - page_count: {current_fp['page_count']}\n"
+                f"  - sha256_first_2mb: {current_fp['sha256_first_2mb']}\n"
+                f"  - source_basename: {current_fp['source_basename']}\n"
+                f"Profile fingerprint:\n"
+                f"  - file_size_bytes: {profile_fp['file_size_bytes']}\n"
+                f"  - page_count: {profile_fp['page_count']}\n"
+                f"  - sha256_first_2mb: {profile_fp['sha256_first_2mb']}\n"
+                f"  - source_basename: {profile_fp['source_basename']}\n\n"
+                f"Profile fingerprint mismatch. Run profile_builder_v3 with the current manifest first."
+            )
+            sys.exit(2)
+
+        logger.info(
+            f"{self.insurer} ({self.variant}): Fingerprint verification passed "
+            f"(sha256: {current_fp['sha256_first_2mb'][:16]}...)"
+        )
 
     def extract(self) -> List[ProposalFact]:
         """Extract proposal facts with summary-first SSOT"""
@@ -418,54 +478,81 @@ class ExtractorV3:
 
 
 def main():
-    """Extract Step1 v3 for all insurers"""
+    """
+    Extract Step1 v3 from manifest (STEP NEXT-45-D)
+
+    Usage:
+        python -m pipeline.step1_summary_first.extractor_v3 --manifest data/manifests/proposal_pdfs_v1.json
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Extractor V3 (manifest-based, fingerprint-gated)")
+    parser.add_argument(
+        "--manifest",
+        type=str,
+        default="data/manifests/proposal_pdfs_v1.json",
+        help="Path to manifest JSON file"
+    )
+    args = parser.parse_args()
+
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
-    pdf_sources = Path(__file__).parent.parent.parent / "data" / "sources" / "insurers"
+    # Load manifest
+    manifest_path = Path(args.manifest)
+    if not manifest_path.exists():
+        print(f"❌ Manifest not found: {manifest_path}")
+        return 1
+
+    with open(manifest_path, 'r', encoding='utf-8') as f:
+        manifest = json.load(f)
+
+    print("\n" + "="*80)
+    print("STEP NEXT-45-D: Extractor V3 (Manifest-driven, Fingerprint-gated)")
+    print("="*80 + "\n")
+    print(f"Manifest: {manifest_path}")
+    print(f"Version: {manifest['version']}")
+    print(f"Items: {len(manifest['items'])}\n")
+
     profile_dir = Path(__file__).parent.parent.parent / "data" / "profile"
     output_dir = Path(__file__).parent.parent.parent / "data" / "scope_v3"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    pdf_map = {
-        "samsung": "samsung/가입설계서/삼성_가입설계서_2511.pdf",
-        "meritz": "meritz/가입설계서/메리츠_가입설계서_2511.pdf",
-        "kb": "kb/가입설계서/KB_가입설계서.pdf",
-        "hanwha": "hanwha/가입설계서/한화_가입설계서_2511.pdf",
-        "hyundai": "hyundai/가입설계서/현대_가입설계서_2511.pdf",
-        "lotte": "lotte/가입설계서/롯데_가입설계서(남)_2511.pdf",
-        "heungkuk": "heungkuk/가입설계서/흥국_가입설계서_2511.pdf",
-        "db": "db/가입설계서/DB_가입설계서(40세이하)_2511.pdf"
-    }
-
-    print("\n" + "="*80)
-    print("STEP NEXT-45-C: Summary-First Extractor V3")
-    print("="*80 + "\n")
-
     results = []
 
-    for insurer, pdf_filename in pdf_map.items():
-        pdf_path = pdf_sources / pdf_filename
-        profile_path = profile_dir / f"{insurer}_proposal_profile_v3.json"
+    for item in manifest["items"]:
+        insurer = item["insurer"]
+        variant = item["variant"]
+        pdf_path = Path(item["pdf_path"])
+
+        # Determine profile filename
+        if variant == "default":
+            profile_filename = f"{insurer}_proposal_profile_v3.json"
+            output_filename = f"{insurer}_step1_raw_scope_v3.jsonl"
+        else:
+            profile_filename = f"{insurer}_{variant}_proposal_profile_v3.json"
+            output_filename = f"{insurer}_{variant}_step1_raw_scope_v3.jsonl"
+
+        profile_path = profile_dir / profile_filename
 
         if not pdf_path.exists():
-            print(f"⚠️  {insurer}: PDF not found - {pdf_path}")
+            print(f"⚠️  {insurer} ({variant}): PDF not found - {pdf_path}")
             continue
 
         if not profile_path.exists():
-            print(f"⚠️  {insurer}: Profile not found - {profile_path}")
+            print(f"⚠️  {insurer} ({variant}): Profile not found - {profile_path}")
             continue
 
-        print(f"📄 {insurer}: Extracting proposal facts (v3)...")
+        print(f"📄 {insurer} ({variant}): Extracting proposal facts (fingerprint gate enabled)...")
 
         try:
-            extractor = ExtractorV3(insurer, pdf_path, profile_path)
+            extractor = ExtractorV3(insurer, pdf_path, profile_path, variant)
             facts = extractor.extract()
 
             # Save facts to JSONL
-            output_path = output_dir / f"{insurer}_step1_raw_scope_v3.jsonl"
+            output_path = output_dir / output_filename
             with open(output_path, 'w', encoding='utf-8') as f:
                 for fact in facts:
                     json.dump(
@@ -504,10 +591,11 @@ def main():
 
         except Exception as e:
             print(f"   ❌ {insurer}: Extraction failed - {e}\n")
-            logger.exception(f"Extraction failed for {insurer}")
+            logger.exception(f"Extraction failed for {insurer} ({variant})")
+            return 1
 
     print("="*80)
-    print("✅ Step1 V3 extraction complete")
+    print("✅ Step1 V3 extraction complete (FINGERPRINT-GATED)")
     print("="*80 + "\n")
 
     # Summary table
@@ -554,6 +642,8 @@ def main():
 
     print()
 
+    return 0
+
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

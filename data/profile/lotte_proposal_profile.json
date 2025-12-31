@@ -1,0 +1,33 @@
+{
+  "insurer": "lotte",
+  "template_type": "summary-first",
+  "has_summary_table": true,
+  "summary_table_pages": [2, 3],
+  "detail_table_pages": [],
+  "summary_table_headers": [
+    "(Raw header inspection needed - 32 tables detected)"
+  ],
+  "detail_table_headers": [],
+  "detail_table_characteristics": [
+    "32 total tables detected across 11 pages (excluding page 1)",
+    "Pages 2-3 appear to contain coverage summary",
+    "No clear detail table pattern identified in initial scan",
+    "Moderate table fragmentation"
+  ],
+  "structural_risks": [
+    "Multiple PDFs processed (남/여 versions)",
+    "Potential for duplicate coverages across gender-specific PDFs"
+  ],
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 2,
+      "snippet": "[Tables detected on page 2]"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 3,
+      "snippet": "[Tables detected on page 3]"
+    }
+  ]
+}

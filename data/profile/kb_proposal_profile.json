@@ -1,0 +1,34 @@
+{
+  "insurer": "kb",
+  "template_type": "summary-first",
+  "has_summary_table": true,
+  "summary_table_pages": [2, 3, 4],
+  "detail_table_pages": [],
+  "summary_table_headers": [
+    "(Raw header inspection needed - 23 tables detected)"
+  ],
+  "detail_table_headers": [],
+  "detail_table_characteristics": [
+    "23 total tables detected across 15 pages",
+    "Pages 2-4 appear to contain coverage summary",
+    "No clear detail table pattern identified in initial scan",
+    "Moderate table fragmentation"
+  ],
+  "structural_risks": [
+    "44-β regression: Row numbers ('10.', '11.') extracted as coverage names",
+    "Potential column 0 misalignment (row number vs coverage name)",
+    "Amount-only patterns ('10만원', '1천만원') extracted as coverage names"
+  ],
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 2,
+      "snippet": "[Tables detected on page 2]"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 3,
+      "snippet": "[Tables detected on page 3]"
+    }
+  ]
+}

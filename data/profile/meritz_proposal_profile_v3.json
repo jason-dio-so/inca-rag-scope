@@ -1,6 +1,18 @@
 {
+  "profile_version": "v3",
+  "builder_version": "step-next-45d",
+  "generated_at": "2026-01-01T02:23:24.328520+09:00",
+  "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "meritz",
-  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/meritz/가입설계서/메리츠_가입설계서_2511.pdf",
+  "variant": "default",
+  "source_pdf_path": "data/sources/insurers/meritz/가입설계서/메리츠_가입설계서_2511.pdf",
+  "pdf_fingerprint": {
+    "file_size_bytes": 748817,
+    "page_count": 15,
+    "sha256_first_2mb": "fef11c89755708e59c165d5db3edad49afa6db1b28ade8768dc3e09a39b17e1b",
+    "source_basename": "메리츠_가입설계서_2511.pdf"
+  },
+  "pdf_path": "data/sources/insurers/meritz/가입설계서/메리츠_가입설계서_2511.pdf",
   "total_pages": 15,
   "summary_table": {
     "exists": true,

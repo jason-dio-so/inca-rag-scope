@@ -1,6 +1,18 @@
 {
+  "profile_version": "v3",
+  "builder_version": "step-next-45d",
+  "generated_at": "2026-01-01T02:23:16.082024+09:00",
+  "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "kb",
-  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/kb/가입설계서/KB_가입설계서.pdf",
+  "variant": "default",
+  "source_pdf_path": "data/sources/insurers/kb/가입설계서/KB_가입설계서.pdf",
+  "pdf_fingerprint": {
+    "file_size_bytes": 915548,
+    "page_count": 15,
+    "sha256_first_2mb": "71ea8a24d5242eccb6836b0427a9e598f5c90bc399d589619d241d5876c26adc",
+    "source_basename": "KB_가입설계서.pdf"
+  },
+  "pdf_path": "data/sources/insurers/kb/가입설계서/KB_가입설계서.pdf",
   "total_pages": 15,
   "summary_table": {
     "exists": true,

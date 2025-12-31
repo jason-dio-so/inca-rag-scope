@@ -1,0 +1,36 @@
+{
+  "insurer": "db",
+  "template_type": "summary-first",
+  "has_summary_table": true,
+  "summary_table_pages": [4],
+  "detail_table_pages": [10],
+  "summary_table_headers": [
+    "(Raw header inspection needed - 39 tables detected)"
+  ],
+  "detail_table_headers": [
+    "(Page 10 appears to contain detail information)"
+  ],
+  "detail_table_characteristics": [
+    "39 total tables detected across 14 pages (excluding page 1)",
+    "Page 4 appears to contain coverage summary (based on Step1 extraction)",
+    "Page 10 contains additional table (possibly detail)",
+    "Moderate table fragmentation",
+    "Multiple PDFs processed (40세이하/41세이상 versions)"
+  ],
+  "structural_risks": [
+    "Multiple age-specific PDFs (40세이하/41세이상)",
+    "Potential for age-dependent coverage variations"
+  ],
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 4,
+      "snippet": "[Tables detected on page 4]"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 10,
+      "snippet": "[Table detected on page 10]"
+    }
+  ]
+}

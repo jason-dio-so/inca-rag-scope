@@ -1,0 +1,66 @@
+{
+  "version": "proposal_pdfs_v1",
+  "generated_at": "2026-01-01T00:00:00+09:00",
+  "items": [
+    {
+      "insurer": "db",
+      "variant": "under40",
+      "doc_type": "가입설계서",
+      "pdf_path": "data/sources/insurers/db/가입설계서/DB_가입설계서(40세이하)_2511.pdf"
+    },
+    {
+      "insurer": "db",
+      "variant": "over41",
+      "doc_type": "가입설계서",
+      "pdf_path": "data/sources/insurers/db/가입설계서/DB_가입설계서(41세이상)_2511.pdf"
+    },
+    {
+      "insurer": "hanwha",
+      "variant": "default",
+      "doc_type": "가입설계서",
+      "pdf_path": "data/sources/insurers/hanwha/가입설계서/한화_가입설계서_2511.pdf"
+    },
+    {
+      "insurer": "heungkuk",
+      "variant": "default",
+      "doc_type": "가입설계서",
+      "pdf_path": "data/sources/insurers/heungkuk/가입설계서/흥국_가입설계서_2511.pdf"
+    },
+    {
+      "insurer": "hyundai",
+      "variant": "default",
+      "doc_type": "가입설계서",
+      "pdf_path": "data/sources/insurers/hyundai/가입설계서/현대_가입설계서_2511.pdf"
+    },
+    {
+      "insurer": "kb",
+      "variant": "default",
+      "doc_type": "가입설계서",
+      "pdf_path": "data/sources/insurers/kb/가입설계서/KB_가입설계서.pdf"
+    },
+    {
+      "insurer": "lotte",
+      "variant": "male",
+      "doc_type": "가입설계서",
+      "pdf_path": "data/sources/insurers/lotte/가입설계서/롯데_가입설계서(남)_2511.pdf"
+    },
+    {
+      "insurer": "lotte",
+      "variant": "female",
+      "doc_type": "가입설계서",
+      "pdf_path": "data/sources/insurers/lotte/가입설계서/롯데_가입설계서(여)_2511.pdf"
+    },
+    {
+      "insurer": "meritz",
+      "variant": "default",
+      "doc_type": "가입설계서",
+      "pdf_path": "data/sources/insurers/meritz/가입설계서/메리츠_가입설계서_2511.pdf"
+    },
+    {
+      "insurer": "samsung",
+      "variant": "default",
+      "doc_type": "가입설계서",
+      "pdf_path": "data/sources/insurers/samsung/가입설계서/삼성_가입설계서_2511.pdf"
+    }
+  ]
+}

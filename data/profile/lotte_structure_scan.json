@@ -1,0 +1,1013 @@
+{
+  "insurer": "lotte",
+  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/lotte/가입설계서/롯데_가입설계서(남)_2511.pdf",
+  "total_pages": 11,
+  "pages_with_tables": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "table_snapshots": [
+    {
+      "page": 2,
+      "table_index": 0,
+      "row_count": 2,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          ""
+        ],
+        [
+          "장기보험 가입제"
+        ]
+      ],
+      "header_text_raw": "장기보험 가입제",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 2,
+        "snippet": "장기보험 가입제"
+      }
+    },
+    {
+      "page": 2,
+      "table_index": 2,
+      "row_count": 31,
+      "col_count": 5,
+      "header_rows_raw": [
+        [
+          "순번",
+          "담보명",
+          "가입금액",
+          "납기/만기",
+          "보험료(원)"
+        ],
+        [
+          "1",
+          "상해후유장해(3~100%)",
+          "3,000만원",
+          "20년/100세",
+          "1,410"
+        ],
+        [
+          "2",
+          "상해사망",
+          "1,000만원",
+          "20년/100세",
+          "810"
+        ]
+      ],
+      "header_text_raw": "순번 담보명 가입금액 납기/만기 보험료(원) 1 상해후유장해(3~100%) 3,000만원 20년/100세 1,410 2 상해사망 1,000만원 20년/100세 810",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 2,
+        "snippet": "순번 담보명 가입금액 납기/만기 보험료(원) 1 상해후유장해(3~100%) 3,000만원 20년/100세 1,410 2 상해사망 1,000만원 20년/100세 810"
+      }
+    },
+    {
+      "page": 2,
+      "table_index": 3,
+      "row_count": 2,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "발 행 일",
+          "2025년 07월 03일 13시41분",
+          "준법"
+        ]
+      ],
+      "header_text_raw": "발 행 일 2025년 07월 03일 13시41분 준법",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 2,
+        "snippet": "발 행 일 2025년 07월 03일 13시41분 준법"
+      }
+    },
+    {
+      "page": 3,
+      "table_index": 0,
+      "row_count": 2,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          ""
+        ],
+        [
+          "장기보험 가입제"
+        ]
+      ],
+      "header_text_raw": "장기보험 가입제",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 3,
+        "snippet": "장기보험 가입제"
+      }
+    },
+    {
+      "page": 3,
+      "table_index": 1,
+      "row_count": 7,
+      "col_count": 6,
+      "header_rows_raw": [
+        [
+          "순번",
+          "담보명",
+          "",
+          "가입금액",
+          "납기/만기",
+          "보험료(원)"
+        ],
+        [
+          "194",
+          "질병통원수술비(당일입원포함)",
+          "",
+          "10만원",
+          "20년/100세",
+          "1,710"
+        ],
+        [
+          "242",
+          "상해입원비(1일-180일)",
+          "",
+          "1만원",
+          "20년/100세",
+          "1,635"
+        ]
+      ],
+      "header_text_raw": "순번 담보명 가입금액 납기/만기 보험료(원) 194 질병통원수술비(당일입원포함) 10만원 20년/100세 1,710 242 상해입원비(1일-180일) 1만원 20년/100세 1,635",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 3,
+        "snippet": "순번 담보명 가입금액 납기/만기 보험료(원) 194 질병통원수술비(당일입원포함) 10만원 20년/100세 1,710 242 상해입원비(1일-180일) 1만원 20년/100세 1,635"
+      }
+    },
+    {
+      "page": 3,
+      "table_index": 2,
+      "row_count": 2,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "발 행 일",
+          "2025년 07월 03일 13시41분",
+          "준법"
+        ]
+      ],
+      "header_text_raw": "발 행 일 2025년 07월 03일 13시41분 준법",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 3,
+        "snippet": "발 행 일 2025년 07월 03일 13시41분 준법"
+      }
+    },
+    {
+      "page": 4,
+      "table_index": 0,
+      "row_count": 2,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          ""
+        ],
+        [
+          "장기보험 가입제"
+        ]
+      ],
+      "header_text_raw": "장기보험 가입제",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 4,
+        "snippet": "장기보험 가입제"
+      }
+    },
+    {
+      "page": 4,
+      "table_index": 1,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "계약자",
+          "고객(650407-1******)",
+          "보험기간",
+          "2025년07월03일~2065년07월03일"
+        ],
+        [
+          "납입주기",
+          "월납",
+          "납기 및 만기",
+          "20년납/40년만기(100세만기)"
+        ],
+        [
+          "1회차 보험료",
+          "255,110원\n(보장255,110+적립0)",
+          "계속보험료",
+          "255,110원"
+        ]
+      ],
+      "header_text_raw": "계약자 고객(650407-1******) 보험기간 2025년07월03일~2065년07월03일 납입주기 월납 납기 및 만기 20년납/40년만기(100세만기) 1회차 보험료 255,110원\n(보장255,110+적립0) 계속보험료 255,110원",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 4,
+        "snippet": "계약자 고객(650407-1******) 보험기간 2025년07월03일~2065년07월03일 납입주기 월납 납기 및 만기 20년납/40년만기(100세만기) 1회차 보험료 255,110원\n(보장255,110+적립0) 계속보험료 255,110원"
+      }
+    },
+    {
+      "page": 4,
+      "table_index": 2,
+      "row_count": 2,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "피보험자",
+          "고객(650407-1******) 60세",
+          "계약자와의 관계",
+          "본인"
+        ],
+        [
+          "기본계약보험기간",
+          "20년납 / 40년만기(100세만기)",
+          "직업급수",
+          "1급 / 영업 및 판매업체 관련 사무직 .."
+        ]
+      ],
+      "header_text_raw": "피보험자 고객(650407-1******) 60세 계약자와의 관계 본인 기본계약보험기간 20년납 / 40년만기(100세만기) 직업급수 1급 / 영업 및 판매업체 관련 사무직 ..",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 4,
+        "snippet": "피보험자 고객(650407-1******) 60세 계약자와의 관계 본인 기본계약보험기간 20년납 / 40년만기(100세만기) 직업급수 1급 / 영업 및 판매업체 관련 사무직 .."
+      }
+    },
+    {
+      "page": 4,
+      "table_index": 3,
+      "row_count": 16,
+      "col_count": 5,
+      "header_rows_raw": [
+        [
+          "담보유형",
+          "담보명",
+          "가입금액",
+          "납기/만기",
+          "보험료(원)"
+        ],
+        [
+          "",
+          "보장내용",
+          "",
+          "",
+          ""
+        ],
+        [
+          "기본계약",
+          "1 상해후유장해(3~100%)",
+          "3,000만원",
+          "20년/100세",
+          "1,410"
+        ]
+      ],
+      "header_text_raw": "담보유형 담보명 가입금액 납기/만기 보험료(원) 보장내용 기본계약 1 상해후유장해(3~100%) 3,000만원 20년/100세 1,410",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 4,
+        "snippet": "담보유형 담보명 가입금액 납기/만기 보험료(원) 보장내용 기본계약 1 상해후유장해(3~100%) 3,000만원 20년/100세 1,410"
+      }
+    },
+    {
+      "page": 4,
+      "table_index": 4,
+      "row_count": 2,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "발 행 일",
+          "2025년 07월 03일 13시41분",
+          "준법"
+        ]
+      ],
+      "header_text_raw": "발 행 일 2025년 07월 03일 13시41분 준법",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 4,
+        "snippet": "발 행 일 2025년 07월 03일 13시41분 준법"
+      }
+    },
+    {
+      "page": 5,
+      "table_index": 0,
+      "row_count": 2,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          ""
+        ],
+        [
+          "장기보험 가입제"
+        ]
+      ],
+      "header_text_raw": "장기보험 가입제",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 5,
+        "snippet": "장기보험 가입제"
+      }
+    },
+    {
+      "page": 5,
+      "table_index": 1,
+      "row_count": 12,
+      "col_count": 5,
+      "header_rows_raw": [
+        [
+          "담보유형",
+          "담보명",
+          "가입금액",
+          "납기/만기",
+          "보험료(원)"
+        ],
+        [
+          "",
+          "보장내용",
+          "",
+          "",
+          ""
+        ],
+        [
+          "암관련",
+          "64 일반암수술비(1회한)",
+          "500만원",
+          "20년/100세",
+          "12,000"
+        ]
+      ],
+      "header_text_raw": "담보유형 담보명 가입금액 납기/만기 보험료(원) 보장내용 암관련 64 일반암수술비(1회한) 500만원 20년/100세 12,000",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 5,
+        "snippet": "담보유형 담보명 가입금액 납기/만기 보험료(원) 보장내용 암관련 64 일반암수술비(1회한) 500만원 20년/100세 12,000"
+      }
+    },
+    {
+      "page": 5,
+      "table_index": 2,
+      "row_count": 2,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "발 행 일",
+          "2025년 07월 03일 13시41분",
+          "준법"
+        ]
+      ],
+      "header_text_raw": "발 행 일 2025년 07월 03일 13시41분 준법",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 5,
+        "snippet": "발 행 일 2025년 07월 03일 13시41분 준법"
+      }
+    },
+    {
+      "page": 6,
+      "table_index": 0,
+      "row_count": 2,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          ""
+        ],
+        [
+          "장기보험 가입제"
+        ]
+      ],
+      "header_text_raw": "장기보험 가입제",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 6,
+        "snippet": "장기보험 가입제"
+      }
+    },
+    {
+      "page": 6,
+      "table_index": 1,
+      "row_count": 8,
+      "col_count": 5,
+      "header_rows_raw": [
+        [
+          "담보유형",
+          "담보명",
+          "가입금액",
+          "납기/만기",
+          "보험료(원)"
+        ],
+        [
+          "",
+          "보장내용",
+          "",
+          "",
+          ""
+        ],
+        [
+          "암관련",
+          "88 다빈치로봇갑상선암및전립선암수술비(최초1회한)(갱신형)",
+          "200만원",
+          "10년/10년 갱신",
+          "323"
+        ]
+      ],
+      "header_text_raw": "담보유형 담보명 가입금액 납기/만기 보험료(원) 보장내용 암관련 88 다빈치로봇갑상선암및전립선암수술비(최초1회한)(갱신형) 200만원 10년/10년 갱신 323",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 6,
+        "snippet": "담보유형 담보명 가입금액 납기/만기 보험료(원) 보장내용 암관련 88 다빈치로봇갑상선암및전립선암수술비(최초1회한)(갱신형) 200만원 10년/10년 갱신 323"
+      }
+    },
+    {
+      "page": 6,
+      "table_index": 2,
+      "row_count": 2,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "발 행 일",
+          "2025년 07월 03일 13시41분",
+          "준법"
+        ]
+      ],
+      "header_text_raw": "발 행 일 2025년 07월 03일 13시41분 준법",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 6,
+        "snippet": "발 행 일 2025년 07월 03일 13시41분 준법"
+      }
+    },
+    {
+      "page": 7,
+      "table_index": 0,
+      "row_count": 2,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          ""
+        ],
+        [
+          "장기보험 가입제"
+        ]
+      ],
+      "header_text_raw": "장기보험 가입제",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 7,
+        "snippet": "장기보험 가입제"
+      }
+    },
+    {
+      "page": 7,
+      "table_index": 1,
+      "row_count": 10,
+      "col_count": 5,
+      "header_rows_raw": [
+        [
+          "담보유형",
+          "담보명",
+          "가입금액",
+          "납기/만기",
+          "보험료(원)"
+        ],
+        [
+          "",
+          "보장내용",
+          "",
+          "",
+          ""
+        ],
+        [
+          "암관련",
+          "91 표적항암약물허가치료비(림프종및백혈병관련암)(1회한)(갱신형)",
+          "1,000만원",
+          "10년/10년 갱신",
+          "260"
+        ]
+      ],
+      "header_text_raw": "담보유형 담보명 가입금액 납기/만기 보험료(원) 보장내용 암관련 91 표적항암약물허가치료비(림프종및백혈병관련암)(1회한)(갱신형) 1,000만원 10년/10년 갱신 260",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 7,
+        "snippet": "담보유형 담보명 가입금액 납기/만기 보험료(원) 보장내용 암관련 91 표적항암약물허가치료비(림프종및백혈병관련암)(1회한)(갱신형) 1,000만원 10년/10년 갱신 260"
+      }
+    },
+    {
+      "page": 7,
+      "table_index": 2,
+      "row_count": 2,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "발 행 일",
+          "2025년 07월 03일 13시41분",
+          "준법"
+        ]
+      ],
+      "header_text_raw": "발 행 일 2025년 07월 03일 13시41분 준법",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 7,
+        "snippet": "발 행 일 2025년 07월 03일 13시41분 준법"
+      }
+    },
+    {
+      "page": 8,
+      "table_index": 0,
+      "row_count": 2,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          ""
+        ],
+        [
+          "장기보험 가입제"
+        ]
+      ],
+      "header_text_raw": "장기보험 가입제",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 8,
+        "snippet": "장기보험 가입제"
+      }
+    },
+    {
+      "page": 8,
+      "table_index": 1,
+      "row_count": 22,
+      "col_count": 5,
+      "header_rows_raw": [
+        [
+          "담보유형",
+          "담보명",
+          "가입금액",
+          "납기/만기",
+          "보험료(원)"
+        ],
+        [
+          "",
+          "보장내용",
+          "",
+          "",
+          ""
+        ],
+        [
+          "입원일당",
+          "242 상해입원비(1일-180일)",
+          "1만원",
+          "20년/100세",
+          "1,635"
+        ]
+      ],
+      "header_text_raw": "담보유형 담보명 가입금액 납기/만기 보험료(원) 보장내용 입원일당 242 상해입원비(1일-180일) 1만원 20년/100세 1,635",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 8,
+        "snippet": "담보유형 담보명 가입금액 납기/만기 보험료(원) 보장내용 입원일당 242 상해입원비(1일-180일) 1만원 20년/100세 1,635"
+      }
+    },
+    {
+      "page": 8,
+      "table_index": 2,
+      "row_count": 2,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "발 행 일",
+          "2025년 07월 03일 13시41분",
+          "준법"
+        ]
+      ],
+      "header_text_raw": "발 행 일 2025년 07월 03일 13시41분 준법",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 8,
+        "snippet": "발 행 일 2025년 07월 03일 13시41분 준법"
+      }
+    },
+    {
+      "page": 9,
+      "table_index": 0,
+      "row_count": 2,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          ""
+        ],
+        [
+          "장기보험 가입제"
+        ]
+      ],
+      "header_text_raw": "장기보험 가입제",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 9,
+        "snippet": "장기보험 가입제"
+      }
+    },
+    {
+      "page": 9,
+      "table_index": 1,
+      "row_count": 15,
+      "col_count": 6,
+      "header_rows_raw": [
+        [
+          "담보유형",
+          "담보명",
+          "",
+          "가입금액",
+          "납기/만기",
+          "보험료(원)"
+        ],
+        [
+          "",
+          "보장내용",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "수술비",
+          "162 상해입원수술비(당일입원제외)",
+          "",
+          "10만원",
+          "20년/100세",
+          "362"
+        ]
+      ],
+      "header_text_raw": "담보유형 담보명 가입금액 납기/만기 보험료(원) 보장내용 수술비 162 상해입원수술비(당일입원제외) 10만원 20년/100세 362",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 9,
+        "snippet": "담보유형 담보명 가입금액 납기/만기 보험료(원) 보장내용 수술비 162 상해입원수술비(당일입원제외) 10만원 20년/100세 362"
+      }
+    },
+    {
+      "page": 9,
+      "table_index": 2,
+      "row_count": 2,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "발 행 일",
+          "2025년 07월 03일 13시41분",
+          "준법"
+        ]
+      ],
+      "header_text_raw": "발 행 일 2025년 07월 03일 13시41분 준법",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 9,
+        "snippet": "발 행 일 2025년 07월 03일 13시41분 준법"
+      }
+    },
+    {
+      "page": 10,
+      "table_index": 0,
+      "row_count": 2,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          ""
+        ],
+        [
+          "장기보험 가입제"
+        ]
+      ],
+      "header_text_raw": "장기보험 가입제",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 10,
+        "snippet": "장기보험 가입제"
+      }
+    },
+    {
+      "page": 10,
+      "table_index": 1,
+      "row_count": 13,
+      "col_count": 11,
+      "header_rows_raw": [
+        [
+          "경과기간",
+          "기본계약 및 기타 특약담보 (실손의료비 제외)",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "실손의료비 담보 가입시",
+          "",
+          ""
+        ],
+        [
+          "",
+          "납입\n보험료(1)",
+          "적용이율",
+          "",
+          "",
+          "최저보증이율",
+          "",
+          "",
+          "납입\n보험료(2)",
+          "환급금\n(원)",
+          "환급률"
+        ],
+        [
+          "",
+          "",
+          "해약환급금(원)",
+          "",
+          "총\n환급률",
+          "해약환급금(원)",
+          "",
+          "총\n환급률",
+          "",
+          "",
+          ""
+        ]
+      ],
+      "header_text_raw": "경과기간 기본계약 및 기타 특약담보 (실손의료비 제외) 실손의료비 담보 가입시 납입\n보험료(1) 적용이율 최저보증이율 납입\n보험료(2) 환급금\n(원) 환급률 해약환급금(원) 총\n환급률 해약환급금(원) 총\n환급률",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 10,
+        "snippet": "경과기간 기본계약 및 기타 특약담보 (실손의료비 제외) 실손의료비 담보 가입시 납입\n보험료(1) 적용이율 최저보증이율 납입\n보험료(2) 환급금\n(원) 환급률 해약환급금(원) 총\n환급률 해약환급금(원) 총\n환급률"
+      }
+    },
+    {
+      "page": 10,
+      "table_index": 2,
+      "row_count": 2,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "발 행 일",
+          "2025년 07월 03일 13시41분",
+          "준법"
+        ]
+      ],
+      "header_text_raw": "발 행 일 2025년 07월 03일 13시41분 준법",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 10,
+        "snippet": "발 행 일 2025년 07월 03일 13시41분 준법"
+      }
+    },
+    {
+      "page": 11,
+      "table_index": 0,
+      "row_count": 2,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          ""
+        ],
+        [
+          "장기보험 가입제"
+        ]
+      ],
+      "header_text_raw": "장기보험 가입제",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 11,
+        "snippet": "장기보험 가입제"
+      }
+    },
+    {
+      "page": 11,
+      "table_index": 1,
+      "row_count": 3,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "할인명",
+          "적용대상",
+          "할인내용"
+        ],
+        [
+          "유공자할인",
+          "가. 할인대상 : 국가유공자 등 예우 및 지원에 관한 법률」 제4조(적용 대상 국가유공자), 제5\n조(유족 또는 가족의 범위), 제73조(6·18 자유상이자에 대한 준용), 부칙 <제11041호,\n2011.9.15.> 제19조(국가유공자에 준하는 군경 등의 보상에 관한 경과조치)의 적용대상자\n「국가유공자 등 예우 및 지원에 관한 법률」 제6조에 따라 국가보훈처에 등록된 국가유공자,\n그 유족 및 가족\n나. 증빙서류 : 피보험자의 국가유공자증, 독립유공자증 또는 피보험자가 국가보훈처에 국가\n유공자 및 유가족으로 등록되었음을 확인 할 수 있는 보훈대상 종류가 포함된 기타서류",
+          "영업보험료 3% 할인"
+        ],
+        [
+          "자궁경부암 백신 접종 할인",
+          "가. 할인대상 : 피보험자가 자궁경부암 백신을 최종 접종(1~3차)완료하고 이를 증명할 수 있\n는 서류를 제출한 경우\n나. 증빙서류 : 질병관리청에서 발급받은 예방접종증명서 또는 피보험자가 자궁경부암 백신\n을 접종완료 하였다는 것을 증명할 수 있는 기타서류",
+          "영업보험료 2% 할인"
+        ]
+      ],
+      "header_text_raw": "할인명 적용대상 할인내용 유공자할인 가. 할인대상 : 국가유공자 등 예우 및 지원에 관한 법률」 제4조(적용 대상 국가유공자), 제5\n조(유족 또는 가족의 범위), 제73조(6·18 자유상이자에 대한 준용), 부칙 <제11041호,\n2011.9.15.> 제19조(국가유공자에 준하는 군경 등의 보상에 관한 경과조치)의 적용대상자\n「국가유공자 등 예우 및 지원에 관한 법률」 제6조에 따라 국가보훈처에 등록된 국가유공자,\n그 유족 및 가족\n나. 증빙서류 : 피보험자의 국가유공자증, 독립유공자증 또는 피보험자가 국가보훈처에 국가\n유공자 및 유가족으로 등록되었음을 확인 할 수 있는 보훈대상 종류가 포함된 기타서류 영업보험료 3% 할인 자궁경부암 백신 접종 할인 가. 할인대상 : 피보험자가 자궁경부암 백신을 최종 접종(1~3차)완료하고 이를 증명할 수 있\n는 서류를 제출한 경우\n나. 증빙서류 : 질병관리청에서 발급받은 예방접종증명서 또는 피보험자가 자궁경부암 백신\n을 접종완료 하였다는 것을 증명할 수 있는 기타서류 영업보험료 2% 할인",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": true,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 11,
+        "snippet": "할인명 적용대상 할인내용 유공자할인 가. 할인대상 : 국가유공자 등 예우 및 지원에 관한 법률」 제4조(적용 대상 국가유공자), 제5\n조(유족 또는 가족의 범위), 제73조(6·18 자유상이자에 대한 준용), 부칙 <제11041호,\n2011.9.15.> 제19조(국가유공자에 준하는 군경 등의 보상에 관한 경과조치)의 적용대상자\n「국가유공자 등 예우 및 지원"
+      }
+    },
+    {
+      "page": 11,
+      "table_index": 2,
+      "row_count": 2,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "발 행 일",
+          "2025년 07월 03일 13시41분",
+          "준법"
+        ]
+      ],
+      "header_text_raw": "발 행 일 2025년 07월 03일 13시41분 준법",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 11,
+        "snippet": "발 행 일 2025년 07월 03일 13시41분 준법"
+      }
+    }
+  ]
+}

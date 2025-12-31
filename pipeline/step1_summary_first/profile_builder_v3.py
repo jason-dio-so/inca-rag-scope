@@ -1,13 +1,17 @@
 """
-STEP NEXT-45-C-β-3: Profile Builder V3 (Summary-Variant Detection)
+STEP NEXT-45-D: Profile Builder V3 (Manifest-driven, Fingerprinted)
 
-Key improvements over V2:
+Constitutional upgrades (45-D):
+- Manifest-driven execution (--manifest flag)
+- PDF fingerprint provenance (file_size, page_count, sha256_first_2mb)
+- Profile = generated artifact (not manual config)
+- Variant support (db: under40/over41, lotte: male/female)
+
+Previous enhancements (45-C-β-3):
 1. KB row-number column detection (column 0 = row numbers)
 2. Evidence-backed column mapping with offset detection
 3. Improved summary table detection rules
 4. Known anomalies documentation per insurer
-
-STEP NEXT-45-C-β-3 enhancements:
 5. Relaxed disqualify rule for "보장내용" header (summary-variant detection)
 6. Two-tier signature storage: primary + variant
 7. Expanded page scanning range (full document)
@@ -19,15 +23,18 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 import re
+from datetime import datetime, timezone, timedelta
 
 import pdfplumber
 import fitz
+
+from pipeline.step1_summary_first.pdf_fingerprint import compute_pdf_fingerprint
 
 logger = logging.getLogger(__name__)
 
 
 class ProfileBuilderV3:
-    """Profile builder with KB column-offset detection"""
+    """Profile builder with KB column-offset detection + fingerprint provenance (45-D)"""
 
     # Summary table detection keywords
     COVERAGE_KEYWORDS = ['담보', '가입담보', '보장', '보장명']
@@ -38,9 +45,15 @@ class ProfileBuilderV3:
     # Disqualifying keywords (detail table markers)
     DISQUALIFY_KEYWORDS = ['보장내용', '지급사유', '면책', '지급하지']
 
-    def __init__(self, insurer: str, pdf_path: Path):
+    # Builder version (STEP NEXT-45-D)
+    BUILDER_VERSION = "step-next-45d"
+    PROFILE_VERSION = "v3"
+
+    def __init__(self, insurer: str, pdf_path: Path, variant: str = "default", manifest_path: str = None):
         self.insurer = insurer
         self.pdf_path = pdf_path
+        self.variant = variant
+        self.manifest_path = manifest_path
 
     def build_profile(self) -> Dict[str, Any]:
         """Build profile v3 with improved column detection (STEP NEXT-45-C-β-4: Two-pass detection)"""
@@ -122,7 +135,26 @@ class ProfileBuilderV3:
             'passB_pages': sorted(passB_pages)
         }
 
-        return profile
+        # STEP NEXT-45-D: Add provenance fields (MANDATORY)
+        fingerprint = compute_pdf_fingerprint(str(self.pdf_path))
+        kst = timezone(timedelta(hours=9))
+        generated_at = datetime.now(kst).isoformat()
+
+        profile_with_provenance = {
+            # Provenance fields (MANDATORY for 45-D)
+            "profile_version": self.PROFILE_VERSION,
+            "builder_version": self.BUILDER_VERSION,
+            "generated_at": generated_at,
+            "source_manifest": self.manifest_path if self.manifest_path else None,
+            "insurer": self.insurer,
+            "variant": self.variant,
+            "source_pdf_path": str(self.pdf_path),
+            "pdf_fingerprint": fingerprint,
+            # Original profile content
+            **profile
+        }
+
+        return profile_with_provenance
 
     def _is_summary_table(self, table: List[List[Any]], page: int, table_idx: int) -> tuple[bool, bool, Optional[Dict]]:
         """
@@ -728,48 +760,70 @@ class ProfileBuilderV3:
 
 
 def main():
-    """Generate profile v3 for all insurers"""
+    """
+    Generate profile v3 from manifest (STEP NEXT-45-D)
+
+    Usage:
+        python -m pipeline.step1_summary_first.profile_builder_v3 --manifest data/manifests/proposal_pdfs_v1.json
+    """
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description="Profile Builder V3 (manifest-based)")
+    parser.add_argument(
+        "--manifest",
+        type=str,
+        default="data/manifests/proposal_pdfs_v1.json",
+        help="Path to manifest JSON file"
+    )
+    args = parser.parse_args()
+
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
-    pdf_sources = Path(__file__).parent.parent.parent / "data" / "sources" / "insurers"
+    # Load manifest
+    manifest_path = Path(args.manifest)
+    if not manifest_path.exists():
+        print(f"❌ Manifest not found: {manifest_path}")
+        return 1
 
-    # Updated PDF map with all 8 core insurers
-    pdf_map = {
-        "samsung": "samsung/가입설계서/삼성_가입설계서_2511.pdf",
-        "meritz": "meritz/가입설계서/메리츠_가입설계서_2511.pdf",
-        "kb": "kb/가입설계서/KB_가입설계서.pdf",
-        "hanwha": "hanwha/가입설계서/한화_가입설계서_2511.pdf",
-        "hyundai": "hyundai/가입설계서/현대_가입설계서_2511.pdf",
-        "lotte": "lotte/가입설계서/롯데_가입설계서(남)_2511.pdf",
-        "heungkuk": "heungkuk/가입설계서/흥국_가입설계서_2511.pdf",
-        "db": "db/가입설계서/DB_가입설계서(40세이하)_2511.pdf"
-    }
+    with open(manifest_path, 'r', encoding='utf-8') as f:
+        manifest = json.load(f)
+
+    print("\n" + "="*80)
+    print("STEP NEXT-45-D: Profile Builder V3 (Manifest-driven, Fingerprinted)")
+    print("="*80 + "\n")
+    print(f"Manifest: {manifest_path}")
+    print(f"Version: {manifest['version']}")
+    print(f"Items: {len(manifest['items'])}\n")
 
     output_dir = Path(__file__).parent.parent.parent / "data" / "profile"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print("\n" + "="*80)
-    print("STEP NEXT-45-C-β-3: Profile Builder V3 (Summary-Variant Detection)")
-    print("="*80 + "\n")
-
     results = []
 
-    for insurer, pdf_filename in pdf_map.items():
-        pdf_path = pdf_sources / pdf_filename
+    for item in manifest["items"]:
+        insurer = item["insurer"]
+        variant = item["variant"]
+        pdf_path = Path(item["pdf_path"])
 
         if not pdf_path.exists():
-            print(f"⚠️  {insurer}: PDF not found - {pdf_path}")
+            print(f"⚠️  {insurer} ({variant}): PDF not found - {pdf_path}")
             continue
 
-        print(f"📄 {insurer}: Building profile v3...")
-        builder = ProfileBuilderV3(insurer, pdf_path)
+        print(f"📄 {insurer} ({variant}): Building profile v3...")
+        builder = ProfileBuilderV3(insurer, pdf_path, variant, str(manifest_path))
         profile = builder.build_profile()
 
-        # Save profile
-        output_path = output_dir / f"{insurer}_proposal_profile_v3.json"
+        # Save profile (with variant in filename)
+        if variant == "default":
+            output_filename = f"{insurer}_proposal_profile_v3.json"
+        else:
+            output_filename = f"{insurer}_{variant}_proposal_profile_v3.json"
+
+        output_path = output_dir / output_filename
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(profile, f, ensure_ascii=False, indent=2)
 
@@ -788,10 +842,12 @@ def main():
         # STEP NEXT-45-C-β-4: Show Pass A/B detection results
         passA_pages = profile.get('detection_metadata', {}).get('passA_pages', [])
         passB_pages = profile.get('detection_metadata', {}).get('passB_pages', [])
+        fingerprint_short = profile["pdf_fingerprint"]["sha256_first_2mb"][:16]
 
         print(f"   ✓ Summary table: {summary_exists} (pages: {summary_pages}){kb_success}")
         print(f"   ✓ Summary signatures: {summary_count} (primary: {primary_count}, variant: {variant_count})")
         print(f"   ✓ Detection: Pass A pages {passA_pages}, Pass B pages {passB_pages}")
+        print(f"   ✓ Fingerprint: {fingerprint_short}...")
         print(f"   ✓ Known anomalies: {anomalies}")
         if profile.get("known_anomalies"):
             for anomaly in profile["known_anomalies"]:
@@ -808,7 +864,7 @@ def main():
         })
 
     print("="*80)
-    print("✅ Profile V3 generation complete")
+    print("✅ Profile V3 generation complete (MANIFEST-DRIVEN, FINGERPRINTED)")
     print("="*80 + "\n")
 
     # Summary table
@@ -830,6 +886,9 @@ def main():
 
     print()
 
+    return 0
+
 
 if __name__ == '__main__':
-    main()
+    import sys
+    sys.exit(main())

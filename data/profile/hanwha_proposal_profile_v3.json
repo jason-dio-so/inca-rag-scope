@@ -1,6 +1,18 @@
 {
+  "profile_version": "v3",
+  "builder_version": "step-next-45d",
+  "generated_at": "2026-01-01T02:23:06.782876+09:00",
+  "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "hanwha",
-  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/hanwha/가입설계서/한화_가입설계서_2511.pdf",
+  "variant": "default",
+  "source_pdf_path": "data/sources/insurers/hanwha/가입설계서/한화_가입설계서_2511.pdf",
+  "pdf_fingerprint": {
+    "file_size_bytes": 1193574,
+    "page_count": 25,
+    "sha256_first_2mb": "ac123133d1a080fd426c766342ce80039b843ff6a4a9a5724c083c2c3a9a1a4b",
+    "source_basename": "한화_가입설계서_2511.pdf"
+  },
+  "pdf_path": "data/sources/insurers/hanwha/가입설계서/한화_가입설계서_2511.pdf",
   "total_pages": 25,
   "summary_table": {
     "exists": true,
