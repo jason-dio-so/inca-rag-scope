@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-01
-**현재 상태**: ✅ **Profile Confirmation Sprint Complete** (STEP NEXT-45-C-β-5: Samsung 회귀 복구 + Hyundai tail 제거)
+**현재 상태**: ✅ **SSOT Guardrail Enforcement Complete** (STEP NEXT-52-HK: scope_v3 SSOT 고정 + legacy 정리 + 재발 방지)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ SSOT Guardrail Enforcement** | STEP NEXT-52-HK | ✅ 완료 | 2026-01-01 |
 | **✅ Profile Confirmation Sprint** | STEP NEXT-45-C-β-5 | ✅ 완료 | 2026-01-01 |
 | **✅ Pass B E2E Fix** | STEP NEXT-45-C-β-4 | ✅ 완료 | 2026-01-01 |
 | **⚠️ Hybrid Layout Extractor** | STEP NEXT-45-C-β-3 | ✅ 완료 | 2026-01-01 |
@@ -52,6 +53,19 @@
 ---
 
 ## 🎯 최신 진행 항목 (2026-01-01)
+
+### STEP NEXT-52-HK — SSOT Guardrail Enforcement ✅ **COMPLETE**
+
+**목표**: `data/scope_v3/` SSOT 물리적 고정 + legacy 정리 + 재발 방지 가드레일
+
+**완료 사항**:
+- ✅ Legacy Step2 outputs 아카이브 (32 files → `archive/scope_legacy/run_20260101_step_next_52_hk/`)
+- ✅ `data/scope/README.md` 생성 (LEGACY ONLY / DO NOT USE 명시)
+- ✅ Step2-a/Step2-b 코드 레벨 SSOT path validation (exit 2 if violated)
+- ✅ Test suite: `tests/test_scope_ssot_no_legacy_step2_outputs.py` (3/3 passed ✅)
+- ✅ `CLAUDE.md` + `data/scope_v3/README.md` 문서화 (4-layer guardrail 명시)
+
+---
 
 ### STEP NEXT-45-C-β-4 — Pass B E2E Fix ✅ **COMPLETE**
 
