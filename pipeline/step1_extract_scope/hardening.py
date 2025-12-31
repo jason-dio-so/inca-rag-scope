@@ -6,44 +6,12 @@ STEP NEXT-32: Quality Gates Implementation
 - Count Gate (≥30)
 - Header Pollution Gate (<5%)
 - Declared vs Extracted Gap Warning (>50%)
-
-STEP NEXT-34: Newline Normalization
-- Apply deterministic newline → space normalization
 """
 
 import re
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 import pdfplumber
-
-
-def normalize_coverage_name(coverage_name: str) -> str:
-    """
-    STEP NEXT-34: Normalize coverage name for deterministic join stability
-
-    Rule (single, deterministic, idempotent):
-    1. Replace all internal newlines (\n, \r\n) with single space
-    2. Collapse multiple spaces into one
-    3. Trim leading/trailing whitespace
-
-    This is a data hygiene fix, not a search expansion.
-
-    Args:
-        coverage_name: Raw coverage name from PDF extraction
-
-    Returns:
-        Normalized coverage name (newline-free, single-spaced)
-    """
-    # Replace newlines with space
-    normalized = coverage_name.replace('\r\n', ' ').replace('\n', ' ')
-
-    # Collapse multiple spaces into one
-    normalized = re.sub(r'\s+', ' ', normalized)
-
-    # Trim leading/trailing whitespace
-    normalized = normalized.strip()
-
-    return normalized
 
 
 def detect_declared_count(pdf_path: str) -> Optional[int]:
@@ -153,9 +121,6 @@ def samsung_table_extraction(pdf_path: str, insurer: str) -> List[Dict[str, str]
 
                     coverage_name = str(cell_value).strip()
 
-                    # STEP NEXT-34: Normalize coverage name
-                    coverage_name = normalize_coverage_name(coverage_name)
-
                     # Filter out section headers and non-coverage text
                     # Samsung-specific: "기본계약", "선택계약" are section markers
                     if coverage_name in ['기본계약', '선택계약', '담보가입현황', '담보별 보장내용']:
@@ -255,9 +220,6 @@ def meritz_table_extraction(pdf_path: str, insurer: str) -> List[Dict[str, str]]
                     # Meritz-specific: Remove leading code numbers (e.g., "180 담보명" -> "담보명")
                     coverage_name = re.sub(r'^\d+\s+', '', coverage_name)
 
-                    # STEP NEXT-34: Normalize coverage name
-                    coverage_name = normalize_coverage_name(coverage_name)
-
                     # Filter out category headers (from Col 0)
                     if coverage_name in category_headers:
                         continue
@@ -356,9 +318,6 @@ def enhanced_table_extraction(pdf_path: str, insurer: str) -> List[Dict[str, str
                             coverage_name = parts[0].strip() if parts else None
 
                         if coverage_name:
-                            # STEP NEXT-34: Normalize coverage name
-                            coverage_name = normalize_coverage_name(coverage_name)
-
                             if len(coverage_name) < 3 or re.match(r'^[\d,]+', coverage_name):
                                 continue
                             if coverage_name in ['(기본)', '기본계약', '주계약']:
@@ -420,9 +379,6 @@ def enhanced_table_extraction(pdf_path: str, insurer: str) -> List[Dict[str, str
                     for row in table[start_row:]:
                         if len(row) > coverage_col_idx and row[coverage_col_idx]:
                             coverage_name = str(row[coverage_col_idx]).strip()
-
-                            # STEP NEXT-34: Normalize coverage name
-                            coverage_name = normalize_coverage_name(coverage_name)
 
                             if len(coverage_name) < 3 or re.match(r'^[\d,]+', coverage_name):
                                 continue

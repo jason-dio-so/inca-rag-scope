@@ -17,35 +17,6 @@ import re
 from .hardening import hardening_correction, calculate_header_pollution_rate
 
 
-def normalize_coverage_name(coverage_name: str) -> str:
-    """
-    STEP NEXT-34: Normalize coverage name for deterministic join stability
-
-    Rule (single, deterministic, idempotent):
-    1. Replace all internal newlines (\n, \r\n) with single space
-    2. Collapse multiple spaces into one
-    3. Trim leading/trailing whitespace
-
-    This is a data hygiene fix, not a search expansion.
-
-    Args:
-        coverage_name: Raw coverage name from PDF extraction
-
-    Returns:
-        Normalized coverage name (newline-free, single-spaced)
-    """
-    # Replace newlines with space
-    normalized = coverage_name.replace('\r\n', ' ').replace('\n', ' ')
-
-    # Collapse multiple spaces into one
-    normalized = re.sub(r'\s+', ' ', normalized)
-
-    # Trim leading/trailing whitespace
-    normalized = normalized.strip()
-
-    return normalized
-
-
 class ScopeExtractor:
     """가입설계서에서 scope 담보 목록 추출"""
 
@@ -91,9 +62,6 @@ class ScopeExtractor:
                                 coverage_name = parts[0].strip() if parts else None
 
                             if coverage_name:
-                                # STEP NEXT-34: Normalize coverage name before validation
-                                coverage_name = normalize_coverage_name(coverage_name)
-
                                 if len(coverage_name) < 3 or re.match(r'^[\d,]+', coverage_name):
                                     continue
                                 if coverage_name in ['(기본)', '기본계약']:
@@ -134,9 +102,6 @@ class ScopeExtractor:
                         for row in table[start_row:]:
                             if len(row) > coverage_col_idx and row[coverage_col_idx]:
                                 coverage_name = str(row[coverage_col_idx]).strip()
-
-                                # STEP NEXT-34: Normalize coverage name before validation
-                                coverage_name = normalize_coverage_name(coverage_name)
 
                                 # 필터링
                                 if len(coverage_name) < 3 or re.match(r'^[\d,]+', coverage_name):
