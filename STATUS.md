@@ -101,6 +101,7 @@ Full Pipeline:
 Step4: Content-hash gate ✓, 34/34 evidence pack
 Step5: Join-rate 100% ✓, 34 coverage cards (SSOT)
 Evidence_status: 33 found, 1 not_found
+Not_found sample: (20년갱신)갱신형 중증질환자(뇌혈관질환) 산정특례대상 진단비(연간1회한)
 ```
 
 **회귀 테스트 결과 (KB)**:
