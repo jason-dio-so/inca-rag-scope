@@ -1,0 +1,63 @@
+{
+  "insurer": "meritz",
+  "document_type": "가입설계서",
+  "pdf_version": "2511",
+
+  "summary_table": {
+    "exists": true,
+    "reliable": true,
+    "priority": 1,
+    "pages": [3, 4],
+    "table_name_candidates": ["가입담보"],
+    "columns": {
+      "coverage_name": ["가입담보"],
+      "coverage_amount": ["가입금액"],
+      "premium": ["보험료(원)"],
+      "payment_period": ["납기/만기"],
+      "term": ["납기/만기"]
+    },
+    "structure": {
+      "row_count": "25 (page 3) + 13 (page 4) = 38 total",
+      "col_count": "6 columns",
+      "header_pattern": "가입담보 | 가입금액 | 보험료(원) | 납기/만기"
+    },
+    "notes": "요약 테이블이 페이지 3-4에 존재. 담보명/가입금액/보험료/납기만기 모두 포함. SSOT로 사용."
+  },
+
+  "detail_table": {
+    "exists": false,
+    "priority": null,
+    "pages": [],
+    "table_name_candidates": [],
+    "columns": {},
+    "structure": {},
+    "notes": "별도 상세 테이블 없음. 요약 테이블만 존재."
+  },
+
+  "extraction_policy": {
+    "coverage_name_source": "summary_table",
+    "amount_source": "summary_table",
+    "premium_source": "summary_table",
+    "period_source": "summary_table",
+    "fallback_to_detail": false,
+    "detail_used_only_when_no_summary": false
+  },
+
+  "known_risks": [
+    "High table fragmentation (44 tables across 15 pages)",
+    "Multiple small tables may require keyword filtering"
+  ],
+
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 3,
+      "snippet": "가입담보 | 가입금액 | 보험료(원) | 납기/만기 [25 rows, 6 columns]"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 4,
+      "snippet": "가입담보 | 가입금액 | 보험료(원) | 납기/만기 [13 rows, 6 columns]"
+    }
+  ]
+}

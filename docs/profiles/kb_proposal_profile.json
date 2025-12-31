@@ -1,0 +1,64 @@
+{
+  "insurer": "kb",
+  "document_type": "가입설계서",
+  "pdf_version": "unknown",
+
+  "summary_table": {
+    "exists": true,
+    "reliable": true,
+    "priority": 1,
+    "pages": [2, 3],
+    "table_name_candidates": ["보장명"],
+    "columns": {
+      "coverage_name": ["보장명"],
+      "coverage_amount": ["가입금액"],
+      "premium": ["보험료(원)"],
+      "payment_period": ["납입|보험기간"],
+      "term": ["납입|보험기간"]
+    },
+    "structure": {
+      "row_count": "26 (page 2) + 16 (page 3) = 42 total",
+      "col_count": "4 columns",
+      "header_pattern": "보장명 | 가입금액 | 보험료(원) | 납입|보험기간"
+    },
+    "notes": "요약 테이블이 페이지 2-3에 존재. 담보명/가입금액/보험료/납입보험기간 모두 포함. SSOT로 사용."
+  },
+
+  "detail_table": {
+    "exists": false,
+    "priority": null,
+    "pages": [],
+    "table_name_candidates": [],
+    "columns": {},
+    "structure": {},
+    "notes": "별도 상세 테이블 없음. 요약 테이블만 존재."
+  },
+
+  "extraction_policy": {
+    "coverage_name_source": "summary_table",
+    "amount_source": "summary_table",
+    "premium_source": "summary_table",
+    "period_source": "summary_table",
+    "fallback_to_detail": false,
+    "detail_used_only_when_no_summary": false
+  },
+
+  "known_risks": [
+    "**CRITICAL**: 44-β regression - Row numbers ('10.', '11.') extracted as coverage names",
+    "**CRITICAL**: Amount-only patterns ('10만원', '1천만원') extracted as coverage names",
+    "REJECT_PATTERNS gate required (r'^\\d+\\.?$', r'^\\d+(,\\d{3})*(원|만원)?$')"
+  ],
+
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 2,
+      "snippet": "보장명 | 가입금액 | 보험료(원) | 납입|보험기간 [26 rows, 4 columns]"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 3,
+      "snippet": "보장명 | 가입금액 | 보험료(원) | 납입|보험기간 [16 rows, 4 columns]"
+    }
+  ]
+}
