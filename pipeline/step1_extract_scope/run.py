@@ -237,13 +237,21 @@ def main():
     print(f"  - Status: {'✓ PASS' if count_gate_pass else '✗ FAIL'}")
 
     # Gate 2: Header Pollution Gate (<5%)
-    pollution_count, pollution_rate = calculate_header_pollution_rate(all_coverages)
+    pollution_count, pollution_rate, pollution_samples = calculate_header_pollution_rate(all_coverages)
     pollution_gate_pass = pollution_rate < 5.0
     print(f"\n[Gate 2] Header Pollution Gate (<5%)")
     print(f"  - Pollution count: {pollution_count}/{final_total}")
     print(f"  - Pollution rate: {pollution_rate:.2f}%")
     print(f"  - Threshold: <5%")
     print(f"  - Status: {'✓ PASS' if pollution_gate_pass else '✗ FAIL'}")
+
+    # STEP NEXT-32-β: Log pollution samples for verification
+    if pollution_samples:
+        print(f"  - Pollution samples (max 5):")
+        for sample in pollution_samples:
+            print(f"    • {sample}")
+    else:
+        print(f"  - Pollution samples: none")
 
     # Gate 3: Declared vs Extracted Gap (Warning only)
     if declared_count and declared_count > 0:

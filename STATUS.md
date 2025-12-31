@@ -80,11 +80,13 @@
 [STEP NEXT-32 Quality Gates]
 [Gate 1] Count Gate (≥30): 42 → ✓ PASS
 [Gate 2] Header Pollution Gate (<5%): 0/42 (0.00%) → ✓ PASS
+  - Pollution samples: none
 [Gate 3] Declared vs Extracted Gap: N/A → SKIP
 
 Full Pipeline:
 Step4: Content-hash gate ✓, 42/42 evidence pack
 Step5: Join-rate 100% ✓, 42 coverage cards (SSOT)
+Evidence_status: 42 found, 0 not_found
 ```
 
 **Meritz**:
@@ -92,11 +94,13 @@ Step5: Join-rate 100% ✓, 42 coverage cards (SSOT)
 [STEP NEXT-32 Quality Gates]
 [Gate 1] Count Gate (≥30): 34 → ✓ PASS
 [Gate 2] Header Pollution Gate (<5%): 0/34 (0.00%) → ✓ PASS
+  - Pollution samples: none
 [Gate 3] Declared vs Extracted Gap: N/A → SKIP
 
 Full Pipeline:
 Step4: Content-hash gate ✓, 34/34 evidence pack
 Step5: Join-rate 100% ✓, 34 coverage cards (SSOT)
+Evidence_status: 33 found, 1 not_found
 ```
 
 **회귀 테스트 결과 (KB)**:
@@ -117,10 +121,18 @@ Step5: Join-rate 100%, Content-hash validated → ✓ PASS
 - ✅ Meritz Step1 extracted_count ≥ 30 (34)
 - ✅ 두 보험사 모두 header_pollution < 5% (0%)
 - ✅ Step5에서 content-hash gate + join-rate gate 통과
-- ✅ Coverage_cards evidence_status 정상 (not_found 아님)
+- ✅ Coverage_cards evidence_status 정확한 분포 기록:
+  - Samsung: 42 found, 0 not_found
+  - Meritz: 33 found, 1 not_found
 - ✅ KB 회귀 테스트 PASS
 - ✅ data/** 산출물 커밋 0건
 - ✅ STATUS.md에 STEP NEXT-32 결과 기록 완료
+
+**STEP NEXT-32-β 추가 보강** (Operational Hygiene):
+- ✅ Header Pollution Gate 패턴 강화 (≤12자 짧은 문구 감지)
+- ✅ Pollution samples 로그 출력 (top 5, 디버깅 증빙)
+- ✅ Evidence_status 분포를 정확한 숫자로 STATUS.md 기록
+- ✅ .gitignore에 backup/temp 파일 제외 규칙 추가
 
 ---
 

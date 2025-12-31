@@ -402,7 +402,7 @@ def enhanced_table_extraction(pdf_path: str, insurer: str) -> List[Dict[str, str
 
 def is_header_pollution(coverage_name: str) -> bool:
     """
-    STEP NEXT-32: Header pollution detection
+    STEP NEXT-32-β: Header pollution detection (enhanced)
 
     Detects if a coverage name is likely a header/section/metadata text.
 
@@ -417,7 +417,7 @@ def is_header_pollution(coverage_name: str) -> bool:
         '특약', '기본계약', '보장내용', '가입안내', '유의사항', '알려드립니다',
         '보험료', '납입', '계약자', '피보험자', '기본정보', '용어설명', '예시',
         '합계', '총액', '광화문', '준법감시', '설계번호', '발행일', '표', '계',
-        '보장명', '담보명', '가입금액', '가입담보'
+        '보장명', '담보명', '가입금액', '가입담보', '담보사항'
     ]
 
     # Exact match with header keywords
@@ -435,29 +435,44 @@ def is_header_pollution(coverage_name: str) -> bool:
     if re.match(r'^[0-9]+\)|^※|^-\s|^▶|^☞|^\*', coverage_name):
         return True
 
-    # Repeated phrase detection - if same text appears 3+ times in dataset, likely header
-    # (This would need dataset-level check, skip for now)
+    # STEP NEXT-32-β: Pattern-based pollution for short phrases (≤12 chars)
+    # Catches section markers like "갱신형", "무해지", "선택", "제도성" etc.
+    if len(coverage_name) <= 12:
+        pollution_patterns = [
+            '갱신형', '무해지', '표준형', '선택', '기본', '제도성', '할증',
+            '가입담보', '담보사항', '계약', '특약'
+        ]
+        # Only if it's a pure marker (not part of real coverage name)
+        for pattern in pollution_patterns:
+            if coverage_name == pattern or coverage_name.endswith('형') and len(coverage_name) <= 6:
+                return True
 
     return False
 
 
-def calculate_header_pollution_rate(coverages: List[Dict[str, str]]) -> Tuple[int, float]:
+def calculate_header_pollution_rate(coverages: List[Dict[str, str]]) -> Tuple[int, float, List[str]]:
     """
-    STEP NEXT-32: Calculate header pollution rate
+    STEP NEXT-32-β: Calculate header pollution rate with samples
 
     Args:
         coverages: List of coverage dicts
 
     Returns:
-        (pollution_count, pollution_rate_percent)
+        (pollution_count, pollution_rate_percent, pollution_samples)
     """
     if not coverages:
-        return 0, 0.0
+        return 0, 0.0, []
 
-    pollution_count = sum(1 for cov in coverages if is_header_pollution(cov['coverage_name_raw']))
+    # Identify polluted coverage names
+    polluted = [cov['coverage_name_raw'] for cov in coverages if is_header_pollution(cov['coverage_name_raw'])]
+
+    pollution_count = len(polluted)
     pollution_rate = (pollution_count / len(coverages)) * 100
 
-    return pollution_count, pollution_rate
+    # Return top 5 samples for debugging/verification
+    pollution_samples = polluted[:5]
+
+    return pollution_count, pollution_rate, pollution_samples
 
 
 def hardening_correction(insurer: str, pdf_files: List[Path]) -> Tuple[List[Dict[str, str]], int, List[int]]:

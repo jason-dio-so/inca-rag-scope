@@ -32,4 +32,11 @@ reports/*.md
 _recovery_snapshots/
 _triage_logs/
 
+# STEP NEXT-32-β: Intermediate generated artifacts (NOT tracked)
+# Note: SSOT files (coverage_cards.jsonl, scope CSVs) ARE tracked per project policy
+# Exclude only backup/temp files to prevent accidental commits
+data/**/*.bak
+data/**/*.tmp
+data/**/*_backup_*
+
 # Tracked: data/scope/*.csv, data/compare/*.jsonl, docs/audit/*.md, STATUS.md
