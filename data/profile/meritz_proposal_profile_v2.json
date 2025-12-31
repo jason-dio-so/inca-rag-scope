@@ -1,0 +1,96 @@
+{
+  "insurer": "meritz",
+  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/meritz/가입설계서/메리츠_가입설계서_2511.pdf",
+  "reader_type": "pymupdf",
+  "total_pages": 15,
+  "summary_table": {
+    "exists": true,
+    "pages": [
+      3,
+      4
+    ],
+    "table_signatures": [
+      {
+        "page": 3,
+        "table_index": 2,
+        "row_count": 25,
+        "col_count": 6,
+        "header_rows": [
+          "가입담보",
+          "",
+          "",
+          "가입금액",
+          "보험료(원)",
+          "납기/만기"
+        ],
+        "column_map": {
+          "coverage_name": 0,
+          "coverage_amount": 3,
+          "premium": 4,
+          "period": 5
+        },
+        "evidence": {
+          "page": 3,
+          "snippet": "가입담보 가입금액 보험료(원) 납기/만기 보장보험료 합계 123,623 원 기본계약 1 일반상해80%이상후유장해[기본계약] 1백만원 8 20년 / 100세",
+          "sample_rows": [
+            "보장보험료 합계 |  |  |  | 123,623 원 | ",
+            "기본계약 | 1 | 일반상해80%이상후유장해[기본계약] | 1백만원 | 8 | 20년 / 100세"
+          ]
+        }
+      },
+      {
+        "page": 4,
+        "table_index": 0,
+        "row_count": 13,
+        "col_count": 6,
+        "header_rows": [
+          "가입담보",
+          "",
+          "",
+          "가입금액",
+          "보험료(원)",
+          "납기/만기"
+        ],
+        "column_map": {
+          "coverage_name": 0,
+          "coverage_amount": 3,
+          "premium": 4,
+          "period": 5
+        },
+        "evidence": {
+          "page": 4,
+          "snippet": "가입담보 가입금액 보험료(원) 납기/만기 수술 237 질병수술비 10만원 1,719 20년 / 100세 641 (10년갱신)갱신형 다빈치로봇 암수술비(암(특정암제외)) 1천만원 200 10년 / 10년\n갱신종료 : 100세",
+          "sample_rows": [
+            "수술 | 237 | 질병수술비 | 10만원 | 1,719 | 20년 / 100세",
+            " | 641 | (10년갱신)갱신형 다빈치로봇 암수술비(암(특정암제외)) | 1천만원 | 200 | 10년 / 10년\n갱신종료 : 100세"
+          ]
+        }
+      }
+    ]
+  },
+  "detail_tables": {
+    "exists": false,
+    "pages": []
+  },
+  "structural_risks": [
+    "Merged header risk: 7 tables contain '보장내용/지급사유' (pages: [6, 7, 8, 9, 10, 11, 12])"
+  ],
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 3,
+      "snippet": "가입담보 가입금액 보험료(원) 납기/만기 보장보험료 합계 123,623 원 기본계약 1 일반상해80%이상후유장해[기본계약] 1백만원 8 20년 / 100세",
+      "table_index": 2,
+      "row_count": 25,
+      "col_count": 6
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 4,
+      "snippet": "가입담보 가입금액 보험료(원) 납기/만기 수술 237 질병수술비 10만원 1,719 20년 / 100세 641 (10년갱신)갱신형 다빈치로봇 암수술비(암(특정암제외)) 1천만원 200 10년 / 10년\n갱신종료 : 100세",
+      "table_index": 0,
+      "row_count": 13,
+      "col_count": 6
+    }
+  ]
+}

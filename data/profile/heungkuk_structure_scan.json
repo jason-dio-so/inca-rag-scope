@@ -1,0 +1,2576 @@
+{
+  "insurer": "heungkuk",
+  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/heungkuk/가입설계서/흥국_가입설계서_2511.pdf",
+  "total_pages": 18,
+  "pages_with_tables": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ],
+  "table_snapshots": [
+    {
+      "page": 2,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "고객님을 위한 핵심설명서",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "고객님을 위한 핵심설명서 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 2,
+        "snippet": "고객님을 위한 핵심설명서 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 2,
+      "table_index": 1,
+      "row_count": 7,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "- 고객님께서는 상품 가입 전 아래 사항을 반드시 숙지하시기 바랍니다. -",
+          "",
+          ""
+        ],
+        [
+          "▣ 유사 상품과 구별되는 특징",
+          "",
+          ""
+        ],
+        [
+          "이 상품은 보장성 보험으로, 목돈 마련 또는 노후 자금 대비를 위한 목적의 저축성 보험이 아닙니다.",
+          "",
+          ""
+        ]
+      ],
+      "header_text_raw": "- 고객님께서는 상품 가입 전 아래 사항을 반드시 숙지하시기 바랍니다. - ▣ 유사 상품과 구별되는 특징 이 상품은 보장성 보험으로, 목돈 마련 또는 노후 자금 대비를 위한 목적의 저축성 보험이 아닙니다.",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 2,
+        "snippet": "- 고객님께서는 상품 가입 전 아래 사항을 반드시 숙지하시기 바랍니다. - ▣ 유사 상품과 구별되는 특징 이 상품은 보장성 보험으로, 목돈 마련 또는 노후 자금 대비를 위한 목적의 저축성 보험이 아닙니다."
+      }
+    },
+    {
+      "page": 2,
+      "table_index": 2,
+      "row_count": 10,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "▶▶ 보보험험 가가입입 후2개 보월험 지계난약 을시 점해에지 하위였암으진나단 해판정약을환 급받금고이 보 납험입금한 청 보구험하료였보으다나, 적보음험금 지급 거절"
+        ],
+        [
+          "약관에 의거하여 15세이상 피보험자의 경우 암(유사암 제외)은 계약일이후 90일의 면책기간을 설정하고 있으며,\n면책기간에 발생한 암진단(유사암 제외)은 보험금을 지급하지 않습니다.\n90일이 경과된 이후에도 일정기간(1년)이내인 경우 보험금이 삭감될 수 있습니다.\n※ 단, 암진단비(면책없음, 감액없음) 담보를 가입하신 경우에는 90일 상관없이 계약일부터 보험금을 지급합니다."
+        ],
+        [
+          "▶▶ 갱보신험형가 입보 장후의 보 보험험계료약가을 많해이지 하인였상으됨나 해약환급금이 납입한 보험료보다 적음"
+        ]
+      ],
+      "header_text_raw": "▶▶ 보보험험 가가입입 후2개 보월험 지계난약 을시 점해에지 하위였암으진나단 해판정약을환 급받금고이 보 납험입금한 청 보구험하료였보으다나, 적보음험금 지급 거절 약관에 의거하여 15세이상 피보험자의 경우 암(유사암 제외)은 계약일이후 90일의 면책기간을 설정하고 있으며,\n면책기간에 발생한 암진단(유사암 제외)은 보험금을 지급하지 않습니다.\n90일이 경과된 이후에도 일정기간(1년)이내인 경우 보험금이 삭감될 수 있습니다.\n※ 단, 암진단비(면책없음, 감액없음) 담보를 가입하신 경우에는 90일 상관없이 계약일부터 보험금을 지급합니다. ▶▶ 갱보신험형가 입보 장후의 보 보험험계료약가을 많해이지 하인였상으됨나 해약환급금이 납입한 보험료보다 적음",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 2,
+        "snippet": "▶▶ 보보험험 가가입입 후2개 보월험 지계난약 을시 점해에지 하위였암으진나단 해판정약을환 급받금고이 보 납험입금한 청 보구험하료였보으다나, 적보음험금 지급 거절 약관에 의거하여 15세이상 피보험자의 경우 암(유사암 제외)은 계약일이후 90일의 면책기간을 설정하고 있으며,\n면책기간에 발생한 암진단(유사암 제외)은 보험금을 지급하지 않습니다.\n90일이 경과된 "
+      }
+    },
+    {
+      "page": 2,
+      "table_index": 3,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 2,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 2,
+      "table_index": 4,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 2 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 2 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 2,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 2 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 3,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "고객님을 위한 핵심설명서",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "고객님을 위한 핵심설명서 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 3,
+        "snippet": "고객님을 위한 핵심설명서 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 3,
+      "table_index": 1,
+      "row_count": 7,
+      "col_count": 5,
+      "header_rows_raw": [
+        [
+          "▣ 민원·상담·분쟁조정 연락처",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "구분",
+          "보험회사",
+          "외부기관",
+          "",
+          ""
+        ],
+        [
+          "",
+          "전화상담\n(☎ : 1688 -1688)\n누리집\n(www.heungkukfire.co.kr)",
+          "손해보험\n협회",
+          "콜센터",
+          "☎ 02-3702-8500"
+        ]
+      ],
+      "header_text_raw": "▣ 민원·상담·분쟁조정 연락처 구분 보험회사 외부기관 전화상담\n(☎ : 1688 -1688)\n누리집\n(www.heungkukfire.co.kr) 손해보험\n협회 콜센터 ☎ 02-3702-8500",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 3,
+        "snippet": "▣ 민원·상담·분쟁조정 연락처 구분 보험회사 외부기관 전화상담\n(☎ : 1688 -1688)\n누리집\n(www.heungkukfire.co.kr) 손해보험\n협회 콜센터 ☎ 02-3702-8500"
+      }
+    },
+    {
+      "page": 3,
+      "table_index": 2,
+      "row_count": 12,
+      "col_count": 2,
+      "header_rows_raw": [
+        [
+          "▣ 발생 가능한 불이익에 관한 사항",
+          ""
+        ],
+        [
+          "주의",
+          "중도 해지 시 해약환급금에 관한 사항"
+        ],
+        [
+          "70년 만기 보장성 상품으로, 중도 해지시 해약환급금이 납입한 보험료보다적거나 없을 수 있습니다.",
+          ""
+        ]
+      ],
+      "header_text_raw": "▣ 발생 가능한 불이익에 관한 사항 주의 중도 해지 시 해약환급금에 관한 사항 70년 만기 보장성 상품으로, 중도 해지시 해약환급금이 납입한 보험료보다적거나 없을 수 있습니다.",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 3,
+        "snippet": "▣ 발생 가능한 불이익에 관한 사항 주의 중도 해지 시 해약환급금에 관한 사항 70년 만기 보장성 상품으로, 중도 해지시 해약환급금이 납입한 보험료보다적거나 없을 수 있습니다."
+      }
+    },
+    {
+      "page": 3,
+      "table_index": 3,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 3,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 3,
+      "table_index": 4,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 3 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 3 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 3,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 3 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 4,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "고객님을 위한 핵심설명서",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "고객님을 위한 핵심설명서 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 4,
+        "snippet": "고객님을 위한 핵심설명서 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 4,
+      "table_index": 1,
+      "row_count": 20,
+      "col_count": 9,
+      "header_rows_raw": [
+        [
+          "주의",
+          "",
+          "보험금 감액 지급에 관한 사항",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "이 상품에는 보장 개시 후 일정기간 보험금을 감액하여 지급하는 담보가 있습니다.",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          "보험금 감액 지급",
+          "",
+          "보험금 전액 지급",
+          "",
+          "",
+          ""
+        ]
+      ],
+      "header_text_raw": "주의 보험금 감액 지급에 관한 사항 이 상품에는 보장 개시 후 일정기간 보험금을 감액하여 지급하는 담보가 있습니다. 보험금 감액 지급 보험금 전액 지급",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 4,
+        "snippet": "주의 보험금 감액 지급에 관한 사항 이 상품에는 보장 개시 후 일정기간 보험금을 감액하여 지급하는 담보가 있습니다. 보험금 감액 지급 보험금 전액 지급"
+      }
+    },
+    {
+      "page": 4,
+      "table_index": 2,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 4,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 4,
+      "table_index": 3,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 4 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 4 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 4,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 4 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 5,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "고객님을 위한 핵심설명서",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "고객님을 위한 핵심설명서 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 5,
+        "snippet": "고객님을 위한 핵심설명서 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 5,
+      "table_index": 1,
+      "row_count": 11,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "구분",
+          "",
+          "아이콘",
+          "설명"
+        ],
+        [
+          "기본\n특성\n정보",
+          "예금자보호",
+          "",
+          "이 보험계약은 예금자보호법에 따라 해약환급금(또는 만기 시 보험금)에 기타지급금을 합한 금액이\n1인당 \"1억원까지\"(본 보험회사의 여타 보호상품과 합산)보호됩니다. 이와 별도로 본 보험회사\n보호상품의 사고보험금을 합산한 금액이 1인당 \"1억원까지\" 보호됩니다. 다만, 보험계약자 및\n보험료납부자가 법인인 보험계약의 경우에는 보호되지 않습니다."
+        ],
+        [
+          "",
+          "보험유형",
+          "",
+          "보장성보험 : 만기시 환급금이 총납입한 보험료를 초과하지 않는 보험"
+        ]
+      ],
+      "header_text_raw": "구분 아이콘 설명 기본\n특성\n정보 예금자보호 이 보험계약은 예금자보호법에 따라 해약환급금(또는 만기 시 보험금)에 기타지급금을 합한 금액이\n1인당 \"1억원까지\"(본 보험회사의 여타 보호상품과 합산)보호됩니다. 이와 별도로 본 보험회사\n보호상품의 사고보험금을 합산한 금액이 1인당 \"1억원까지\" 보호됩니다. 다만, 보험계약자 및\n보험료납부자가 법인인 보험계약의 경우에는 보호되지 않습니다. 보험유형 보장성보험 : 만기시 환급금이 총납입한 보험료를 초과하지 않는 보험",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 5,
+        "snippet": "구분 아이콘 설명 기본\n특성\n정보 예금자보호 이 보험계약은 예금자보호법에 따라 해약환급금(또는 만기 시 보험금)에 기타지급금을 합한 금액이\n1인당 \"1억원까지\"(본 보험회사의 여타 보호상품과 합산)보호됩니다. 이와 별도로 본 보험회사\n보호상품의 사고보험금을 합산한 금액이 1인당 \"1억원까지\" 보호됩니다. 다만, 보험계약자 및\n보험료납부자가 법인인 보험계약의"
+      }
+    },
+    {
+      "page": 5,
+      "table_index": 2,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 5,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 5,
+      "table_index": 3,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 5 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 5 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 5,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 5 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 6,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "계약사항 및 보장사항",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 6,
+        "snippet": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 6,
+      "table_index": 1,
+      "row_count": 8,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "보 험 회 사",
+          "흥국화재해상보험(주)",
+          "",
+          ""
+        ],
+        [
+          "모 집 자",
+          "GA수도권2영업단 인카금융서비스(주)(이현기)\n(고유번호 : 20240620004026, 연락처 : (02)2192-8900 / (010)5728-8383)",
+          "",
+          ""
+        ],
+        [
+          "보험상품",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후 해약환급금지급형의 50%지급형)",
+          "",
+          ""
+        ]
+      ],
+      "header_text_raw": "보 험 회 사 흥국화재해상보험(주) 모 집 자 GA수도권2영업단 인카금융서비스(주)(이현기)\n(고유번호 : 20240620004026, 연락처 : (02)2192-8900 / (010)5728-8383) 보험상품 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후 해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 6,
+        "snippet": "보 험 회 사 흥국화재해상보험(주) 모 집 자 GA수도권2영업단 인카금융서비스(주)(이현기)\n(고유번호 : 20240620004026, 연락처 : (02)2192-8900 / (010)5728-8383) 보험상품 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후 해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 6,
+      "table_index": 2,
+      "row_count": 3,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "구 분",
+          "기본계약",
+          "가입(예정)특약"
+        ],
+        [
+          "",
+          "3 개",
+          ""
+        ],
+        [
+          "",
+          "310 원",
+          ""
+        ]
+      ],
+      "header_text_raw": "구 분 기본계약 가입(예정)특약 3 개 310 원",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 6,
+        "snippet": "구 분 기본계약 가입(예정)특약 3 개 310 원"
+      }
+    },
+    {
+      "page": 6,
+      "table_index": 3,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 6,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 6,
+      "table_index": 4,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 6 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 6 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 6,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 6 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 7,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "계약사항 및 보장사항",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 7,
+        "snippet": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 7,
+      "table_index": 1,
+      "row_count": 4,
+      "col_count": 5,
+      "header_rows_raw": [
+        [
+          "보 험 기 간",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "실납입보험료",
+          "137,353원",
+          "합계보험료",
+          "",
+          ""
+        ],
+        [
+          "납입방법",
+          "월납",
+          "계약형태",
+          "개인형",
+          "비과세신청여부"
+        ]
+      ],
+      "header_text_raw": "보 험 기 간 실납입보험료 137,353원 합계보험료 납입방법 월납 계약형태 개인형 비과세신청여부",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 7,
+        "snippet": "보 험 기 간 실납입보험료 137,353원 합계보험료 납입방법 월납 계약형태 개인형 비과세신청여부"
+      }
+    },
+    {
+      "page": 7,
+      "table_index": 2,
+      "row_count": 25,
+      "col_count": 5,
+      "header_rows_raw": [
+        [
+          "피보험자(1/1)",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "구분",
+          "담 보 명",
+          "납입 및 만기",
+          "가입금액",
+          "보험료(원)"
+        ],
+        [
+          "",
+          "일반상해후유장해(80%이상)",
+          "20년납 100세만기",
+          "1,000만원",
+          "130"
+        ]
+      ],
+      "header_text_raw": "피보험자(1/1) 구분 담 보 명 납입 및 만기 가입금액 보험료(원) 일반상해후유장해(80%이상) 20년납 100세만기 1,000만원 130",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 7,
+        "snippet": "피보험자(1/1) 구분 담 보 명 납입 및 만기 가입금액 보험료(원) 일반상해후유장해(80%이상) 20년납 100세만기 1,000만원 130"
+      }
+    },
+    {
+      "page": 7,
+      "table_index": 3,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (010"
+        ],
+        [
+          "[준법감시인확인필]-[L370"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (010 [준법감시인확인필]-[L370",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 7,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (010 [준법감시인확인필]-[L370"
+      }
+    },
+    {
+      "page": 7,
+      "table_index": 4,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 7 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 7 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 7,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 7 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 8,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "계약사항 및 보장사항",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 8,
+        "snippet": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 8,
+      "table_index": 1,
+      "row_count": 14,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "항암방사선약물치료비",
+          "20년납 100세만기",
+          "300만원",
+          "1,362"
+        ],
+        [
+          "[갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년)",
+          "10년갱신 100세만기",
+          "1,000만원",
+          "80"
+        ],
+        [
+          "[갱신형]카티(CAR-T) 항암약물허가치료비(연간1회한)(갱신형_10년)",
+          "10년갱신 100세만기",
+          "1,000만원",
+          "30"
+        ]
+      ],
+      "header_text_raw": "항암방사선약물치료비 20년납 100세만기 300만원 1,362 [갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년) 10년갱신 100세만기 1,000만원 80 [갱신형]카티(CAR-T) 항암약물허가치료비(연간1회한)(갱신형_10년) 10년갱신 100세만기 1,000만원 30",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 8,
+        "snippet": "항암방사선약물치료비 20년납 100세만기 300만원 1,362 [갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년) 10년갱신 100세만기 1,000만원 80 [갱신형]카티(CAR-T) 항암약물허가치료비(연간1회한)(갱신형_10년) 10년갱신 100세만기 1,000만원 30"
+      }
+    },
+    {
+      "page": 8,
+      "table_index": 2,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 8,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 8,
+      "table_index": 3,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 8 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 8 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 8,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 8 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 9,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "계약사항 및 보장사항",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 9,
+        "snippet": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 9,
+      "table_index": 1,
+      "row_count": 4,
+      "col_count": 6,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "피보험자(1/1)",
+          "",
+          "고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함)",
+          "",
+          "",
+          ""
+        ],
+        [
+          "구분",
+          "보장내용",
+          "",
+          "납입 및 만기",
+          "가입금액",
+          "보험료(원)"
+        ]
+      ],
+      "header_text_raw": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 보장내용 납입 및 만기 가입금액 보험료(원)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 9,
+        "snippet": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 보장내용 납입 및 만기 가입금액 보험료(원)"
+      }
+    },
+    {
+      "page": 9,
+      "table_index": 8,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 9,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 9,
+      "table_index": 9,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 9 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 9 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 9,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 9 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 10,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "계약사항 및 보장사항",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 10,
+        "snippet": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 10,
+      "table_index": 1,
+      "row_count": 4,
+      "col_count": 6,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "피보험자(1/1)",
+          "",
+          "고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함)",
+          "",
+          "",
+          ""
+        ],
+        [
+          "구분",
+          "보장내용",
+          "",
+          "납입 및 만기",
+          "가입금액",
+          "보험료(원)"
+        ]
+      ],
+      "header_text_raw": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 보장내용 납입 및 만기 가입금액 보험료(원)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 10,
+        "snippet": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 보장내용 납입 및 만기 가입금액 보험료(원)"
+      }
+    },
+    {
+      "page": 10,
+      "table_index": 9,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 10,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 10,
+      "table_index": 10,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 10 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 10 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 10,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 10 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 11,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "계약사항 및 보장사항",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 11,
+        "snippet": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 11,
+      "table_index": 1,
+      "row_count": 4,
+      "col_count": 6,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "피보험자(1/1)",
+          "",
+          "고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함)",
+          "",
+          "",
+          ""
+        ],
+        [
+          "구분",
+          "보장내용",
+          "",
+          "납입 및 만기",
+          "가입금액",
+          "보험료(원)"
+        ]
+      ],
+      "header_text_raw": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 보장내용 납입 및 만기 가입금액 보험료(원)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 11,
+        "snippet": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 보장내용 납입 및 만기 가입금액 보험료(원)"
+      }
+    },
+    {
+      "page": 11,
+      "table_index": 8,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 11,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 11,
+      "table_index": 9,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 11 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 11 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 11,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 11 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 12,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "계약사항 및 보장사항",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 12,
+        "snippet": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 12,
+      "table_index": 1,
+      "row_count": 4,
+      "col_count": 6,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "피보험자(1/1)",
+          "",
+          "고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함)",
+          "",
+          "",
+          ""
+        ],
+        [
+          "구분",
+          "보장내용",
+          "",
+          "납입 및 만기",
+          "가입금액",
+          "보험료(원)"
+        ]
+      ],
+      "header_text_raw": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 보장내용 납입 및 만기 가입금액 보험료(원)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 12,
+        "snippet": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 보장내용 납입 및 만기 가입금액 보험료(원)"
+      }
+    },
+    {
+      "page": 12,
+      "table_index": 6,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 12,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 12,
+      "table_index": 7,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 12 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 12 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 12,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 12 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 13,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "계약사항 및 보장사항",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 13,
+        "snippet": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 13,
+      "table_index": 1,
+      "row_count": 4,
+      "col_count": 6,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "피보험자(1/1)",
+          "",
+          "고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함)",
+          "",
+          "",
+          ""
+        ],
+        [
+          "구분",
+          "보장내용",
+          "",
+          "납입 및 만기",
+          "가입금액",
+          "보험료(원)"
+        ]
+      ],
+      "header_text_raw": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 보장내용 납입 및 만기 가입금액 보험료(원)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 13,
+        "snippet": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 보장내용 납입 및 만기 가입금액 보험료(원)"
+      }
+    },
+    {
+      "page": 13,
+      "table_index": 7,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 13,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 13,
+      "table_index": 8,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 13 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 13 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 13,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 13 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 14,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "계약사항 및 보장사항",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 14,
+        "snippet": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 14,
+      "table_index": 1,
+      "row_count": 4,
+      "col_count": 6,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "피보험자(1/1)",
+          "",
+          "고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함)",
+          "",
+          "",
+          ""
+        ],
+        [
+          "구분",
+          "보장내용",
+          "",
+          "납입 및 만기",
+          "가입금액",
+          "보험료(원)"
+        ]
+      ],
+      "header_text_raw": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 보장내용 납입 및 만기 가입금액 보험료(원)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 14,
+        "snippet": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 보장내용 납입 및 만기 가입금액 보험료(원)"
+      }
+    },
+    {
+      "page": 14,
+      "table_index": 5,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 14,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 14,
+      "table_index": 6,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 14 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 14 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 14,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 14 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 15,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "계약사항 및 보장사항",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 15,
+        "snippet": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 15,
+      "table_index": 1,
+      "row_count": 9,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "구 분",
+          "납입면제 사유",
+          "납입면제 대상 담보"
+        ],
+        [
+          "",
+          "일반암 진단확정",
+          ""
+        ],
+        [
+          "",
+          "뇌졸중 진단확정",
+          ""
+        ]
+      ],
+      "header_text_raw": "구 분 납입면제 사유 납입면제 대상 담보 일반암 진단확정 뇌졸중 진단확정",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 15,
+        "snippet": "구 분 납입면제 사유 납입면제 대상 담보 일반암 진단확정 뇌졸중 진단확정"
+      }
+    },
+    {
+      "page": 15,
+      "table_index": 2,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 15,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 15,
+      "table_index": 3,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 15 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 15 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 15,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 15 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 16,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "계약사항 및 보장사항",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 16,
+        "snippet": "계약사항 및 보장사항 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 16,
+      "table_index": 1,
+      "row_count": 4,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "▣ 보험가격지수는 보험상품(보장성보험)의 가격수준 비교를 위해 금융감독원이 정한 방법으로 산출한 보험료 비교지수입니다.\n▶ 해당상품의 보험료총액(보험금 지급을 위한 보험료 및 보험회사의 사업경비 등을 위한 보험료)을 참조순 보험료 총액¹과 평균사업비\n총액²을 합한 금액으로 나눈 비율을 \"보험가격지수\"라고 합니다.",
+          "",
+          ""
+        ],
+        [
+          "보험가격지수 =",
+          "보험료총액",
+          ""
+        ],
+        [
+          "",
+          "참조순보험료 총액 + 평균사업비 총액",
+          ""
+        ]
+      ],
+      "header_text_raw": "▣ 보험가격지수는 보험상품(보장성보험)의 가격수준 비교를 위해 금융감독원이 정한 방법으로 산출한 보험료 비교지수입니다.\n▶ 해당상품의 보험료총액(보험금 지급을 위한 보험료 및 보험회사의 사업경비 등을 위한 보험료)을 참조순 보험료 총액¹과 평균사업비\n총액²을 합한 금액으로 나눈 비율을 \"보험가격지수\"라고 합니다. 보험가격지수 = 보험료총액 참조순보험료 총액 + 평균사업비 총액",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 16,
+        "snippet": "▣ 보험가격지수는 보험상품(보장성보험)의 가격수준 비교를 위해 금융감독원이 정한 방법으로 산출한 보험료 비교지수입니다.\n▶ 해당상품의 보험료총액(보험금 지급을 위한 보험료 및 보험회사의 사업경비 등을 위한 보험료)을 참조순 보험료 총액¹과 평균사업비\n총액²을 합한 금액으로 나눈 비율을 \"보험가격지수\"라고 합니다. 보험가격지수 = 보험료총액 참조순보험료 총액"
+      }
+    },
+    {
+      "page": 16,
+      "table_index": 2,
+      "row_count": 2,
+      "col_count": 3,
+      "header_rows_raw": [
+        [
+          "상품명",
+          "남자 보험가격지수(%)",
+          "여자 보험가격지수(%)"
+        ],
+        [
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후 해약\n환급금지급형의 50%지급형)",
+          "108.2",
+          "-"
+        ]
+      ],
+      "header_text_raw": "상품명 남자 보험가격지수(%) 여자 보험가격지수(%) 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후 해약\n환급금지급형의 50%지급형) 108.2 -",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 16,
+        "snippet": "상품명 남자 보험가격지수(%) 여자 보험가격지수(%) 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후 해약\n환급금지급형의 50%지급형) 108.2 -"
+      }
+    },
+    {
+      "page": 16,
+      "table_index": 3,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 16,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 16,
+      "table_index": 4,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 16 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 16 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 16,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 16 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 17,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "계약자 확인사항 길라잡이",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "계약자 확인사항 길라잡이 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 17,
+        "snippet": "계약자 확인사항 길라잡이 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 17,
+      "table_index": 1,
+      "row_count": 10,
+      "col_count": 2,
+      "header_rows_raw": [
+        [
+          "구 분",
+          "내 용"
+        ],
+        [
+          "계약전\n알릴의무",
+          "보험계약자 또는 피보험자는 청약시에 보험회사가 서면으로 질문한 중요한 사항*에 대하여 사실대로 기재하고\n자필서명(전자서명 포함)을 하셔야 합니다. 만일, 고의 또는 중대한 과실로 중요한 사항에 대하여 사실과 다르게 알린 경우,\n보험사는 보험 계약자 또는 피보험자의 의사와 관계 없이 계약을 해지하거나 보장을 제한할 수 있습니다. ☞ 중요한\n사항이란? 직업, 현재 및 과거 병력, 장애상태, 고위험 취미, 운전여부 및 목적, 타사 보험계약 가입여부 등 회사가 그 사실을\n알았더 라면 보험계약 체결 및 보험금 지급에 영향을 미칠 수 있는 사항"
+        ],
+        [
+          "계약 후\n알릴의무",
+          "보험계약자 또는 피보험자는 계약을 맺은 후 피보험자가 직업 또는직무를 변경(자가용운전자가 영업용운전자로 직업 또는\n직무 변경 포함)하거나 이륜자동차 또는 원동기장치 자전거(전동킥보드, 전동이륜평행차, 전동기의 동력만으로 움직일 수\n있는 자전거 등 개인형 이동장치를 포함하며, 전동휠체어, 의료용 스쿠터 등 보행보조용 의자차는 제외합니다.)를\n계속적으로 사용(직업, 직무 또는 동호회 활동과 출퇴근용도 등으로 주로 사용하는 경우에 한함) 하게 된 경우에는 즉시\n회사에 알려야합니다. 그렇지 않을 경우 보험사고가 발생한 경우에는 보험계약 해지 및 보험금 지급이 제한될 수 있습니다.\n다만, 변경된 직업 또는 직무와 관계없이 발생한 보험금 지급사유에 관해서는 그러하지 아니합니다. 직업 또는 직무 변경,\n운전여부 및 목적에 따라 위험이 감소된 경우 보험료가 감액될 수 있으며, 이후 기간 보장을 위한 재원인 계약자적립액 등의\n차이로 인하여 발생한 정산금액이 환급될 수 있습니다. 한편 위험이 증가된 경우에는 납입보험료의 증액 및 정산금액 추가\n납입이 발생할 수 있습니다."
+        ]
+      ],
+      "header_text_raw": "구 분 내 용 계약전\n알릴의무 보험계약자 또는 피보험자는 청약시에 보험회사가 서면으로 질문한 중요한 사항*에 대하여 사실대로 기재하고\n자필서명(전자서명 포함)을 하셔야 합니다. 만일, 고의 또는 중대한 과실로 중요한 사항에 대하여 사실과 다르게 알린 경우,\n보험사는 보험 계약자 또는 피보험자의 의사와 관계 없이 계약을 해지하거나 보장을 제한할 수 있습니다. ☞ 중요한\n사항이란? 직업, 현재 및 과거 병력, 장애상태, 고위험 취미, 운전여부 및 목적, 타사 보험계약 가입여부 등 회사가 그 사실을\n알았더 라면 보험계약 체결 및 보험금 지급에 영향을 미칠 수 있는 사항 계약 후\n알릴의무 보험계약자 또는 피보험자는 계약을 맺은 후 피보험자가 직업 또는직무를 변경(자가용운전자가 영업용운전자로 직업 또는\n직무 변경 포함)하거나 이륜자동차 또는 원동기장치 자전거(전동킥보드, 전동이륜평행차, 전동기의 동력만으로 움직일 수\n있는 자전거 등 개인형 이동장치를 포함하며, 전동휠체어, 의료용 스쿠터 등 보행보조용 의자차는 제외합니다.)를\n계속적으로 사용(직업, 직무 또는 동호회 활동과 출퇴근용도 등으로 주로 사용하는 경우에 한함) 하게 된 경우에는 즉시\n회사에 알려야합니다. 그렇지 않을 경우 보험사고가 발생한 경우에는 보험계약 해지 및 보험금 지급이 제한될 수 있습니다.\n다만, 변경된 직업 또는 직무와 관계없이 발생한 보험금 지급사유에 관해서는 그러하지 아니합니다. 직업 또는 직무 변경,\n운전여부 및 목적에 따라 위험이 감소된 경우 보험료가 감액될 수 있으며, 이후 기간 보장을 위한 재원인 계약자적립액 등의\n차이로 인하여 발생한 정산금액이 환급될 수 있습니다. 한편 위험이 증가된 경우에는 납입보험료의 증액 및 정산금액 추가\n납입이 발생할 수 있습니다.",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 17,
+        "snippet": "구 분 내 용 계약전\n알릴의무 보험계약자 또는 피보험자는 청약시에 보험회사가 서면으로 질문한 중요한 사항*에 대하여 사실대로 기재하고\n자필서명(전자서명 포함)을 하셔야 합니다. 만일, 고의 또는 중대한 과실로 중요한 사항에 대하여 사실과 다르게 알린 경우,\n보험사는 보험 계약자 또는 피보험자의 의사와 관계 없이 계약을 해지하거나 보장을 제한할 수 있습니다."
+      }
+    },
+    {
+      "page": 17,
+      "table_index": 2,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 17,
+        "snippet": "광화문GA지점 인카금융 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 17,
+      "table_index": 3,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 17 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 17 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 17,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 17 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    },
+    {
+      "page": 18,
+      "table_index": 0,
+      "row_count": 4,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "경과기간별 예상 해약환급금예시표 안내",
+          ""
+        ],
+        [
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+          ""
+        ]
+      ],
+      "header_text_raw": "경과기간별 예상 해약환급금예시표 안내 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 18,
+        "snippet": "경과기간별 예상 해약환급금예시표 안내 무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후\n해약환급금지급형의 50%지급형)"
+      }
+    },
+    {
+      "page": 18,
+      "table_index": 1,
+      "row_count": 2,
+      "col_count": 5,
+      "header_rows_raw": [
+        [
+          "계 약 자",
+          "",
+          "",
+          "",
+          "보 험 기 간"
+        ],
+        [
+          "계 약 형 태",
+          "개인형",
+          "합계보험료",
+          "137,353원",
+          "적 용 이 율(세전)"
+        ]
+      ],
+      "header_text_raw": "계 약 자 보 험 기 간 계 약 형 태 개인형 합계보험료 137,353원 적 용 이 율(세전)",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": true,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 18,
+        "snippet": "계 약 자 보 험 기 간 계 약 형 태 개인형 합계보험료 137,353원 적 용 이 율(세전)"
+      }
+    },
+    {
+      "page": 18,
+      "table_index": 2,
+      "row_count": 21,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "경과기간",
+          "납입보험료(원)",
+          "해 약 환 급 금",
+          ""
+        ],
+        [
+          "",
+          "",
+          "적 용 이 율",
+          ""
+        ],
+        [
+          "",
+          "",
+          "환급금(원)",
+          "환급율(%)"
+        ]
+      ],
+      "header_text_raw": "경과기간 납입보험료(원) 해 약 환 급 금 적 용 이 율 환급금(원) 환급율(%)",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 18,
+        "snippet": "경과기간 납입보험료(원) 해 약 환 급 금 적 용 이 율 환급금(원) 환급율(%)"
+      }
+    },
+    {
+      "page": 18,
+      "table_index": 3,
+      "row_count": 2,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "※ 상기 예시금액은 적용이율(2.75%확정이율)을 기준으로 계산한 금액이며, 갱신형 보장 가입시 갱신시점에서의 갱신형 보험료의\n변동에 따라 해약환급금이 달라질 수 있습니다.\n(단, 갱신형 보장 미가입시는 변동 없음)"
+        ],
+        [
+          "※ 갱신시점에서 갱신보험료가 증가하면 그 즉시 영업보험료가 변동되어 증가분만큼 추가납입 하셔야 하며, 갱신담보의 보험료는 만기시\n까지 계속 납입하셔야 계약이 정상 유지됩니다.\n※ 위 예시표는 미래 예상금액으로 중도 해지(만기)시 해약환급금이 기납입보헙료보다 큰 경우 동 차액에 대하여 이자소득세가 부과 될 수 있으며,\n금리인하/중도인출/계약체결 및 관리비용/해약공제금액 등 차감으로 실제 지급되는 금액이 납입보험료보다 적거나 없을 수도 있습니다.\n※ 보험료 할인 조건 및 할인율 적용시 할인된 보험료로 예시함을 알려드립니다."
+        ]
+      ],
+      "header_text_raw": "※ 상기 예시금액은 적용이율(2.75%확정이율)을 기준으로 계산한 금액이며, 갱신형 보장 가입시 갱신시점에서의 갱신형 보험료의\n변동에 따라 해약환급금이 달라질 수 있습니다.\n(단, 갱신형 보장 미가입시는 변동 없음) ※ 갱신시점에서 갱신보험료가 증가하면 그 즉시 영업보험료가 변동되어 증가분만큼 추가납입 하셔야 하며, 갱신담보의 보험료는 만기시\n까지 계속 납입하셔야 계약이 정상 유지됩니다.\n※ 위 예시표는 미래 예상금액으로 중도 해지(만기)시 해약환급금이 기납입보헙료보다 큰 경우 동 차액에 대하여 이자소득세가 부과 될 수 있으며,\n금리인하/중도인출/계약체결 및 관리비용/해약공제금액 등 차감으로 실제 지급되는 금액이 납입보험료보다 적거나 없을 수도 있습니다.\n※ 보험료 할인 조건 및 할인율 적용시 할인된 보험료로 예시함을 알려드립니다.",
+      "keywords_detected": {
+        "has_coverage_keyword": true,
+        "has_amount_keyword": true,
+        "has_period_keyword": true
+      },
+      "evidence": {
+        "page": 18,
+        "snippet": "※ 상기 예시금액은 적용이율(2.75%확정이율)을 기준으로 계산한 금액이며, 갱신형 보장 가입시 갱신시점에서의 갱신형 보험료의\n변동에 따라 해약환급금이 달라질 수 있습니다.\n(단, 갱신형 보장 미가입시는 변동 없음) ※ 갱신시점에서 갱신보험료가 증가하면 그 즉시 영업보험료가 변동되어 증가분만큼 추가납입 하셔야 하며, 갱신담보의 보험료는 만기시\n까지 계속 납"
+      }
+    },
+    {
+      "page": 18,
+      "table_index": 4,
+      "row_count": 3,
+      "col_count": 1,
+      "header_rows_raw": [
+        [
+          "광화문GA지점 인카금융서"
+        ],
+        [
+          "이현기 (65059558) (01"
+        ],
+        [
+          "[준법감시인확인필]-[L37"
+        ]
+      ],
+      "header_text_raw": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 18,
+        "snippet": "광화문GA지점 인카금융서 이현기 (65059558) (01 [준법감시인확인필]-[L37"
+      }
+    },
+    {
+      "page": 18,
+      "table_index": 5,
+      "row_count": 3,
+      "col_count": 4,
+      "header_rows_raw": [
+        [
+          "",
+          "",
+          "(설계번호) 942589020332",
+          ""
+        ],
+        [
+          "",
+          "",
+          "(고유번호) 20240620004026",
+          ""
+        ],
+        [
+          "( 18 / 18 )",
+          "(발행일시) 2025-10-02 09:35:25",
+          "",
+          "고객용"
+        ]
+      ],
+      "header_text_raw": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 18 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용",
+      "keywords_detected": {
+        "has_coverage_keyword": false,
+        "has_amount_keyword": false,
+        "has_period_keyword": false
+      },
+      "evidence": {
+        "page": 18,
+        "snippet": "(설계번호) 942589020332 (고유번호) 20240620004026 ( 18 / 18 ) (발행일시) 2025-10-02 09:35:25 고객용"
+      }
+    }
+  ]
+}

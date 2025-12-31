@@ -1,6 +1,18 @@
 {
+  "profile_version": "v3",
+  "builder_version": "step-next-45d",
+  "generated_at": "2026-01-01T02:23:27.425881+09:00",
+  "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "samsung",
-  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/samsung/가입설계서/삼성_가입설계서_2511.pdf",
+  "variant": "default",
+  "source_pdf_path": "data/sources/insurers/samsung/가입설계서/삼성_가입설계서_2511.pdf",
+  "pdf_fingerprint": {
+    "file_size_bytes": 1306404,
+    "page_count": 13,
+    "sha256_first_2mb": "d4b2d6927bbfa0a1f47cf72c340e8bc59aca46c2b811382cd24a84d94c1ef297",
+    "source_basename": "삼성_가입설계서_2511.pdf"
+  },
+  "pdf_path": "data/sources/insurers/samsung/가입설계서/삼성_가입설계서_2511.pdf",
   "total_pages": 13,
   "summary_table": {
     "exists": true,
@@ -25,7 +37,7 @@
         "column_map": {
           "has_row_number_column": false,
           "row_number_column_index": null,
-          "coverage_name": 1,
+          "coverage_name": 0,
           "coverage_amount": 2,
           "premium": 3,
           "period": 4
@@ -81,7 +93,7 @@
         "column_map": {
           "has_row_number_column": false,
           "row_number_column_index": null,
-          "coverage_name": 2,
+          "coverage_name": 0,
           "coverage_amount": 3,
           "premium": 4,
           "period": 5
@@ -138,7 +150,7 @@
         "column_map": {
           "has_row_number_column": false,
           "row_number_column_index": null,
-          "coverage_name": 1,
+          "coverage_name": 0,
           "coverage_amount": 2,
           "premium": 3,
           "period": 4
@@ -194,7 +206,7 @@
         "column_map": {
           "has_row_number_column": false,
           "row_number_column_index": null,
-          "coverage_name": 2,
+          "coverage_name": 0,
           "coverage_amount": 3,
           "premium": 4,
           "period": 5
@@ -275,9 +287,5 @@
       3
     ],
     "passB_pages": []
-  },
-  "extraction_config": {
-    "force_standard_extraction": true,
-    "reason": "Samsung table has hierarchical structure with category rows (진단/입원/수술) in column 0. Coverage names are in column 1 (page 2) or column 2 (page 3). Empty cells in category column are NORMAL, should NOT trigger hybrid mode."
   }
 }

@@ -1,0 +1,55 @@
+{
+  "insurer": "heungkuk",
+  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/heungkuk/가입설계서/흥국_가입설계서_2511.pdf",
+  "reader_type": "pymupdf",
+  "total_pages": 18,
+  "summary_table": {
+    "exists": true,
+    "pages": [
+      7
+    ],
+    "table_signatures": [
+      {
+        "page": 7,
+        "table_index": 2,
+        "row_count": 25,
+        "col_count": 6,
+        "header_rows": [
+          "피보험자(1/1)",
+          "",
+          "고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함)",
+          "",
+          "",
+          ""
+        ],
+        "column_map": {},
+        "evidence": {
+          "page": 7,
+          "snippet": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 담 보 명 납입 및 만기 가입금액 보험료(원) 기본 일반상해후유장해(80%이상) 20년납 100세만기 1,000만원 130",
+          "sample_rows": [
+            "구분 | 담 보 명 |  | 납입 및 만기 | 가입금액 | 보험료(원)",
+            "기본 | 일반상해후유장해(80%이상) |  | 20년납 100세만기 | 1,000만원 | 130"
+          ]
+        }
+      }
+    ]
+  },
+  "detail_tables": {
+    "exists": false,
+    "pages": []
+  },
+  "structural_risks": [
+    "Merged header risk: 7 tables contain '보장내용/지급사유' (pages: [9, 10, 11, 12, 13, 14, 17])",
+    "High table fragmentation: 3.1 tables/page (56 tables across 18 pages)"
+  ],
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 7,
+      "snippet": "피보험자(1/1) 고객님(나이:30세, 성별:남자, 상해급수:상해1급, 운전여부:운전안함) 구분 담 보 명 납입 및 만기 가입금액 보험료(원) 기본 일반상해후유장해(80%이상) 20년납 100세만기 1,000만원 130",
+      "table_index": 2,
+      "row_count": 25,
+      "col_count": 6
+    }
+  ]
+}

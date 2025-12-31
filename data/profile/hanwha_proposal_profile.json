@@ -1,0 +1,50 @@
+{
+  "insurer": "hanwha",
+  "template_type": "hybrid",
+  "has_summary_table": true,
+  "summary_table_pages": [3, 4],
+  "detail_table_pages": [5, 6, 7, 8, 9, 10],
+  "summary_table_headers": [
+    "순번",
+    "가입담보",
+    "가입금액",
+    "보험료",
+    "만기/납기"
+  ],
+  "detail_table_headers": [
+    "가입담보 및 보장내용",
+    "가입금액",
+    "보험료",
+    "만기/납기"
+  ],
+  "detail_table_characteristics": [
+    "Page 3-4: Summary tables with '순번 | 가입담보 | 가입금액 | 보험료 | 만기/납기' (5 cols)",
+    "Page 5-10: Detail tables with '가입담보 및 보장내용 | 가입금액 | 보험료 | 만기/납기' (5 cols)",
+    "Detail tables have merged column '가입담보 및 보장내용' containing both coverage name AND benefit description",
+    "Page 3: 33 rows, Page 4: 7 rows (summary)",
+    "Page 5-10: Variable rows per page (15, 23, 21, 5, 9, ... rows) (detail)"
+  ],
+  "structural_risks": [
+    "CRITICAL: '가입담보 및 보장내용' merged header on detail tables",
+    "Benefit description texts appear in same column as coverage names",
+    "Risk: Over-extraction of benefit description sentences as coverage names",
+    "44-γ fix: Hanwha-specific filters to remove '보험가입금액 지급', '보험금을 지급하지 않는', etc."
+  ],
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 3,
+      "snippet": "순번 | 가입담보 | 가입금액 | 보험료 | 만기/납기 [33 rows, 5 columns]"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 5,
+      "snippet": "가입담보 및 보장내용 | 가입금액 | 보험료 | 만기/납기 [15 rows, 5 columns]"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 5,
+      "snippet": "보험기간 중 상해의 직접 결과로써 사망한 경우(질병으로 인한 [benefit description text in same column]"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "insurer": "hanwha",
+  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/hanwha/가입설계서/한화_가입설계서_2511.pdf",
+  "reader_type": "pymupdf",
+  "total_pages": 25,
+  "summary_table": {
+    "exists": true,
+    "pages": [
+      3
+    ],
+    "table_signatures": [
+      {
+        "page": 3,
+        "table_index": 0,
+        "row_count": 33,
+        "col_count": 5,
+        "header_rows": [
+          "순번",
+          "가입담보",
+          "가입금액",
+          "보험료",
+          "만기/납기"
+        ],
+        "column_map": {
+          "coverage_name": 1,
+          "coverage_amount": 2,
+          "premium": 3,
+          "period": 4
+        },
+        "evidence": {
+          "page": 3,
+          "snippet": "순번 가입담보 가입금액 보험료 만기/납기 1 보통약관(상해사망) 1,000만원 590원 100세만기 / 20년납 2 보험료납입면제대상보장(8대사유) 10만원 218원 100세만기 / 20년납",
+          "sample_rows": [
+            "1 | 보통약관(상해사망) | 1,000만원 | 590원 | 100세만기 / 20년납",
+            "2 | 보험료납입면제대상보장(8대사유) | 10만원 | 218원 | 100세만기 / 20년납"
+          ]
+        }
+      }
+    ]
+  },
+  "detail_tables": {
+    "exists": false,
+    "pages": []
+  },
+  "structural_risks": [
+    "Merged header risk: 7 tables contain '보장내용/지급사유' (pages: [5, 6, 7, 8, 9, 10, 19])"
+  ],
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 3,
+      "snippet": "순번 가입담보 가입금액 보험료 만기/납기 1 보통약관(상해사망) 1,000만원 590원 100세만기 / 20년납 2 보험료납입면제대상보장(8대사유) 10만원 218원 100세만기 / 20년납",
+      "table_index": 0,
+      "row_count": 33,
+      "col_count": 5
+    }
+  ]
+}

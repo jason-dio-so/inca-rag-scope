@@ -1,0 +1,40 @@
+{
+  "insurer": "hyundai",
+  "template_type": "summary-first",
+  "has_summary_table": true,
+  "summary_table_pages": [2, 3],
+  "detail_table_pages": [7],
+  "summary_table_headers": [
+    "(Raw header inspection needed - 31 tables detected)"
+  ],
+  "detail_table_headers": [
+    "(Page 7 appears to contain detail information)"
+  ],
+  "detail_table_characteristics": [
+    "31 total tables detected across 11 pages",
+    "Pages 2-3 appear to contain coverage summary",
+    "Page 7 contains additional table (possibly detail)",
+    "Moderate table fragmentation"
+  ],
+  "structural_risks": [
+    "44-β regression: Row numbers extracted as coverage names",
+    "REJECT_PATTERNS gate added to prevent '10.', '11)' patterns"
+  ],
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 2,
+      "snippet": "[Tables detected on page 2]"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 3,
+      "snippet": "[Tables detected on page 3]"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 7,
+      "snippet": "[Table detected on page 7]"
+    }
+  ]
+}

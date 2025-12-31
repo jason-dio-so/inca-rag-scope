@@ -1,0 +1,39 @@
+{
+  "insurer": "samsung",
+  "template_type": "summary-first",
+  "has_summary_table": true,
+  "summary_table_pages": [2, 3],
+  "detail_table_pages": [4, 5, 6, 7],
+  "summary_table_headers": [
+    "피보험자(1/1) : 통합고객"
+  ],
+  "detail_table_headers": [
+    "담보별 보장내용",
+    "가입금액",
+    "보험료(원)",
+    "납입기간\n보험기간"
+  ],
+  "detail_table_characteristics": [
+    "Page 4-7 contain detail tables with '담보별 보장내용' header",
+    "Detail tables have 7 columns",
+    "Column structure: [담보별 보장내용 (merged cols), 가입금액, 보험료(원), 납입기간/보험기간, other]",
+    "Pages 2-3 contain summary tables (31 rows, 18 rows respectively)",
+    "Summary tables appear before detail tables"
+  ],
+  "structural_risks": [
+    "Summary table on page 2-3 has different column structure (5-6 cols) than detail tables (7 cols)",
+    "Header '피보험자(1/1) : 통합고객' spans multiple columns (merged header)"
+  ],
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 2,
+      "snippet": "피보험자(1/1) : 통합고객 [31 rows, 5 columns]"
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 4,
+      "snippet": "담보별 보장내용 | 가입금액 | 보험료(원) | 납입기간\n보험기간"
+    }
+  ]
+}

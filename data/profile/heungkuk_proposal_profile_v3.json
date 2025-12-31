@@ -1,6 +1,18 @@
 {
+  "profile_version": "v3",
+  "builder_version": "step-next-45d",
+  "generated_at": "2026-01-01T02:23:11.291894+09:00",
+  "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "heungkuk",
-  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/heungkuk/가입설계서/흥국_가입설계서_2511.pdf",
+  "variant": "default",
+  "source_pdf_path": "data/sources/insurers/heungkuk/가입설계서/흥국_가입설계서_2511.pdf",
+  "pdf_fingerprint": {
+    "file_size_bytes": 1339136,
+    "page_count": 18,
+    "sha256_first_2mb": "2b70d09fbde7c5fc122304216cd8dfc8fecf10e24cba57ae6e8693ce27ed910a",
+    "source_basename": "흥국_가입설계서_2511.pdf"
+  },
+  "pdf_path": "data/sources/insurers/heungkuk/가입설계서/흥국_가입설계서_2511.pdf",
   "total_pages": 18,
   "summary_table": {
     "exists": true,

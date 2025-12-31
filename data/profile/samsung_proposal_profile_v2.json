@@ -1,0 +1,85 @@
+{
+  "insurer": "samsung",
+  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/samsung/가입설계서/삼성_가입설계서_2511.pdf",
+  "reader_type": "pymupdf",
+  "total_pages": 13,
+  "summary_table": {
+    "exists": true,
+    "pages": [
+      2,
+      3
+    ],
+    "table_signatures": [
+      {
+        "page": 2,
+        "table_index": 0,
+        "row_count": 31,
+        "col_count": 5,
+        "header_rows": [
+          "피보험자(1/1) : 통합고객",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "column_map": {},
+        "evidence": {
+          "page": 2,
+          "snippet": "피보험자(1/1) : 통합고객 담보가입현황 가입금액 보험료(원) 납입기간/보험기간 진단 보험료 납입면제대상Ⅱ 10만원 189 20년납 100세만기\nZD0",
+          "sample_rows": [
+            "담보가입현황 |  | 가입금액 | 보험료(원) | 납입기간/보험기간",
+            "진단 | 보험료 납입면제대상Ⅱ | 10만원 | 189 | 20년납 100세만기\nZD0"
+          ]
+        }
+      },
+      {
+        "page": 3,
+        "table_index": 0,
+        "row_count": 18,
+        "col_count": 6,
+        "header_rows": [
+          "피보험자(1/1) : 통합고객",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "column_map": {},
+        "evidence": {
+          "page": 3,
+          "snippet": "피보험자(1/1) : 통합고객 담보가입현황 가입금액 보험료(원) 납입기간/보험기간 수술 기타피부암 수술비 30만원 52 ZD71\n20년납 100세만기",
+          "sample_rows": [
+            "담보가입현황 |  |  | 가입금액 | 보험료(원) | 납입기간/보험기간",
+            "수술 |  | 기타피부암 수술비 | 30만원 | 52 | ZD71\n20년납 100세만기"
+          ]
+        }
+      }
+    ]
+  },
+  "detail_tables": {
+    "exists": false,
+    "pages": []
+  },
+  "structural_risks": [
+    "Merged header risk: 4 tables contain '보장내용/지급사유' (pages: [4, 5, 6, 7])"
+  ],
+  "evidences": [
+    {
+      "doc_type": "가입설계서",
+      "page": 2,
+      "snippet": "피보험자(1/1) : 통합고객 담보가입현황 가입금액 보험료(원) 납입기간/보험기간 진단 보험료 납입면제대상Ⅱ 10만원 189 20년납 100세만기\nZD0",
+      "table_index": 0,
+      "row_count": 31,
+      "col_count": 5
+    },
+    {
+      "doc_type": "가입설계서",
+      "page": 3,
+      "snippet": "피보험자(1/1) : 통합고객 담보가입현황 가입금액 보험료(원) 납입기간/보험기간 수술 기타피부암 수술비 30만원 52 ZD71\n20년납 100세만기",
+      "table_index": 0,
+      "row_count": 18,
+      "col_count": 6
+    }
+  ]
+}

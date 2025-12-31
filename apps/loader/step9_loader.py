@@ -396,7 +396,10 @@ class Step9Loader:
 
     def load_evidence_ref(self, insurer_key: str, pack_path: Path):
         """
-        Load evidence_ref from evidence_pack.jsonl
+        Load evidence_ref from coverage_cards.jsonl (SSOT)
+
+        STEP NEXT-41S: Changed source from DEPRECATED evidence_pack.jsonl to SSOT coverage_cards.jsonl
+
         Schema: (evidence_id UUID PK, coverage_instance_id, document_id, doc_type,
                  page INT, snippet TEXT, match_keyword, rank INT 1-3, evidence_key, created_at)
         """
@@ -841,8 +844,8 @@ class Step9Loader:
                 scope_path = self.project_root / f'data/scope/{insurer_key}_scope_mapped.csv'
                 self.load_coverage_instance(insurer_key, scope_path)
 
-                # Load evidence_ref
-                pack_path = self.project_root / f'data/evidence_pack/{insurer_key}_evidence_pack.jsonl'
+                # Load evidence_ref (STEP NEXT-41S: Read from SSOT coverage_cards.jsonl, NOT DEPRECATED evidence_pack)
+                pack_path = self.project_root / f'data/compare/{insurer_key}_coverage_cards.jsonl'
                 self.load_evidence_ref(insurer_key, pack_path)
 
                 # Load amount_fact
