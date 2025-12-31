@@ -247,6 +247,7 @@ def map_scope_to_canonical(
         coverage_name_raw = row['coverage_name_raw']
         mapping_result = mapper.map_coverage(coverage_name_raw)
 
+        # STEP NEXT-34-ε: Preserve search_key from Step1 (if exists)
         mapped_row = {
             'coverage_name_raw': coverage_name_raw,
             'insurer': row['insurer'],
@@ -256,17 +257,26 @@ def map_scope_to_canonical(
             'mapping_status': mapping_result['mapping_status'],
             'match_type': mapping_result.get('match_type', '')
         }
+        # Preserve search_key if present in Step1 output
+        if 'coverage_name_search_key' in row:
+            mapped_row['coverage_name_search_key'] = row['coverage_name_search_key']
+
         mapped_rows.append(mapped_row)
 
         stats[mapping_result['mapping_status']] += 1
 
     # 결과 저장
+    # STEP NEXT-34-ε: Include search_key in output if present
+    fieldnames = [
+        'coverage_name_raw', 'insurer', 'source_page',
+        'coverage_code', 'coverage_name_canonical',
+        'mapping_status', 'match_type'
+    ]
+    # Add search_key to fieldnames if it exists in any row
+    if mapped_rows and 'coverage_name_search_key' in mapped_rows[0]:
+        fieldnames.append('coverage_name_search_key')
+
     with open(output_csv_path, 'w', newline='', encoding='utf-8') as f:
-        fieldnames = [
-            'coverage_name_raw', 'insurer', 'source_page',
-            'coverage_code', 'coverage_name_canonical',
-            'mapping_status', 'match_type'
-        ]
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(mapped_rows)

@@ -14,6 +14,25 @@ from typing import List, Dict, Tuple, Optional
 import pdfplumber
 
 
+def normalize_newline_only(s: str) -> str:
+    """
+    STEP NEXT-34-ε: Newline-only removal for search key stability
+
+    Deterministic + idempotent.
+    Allowed: remove '\n' and '\r\n' only.
+    Forbidden: strip(), collapse spaces, regex \s+, other normalization.
+
+    Args:
+        s: Input string (coverage_name_raw)
+
+    Returns:
+        String with newlines removed (for search key only, NOT for raw SSOT)
+    """
+    if s is None:
+        return s
+    return s.replace("\r\n", "").replace("\n", "")
+
+
 def detect_declared_count(pdf_path: str) -> Optional[int]:
     """
     PDF에서 선언된 담보 총 개수 탐지 (검증용)

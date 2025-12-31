@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import List, Dict
 import pdfplumber
 import re
-from .hardening import hardening_correction, calculate_header_pollution_rate
+from .hardening import hardening_correction, calculate_header_pollution_rate, normalize_newline_only
 
 
 class ScopeExtractor:
@@ -123,6 +123,10 @@ class ScopeExtractor:
         """
         추출된 담보 목록을 CSV로 저장
 
+        STEP NEXT-34-ε: Add coverage_name_search_key (newline-only removal)
+        - coverage_name_raw: SSOT (unchanged, original text)
+        - coverage_name_search_key: Derived value for Step4 exact match stability
+
         Args:
             coverages: 추출된 담보 목록
 
@@ -131,8 +135,12 @@ class ScopeExtractor:
         """
         output_path = self.output_dir / f"{self.insurer}_scope.csv"
 
+        # Add search_key to each coverage
+        for cov in coverages:
+            cov['coverage_name_search_key'] = normalize_newline_only(cov['coverage_name_raw'])
+
         with open(output_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=["coverage_name_raw", "insurer", "source_page"])
+            writer = csv.DictWriter(f, fieldnames=["coverage_name_raw", "insurer", "source_page", "coverage_name_search_key"])
             writer.writeheader()
             writer.writerows(coverages)
 
