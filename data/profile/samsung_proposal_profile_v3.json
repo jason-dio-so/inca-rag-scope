@@ -1,0 +1,279 @@
+{
+  "insurer": "samsung",
+  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/samsung/가입설계서/삼성_가입설계서_2511.pdf",
+  "total_pages": 13,
+  "summary_table": {
+    "exists": true,
+    "pages": [
+      2,
+      3
+    ],
+    "table_signatures": [
+      {
+        "page": 2,
+        "table_index": 0,
+        "row_count": 31,
+        "col_count": 5,
+        "header_row_index": 1,
+        "header_row": [
+          "담보가입현황",
+          "",
+          "가입금액",
+          "보험료(원)",
+          "납입기간/보험기간"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 0,
+          "coverage_amount": 2,
+          "premium": 3,
+          "period": 4
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 2,
+          "table_index": 0,
+          "row_count": 31,
+          "col_count": 5,
+          "header_snippet": "피보험자(1/1) : 통합고객 담보가입현황 가입금액 보험료(원) 납입기간/보험기간 진단 보험료 납입면제대상Ⅱ 10만원 189 20년납 100세만기\nZD0",
+          "sample_rows": [
+            "진단 | 보험료 납입면제대상Ⅱ | 10만원 | 189 | 20년납 100세만기\nZD0",
+            " | 암 진단비(유사암 제외) | 3,000만원 | 40,620 | 20년납 100세만기\nZD8",
+            " | 유사암 진단비(기타피부암)(1년50%) | 600만원 | 1,440 | ZD4\n20년납 100세만기"
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      },
+      {
+        "page": 3,
+        "table_index": 0,
+        "row_count": 18,
+        "col_count": 6,
+        "header_row_index": 1,
+        "header_row": [
+          "담보가입현황",
+          "",
+          "",
+          "가입금액",
+          "보험료(원)",
+          "납입기간/보험기간"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 0,
+          "coverage_amount": 3,
+          "premium": 4,
+          "period": 5
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 3,
+          "table_index": 0,
+          "row_count": 18,
+          "col_count": 6,
+          "header_snippet": "피보험자(1/1) : 통합고객 담보가입현황 가입금액 보험료(원) 납입기간/보험기간 수술 기타피부암 수술비 30만원 52 ZD7\n20년납 100세만기",
+          "sample_rows": [
+            "수술 |  | 기타피부암 수술비 | 30만원 | 52 | ZD7\n20년납 100세만기",
+            " |  | 제자리암 수술비 | 30만원 |  | ",
+            " |  | 경계성종양 수술비 | 30만원 |  | "
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      }
+    ],
+    "primary_signatures": [
+      {
+        "page": 2,
+        "table_index": 0,
+        "row_count": 31,
+        "col_count": 5,
+        "header_row_index": 1,
+        "header_row": [
+          "담보가입현황",
+          "",
+          "가입금액",
+          "보험료(원)",
+          "납입기간/보험기간"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 0,
+          "coverage_amount": 2,
+          "premium": 3,
+          "period": 4
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 2,
+          "table_index": 0,
+          "row_count": 31,
+          "col_count": 5,
+          "header_snippet": "피보험자(1/1) : 통합고객 담보가입현황 가입금액 보험료(원) 납입기간/보험기간 진단 보험료 납입면제대상Ⅱ 10만원 189 20년납 100세만기\nZD0",
+          "sample_rows": [
+            "진단 | 보험료 납입면제대상Ⅱ | 10만원 | 189 | 20년납 100세만기\nZD0",
+            " | 암 진단비(유사암 제외) | 3,000만원 | 40,620 | 20년납 100세만기\nZD8",
+            " | 유사암 진단비(기타피부암)(1년50%) | 600만원 | 1,440 | ZD4\n20년납 100세만기"
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      },
+      {
+        "page": 3,
+        "table_index": 0,
+        "row_count": 18,
+        "col_count": 6,
+        "header_row_index": 1,
+        "header_row": [
+          "담보가입현황",
+          "",
+          "",
+          "가입금액",
+          "보험료(원)",
+          "납입기간/보험기간"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 0,
+          "coverage_amount": 3,
+          "premium": 4,
+          "period": 5
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 3,
+          "table_index": 0,
+          "row_count": 18,
+          "col_count": 6,
+          "header_snippet": "피보험자(1/1) : 통합고객 담보가입현황 가입금액 보험료(원) 납입기간/보험기간 수술 기타피부암 수술비 30만원 52 ZD7\n20년납 100세만기",
+          "sample_rows": [
+            "수술 |  | 기타피부암 수술비 | 30만원 | 52 | ZD7\n20년납 100세만기",
+            " |  | 제자리암 수술비 | 30만원 |  | ",
+            " |  | 경계성종양 수술비 | 30만원 |  | "
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      }
+    ],
+    "variant_signatures": []
+  },
+  "detail_table": {
+    "exists": false,
+    "pages": []
+  },
+  "known_anomalies": [],
+  "evidences": [
+    {
+      "page": 2,
+      "table_index": 0,
+      "row_count": 31,
+      "col_count": 5,
+      "header_snippet": "피보험자(1/1) : 통합고객 담보가입현황 가입금액 보험료(원) 납입기간/보험기간 진단 보험료 납입면제대상Ⅱ 10만원 189 20년납 100세만기\nZD0",
+      "sample_rows": [
+        "진단 | 보험료 납입면제대상Ⅱ | 10만원 | 189 | 20년납 100세만기\nZD0",
+        " | 암 진단비(유사암 제외) | 3,000만원 | 40,620 | 20년납 100세만기\nZD8",
+        " | 유사암 진단비(기타피부암)(1년50%) | 600만원 | 1,440 | ZD4\n20년납 100세만기"
+      ],
+      "is_variant": false
+    },
+    {
+      "page": 3,
+      "table_index": 0,
+      "row_count": 18,
+      "col_count": 6,
+      "header_snippet": "피보험자(1/1) : 통합고객 담보가입현황 가입금액 보험료(원) 납입기간/보험기간 수술 기타피부암 수술비 30만원 52 ZD7\n20년납 100세만기",
+      "sample_rows": [
+        "수술 |  | 기타피부암 수술비 | 30만원 | 52 | ZD7\n20년납 100세만기",
+        " |  | 제자리암 수술비 | 30만원 |  | ",
+        " |  | 경계성종양 수술비 | 30만원 |  | "
+      ],
+      "is_variant": false
+    }
+  ],
+  "detection_metadata": {
+    "passA_pages": [
+      2,
+      3
+    ],
+    "passB_pages": []
+  }
+}

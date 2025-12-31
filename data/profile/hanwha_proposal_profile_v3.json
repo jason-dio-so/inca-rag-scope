@@ -1,0 +1,306 @@
+{
+  "insurer": "hanwha",
+  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/hanwha/가입설계서/한화_가입설계서_2511.pdf",
+  "total_pages": 25,
+  "summary_table": {
+    "exists": true,
+    "pages": [
+      3,
+      5
+    ],
+    "table_signatures": [
+      {
+        "page": 3,
+        "table_index": 1,
+        "row_count": 33,
+        "col_count": 5,
+        "header_row_index": 0,
+        "header_row": [
+          "순번",
+          "가입담보",
+          "가입금액",
+          "보험료",
+          "만기/납기"
+        ],
+        "column_map": {
+          "has_row_number_column": true,
+          "row_number_column_index": 0,
+          "coverage_name": 1,
+          "coverage_amount": 2,
+          "premium": 3,
+          "period": 4
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 3,
+          "table_index": 1,
+          "row_count": 33,
+          "col_count": 5,
+          "header_snippet": "순번 가입담보 가입금액 보험료 만기/납기 1 보통약관(상해사망) 1,000만원 590원 100세만기 / 20년납 2 보험료납입면제대상보장(8대사유) 10만원 218원 100세만기 / 20년납",
+          "sample_rows": [
+            "2 | 보험료납입면제대상보장(8대사유) | 10만원 | 218원 | 100세만기 / 20년납",
+            "6 | 상해후유장해(3-100%) | 1,000만원 | 500원 | 100세만기 / 20년납",
+            "10 | 질병사망 | 1,000만원 | 8,050원 | 80세만기 / 20년납"
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      },
+      {
+        "page": 5,
+        "table_index": 1,
+        "row_count": 15,
+        "col_count": 5,
+        "header_row_index": 0,
+        "header_row": [
+          "가입담보 및 보장내용",
+          "",
+          "가입금액",
+          "보험료",
+          "만기/납기"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 1,
+          "coverage_amount_text": 2,
+          "premium_text": null,
+          "period_text": 1,
+          "mapping_method": "content_pattern",
+          "mapping_confidence": 0.75
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 5,
+          "table_index": 1,
+          "row_count": 15,
+          "col_count": 5,
+          "detection_method": "pattern_based_passB",
+          "pattern_scores": {
+            "amount_ratio": 0.25,
+            "premium_period_ratio": 0.42,
+            "korean_ratio": 1.0,
+            "clause_ratio": 0.33
+          },
+          "header_snippet": "가입담보 및 보장내용  가입금액 보험료 만기/납기 1 보통약관(상해사망)  1,000만원 590원 100세만기 /\n20년납  보험기간 중 상해의 직접 결과로써 사망한 경우(질병으로 인한 사망은 제외) 보험가입금액 지급   ",
+          "sample_rows": [
+            " | [보험금을 지급하지 않는 사항] |  |  | ",
+            " | 1. 피보험자가 고의로 자신을 해친 경우. 다만, 피보험자가 심신상실 등으로 자유로운 의사결정을 할 수 없는\n상태에서 자신을 해친 경우에는 보험금을 지급합니다.\n2. 보험수익자가 고의로 피보험자를 해친 경우. 다만, 그 보험수익자가 보험금의 일부 보험수익자인 경우에는\n다른 보험수익자에 대한 보험금은 지급합니다.\n3. 계약자가 고의로 피보험자를 해친 경우\n4. 피보험자의 임신, 출산(제왕절개를 포함합니다), 산후기(단, 보장개시일부터 2년이 지난 후에 발생한 습관성\n유산, 불임 및 인공수정 관련 합병증으로 인한 경우는 제외). 그러나 회사가 보장하는 보험금 지급사유에는\n보험금을 지급합니다.\n5. 전쟁, 외국의 무력행사, 혁명, 내란, 사변, 폭동\n6. 전문등반(전문적인 등산용구를 사용하여 암벽 또는 빙벽을 오르내리거나 특수한 기술, 경험, 사전훈련을\n필요로 하는 등반을 말합니다), 글라이더 조종, 스카이다이빙, 스쿠버다이빙, 행글라이딩, 수상보트, 패러글라\n이딩\n7. 모터보트, 자동차 또는 오토바이에 의한 경기, 시범, 흥행(이를 위한 연습을 포함합니다) 또는 시운전\n8. 선박에 탑승하는 것을 직무로 하는 사람의 직무상 선박탑승 |  |  | ",
+            "2 보험료납입면제대상보장(8대사유) |  | 10만원 | 218원 | 100세만기 /\n20년납"
+          ],
+          "is_variant": true
+        },
+        "detection_pass": "B"
+      }
+    ],
+    "primary_signatures": [
+      {
+        "page": 3,
+        "table_index": 1,
+        "row_count": 33,
+        "col_count": 5,
+        "header_row_index": 0,
+        "header_row": [
+          "순번",
+          "가입담보",
+          "가입금액",
+          "보험료",
+          "만기/납기"
+        ],
+        "column_map": {
+          "has_row_number_column": true,
+          "row_number_column_index": 0,
+          "coverage_name": 1,
+          "coverage_amount": 2,
+          "premium": 3,
+          "period": 4
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 3,
+          "table_index": 1,
+          "row_count": 33,
+          "col_count": 5,
+          "header_snippet": "순번 가입담보 가입금액 보험료 만기/납기 1 보통약관(상해사망) 1,000만원 590원 100세만기 / 20년납 2 보험료납입면제대상보장(8대사유) 10만원 218원 100세만기 / 20년납",
+          "sample_rows": [
+            "2 | 보험료납입면제대상보장(8대사유) | 10만원 | 218원 | 100세만기 / 20년납",
+            "6 | 상해후유장해(3-100%) | 1,000만원 | 500원 | 100세만기 / 20년납",
+            "10 | 질병사망 | 1,000만원 | 8,050원 | 80세만기 / 20년납"
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      }
+    ],
+    "variant_signatures": [
+      {
+        "page": 5,
+        "table_index": 1,
+        "row_count": 15,
+        "col_count": 5,
+        "header_row_index": 0,
+        "header_row": [
+          "가입담보 및 보장내용",
+          "",
+          "가입금액",
+          "보험료",
+          "만기/납기"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 1,
+          "coverage_amount_text": 2,
+          "premium_text": null,
+          "period_text": 1,
+          "mapping_method": "content_pattern",
+          "mapping_confidence": 0.75
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 5,
+          "table_index": 1,
+          "row_count": 15,
+          "col_count": 5,
+          "detection_method": "pattern_based_passB",
+          "pattern_scores": {
+            "amount_ratio": 0.25,
+            "premium_period_ratio": 0.42,
+            "korean_ratio": 1.0,
+            "clause_ratio": 0.33
+          },
+          "header_snippet": "가입담보 및 보장내용  가입금액 보험료 만기/납기 1 보통약관(상해사망)  1,000만원 590원 100세만기 /\n20년납  보험기간 중 상해의 직접 결과로써 사망한 경우(질병으로 인한 사망은 제외) 보험가입금액 지급   ",
+          "sample_rows": [
+            " | [보험금을 지급하지 않는 사항] |  |  | ",
+            " | 1. 피보험자가 고의로 자신을 해친 경우. 다만, 피보험자가 심신상실 등으로 자유로운 의사결정을 할 수 없는\n상태에서 자신을 해친 경우에는 보험금을 지급합니다.\n2. 보험수익자가 고의로 피보험자를 해친 경우. 다만, 그 보험수익자가 보험금의 일부 보험수익자인 경우에는\n다른 보험수익자에 대한 보험금은 지급합니다.\n3. 계약자가 고의로 피보험자를 해친 경우\n4. 피보험자의 임신, 출산(제왕절개를 포함합니다), 산후기(단, 보장개시일부터 2년이 지난 후에 발생한 습관성\n유산, 불임 및 인공수정 관련 합병증으로 인한 경우는 제외). 그러나 회사가 보장하는 보험금 지급사유에는\n보험금을 지급합니다.\n5. 전쟁, 외국의 무력행사, 혁명, 내란, 사변, 폭동\n6. 전문등반(전문적인 등산용구를 사용하여 암벽 또는 빙벽을 오르내리거나 특수한 기술, 경험, 사전훈련을\n필요로 하는 등반을 말합니다), 글라이더 조종, 스카이다이빙, 스쿠버다이빙, 행글라이딩, 수상보트, 패러글라\n이딩\n7. 모터보트, 자동차 또는 오토바이에 의한 경기, 시범, 흥행(이를 위한 연습을 포함합니다) 또는 시운전\n8. 선박에 탑승하는 것을 직무로 하는 사람의 직무상 선박탑승 |  |  | ",
+            "2 보험료납입면제대상보장(8대사유) |  | 10만원 | 218원 | 100세만기 /\n20년납"
+          ],
+          "is_variant": true
+        },
+        "detection_pass": "B"
+      }
+    ]
+  },
+  "detail_table": {
+    "exists": false,
+    "pages": []
+  },
+  "known_anomalies": [
+    "Hanwha: Merged header '가입담보 및 보장내용' detected (requires Hanwha-specific filters from 44-γ)"
+  ],
+  "evidences": [
+    {
+      "page": 3,
+      "table_index": 1,
+      "row_count": 33,
+      "col_count": 5,
+      "header_snippet": "순번 가입담보 가입금액 보험료 만기/납기 1 보통약관(상해사망) 1,000만원 590원 100세만기 / 20년납 2 보험료납입면제대상보장(8대사유) 10만원 218원 100세만기 / 20년납",
+      "sample_rows": [
+        "2 | 보험료납입면제대상보장(8대사유) | 10만원 | 218원 | 100세만기 / 20년납",
+        "6 | 상해후유장해(3-100%) | 1,000만원 | 500원 | 100세만기 / 20년납",
+        "10 | 질병사망 | 1,000만원 | 8,050원 | 80세만기 / 20년납"
+      ],
+      "is_variant": false
+    },
+    {
+      "page": 5,
+      "table_index": 1,
+      "row_count": 15,
+      "col_count": 5,
+      "detection_method": "pattern_based_passB",
+      "pattern_scores": {
+        "amount_ratio": 0.25,
+        "premium_period_ratio": 0.42,
+        "korean_ratio": 1.0,
+        "clause_ratio": 0.33
+      },
+      "header_snippet": "가입담보 및 보장내용  가입금액 보험료 만기/납기 1 보통약관(상해사망)  1,000만원 590원 100세만기 /\n20년납  보험기간 중 상해의 직접 결과로써 사망한 경우(질병으로 인한 사망은 제외) 보험가입금액 지급   ",
+      "sample_rows": [
+        " | [보험금을 지급하지 않는 사항] |  |  | ",
+        " | 1. 피보험자가 고의로 자신을 해친 경우. 다만, 피보험자가 심신상실 등으로 자유로운 의사결정을 할 수 없는\n상태에서 자신을 해친 경우에는 보험금을 지급합니다.\n2. 보험수익자가 고의로 피보험자를 해친 경우. 다만, 그 보험수익자가 보험금의 일부 보험수익자인 경우에는\n다른 보험수익자에 대한 보험금은 지급합니다.\n3. 계약자가 고의로 피보험자를 해친 경우\n4. 피보험자의 임신, 출산(제왕절개를 포함합니다), 산후기(단, 보장개시일부터 2년이 지난 후에 발생한 습관성\n유산, 불임 및 인공수정 관련 합병증으로 인한 경우는 제외). 그러나 회사가 보장하는 보험금 지급사유에는\n보험금을 지급합니다.\n5. 전쟁, 외국의 무력행사, 혁명, 내란, 사변, 폭동\n6. 전문등반(전문적인 등산용구를 사용하여 암벽 또는 빙벽을 오르내리거나 특수한 기술, 경험, 사전훈련을\n필요로 하는 등반을 말합니다), 글라이더 조종, 스카이다이빙, 스쿠버다이빙, 행글라이딩, 수상보트, 패러글라\n이딩\n7. 모터보트, 자동차 또는 오토바이에 의한 경기, 시범, 흥행(이를 위한 연습을 포함합니다) 또는 시운전\n8. 선박에 탑승하는 것을 직무로 하는 사람의 직무상 선박탑승 |  |  | ",
+        "2 보험료납입면제대상보장(8대사유) |  | 10만원 | 218원 | 100세만기 /\n20년납"
+      ],
+      "is_variant": true
+    }
+  ],
+  "detection_metadata": {
+    "passA_pages": [
+      3
+    ],
+    "passB_pages": [
+      5
+    ]
+  }
+}
