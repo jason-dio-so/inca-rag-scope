@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2025-12-31
-**현재 상태**: ✅ STEP NEXT-33 완료 (Meritz not_found 1건 분석 → Case C: Join Failure - newline normalization 이슈)
+**현재 상태**: ✅ STEP NEXT-34-ε 완료 (Newline-only search_key 분리 → raw SSOT 불변 유지 + Meritz 케이스 재분류: Case A Alias Miss)
 
 ---
 
