@@ -28,4 +28,8 @@ data/evidence_text/**
 reports/
 reports/*.md
 
+# Recovery artifacts (STEP NEXT-31-P3-γ)
+_recovery_snapshots/
+_triage_logs/
+
 # Tracked: data/scope/*.csv, data/compare/*.jsonl, docs/audit/*.md, STATUS.md
