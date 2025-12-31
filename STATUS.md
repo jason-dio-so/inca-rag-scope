@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2025-12-31
-**현재 상태**: ✅ STEP NEXT-32 완료 (Step1 Extractor Hardening - Samsung/Meritz)
+**현재 상태**: ✅ STEP NEXT-33 완료 (Meritz not_found 1건 분석 → Case C: Join Failure - newline normalization 이슈)
 
 ---
 
