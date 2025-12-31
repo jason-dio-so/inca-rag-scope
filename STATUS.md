@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2025-12-31
-**현재 상태**: ✅ STEP NEXT-34-ε 완료 (Newline-only search_key 분리 → raw SSOT 불변 유지 + Meritz 케이스 재분류: Case A Alias Miss)
+**현재 상태**: ✅ STEP NEXT-35 완료 ((20년갱신) prefix alias 등록 → Meritz not_found 0건 달성 - 전체 34건 found 100%)
 
 ---
 
