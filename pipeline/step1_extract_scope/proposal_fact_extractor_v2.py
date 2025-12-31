@@ -124,8 +124,23 @@ class ProposalFactExtractor:
                         if self._is_rejected_coverage_name(coverage_name_raw):
                             continue
 
-                        # Filter out non-coverage rows
+                        # STEP NEXT-44-γ: Filter out non-coverage rows (enhanced for Hanwha)
+                        # 1. Standard filters
                         if any(x in coverage_name_raw for x in ['합계', '광화문', '준법감시', '설계번호', '피보험자', '구분', '☞', '※', '▶', '선택계약', '기본계약', '경과기간', '납입보험료']):
+                            continue
+
+                        # 2. Hanwha-specific: Filter out benefit description texts (not coverage names)
+                        # These are typically long sentences describing payment conditions
+                        if any(x in coverage_name_raw for x in ['보험가입금액 지급', '보험금을 지급하지 않는', '보험금 지급', '진단확정', '치료를 목적으로', '직접 결과로', '보험기간 중']):
+                            continue
+
+                        # 3. Filter out standalone bracket texts (section markers)
+                        if re.match(r'^\[.*\]$', coverage_name_raw):
+                            continue
+
+                        # 4. Filter out overly long texts (likely descriptions, not coverage names)
+                        # Typical coverage name: 10-50 chars, descriptions: 50+ chars
+                        if len(coverage_name_raw) > 100:
                             continue
 
                         # Skip duplicates
@@ -271,7 +286,12 @@ class ProposalFactExtractor:
                 combined_text = cell_text + next_cell_text
 
                 # Coverage column: 담보명, 보장명, 담보가입현황, 가입담보
+                # STEP NEXT-44-γ: Exclude merged headers like "가입담보 및 보장내용"
                 if any(x in combined_text for x in ['담보명', '보장명', '담보가입현황', '담보별보장내용', '가입담보']):
+                    # Skip if this is a merged header (contains "및 보장내용" or similar)
+                    if '보장내용' in combined_text and ('및' in combined_text or '보장내용' in cell_text):
+                        continue  # This is a multi-row header, not a simple coverage name column
+
                     if indices['coverage_col'] is None:
                         # If header is split across cells, use the second cell
                         if not cell_text and next_cell_text:

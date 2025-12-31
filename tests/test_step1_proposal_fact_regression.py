@@ -210,6 +210,108 @@ class TestStep1ProposalFactRegression:
         )
 
 
+class TestStep1HanwhaSpecificRegression:
+    """STEP NEXT-44-γ: Hanwha-specific regression tests"""
+
+    def test_hanwha_amount_recall_100_percent(self):
+        """
+        Hanwha Hard Gate: coverage_amount_text fill rate must be 100%
+
+        STEP NEXT-44-γ fixed noise (benefit descriptions) -> 100% recall
+        """
+        records = load_step1_jsonl('hanwha')
+
+        null_amount_count = sum(
+            1 for r in records
+            if not r.get('proposal_facts', {}).get('coverage_amount_text')
+        )
+
+        assert null_amount_count == 0, (
+            f"Hanwha regression: Found {null_amount_count} null amount cases\n"
+            "Expected: 0 (100% fill rate after STEP NEXT-44-γ)"
+        )
+
+    def test_hanwha_no_benefit_descriptions(self):
+        """
+        Hanwha: coverage names must NOT contain benefit description keywords
+
+        Regression: Before 44-γ, "보험가입금액 지급" was extracted as coverage name
+        """
+        records = load_step1_jsonl('hanwha')
+
+        benefit_desc_keywords = [
+            '보험가입금액 지급',
+            '보험금을 지급하지 않는',
+            '진단확정',
+            '치료를 목적으로',
+            '직접 결과로',
+            '보험기간 중'
+        ]
+
+        violations = []
+        for record in records:
+            name = record.get('coverage_name_raw', '')
+            for keyword in benefit_desc_keywords:
+                if keyword in name:
+                    violations.append((name, keyword))
+
+        assert len(violations) == 0, (
+            f"Hanwha regression: Found {len(violations)} benefit descriptions as coverage names:\n"
+            + "\n".join(f"  - '{name}' contains '{keyword}'" for name, keyword in violations[:5])
+        )
+
+    def test_hanwha_known_coverages_have_amount(self):
+        """
+        Hanwha: Known coverage names must always have amount
+
+        Sample-based regression test to prevent future data loss
+        """
+        records = load_step1_jsonl('hanwha')
+
+        # Known coverages from Hanwha PDF (stable across runs)
+        known_coverages = [
+            "보험료납입면제대상보장(8대사유)",
+            "상해후유장해(3-100%)",
+            "질병사망",
+            "골절(치아파절제외)진단비",
+            "화상진단비"
+        ]
+
+        missing = []
+        for known_name in known_coverages:
+            found = False
+            for record in records:
+                if record.get('coverage_name_raw') == known_name:
+                    found = True
+                    amount = record.get('proposal_facts', {}).get('coverage_amount_text')
+                    if not amount:
+                        missing.append(known_name)
+                    break
+            if not found:
+                missing.append(f"{known_name} (NOT FOUND)")
+
+        assert len(missing) == 0, (
+            f"Hanwha regression: {len(missing)} known coverages missing amount:\n"
+            + "\n".join(f"  - {name}" for name in missing)
+        )
+
+    def test_hanwha_total_coverage_count_stable(self):
+        """
+        Hanwha: Total coverage count should be stable (~35)
+
+        After noise removal in STEP NEXT-44-γ, count stabilized at 35
+        """
+        records = load_step1_jsonl('hanwha')
+
+        count = len(records)
+
+        # Allow small variance (±5) but flag large deviations
+        assert 30 <= count <= 40, (
+            f"Hanwha regression: Coverage count {count} outside expected range [30, 40]\n"
+            "Expected: ~35 (stable after STEP NEXT-44-γ)"
+        )
+
+
 class TestStep1ProposalFactQuality:
     """Quality checks for Step1 proposal facts (soft metrics, not hard gates)"""
 
