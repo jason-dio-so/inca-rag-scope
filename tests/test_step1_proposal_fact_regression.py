@@ -312,6 +312,91 @@ class TestStep1HanwhaSpecificRegression:
         )
 
 
+class TestStep1GlobalOverFilteringRegression:
+    """STEP NEXT-44-γ-2: Global over-filtering regression tests"""
+
+    @pytest.mark.parametrize("insurer,baseline_count", [
+        ('samsung', 62),
+        ('meritz', 36),
+        ('kb', 37),
+        ('hyundai', 35),
+        ('lotte', 65),
+        ('heungkuk', 23),
+        ('db', 50),
+    ])
+    def test_non_hanwha_coverage_count_stability(self, insurer, baseline_count):
+        """
+        Non-Hanwha insurers: Coverage count must remain stable (±10% tolerance)
+
+        STEP NEXT-44-γ-2 Hard Gate: Hanwha-specific filters must not over-filter other insurers
+        """
+        records = load_step1_jsonl(insurer)
+        current_count = len(records)
+
+        max_allowed_drop = max(10, round(baseline_count * 0.10))
+        min_allowed = baseline_count - max_allowed_drop
+
+        assert current_count >= min_allowed, (
+            f"{insurer} over-filtering regression: coverage count {current_count} < baseline {baseline_count}\n"
+            f"Allowed minimum: {min_allowed} (baseline - {max_allowed_drop})\n"
+            "This may indicate Hanwha-specific filters are leaking to other insurers."
+        )
+
+    def test_samsung_known_coverages_preserved(self):
+        """
+        Samsung: Known coverages must exist (sample-based over-filtering guard)
+
+        STEP NEXT-44-γ-2: Prevent accidental removal by Hanwha filters
+        """
+        records = load_step1_jsonl('samsung')
+
+        # Known coverages from Samsung PDF (stable across runs)
+        known_coverages = [
+            "암 진단비(유사암 제외)",
+            "유사암 진단비(기타피부암)(1년50%)",
+            "뇌출혈 진단비",
+            "뇌졸중 진단비(1년50%)"
+        ]
+
+        missing = []
+        for known_name in known_coverages:
+            found = any(r.get('coverage_name_raw') == known_name for r in records)
+            if not found:
+                missing.append(known_name)
+
+        assert len(missing) == 0, (
+            f"Samsung over-filtering regression: {len(missing)} known coverages missing:\n"
+            + "\n".join(f"  - {name}" for name in missing)
+        )
+
+    def test_meritz_known_coverages_preserved(self):
+        """
+        Meritz: Known coverages must exist (sample-based over-filtering guard)
+
+        STEP NEXT-44-γ-2: Prevent accidental removal by Hanwha filters
+        """
+        records = load_step1_jsonl('meritz')
+
+        # Known coverages from Meritz PDF
+        known_coverages = [
+            "사망후유",
+            "질병사망",
+            "3대진단",
+            "유사암진단비"
+        ]
+
+        missing = []
+        for known_name in known_coverages:
+            found = any(r.get('coverage_name_raw') == known_name for r in records)
+            if not found:
+                missing.append(known_name)
+
+        assert len(missing) == 0, (
+            f"Meritz over-filtering regression: {len(missing)} known coverages missing:\n"
+            + "\n".join(f"  - {name}" for name in missing)
+        )
+
+
 class TestStep1ProposalFactQuality:
     """Quality checks for Step1 proposal facts (soft metrics, not hard gates)"""
 
