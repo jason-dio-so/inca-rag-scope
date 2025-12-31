@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2025-12-31
-**현재 상태**: ✅ STEP NEXT-44-β 완료 (Step1 Proposal Fact Contract LOCK + KB/현대 안정화 완료, Hard Gates 100% 통과)
+**현재 상태**: ✅ STEP NEXT-44-γ 완료 (Hanwha amount recall 100% 달성: 77.5% → 100.0%, +22.5%p)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **📈 Hanwha Amount Recall 100%** | STEP NEXT-44-γ | ✅ 완료 | 2025-12-31 |
 | **🔒 Step1 Proposal Fact Contract LOCK** | STEP NEXT-44-β | ✅ 완료 | 2025-12-31 |
 | **🔧 Step1 Extractor Hardening** | STEP NEXT-32 | ✅ 완료 | 2025-12-31 |
 | **🔐 Content-Hash Lock Hardening** | STEP NEXT-31-P3-β | ✅ 완료 | 2025-12-31 |
@@ -45,6 +46,61 @@
 ---
 
 ## 🎯 최신 완료 항목 (2025-12-31)
+
+### STEP NEXT-44-γ — Hanwha Amount Recall 100% 달성 ✅
+
+**목표**: Hanwha(한화) 보험사의 coverage_amount_text 추출률을 유의미하게 개선하고 회귀 테스트로 고정
+
+**Constitutional Rules (Enforced)**:
+- ✅ Fact-only (PDF 원문 그대로, 계산/추론 금지)
+- ✅ Evidence mandatory (모든 값 최소 1개 evidence)
+- ✅ Null allowed (정상적으로 제거된 noise)
+- ✅ Layer discipline (Step1만 수정, DB/Loader/Step2~7 미실행)
+- ❌ "문서 탓"으로 종료 금지 → extractor 로직으로 해결
+
+**산출물**:
+
+1. **Extractor 로직 개선** (`pipeline/step1_extract_scope/proposal_fact_extractor_v2.py`)
+   - 보장내용 설명문 필터링 강화 (키워드: "보험가입금액 지급", "보험금을 지급하지 않는", "진단확정" 등)
+   - Standalone bracket 텍스트 필터 (`^\[.*\]$`)
+   - 100자 초과 긴 텍스트 필터 (설명문 제거)
+   - Merged header 제외 ("가입담보 및 보장내용")
+
+2. **Before/After 비교** (`docs/audit/STEP_NEXT_44G_HANWHA_AMOUNT_RECALL_REPORT.md`)
+   - Before (44-β): 80 coverages, 62/80 amount (77.5%)
+   - After (44-γ): 35 coverages, 35/35 amount (100.0%)
+   - **Improvement: +22.5%p ✅ (목표: ≥ +10%p)**
+   - Noise removal: 45개 보장내용 설명문 제거
+
+3. **Hanwha 전용 회귀 테스트** (`tests/test_step1_proposal_fact_regression.py`)
+   - `test_hanwha_amount_recall_100_percent`: 100% fill rate 보장
+   - `test_hanwha_no_benefit_descriptions`: 보장내용 설명문 필터링 확인
+   - `test_hanwha_known_coverages_have_amount`: 5개 알려진 담보 amount 존재 확인
+   - `test_hanwha_total_coverage_count_stable`: 총 담보 수 안정성 (30-40 범위)
+   - **4 tests PASSED ✅**
+
+**Hard Gates (ALL PASSED)**:
+
+| Gate | Threshold | Actual | Status |
+|------|-----------|--------|--------|
+| **Hanwha Amount Recall** | ≥ +10%p improvement | +22.5%p | ✅ PASS |
+| **Hanwha Amount Fill Rate** | N/A | 100.0% | ✅ EXCELLENT |
+| **KB Regression Gate** | No amount patterns | 0건 | ✅ PASS |
+| **Hyundai Regression Gate** | No row numbers | 0건 | ✅ PASS |
+| **Hanwha Regression Tests** | 4 tests | 4 PASSED | ✅ PASS |
+
+**Key Findings**:
+1. **문제**: Hanwha PDF의 "가입담보 및 보장내용" merged header → 보장내용 설명문이 coverage_name_raw로 잘못 추출
+2. **해결**: 키워드 기반 필터링 + 길이 제한 + merged header 탐지
+3. **결과**: 실제 담보 35개만 남고 모두 100% amount 추출 성공
+
+**Constitutional Compliance**:
+- ✅ NO DB/Loader/Schema changes
+- ✅ NO LLM usage
+- ✅ NO Step7 execution
+- ✅ KB/Hyundai Hard Gates 유지 (regression 방지)
+
+---
 
 ### STEP NEXT-44-β — Step1 Proposal Fact Contract LOCK + Extractor Stabilization ✅
 
