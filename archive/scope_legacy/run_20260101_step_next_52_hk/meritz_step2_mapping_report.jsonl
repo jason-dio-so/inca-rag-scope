@@ -1,0 +1,36 @@
+{"insurer": "meritz", "coverage_name_raw": "사망후유", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "질병사망", "coverage_code": "A1100", "canonical_name": "질병사망", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "meritz", "coverage_name_raw": "일반상해후유장해(3~100%)", "coverage_code": "A3300_1", "canonical_name": "상해후유장해(3-100%)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "meritz", "coverage_name_raw": "3대진단", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "유사암진단비", "coverage_code": "A4210", "canonical_name": "유사암진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "meritz", "coverage_name_raw": "5대고액치료비암진단비", "coverage_code": "A4209", "canonical_name": "고액암진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "meritz", "coverage_name_raw": "재진단암진단비(1년 대기형)", "coverage_code": "A4200_5", "canonical_name": "재진단암진단비(1년대기형)", "mapping_method": "normalized", "mapping_confidence": 0.9}
+{"insurer": "meritz", "coverage_name_raw": "입원일당", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "유사암수술비", "coverage_code": "A5298_001", "canonical_name": "유사암수술비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "meritz", "coverage_name_raw": "골절/화상", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "할증/제도성", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "보험기간 중 상해의 직접결과로써 사망한 경우 가입금액 지급", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "3 질병사망", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "보험기간 중 질병으로 사망한 경우 가입금액 지급", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "5 일반상해후유장해(3~100%)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "27 유사암진단비", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "36 재진단암진단비(1년 대기형)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "153 뇌혈관질환진단비", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "155 뇌졸중진단비", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "159 뇌출혈진단비", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "163 허혈성심장질환진단비", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "715 (20년갱신)갱신형 중증질환자(뇌혈관질환) 산정특례대상 진단비(연 간1회한)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "329 일반상해입원일당(1일이상)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "330 질병입원일당(1일이상)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "333 일반상해중환자실입원일당(1일이상)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "39 유사암수술비", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "171 허혈성심장질환수술비", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "227 상해수술비", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "237 질병수술비", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "641 (10년갱신)갱신형 다빈치로봇 암수술비(암(특정암제외))", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "642 (10년갱신)갱신형 다빈치로봇 암수술비(특정암)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "364 신화상치료비(화상수술비)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "365 신화상치료비(화상진단비)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "366 신화상치료비(중증화상및부식진단비)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "179 혈전용해치료비Ⅱ(뇌졸중)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "meritz", "coverage_name_raw": "633 (10년갱신)갱신형 표적항암약물허가치료비Ⅱ", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}

@@ -1,0 +1,34 @@
+{"insurer": "hyundai", "coverage_name_raw": "골절진단(치아파절제외)담보", "coverage_code": "A4301_1", "canonical_name": "골절진단비(치아파절제외)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "화상진단담보", "coverage_code": "A4302", "canonical_name": "화상진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "상해입원일당(1-180일)담보", "coverage_code": "A6300_1", "canonical_name": "상해입원비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "상해수술담보", "coverage_code": "A5300", "canonical_name": "상해수술비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "질병사망담보", "coverage_code": "A1100", "canonical_name": "질병사망", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "암진단Ⅱ(유사암제외)담보", "coverage_code": "A4200_1", "canonical_name": "암진단비(유사암제외)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "유사암진단Ⅱ담보", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hyundai", "coverage_name_raw": "고액치료비암진단담보", "coverage_code": "A4209", "canonical_name": "고액암진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "재진단암진단Ⅱ담보", "coverage_code": "A4299_1", "canonical_name": "재진단암진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "뇌출혈진단담보", "coverage_code": "A4102", "canonical_name": "뇌출혈진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "뇌졸중진단담보", "coverage_code": "A4103", "canonical_name": "뇌졸중진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "뇌혈관질환진단담보", "coverage_code": "A4101", "canonical_name": "뇌혈관질환진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "허혈심장질환진단담보", "coverage_code": "A4105", "canonical_name": "허혈성심장질환진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "심혈관질환(특정Ⅰ,I49제외)진단담보", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hyundai", "coverage_name_raw": "심혈관질환(I49)진단담보", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hyundai", "coverage_name_raw": "심혈관질환(주요심장염증)진단담보", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hyundai", "coverage_name_raw": "심혈관질환(특정Ⅱ)진단담보", "coverage_code": "A4104_1", "canonical_name": "심장질환진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "심혈관질환(특정2대)진단담보", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hyundai", "coverage_name_raw": "심혈관질환(대동맥판막협착증)진단담보", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hyundai", "coverage_name_raw": "심혈관질환(심근병증)진단담보", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hyundai", "coverage_name_raw": "항암약물치료Ⅱ담보", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hyundai", "coverage_name_raw": "항암방사선치료Ⅱ담보", "coverage_code": "A9617_1", "canonical_name": "항암방사선약물치료비(최초1회한)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "표적항암약물허가치료(갱신형)담보", "coverage_code": "A9619_1", "canonical_name": "표적항암약물허가치료비(최초1회한)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "카티(CAR-T)항암약물허가치료(연간1회한)(갱신형)담보", "coverage_code": "A9620_1", "canonical_name": "카티(CAR-T)항암약물허가치료비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "질병입원일당(1-180일)담보", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hyundai", "coverage_name_raw": "암직접치료입원일당(1-180일,요양병원제외)담보", "coverage_code": "A6200", "canonical_name": "암직접치료입원일당(1-180,요양병원제외)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "질병수술담보", "coverage_code": "A5100", "canonical_name": "질병수술비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "로봇암수술(다빈치및레보아이)(갑상선암및전립선암제외)(최초1회한 )(갱신형)담보", "coverage_code": "A9630_1", "canonical_name": "다빈치로봇암수술비", "mapping_method": "normalized", "mapping_confidence": 0.9}
+{"insurer": "hyundai", "coverage_name_raw": "로봇암수술(다빈치및레보아이)(갑상선암및전립선암)(최초1회한)(갱 신형)담보", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hyundai", "coverage_name_raw": "암수술담보", "coverage_code": "A5200", "canonical_name": "암수술비(유사암제외)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "뇌혈관질환수술담보", "coverage_code": "A5104_1", "canonical_name": "뇌혈관질환수술비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "허혈심장질환수술담보", "coverage_code": "A5107_1", "canonical_name": "허혈성심장질환수술비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "혈전용해치료비Ⅱ(최초1회한)(뇌졸중)담보", "coverage_code": "A9640_1", "canonical_name": "혈전용해치료비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hyundai", "coverage_name_raw": "혈전용해치료비Ⅱ(최초1회한)(특정심장질환)담보", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
