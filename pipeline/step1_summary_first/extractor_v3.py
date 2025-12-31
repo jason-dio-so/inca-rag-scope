@@ -119,15 +119,26 @@ class ExtractorV3:
             # Standard extraction with auto-trigger to hybrid if >30% empty coverage names
             standard_facts = self._extract_signatures_standard(signatures)
 
-            # Check if we should trigger hybrid
-            should_use_hybrid = self._should_trigger_hybrid(signatures)
+            # STEP NEXT-45-C-β-5: Check profile extraction_config for force_standard_extraction
+            extraction_config = self.profile.get("extraction_config", {})
+            force_standard = extraction_config.get("force_standard_extraction", False)
 
-            if should_use_hybrid:
-                logger.warning(f"{self.insurer}: Triggering hybrid extraction (empty coverage ratio > 30%)")
-                hybrid_facts = self._extract_signatures_hybrid(signatures)
-                facts = hybrid_facts
-            else:
+            if force_standard:
+                logger.info(
+                    f"{self.insurer}: force_standard_extraction=True, skipping hybrid trigger check. "
+                    f"Reason: {extraction_config.get('reason', 'N/A')}"
+                )
                 facts = standard_facts
+            else:
+                # Check if we should trigger hybrid
+                should_use_hybrid = self._should_trigger_hybrid(signatures)
+
+                if should_use_hybrid:
+                    logger.warning(f"{self.insurer}: Triggering hybrid extraction (empty coverage ratio > 30%)")
+                    hybrid_facts = self._extract_signatures_hybrid(signatures)
+                    facts = hybrid_facts
+                else:
+                    facts = standard_facts
 
         else:
             raise ValueError(f"Unknown extraction mode: {mode}")
