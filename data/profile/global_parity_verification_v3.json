@@ -1,0 +1,431 @@
+{
+  "global_parity": 173.91304347826087,
+  "global_baseline_dedup": 161,
+  "global_extracted_dedup": 280,
+  "per_insurer": {
+    "samsung": {
+      "baseline_raw": 8,
+      "baseline_valid": 6,
+      "baseline_dedup": 6,
+      "baseline_dup_count": 0,
+      "extracted_raw": 17,
+      "extracted_valid": 17,
+      "extracted_dedup": 17,
+      "extracted_dup_count": 0,
+      "extracted_dup_examples": [],
+      "parity": 283.33333333333337,
+      "dedup_ratio": 1.0,
+      "new_coverages": [
+        {
+          "coverage_name": "보험료 납입면제대상Ⅱ",
+          "amount": "10만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "기타 심장부정맥 진단비(1년50%)",
+          "amount": "100만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "특정3대심장질환 진단비(1년50%)",
+          "amount": "100만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "골절 진단비(치아파절(깨짐, 부러짐) 제외)",
+          "amount": "10만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "화상 진단비",
+          "amount": "10만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "상해 입원일당(1일이상)",
+          "amount": "1만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "입원 질병 입원일당(1일이상)",
+          "amount": "1만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "암 직접치료 입원일당Ⅱ(1일이상)(요양병원 제외)",
+          "amount": "2만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "항암방사선·약물 치료비Ⅲ(암(기타피부암 및 갑상선암 제외))",
+          "amount": "300만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "항암방사선·약물 치료비Ⅲ(기타피부암 및 갑상선암)",
+          "amount": "300만원",
+          "page": 2
+        }
+      ]
+    },
+    "meritz": {
+      "baseline_raw": 10,
+      "baseline_valid": 9,
+      "baseline_dedup": 9,
+      "baseline_dup_count": 0,
+      "extracted_raw": 36,
+      "extracted_valid": 36,
+      "extracted_dedup": 36,
+      "extracted_dup_count": 0,
+      "extracted_dup_examples": [],
+      "parity": 400.0,
+      "dedup_ratio": 1.0,
+      "new_coverages": [
+        {
+          "coverage_name": "기본계약 1 일반상해80%이상후유장해[기본계약]",
+          "amount": "1백만원",
+          "page": 3
+        },
+        {
+          "coverage_name": "일반상해사망",
+          "amount": "1백만원",
+          "page": 3
+        },
+        {
+          "coverage_name": "사망후유 질병사망",
+          "amount": "1천만원",
+          "page": 3
+        },
+        {
+          "coverage_name": "일반상해후유장해(3~100%)",
+          "amount": "1천만원",
+          "page": 3
+        },
+        {
+          "coverage_name": "암진단비(유사암제외)",
+          "amount": "3천만원",
+          "page": 3
+        },
+        {
+          "coverage_name": "유사암진단비",
+          "amount": "6백만원",
+          "page": 3
+        },
+        {
+          "coverage_name": "5대고액치료비암진단비",
+          "amount": "1천만원",
+          "page": 3
+        },
+        {
+          "coverage_name": "재진단암진단비(1년 대기형)",
+          "amount": "1천만원",
+          "page": 3
+        },
+        {
+          "coverage_name": "뇌혈관질환진단비",
+          "amount": "1천만원",
+          "page": 3
+        },
+        {
+          "coverage_name": "3대진단 뇌졸중진단비",
+          "amount": "1천만원",
+          "page": 3
+        }
+      ]
+    },
+    "kb": {
+      "baseline_raw": 36,
+      "baseline_valid": 36,
+      "baseline_dedup": 36,
+      "baseline_dup_count": 0,
+      "extracted_raw": 50,
+      "extracted_valid": 50,
+      "extracted_dedup": 50,
+      "extracted_dup_count": 0,
+      "extracted_dup_examples": [],
+      "parity": 138.88888888888889,
+      "dedup_ratio": 1.0,
+      "new_coverages": [
+        {
+          "coverage_name": "보험료납입면제대상보장(8대기본)",
+          "amount": "10만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "10대고액치료비암진단비",
+          "amount": "1천만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "심장질환(특정Ⅰ) 진단비",
+          "amount": "1백만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "심장질환(특정Ⅱ) 진단비",
+          "amount": "1백만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "다빈치로봇 암수술비(갑상선암 및 전립선암 제외)(최초1회한)(갱신형)",
+          "amount": "1천만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "다빈치로봇 갑상선암 및 전립선암수술비(최초1회한)(갱신형)",
+          "amount": "2백만원",
+          "page": 2
+        },
+        {
+          "coverage_name": "표적항암약물허가치료비(림프종·백혈병 관련암)(최초1회한)Ⅱ(갱신형)",
+          "amount": "1천만원",
+          "page": 3
+        },
+        {
+          "coverage_name": "280  표적항암약물허가치료비(3대특정암 및 림프종·백혈병 관련암 제외)(최초1회한) Ⅱ(갱신형)",
+          "amount": "1천만원",
+          "page": 3
+        },
+        {
+          "coverage_name": "혈전용해치료비Ⅱ(최초1회한)(특정심장질환) 보장",
+          "amount": "2백만원",
+          "page": 3
+        },
+        {
+          "coverage_name": "혈전용해치료비Ⅱ(최초1회한)(뇌졸중) 보장",
+          "amount": "2백만원",
+          "page": 3
+        }
+      ]
+    },
+    "hanwha": {
+      "baseline_raw": 32,
+      "baseline_valid": 32,
+      "baseline_dedup": 32,
+      "baseline_dup_count": 0,
+      "extracted_raw": 33,
+      "extracted_valid": 33,
+      "extracted_dedup": 33,
+      "extracted_dup_count": 0,
+      "extracted_dup_examples": [],
+      "parity": 103.125,
+      "dedup_ratio": 1.0,
+      "new_coverages": [
+        {
+          "coverage_name": "질병사망 1,",
+          "amount": "000만원",
+          "page": 5
+        }
+      ]
+    },
+    "hyundai": {
+      "baseline_raw": 1,
+      "baseline_valid": 1,
+      "baseline_dedup": 1,
+      "baseline_dup_count": 0,
+      "extracted_raw": 47,
+      "extracted_valid": 47,
+      "extracted_dedup": 47,
+      "extracted_dup_count": 0,
+      "extracted_dup_examples": [],
+      "parity": 4700.0,
+      "dedup_ratio": 1.0,
+      "new_coverages": [
+        {
+          "coverage_name": ". 기본계약(상해사망)",
+          "amount": "1천만원",
+          "page": 2
+        },
+        {
+          "coverage_name": ". 기본계약(상해후유장해)",
+          "amount": "1천만원",
+          "page": 2
+        },
+        {
+          "coverage_name": ". 보험료납입면제대상담보",
+          "amount": "10만원",
+          "page": 2
+        },
+        {
+          "coverage_name": ". 골절진단(치아파절제외)담보",
+          "amount": "10만원",
+          "page": 2
+        },
+        {
+          "coverage_name": ". 화상진단담보",
+          "amount": "10만원",
+          "page": 2
+        },
+        {
+          "coverage_name": ". 상해입원일당(1-180일)담보",
+          "amount": "1만원",
+          "page": 2
+        },
+        {
+          "coverage_name": ". 상해수술담보",
+          "amount": "10만원",
+          "page": 2
+        },
+        {
+          "coverage_name": ". 질병사망담보",
+          "amount": "1천만원",
+          "page": 2
+        },
+        {
+          "coverage_name": ". 암진단Ⅱ(유사암제외)담보",
+          "amount": "3천만원",
+          "page": 2
+        },
+        {
+          "coverage_name": ". 유사암진단Ⅱ담보",
+          "amount": "6백만원",
+          "page": 2
+        }
+      ]
+    },
+    "lotte": {
+      "baseline_raw": 30,
+      "baseline_valid": 30,
+      "baseline_dedup": 30,
+      "baseline_dup_count": 0,
+      "extracted_raw": 30,
+      "extracted_valid": 30,
+      "extracted_dedup": 30,
+      "extracted_dup_count": 0,
+      "extracted_dup_examples": [],
+      "parity": 100.0,
+      "dedup_ratio": 1.0,
+      "new_coverages": []
+    },
+    "heungkuk": {
+      "baseline_raw": 23,
+      "baseline_valid": 23,
+      "baseline_dedup": 23,
+      "baseline_dup_count": 0,
+      "extracted_raw": 36,
+      "extracted_valid": 36,
+      "extracted_dedup": 36,
+      "extracted_dup_count": 0,
+      "extracted_dup_examples": [],
+      "parity": 156.52173913043478,
+      "dedup_ratio": 1.0,
+      "new_coverages": [
+        {
+          "coverage_name": "[갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년)",
+          "amount": null,
+          "page": 8
+        },
+        {
+          "coverage_name": "[갱신형]카티(CAR-T) 항암약물허가치료비(연간1회한)(갱신형_10년)",
+          "amount": null,
+          "page": 8
+        },
+        {
+          "coverage_name": "암직접치료입원비(요양병원제외)(1일-180일)",
+          "amount": null,
+          "page": 8
+        },
+        {
+          "coverage_name": "암수술비(유사암제외)",
+          "amount": null,
+          "page": 8
+        },
+        {
+          "coverage_name": "유사암수술비",
+          "amount": null,
+          "page": 8
+        },
+        {
+          "coverage_name": "[갱신형]다빈치및레보아이로봇 암수술비(갑상선암 및 전립선암 제외)(최초1회한)(갱\n신형_10년)",
+          "amount": null,
+          "page": 8
+        },
+        {
+          "coverage_name": "[갱신형]다빈치및레보아이로봇 암수술비(갑상선암 및 전립선암)(최초1회한)(갱신형\n_10년)",
+          "amount": null,
+          "page": 8
+        },
+        {
+          "coverage_name": "일반상해입원비(1일-180일)",
+          "amount": null,
+          "page": 8
+        },
+        {
+          "coverage_name": "질병입원비(1일-180일)",
+          "amount": null,
+          "page": 8
+        },
+        {
+          "coverage_name": "상해수술비",
+          "amount": null,
+          "page": 8
+        }
+      ]
+    },
+    "db": {
+      "baseline_raw": 44,
+      "baseline_valid": 44,
+      "baseline_dedup": 24,
+      "baseline_dup_count": 20,
+      "extracted_raw": 31,
+      "extracted_valid": 31,
+      "extracted_dedup": 31,
+      "extracted_dup_count": 0,
+      "extracted_dup_examples": [],
+      "parity": 129.16666666666669,
+      "dedup_ratio": 1.0,
+      "new_coverages": [
+        {
+          "coverage_name": ". 상해사망·후유장해(20-100%)",
+          "amount": "1백만원",
+          "page": 4
+        },
+        {
+          "coverage_name": ". 보험료납입면제대상보장(11대사유)",
+          "amount": "10만원",
+          "page": 4
+        },
+        {
+          "coverage_name": ". 상해사망",
+          "amount": "1천만원",
+          "page": 4
+        },
+        {
+          "coverage_name": ". 상해후유장해(3-100%)",
+          "amount": "1천만원",
+          "page": 4
+        },
+        {
+          "coverage_name": ". 질병사망",
+          "amount": "1천만원",
+          "page": 4
+        },
+        {
+          "coverage_name": ". 상해수술비(동일사고당1회지급)",
+          "amount": "10만원",
+          "page": 4
+        },
+        {
+          "coverage_name": ". 골절진단비(치아제외)",
+          "amount": "10만원",
+          "page": 4
+        },
+        {
+          "coverage_name": ". 계속받는암진단비(유사암,대장점막내암및전립선암제외)",
+          "amount": "1천만원",
+          "page": 4
+        },
+        {
+          "coverage_name": ". 암진단비Ⅱ(유사암제외)",
+          "amount": "3천만원",
+          "page": 4
+        },
+        {
+          "coverage_name": ". 유사암진단비Ⅱ(1년감액지급)",
+          "amount": "6백만원",
+          "page": 4
+        }
+      ]
+    }
+  }
+}

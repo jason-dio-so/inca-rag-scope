@@ -1,0 +1,302 @@
+{
+  "insurer": "heungkuk",
+  "pdf_path": "/Users/cheollee/inca-rag-scope/data/sources/insurers/heungkuk/가입설계서/흥국_가입설계서_2511.pdf",
+  "total_pages": 18,
+  "summary_table": {
+    "exists": true,
+    "pages": [
+      7,
+      8
+    ],
+    "table_signatures": [
+      {
+        "page": 7,
+        "table_index": 2,
+        "row_count": 25,
+        "col_count": 5,
+        "header_row_index": 1,
+        "header_row": [
+          "구분",
+          "담 보 명",
+          "납입 및 만기",
+          "가입금액",
+          "보험료(원)"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 1,
+          "coverage_amount": 3,
+          "premium": 4,
+          "period": 2
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 7,
+          "table_index": 2,
+          "row_count": 25,
+          "col_count": 5,
+          "header_snippet": "피보험자(1/1) 구분 담 보 명 납입 및 만기 가입금액 보험료(원) 일반상해후유장해(80%이상) 20년납 100세만기 1,000만원 130",
+          "sample_rows": [
+            " | 일반상해후유장해(80%이상) | 20년납 100세만기 | 1,000만원 | 130",
+            " | 질병후유장해(80%이상)(감액없음) | 20년납 100세만기 | 100만원 | 147",
+            " | 보험료 납입면제대상보장(6대질병진단 및 상해·질병후유장해(80%이상)) | 20년납 20년만기 | 10만원 | 33"
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      },
+      {
+        "page": 8,
+        "table_index": 1,
+        "row_count": 14,
+        "col_count": 4,
+        "header_row_index": 0,
+        "header_row": [
+          "항암방사선약물치료비",
+          "20년납 100세만기",
+          "300만원",
+          "1,362"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 0,
+          "coverage_amount_text": 2,
+          "premium_text": 3,
+          "period_text": 1,
+          "mapping_method": "content_pattern",
+          "mapping_confidence": 1.0
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 8,
+          "table_index": 1,
+          "row_count": 14,
+          "col_count": 4,
+          "detection_method": "pattern_based_passB",
+          "pattern_scores": {
+            "amount_ratio": 1.0,
+            "premium_period_ratio": 1.0,
+            "korean_ratio": 1.0,
+            "clause_ratio": 0.0
+          },
+          "header_snippet": "항암방사선약물치료비 20년납 100세만기 300만원 1,362 [갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년) 10년갱신 100세만기 1,000만원 80 [갱신형]카티(CAR-T) 항암약물허가치료비(연간1회한)(갱신형_10년) 10년갱신 100세만기 1,000만원 30",
+          "sample_rows": [
+            "암직접치료입원비(요양병원제외)(1일-180일) | 20년납 100세만기 | 2만원 | 1,660",
+            "암수술비(유사암제외) | 20년납 100세만기 | 500만원 | 10,050",
+            "유사암수술비 | 20년납 100세만기 | 30만원 | 57"
+          ],
+          "is_variant": true
+        },
+        "detection_pass": "B"
+      }
+    ],
+    "primary_signatures": [
+      {
+        "page": 7,
+        "table_index": 2,
+        "row_count": 25,
+        "col_count": 5,
+        "header_row_index": 1,
+        "header_row": [
+          "구분",
+          "담 보 명",
+          "납입 및 만기",
+          "가입금액",
+          "보험료(원)"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 1,
+          "coverage_amount": 3,
+          "premium": 4,
+          "period": 2
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 7,
+          "table_index": 2,
+          "row_count": 25,
+          "col_count": 5,
+          "header_snippet": "피보험자(1/1) 구분 담 보 명 납입 및 만기 가입금액 보험료(원) 일반상해후유장해(80%이상) 20년납 100세만기 1,000만원 130",
+          "sample_rows": [
+            " | 일반상해후유장해(80%이상) | 20년납 100세만기 | 1,000만원 | 130",
+            " | 질병후유장해(80%이상)(감액없음) | 20년납 100세만기 | 100만원 | 147",
+            " | 보험료 납입면제대상보장(6대질병진단 및 상해·질병후유장해(80%이상)) | 20년납 20년만기 | 10만원 | 33"
+          ],
+          "is_variant": false
+        },
+        "detection_pass": "A"
+      }
+    ],
+    "variant_signatures": [
+      {
+        "page": 8,
+        "table_index": 1,
+        "row_count": 14,
+        "col_count": 4,
+        "header_row_index": 0,
+        "header_row": [
+          "항암방사선약물치료비",
+          "20년납 100세만기",
+          "300만원",
+          "1,362"
+        ],
+        "column_map": {
+          "has_row_number_column": false,
+          "row_number_column_index": null,
+          "coverage_name": 0,
+          "coverage_amount_text": 2,
+          "premium_text": 3,
+          "period_text": 1,
+          "mapping_method": "content_pattern",
+          "mapping_confidence": 1.0
+        },
+        "row_rules": {
+          "skip_totals": true,
+          "skip_disclaimers": true,
+          "total_keywords": [
+            "합계",
+            "총계",
+            "보험료 합계",
+            "보장보험료 합계"
+          ],
+          "disclaimer_keywords": [
+            "◆",
+            "※",
+            "가입한 담보",
+            "반드시",
+            "확인"
+          ],
+          "min_coverage_name_length": 2,
+          "max_coverage_name_length": 100
+        },
+        "evidence": {
+          "page": 8,
+          "table_index": 1,
+          "row_count": 14,
+          "col_count": 4,
+          "detection_method": "pattern_based_passB",
+          "pattern_scores": {
+            "amount_ratio": 1.0,
+            "premium_period_ratio": 1.0,
+            "korean_ratio": 1.0,
+            "clause_ratio": 0.0
+          },
+          "header_snippet": "항암방사선약물치료비 20년납 100세만기 300만원 1,362 [갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년) 10년갱신 100세만기 1,000만원 80 [갱신형]카티(CAR-T) 항암약물허가치료비(연간1회한)(갱신형_10년) 10년갱신 100세만기 1,000만원 30",
+          "sample_rows": [
+            "암직접치료입원비(요양병원제외)(1일-180일) | 20년납 100세만기 | 2만원 | 1,660",
+            "암수술비(유사암제외) | 20년납 100세만기 | 500만원 | 10,050",
+            "유사암수술비 | 20년납 100세만기 | 30만원 | 57"
+          ],
+          "is_variant": true
+        },
+        "detection_pass": "B"
+      }
+    ]
+  },
+  "detail_table": {
+    "exists": false,
+    "pages": []
+  },
+  "known_anomalies": [],
+  "evidences": [
+    {
+      "page": 7,
+      "table_index": 2,
+      "row_count": 25,
+      "col_count": 5,
+      "header_snippet": "피보험자(1/1) 구분 담 보 명 납입 및 만기 가입금액 보험료(원) 일반상해후유장해(80%이상) 20년납 100세만기 1,000만원 130",
+      "sample_rows": [
+        " | 일반상해후유장해(80%이상) | 20년납 100세만기 | 1,000만원 | 130",
+        " | 질병후유장해(80%이상)(감액없음) | 20년납 100세만기 | 100만원 | 147",
+        " | 보험료 납입면제대상보장(6대질병진단 및 상해·질병후유장해(80%이상)) | 20년납 20년만기 | 10만원 | 33"
+      ],
+      "is_variant": false
+    },
+    {
+      "page": 8,
+      "table_index": 1,
+      "row_count": 14,
+      "col_count": 4,
+      "detection_method": "pattern_based_passB",
+      "pattern_scores": {
+        "amount_ratio": 1.0,
+        "premium_period_ratio": 1.0,
+        "korean_ratio": 1.0,
+        "clause_ratio": 0.0
+      },
+      "header_snippet": "항암방사선약물치료비 20년납 100세만기 300만원 1,362 [갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년) 10년갱신 100세만기 1,000만원 80 [갱신형]카티(CAR-T) 항암약물허가치료비(연간1회한)(갱신형_10년) 10년갱신 100세만기 1,000만원 30",
+      "sample_rows": [
+        "암직접치료입원비(요양병원제외)(1일-180일) | 20년납 100세만기 | 2만원 | 1,660",
+        "암수술비(유사암제외) | 20년납 100세만기 | 500만원 | 10,050",
+        "유사암수술비 | 20년납 100세만기 | 30만원 | 57"
+      ],
+      "is_variant": true
+    }
+  ],
+  "detection_metadata": {
+    "passA_pages": [
+      7
+    ],
+    "passB_pages": [
+      8
+    ]
+  }
+}
