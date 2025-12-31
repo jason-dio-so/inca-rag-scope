@@ -1,6 +1,11 @@
 """
 STEP 1-β: Scope Extraction Hardening
 30 미만 담보 추출 시 보정 루프 강제 실행
+
+STEP NEXT-32: Quality Gates Implementation
+- Count Gate (≥30)
+- Header Pollution Gate (<5%)
+- Declared vs Extracted Gap Warning (>50%)
 """
 
 import re
@@ -40,6 +45,224 @@ def detect_declared_count(pdf_path: str) -> Optional[int]:
     return None
 
 
+def samsung_table_extraction(pdf_path: str, insurer: str) -> List[Dict[str, str]]:
+    """
+    STEP NEXT-32: Samsung-specific table extraction
+
+    Samsung 가입설계서의 table 구조:
+    - Page 2-3: "담보가입현황" 테이블 (담보명이 2~3번째 열)
+    - Page 4+: "담보별 보장내용" 테이블 (기본계약/선택계약 섹션)
+
+    Args:
+        pdf_path: PDF file path
+        insurer: "samsung"
+
+    Returns:
+        List of coverage dicts
+    """
+    coverages = []
+    seen = set()
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for page_num, page in enumerate(pdf.pages, start=1):
+            tables = page.extract_tables()
+
+            for table in tables:
+                if not table or len(table) < 2:
+                    continue
+
+                # Samsung pattern detection
+                # 패턴 1: "담보가입현황" 또는 "담보별 보장내용"이 헤더에 있는 테이블
+                header_text = ' '.join(str(cell) for row in table[:2] for cell in row if cell)
+                is_coverage_table = ('담보' in header_text or '보장' in header_text) and \
+                                   ('가입금액' in header_text or '보험료' in header_text)
+
+                if not is_coverage_table:
+                    continue
+
+                # 담보명 컬럼 찾기 (Samsung 특화)
+                # Samsung 표준 패턴:
+                # - "담보가입현황" 테이블: 담보명이 3번째 열(index 2)
+                # - "담보별 보장내용" 테이블: 담보명이 2번째 열(index 1)
+                coverage_col_idx = None
+
+                # Detect table type
+                is_status_table = '담보가입현황' in header_text  # 담보가입현황 테이블
+                is_detail_table = '담보별 보장내용' in header_text or '담보별보장내용' in header_text.replace(' ', '')
+
+                if is_status_table:
+                    # 담보가입현황: 담보명이 3번째 열(index 2)
+                    coverage_col_idx = 2
+                elif is_detail_table:
+                    # 담보별 보장내용: 담보명이 2번째 열(index 1)
+                    coverage_col_idx = 1
+                else:
+                    # Fallback: find column with longest text cells (likely coverage names)
+                    col_lengths = []
+                    for col_idx in range(len(table[0])):
+                        avg_length = sum(len(str(row[col_idx] or '')) for row in table[2:min(len(table), 10)]) / min(8, len(table) - 2)
+                        col_lengths.append((col_idx, avg_length))
+                    if col_lengths:
+                        coverage_col_idx = max(col_lengths, key=lambda x: x[1])[0]
+
+                if coverage_col_idx is None or coverage_col_idx >= len(table[0]):
+                    continue
+
+                # Extract coverages from table rows
+                start_row = 2 if len(table) > 2 else 1
+
+                for row in table[start_row:]:
+                    if len(row) <= coverage_col_idx:
+                        continue
+
+                    cell_value = row[coverage_col_idx]
+                    if not cell_value:
+                        continue
+
+                    coverage_name = str(cell_value).strip()
+
+                    # Filter out section headers and non-coverage text
+                    # Samsung-specific: "기본계약", "선택계약" are section markers
+                    if coverage_name in ['기본계약', '선택계약', '담보가입현황', '담보별 보장내용']:
+                        continue
+
+                    # General filters
+                    if len(coverage_name) < 3:
+                        continue
+
+                    # 금액값 제거 (숫자+만원/천원/억원 패턴)
+                    # 예: "10만원", "3,000만원", "500만원" 등
+                    if re.match(r'^[\d,]+[만천억]*원?$', coverage_name):
+                        continue
+                    # "1,000만원" 같은 패턴 (쉼표 포함)
+                    if re.match(r'^[\d,]+(만|천|억|조)?원$', coverage_name):
+                        continue
+
+                    if any(x in coverage_name for x in ['합계', '총액', '보험료', '계약자', '피보험자',
+                                                        '가입금액', '납입기간', '보험기간', '설계번호']):
+                        continue
+
+                    # Samsung 특화: "보장개시일 이후..." 같은 긴 설명문 제외
+                    if len(coverage_name) > 100:
+                        continue
+
+                    # 주석/설명문 제외
+                    if coverage_name.startswith('※') or coverage_name.startswith('◆'):
+                        continue
+
+                    if coverage_name not in seen:
+                        seen.add(coverage_name)
+                        coverages.append({
+                            "coverage_name_raw": coverage_name,
+                            "insurer": insurer,
+                            "source_page": page_num
+                        })
+
+    return coverages
+
+
+def meritz_table_extraction(pdf_path: str, insurer: str) -> List[Dict[str, str]]:
+    """
+    STEP NEXT-32: Meritz-specific table extraction
+
+    Meritz 가입설계서의 table 구조:
+    - "가입담보" 테이블: 담보명이 3번째 열(index 2)
+    - Col 0: 카테고리 ("수술", "골절/화상" 등) - 헤더 오염 원인
+    - Col 1: 담보 코드
+    - Col 2: 담보명 (실제 coverage)
+
+    Args:
+        pdf_path: PDF file path
+        insurer: "meritz"
+
+    Returns:
+        List of coverage dicts
+    """
+    coverages = []
+    seen = set()
+
+    # Meritz-specific category headers to exclude
+    category_headers = [
+        '수술', '골절/화상', '기타', '할증/제도성', '사망후유', '입원일당',
+        '암/3대질병/장해', '진단', '수술/치료', '통원', '간병', '치과',
+        '기본계약', '선택계약', '가입담보', '담보사항'
+    ]
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for page_num, page in enumerate(pdf.pages, start=1):
+            tables = page.extract_tables()
+
+            for table in tables:
+                if not table or len(table) < 2:
+                    continue
+
+                # Meritz pattern: "가입담보" header with "가입금액" column
+                header_text = ' '.join(str(cell) for row in table[:2] for cell in row if cell)
+                is_coverage_table = '가입담보' in header_text and '가입금액' in header_text
+
+                if not is_coverage_table:
+                    continue
+
+                # Meritz: 담보명은 3번째 열(index 2)
+                coverage_col_idx = 2
+
+                # Extract coverages from table rows (skip header row 0)
+                for row in table[1:]:
+                    if len(row) <= coverage_col_idx:
+                        continue
+
+                    cell_value = row[coverage_col_idx]
+                    if not cell_value:
+                        continue
+
+                    coverage_name = str(cell_value).strip()
+
+                    # Meritz-specific: Remove leading code numbers (e.g., "180 담보명" -> "담보명")
+                    coverage_name = re.sub(r'^\d+\s+', '', coverage_name)
+
+                    # Filter out category headers (from Col 0)
+                    if coverage_name in category_headers:
+                        continue
+
+                    # General filters
+                    if len(coverage_name) < 3:
+                        continue
+
+                    # 금액값 제거
+                    if re.match(r'^[\d,]+(만|천|억|조)?원$', coverage_name):
+                        continue
+
+                    # 코드만 있는 경우 제외
+                    if re.match(r'^\d+$', coverage_name):
+                        continue
+
+                    if any(x in coverage_name for x in ['합계', '총액', '계약자', '피보험자',
+                                                        '설계번호', '발행정보', '영업담당자']):
+                        continue
+
+                    # Meritz-specific: "자동갱신특약" 같은 제도성 특약 제외
+                    if '자동갱신' in coverage_name or '특약' == coverage_name:
+                        continue
+
+                    # 긴 설명문 제외 (보장내용 설명)
+                    if len(coverage_name) > 100:
+                        continue
+
+                    # 주석/설명문 제외
+                    if coverage_name.startswith('※') or coverage_name.startswith('◆') or coverage_name.startswith('-'):
+                        continue
+
+                    if coverage_name not in seen:
+                        seen.add(coverage_name)
+                        coverages.append({
+                            "coverage_name_raw": coverage_name,
+                            "insurer": insurer,
+                            "source_page": page_num
+                        })
+
+    return coverages
+
+
 def enhanced_table_extraction(pdf_path: str, insurer: str) -> List[Dict[str, str]]:
     """
     강화된 담보 추출 로직
@@ -47,7 +270,14 @@ def enhanced_table_extraction(pdf_path: str, insurer: str) -> List[Dict[str, str
     - 헤더 패턴 확장
     - 특약 표 별도 탐색
     - 종료 조건 강화
+    - STEP NEXT-32: Samsung/Meritz table-first extraction
     """
+    # STEP NEXT-32: Insurer-specific table extraction
+    if insurer == 'samsung':
+        return samsung_table_extraction(pdf_path, insurer)
+    elif insurer == 'meritz':
+        return meritz_table_extraction(pdf_path, insurer)
+
     coverages = []
     seen = set()
 
@@ -168,6 +398,66 @@ def enhanced_table_extraction(pdf_path: str, insurer: str) -> List[Dict[str, str
                                 })
 
     return coverages
+
+
+def is_header_pollution(coverage_name: str) -> bool:
+    """
+    STEP NEXT-32: Header pollution detection
+
+    Detects if a coverage name is likely a header/section/metadata text.
+
+    Args:
+        coverage_name: Coverage name to check
+
+    Returns:
+        True if likely pollution, False otherwise
+    """
+    # Header keywords (exact match only)
+    header_keywords = [
+        '특약', '기본계약', '보장내용', '가입안내', '유의사항', '알려드립니다',
+        '보험료', '납입', '계약자', '피보험자', '기본정보', '용어설명', '예시',
+        '합계', '총액', '광화문', '준법감시', '설계번호', '발행일', '표', '계',
+        '보장명', '담보명', '가입금액', '가입담보'
+    ]
+
+    # Exact match with header keywords
+    if coverage_name in header_keywords:
+        return True
+
+    # Single short word (2-4 chars) with no numbers/parentheses - likely section header
+    if 2 <= len(coverage_name) <= 4:
+        if not re.search(r'[0-9()]', coverage_name):
+            # Common section markers
+            if coverage_name in ['특약', '기본', '보장', '계약', '보험', '주의', '안내']:
+                return True
+
+    # List markers at start
+    if re.match(r'^[0-9]+\)|^※|^-\s|^▶|^☞|^\*', coverage_name):
+        return True
+
+    # Repeated phrase detection - if same text appears 3+ times in dataset, likely header
+    # (This would need dataset-level check, skip for now)
+
+    return False
+
+
+def calculate_header_pollution_rate(coverages: List[Dict[str, str]]) -> Tuple[int, float]:
+    """
+    STEP NEXT-32: Calculate header pollution rate
+
+    Args:
+        coverages: List of coverage dicts
+
+    Returns:
+        (pollution_count, pollution_rate_percent)
+    """
+    if not coverages:
+        return 0, 0.0
+
+    pollution_count = sum(1 for cov in coverages if is_header_pollution(cov['coverage_name_raw']))
+    pollution_rate = (pollution_count / len(coverages)) * 100
+
+    return pollution_count, pollution_rate
 
 
 def hardening_correction(insurer: str, pdf_files: List[Path]) -> Tuple[List[Dict[str, str]], int, List[int]]:

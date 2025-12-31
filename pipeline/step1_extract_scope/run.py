@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import List, Dict
 import pdfplumber
 import re
-from .hardening import hardening_correction
+from .hardening import hardening_correction, calculate_header_pollution_rate
 
 
 class ScopeExtractor:
@@ -224,12 +224,58 @@ def main():
     print(f"  - Pages: {pages_found}")
     print(f"  - Output: {output_path}")
 
-    # 성공/실패 판정
-    if final_total >= 30:
-        print(f"\n✓ OK: insurer={insurer} extracted={final_total} declared={declared_count if declared_count else 'N/A'} pages={pages_found}")
+    # STEP NEXT-32: Quality Gates Enforcement
+    print(f"\n{'='*60}")
+    print(f"[STEP NEXT-32 Quality Gates]")
+    print(f"{'='*60}")
+
+    # Gate 1: Count Gate (≥30)
+    count_gate_pass = final_total >= 30
+    print(f"\n[Gate 1] Count Gate (≥30)")
+    print(f"  - Extracted: {final_total}")
+    print(f"  - Threshold: 30")
+    print(f"  - Status: {'✓ PASS' if count_gate_pass else '✗ FAIL'}")
+
+    # Gate 2: Header Pollution Gate (<5%)
+    pollution_count, pollution_rate = calculate_header_pollution_rate(all_coverages)
+    pollution_gate_pass = pollution_rate < 5.0
+    print(f"\n[Gate 2] Header Pollution Gate (<5%)")
+    print(f"  - Pollution count: {pollution_count}/{final_total}")
+    print(f"  - Pollution rate: {pollution_rate:.2f}%")
+    print(f"  - Threshold: <5%")
+    print(f"  - Status: {'✓ PASS' if pollution_gate_pass else '✗ FAIL'}")
+
+    # Gate 3: Declared vs Extracted Gap (Warning only)
+    if declared_count and declared_count > 0:
+        gap_abs = abs(declared_count - final_total)
+        gap_rate = gap_abs / declared_count
+        print(f"\n[Gate 3] Declared vs Extracted Gap (Warning)")
+        print(f"  - Declared: {declared_count}")
+        print(f"  - Extracted: {final_total}")
+        print(f"  - Gap: {gap_abs} ({gap_rate*100:.1f}%)")
+        if gap_rate > 0.5:
+            print(f"  - Status: ⚠️  WARN (gap > 50%)")
+        else:
+            print(f"  - Status: ✓ OK")
     else:
-        print(f"\n✗ FAIL: insurer={insurer} extracted={final_total} declared={declared_count if declared_count else 'N/A'} pages={pages_found}")
-        print("  manual review required")
+        print(f"\n[Gate 3] Declared vs Extracted Gap (Warning)")
+        print(f"  - Declared count: N/A")
+        print(f"  - Status: SKIP")
+
+    # Final verdict
+    print(f"\n{'='*60}")
+    all_gates_pass = count_gate_pass and pollution_gate_pass
+    if all_gates_pass:
+        print(f"✓ ALL GATES PASSED")
+        print(f"  insurer={insurer} extracted={final_total} pollution={pollution_rate:.2f}%")
+    else:
+        print(f"✗ GATE FAILURE")
+        print(f"  insurer={insurer} extracted={final_total} pollution={pollution_rate:.2f}%")
+        if not count_gate_pass:
+            print(f"  - Count Gate FAILED (extracted {final_total} < 30)")
+        if not pollution_gate_pass:
+            print(f"  - Pollution Gate FAILED (rate {pollution_rate:.2f}% ≥ 5%)")
+    print(f"{'='*60}")
 
 
 if __name__ == "__main__":

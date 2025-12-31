@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2025-12-31
-**현재 상태**: ✅ STEP NEXT-31-P3-β 완료 (Content-Hash Lock Hardening)
+**현재 상태**: ✅ STEP NEXT-32 완료 (Step1 Extractor Hardening - Samsung/Meritz)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **🔧 Step1 Extractor Hardening** | STEP NEXT-32 | ✅ 완료 | 2025-12-31 |
 | **🔐 Content-Hash Lock Hardening** | STEP NEXT-31-P3-β | ✅ 완료 | 2025-12-31 |
 | **🔐 Content-Hash Lock** | STEP NEXT-31-P3 | ✅ 완료 | 2025-12-31 |
 | **🧹 Pipeline Cleanup** | STEP NEXT-31-P2 | ✅ 완료 | 2025-12-31 |
@@ -43,6 +44,85 @@
 ---
 
 ## 🎯 최신 완료 항목 (2025-12-31)
+
+### STEP NEXT-32 — Step1 Extractor Hardening (Samsung/Meritz) 🔧
+
+**목표**: Samsung/Meritz Step1 추출 품질 개선 + Quality Gates 구현
+
+**문제 요약**:
+- **Samsung**: 담보 1건만 추출 (table/레이아웃 패턴 미대응)
+- **Meritz**: 헤더/섹션 문구 혼입 (필터 부족)
+
+**적용 로직**:
+
+**1. Quality Gates 구현** (`pipeline/step1_extract_scope/`):
+- **Count Gate (≥30)**: 추출 개수 최소 30개 보장
+- **Header Pollution Gate (<5%)**: 헤더/섹션 혼입률 5% 미만
+- **Declared vs Extracted Gap (Warning)**: 선언값 대비 50% 이상 차이 시 경고
+
+**2. Samsung Table-First Extraction** (`hardening.py::samsung_table_extraction()`):
+- **Table anchor 기반 추출**:
+  - "담보가입현황" 테이블: 담보명이 3번째 열(index 2)
+  - "담보별 보장내용" 테이블: 담보명이 2번째 열(index 1)
+- **금액값 필터**: "10만원", "3,000만원" 같은 금액값 제거 (regex: `^[\d,]+(만|천|억|조)?원$`)
+- **섹션 마커 제거**: "기본계약", "선택계약" 등
+
+**3. Meritz Header Pollution Filter** (`hardening.py::meritz_table_extraction()`):
+- **Category header 제거**: "수술", "골절/화상", "기타", "할증/제도성", "사망후유", "입원일당" 등
+- **Code number strip**: "180 담보명" → "담보명" (regex: `^\d+\s+`)
+- **긴 설명문 제거**: 100자 초과 텍스트 필터링
+- **주석 제거**: `※`, `◆`, `-`로 시작하는 라인 제외
+
+**검증 로그 요약**:
+
+**Samsung**:
+```
+[STEP NEXT-32 Quality Gates]
+[Gate 1] Count Gate (≥30): 42 → ✓ PASS
+[Gate 2] Header Pollution Gate (<5%): 0/42 (0.00%) → ✓ PASS
+[Gate 3] Declared vs Extracted Gap: N/A → SKIP
+
+Full Pipeline:
+Step4: Content-hash gate ✓, 42/42 evidence pack
+Step5: Join-rate 100% ✓, 42 coverage cards (SSOT)
+```
+
+**Meritz**:
+```
+[STEP NEXT-32 Quality Gates]
+[Gate 1] Count Gate (≥30): 34 → ✓ PASS
+[Gate 2] Header Pollution Gate (<5%): 0/34 (0.00%) → ✓ PASS
+[Gate 3] Declared vs Extracted Gap: N/A → SKIP
+
+Full Pipeline:
+Step4: Content-hash gate ✓, 34/34 evidence pack
+Step5: Join-rate 100% ✓, 34 coverage cards (SSOT)
+```
+
+**회귀 테스트 결과 (KB)**:
+```
+Step1: 45 coverages, pollution 0.00% → ✓ PASS
+Step5: Join-rate 100%, Content-hash validated → ✓ PASS
+```
+
+**Before/After**:
+| Insurer | Before | After | Pollution Before | Pollution After |
+|---------|--------|-------|------------------|-----------------|
+| Samsung | 1건 (FAIL) | 42건 (PASS) | N/A | 0.00% |
+| Meritz | 15건 (FAIL) | 34건 (PASS) | 6.67% (FAIL) | 0.00% (PASS) |
+| KB (regression) | 45건 (PASS) | 45건 (PASS) | 0.00% (PASS) | 0.00% (PASS) |
+
+**DoD 달성**:
+- ✅ Samsung Step1 extracted_count ≥ 30 (42)
+- ✅ Meritz Step1 extracted_count ≥ 30 (34)
+- ✅ 두 보험사 모두 header_pollution < 5% (0%)
+- ✅ Step5에서 content-hash gate + join-rate gate 통과
+- ✅ Coverage_cards evidence_status 정상 (not_found 아님)
+- ✅ KB 회귀 테스트 PASS
+- ✅ data/** 산출물 커밋 0건
+- ✅ STATUS.md에 STEP NEXT-32 결과 기록 완료
+
+---
 
 ### STEP NEXT-31-P3-β — Content-Hash Lock Hardening (Operational Stability) 🔐
 
