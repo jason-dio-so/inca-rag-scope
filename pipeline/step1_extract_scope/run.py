@@ -197,10 +197,10 @@ def main():
                 seen.add(cov_name)
                 all_coverages.append(cov)
 
-        print(f"  - Extracted {len(coverages)} coverages (unique: {len(seen)})")
+        # STEP NEXT-32-δ: Pre-extract log with clear prefix
+        print(f"  - [pre-extract] {len(coverages)} coverages (unique so far: {len(seen)})")
 
     extracted_total = len(all_coverages)
-    print(f"\n[Step 1] Initial extraction: {extracted_total} coverages")
 
     # STEP 2: 보정 루프 (extracted_total < 30 무조건 실행)
     declared_count = 0
