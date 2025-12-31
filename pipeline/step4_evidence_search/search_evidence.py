@@ -434,17 +434,21 @@ class EvidenceSearcher:
         coverage_name_canonical: Optional[str] = None,
         mapping_status: str = "matched",
         coverage_code: Optional[str] = None,
-        max_evidences_per_type: int = 3
+        max_evidences_per_type: int = 3,
+        coverage_name_search_key: Optional[str] = None
     ) -> Dict:
         """
         담보별 evidence 검색 (문서 타입별 독립 검색 강제)
 
+        STEP NEXT-34-ε: Use search_key for exact match stability (newline-only removal)
+
         Args:
-            coverage_name_raw: 원본 담보명
+            coverage_name_raw: 원본 담보명 (SSOT, unchanged)
             coverage_name_canonical: 표준 담보명 (matched인 경우)
             mapping_status: matched | unmatched
             coverage_code: 담보 코드 (STEP 6-δ 전용)
             max_evidences_per_type: 문서 타입별 최대 evidence 수
+            coverage_name_search_key: 검색용 키 (newline removed, fallback to raw if None)
 
         Returns:
             Dict: {
@@ -453,13 +457,16 @@ class EvidenceSearcher:
                 'flags': List[str]
             }
         """
+        # STEP NEXT-34-ε: Use search_key for exact match (fallback to raw if None)
+        search_raw = coverage_name_search_key if coverage_name_search_key else coverage_name_raw
+
         # 검색 키워드 결정
         if mapping_status == "matched" and coverage_name_canonical:
-            # Canonical 우선, raw도 함께 검색
-            keywords = [coverage_name_canonical, coverage_name_raw]
+            # Canonical 우선, search_raw도 함께 검색
+            keywords = [coverage_name_canonical, search_raw]
         else:
-            # Unmatched는 raw만
-            keywords = [coverage_name_raw]
+            # Unmatched는 search_raw만
+            keywords = [search_raw]
 
         # 현대 전용: query variants 생성
         if self.insurer == 'hyundai':
@@ -640,6 +647,8 @@ def create_evidence_pack(
 
     for row in scope_rows:
         coverage_name_raw = row['coverage_name_raw']
+        # STEP NEXT-34-ε: Read search_key from Step1 output (fallback to raw if missing)
+        coverage_name_search_key = row.get('coverage_name_search_key', coverage_name_raw)
 
         # Scope gate 검증
         if not scope_gate.is_in_scope(coverage_name_raw):
@@ -657,12 +666,14 @@ def create_evidence_pack(
             stats['unmatched'] += 1
 
         # Evidence 검색 (문서 타입별 독립 검색)
+        # STEP NEXT-34-ε: Pass search_key for exact match stability
         search_result = searcher.search_coverage_evidence(
             coverage_name_raw=coverage_name_raw,
             coverage_name_canonical=coverage_name_canonical if coverage_name_canonical else None,
             mapping_status=mapping_status,
             coverage_code=coverage_code if coverage_code else None,
-            max_evidences_per_type=3
+            max_evidences_per_type=3,
+            coverage_name_search_key=coverage_name_search_key
         )
 
         evidences = search_result['evidences']
