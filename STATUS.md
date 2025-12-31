@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-01
-**현재 상태**: ✅ **Pass B E2E Fix Complete** (STEP NEXT-45-C-β-4: Global Valid Parity 173.9%)
+**현재 상태**: ✅ **Profile Confirmation Sprint Complete** (STEP NEXT-45-C-β-5: Samsung 회귀 복구 + Hyundai tail 제거)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ Profile Confirmation Sprint** | STEP NEXT-45-C-β-5 | ✅ 완료 | 2026-01-01 |
 | **✅ Pass B E2E Fix** | STEP NEXT-45-C-β-4 | ✅ 완료 | 2026-01-01 |
 | **⚠️ Hybrid Layout Extractor** | STEP NEXT-45-C-β-3 | ✅ 완료 | 2026-01-01 |
 | **🔍 KB Table Structure Analysis** | STEP NEXT-45-C | ⚠️ 부분 완료 | 2025-12-31 |
@@ -2115,6 +2116,56 @@ AssistantMessageVM {
 
 ---
 
+## ✅ STEP NEXT-45-C-β-5: Profile Confirmation Sprint (2026-01-01)
+
+### Objective
+"Profile 확정 단계" — coverage를 더 뽑는 것이 아니라 **profile(요약표 SSOT 구조) 확정**이 목표. Samsung 회귀(17 facts 붕괴) 즉시 복구 + Hyundai tail 오염(page 10) 제거로 profile 적용 부작용 차단.
+
+### Results
+
+| Insurer | Before | After | Change | Status |
+|---------|--------|-------|--------|--------|
+| **Samsung** | 17 facts | **41 facts** | +24 (+141%) | ✅ RECOVERED |
+| **Hyundai** | 47 facts (10 pollution) | **37 facts** (0 pollution) | -10 (pollution removed) | ✅ CLEANED |
+
+### Samsung Fix
+**Root Cause**: Profile incorrectly mapped `coverage_name: 0` (category column) → 86.7% empty cells triggered hybrid mode → only 17/41 extracted
+
+**Solution**:
+1. Fixed column mapping: `coverage_name: 1` (page 2), `coverage_name: 2` (page 3)
+2. Added `extraction_config.force_standard_extraction: true` to prevent hybrid auto-trigger
+3. Updated extractor_v3.py to respect force_standard_extraction flag
+
+**Result**: 17 → 41 facts (100% extraction rate, 41/41 actual coverage rows)
+
+### Hyundai Fix
+**Root Cause**: Page 10 "갱신담보 보험료 예시표" (Renewal Premium Example Table) incorrectly detected by Pass B as summary table → 10 pollution facts
+
+**Solution**:
+1. Removed page 10 entirely from profile (pages, signatures, evidences)
+2. Added to `known_anomalies_v3` with reason
+
+**Result**: 47 → 37 facts (page 10 pollution completely removed, tail is clean)
+
+### Hard Gates: ALL PASS
+- ✅ Samsung Gate S2: 41 >= 33 (41 actual * 0.80)
+- ✅ Clause leak: 0%
+- ✅ Hyundai tail cleanliness: 0 invalid records in last 20
+- ✅ Profile-first principle: All fixes at profile/extractor level
+
+### Files Modified
+- `data/profile/samsung_proposal_profile_v3.json` (column_map + extraction_config)
+- `data/profile/hyundai_proposal_profile_v3.json` (page 10 removed)
+- `pipeline/step1_summary_first/extractor_v3.py` (force_standard_extraction logic)
+- `data/scope_v3/samsung_step1_raw_scope_v3.jsonl` (17 → 41)
+- `data/scope_v3/hyundai_step1_raw_scope_v3.jsonl` (47 → 37)
+- `tools/audit/diagnose_profile_signature_yield.py` (NEW diagnostic tool)
+
+### Audit Report
+`docs/audit/STEP_NEXT_45C_BETA5_SAMSUNG_HYUNDAI_FIX_REPORT.md`
+
+---
+
 ## 🚀 다음 단계
 
 ### Immediate
@@ -2126,6 +2177,7 @@ AssistantMessageVM {
 1. Amount Pipeline v2 (새 기능)
 2. Multi-insurer Expansion (8→12개)
 3. Performance Optimization
+4. Pass B detection logic 개선 (갱신 example table 오탐 방지)
 
 ---
 
