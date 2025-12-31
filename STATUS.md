@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2025-12-31
-**현재 상태**: ✅ STEP NEXT-35 완료 ((20년갱신) prefix alias 등록 → Meritz not_found 0건 달성 - 전체 34건 found 100%)
+**현재 상태**: ✅ STEP NEXT-42R 완료 (Pipeline→DB Reconciliation: 구조적 정렬 완료, Single Path 확정)
 
 ---
 
@@ -44,6 +44,144 @@
 ---
 
 ## 🎯 최신 완료 항목 (2025-12-31)
+
+### STEP NEXT-42R — Pipeline → DB Reconciliation (READ-ONLY) 🔍
+
+**목표**: Pipeline 정리 이후 Pipeline ↔ DB ↔ Loader 구조적 불일치를 완전 분해·정리, Single Path 확정
+
+**Constitutional Rules**:
+- ❌ Production API 실행 금지
+- ❌ DB 데이터 의미 해석 금지
+- ❌ E2E 호출 금지
+- ❌ Step7 / amount 추론 금지
+- ✅ 오직 구조적 불일치 규명만 허용
+
+**산출물**:
+
+1. **Pipeline Output Contract** (`docs/audit/STEP_NEXT_42R_PIPELINE_OUTPUT_CONTRACT.md`)
+   - SSOT: `data/compare/*_coverage_cards.jsonl`
+   - Field schema 정의 (9 fields: insurer, coverage_code, evidences[], hits_by_doc_type, flags)
+   - **CRITICAL**: `amount` field는 Step 5 output에 존재하지 않음 (Step 7 optional)
+   - Nullability rules, invariants, data volume
+
+2. **DB Intent Model** (`docs/audit/STEP_NEXT_42R_DB_INTENT_MODEL.md`)
+   - 8개 테이블 Intent 정의 (insurer, product, document, coverage_canonical, coverage_instance, evidence_ref, amount_fact)
+   - 각 필드의 설계 의도 (현재 데이터 상태 아님)
+   - Constraints, FK relationships, cardinality
+
+3. **Loader Role Split** (`docs/audit/STEP_NEXT_42R_LOADER_ROLE_SPLIT.md`)
+   - Pipeline이 제공하는 것 vs. Loader가 생성하는 것
+   - **Loader GENERATES**: instance_key, evidence_key, rank, UUIDs, timestamps
+   - **Loader LOOKUPS**: insurer_id, product_id, variant_id, document_id
+   - **Loader TRANSFORMS**: file_path (absolute→relative), coverage_name_raw (normalize)
+   - **Safety gates**: matched without code → unmatched, CONFIRMED without evidence → UNCONFIRMED
+
+4. **Mismatch Matrix** (`docs/audit/STEP_NEXT_42R_MISMATCH_MATRIX.md`)
+   - Type A (Pipeline 정합): `amount` field, `coverage_category`, `snippet` truncation
+   - Type B (DB 정합): `instance_key`/`evidence_key`, `rank`, metadata FKs, `file_path` normalization
+   - Type C (둘 다 제거 대상): `notes` field (removal candidate)
+   - 9개 mismatch 분류 완료
+
+5. **Single Path Decision** (`docs/audit/STEP_NEXT_42R_SINGLE_PATH_DECISION.md`)
+   - **Decision 1**: Pipeline stops at Step 5 (NO amount field in canonical output)
+   - **Decision 2**: Loader is transformation layer (generates keys, lookups FKs)
+   - **Decision 3**: DB schema is future-ready (keep nullable columns)
+   - **Decision 4**: API reads DB (NOT JSONL directly)
+   - **Decision 5**: Amount fact = UNCONFIRMED until alternative to Step 7 exists
+   - **Architecture**: Excel/PDF → Pipeline → Loader → DB → API (one-way flow)
+   - **Prohibitions**: NO LLM, NO temporary patches, NO schema thrashing, NO layer bypass
+
+**Key Findings**:
+
+- **Pipeline (Step 1-5) is Fact-Based**: NO amounts, NO inference → CORRECT
+- **Loader is Transformation Layer**: Generates keys, lookups FKs, normalizes paths → CORRECT
+- **amount_fact Table**: All rows = UNCONFIRMED (Step 7 suspended, NO LLM)
+- **Variant Support Gap**: LOTTE/DB variants exist, but Step 1 does NOT extract → Future enhancement
+- **No Critical Type C**: Only `notes` field is removal candidate
+
+**Architectural Clarity**:
+```
+Layer 1: INPUT (Excel + PDFs)
+  ↓
+Layer 2: Pipeline (Step 1-5) → coverage_cards.jsonl (SSOT, NO amount)
+  ↓
+Layer 3: Loader (Transformation) → Generates instance_key, evidence_key, rank
+  ↓
+Layer 4: Database (PostgreSQL) → Relational model, FK integrity
+  ↓
+Layer 5: API (Production) → Queries DB ONLY
+```
+
+**상태**: ✅ **RECONCILIATION COMPLETE (Single Path Confirmed)**
+
+**Next Steps**:
+- STEP NEXT-43: Production API E2E (DB-backed, accepts missing amounts)
+- STEP NEXT-44: Variant extraction enhancement (optional, LOTTE/DB)
+- STEP NEXT-45: Manual amount entry (future alternative to Step 7, NO LLM)
+
+---
+
+### STEP NEXT-42 — Production API Bring-up & DB-backed Compare E2E ⏸️ SUSPENDED
+
+**상태**: ⏸️ **SUSPENDED** (중단 사유: DB canonical 정합성 미확정)
+
+**중단 이유**:
+- 현재 DB는 pipeline 결과를 담은 canonical DB가 아님
+- DB-backed E2E는 사실 판단을 전제로 하며, 이는 현 단계에서 금지됨
+- Schema ↔ Loader ↔ SSOT 관계 분석 선행 필요
+
+**산출물 (READ-ONLY)**:
+1. `docs/audit/STEP_NEXT_42_PORT_PROCESS_AUDIT.md` — 8000/8001 포트 정체 확인
+2. `docs/audit/STEP_NEXT_42_PROD_API_ROUTE_PROOF.md` — Production API 라우트 구조 증거
+
+**재개 조건**: STEP NEXT-42R 완료 후 → STEP NEXT-43으로 재개
+
+---
+
+### STEP NEXT-38-E — Customer Demo Package Preparation 🎬
+
+**목표**: UI Prototype + Mock API 재사용 데모 패키지 완성
+
+**산출물**:
+1. **Demo Scripts** (`docs/demo/DEMO_SCRIPT_SCENARIOS.md`)
+   - 4개 시나리오: Product Summary, Coverage Diff, O/X, Premium Reference
+   - 각 시나리오별 발표 대본 + 예상 질문/답변
+   - Constitutional rules 준수 가이드
+
+2. **Setup Checklist** (`docs/demo/DEMO_SETUP_CHECKLIST.md`)
+   - 환경 체크리스트 (port, dependencies, fixture integrity)
+   - Startup sequence (Mock API → Web UI → Integration test)
+   - Fallback plans + Troubleshooting guide
+
+3. **FAQ** (`docs/demo/DEMO_FAQ.md`)
+   - 10개 카테고리, 40+ Q&A
+   - Constitutional compliance 답변 템플릿
+   - 추천 금지, 근거 기반, 범위 제한, 읽기 전용 원칙 강화
+
+4. **Asset Verification** (`docs/audit/STEP_NEXT_38E_REUSE_VERIFICATION.md`)
+   - UI prototype (26KB, 4 example buttons) ✓ Verified
+   - Mock API (FastAPI, 3 endpoints) ✓ Verified
+   - 4 fixtures (JSON valid) ✓ Verified
+   - End-to-end integration ✓ Tested
+
+5. **Fixture Verification** (`docs/audit/STEP_NEXT_38E_FIXTURE_VERIFICATION.md`)
+   - 9 coverage codes in example3 verified against SSOT
+   - 1 minor discrepancy (A5200) documented and accepted (demo-only)
+   - No fixtures modified (as-is reuse)
+
+**검증 결과**:
+- Mock API health: ✓ PASS
+- UI loads: ✓ PASS
+- Example 3 renders: ✓ PASS (9 coverage rows, 7 notes, 4 limitations)
+- Constitutional rules: ✓ Embedded in documentation
+
+**상태**: ✅ **READY FOR CUSTOMER DEMO**
+
+**다음 단계** (Not in scope for this STEP):
+- STEP NEXT-39: Real API integration (DB connection, read-only)
+- Environment separation (mock/prod switch)
+
+---
 
 ### STEP NEXT-32 — Step1 Extractor Hardening (Samsung/Meritz) 🔧
 
