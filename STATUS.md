@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2025-12-31
-**현재 상태**: ✅ STEP NEXT-44-γ 완료 (Hanwha amount recall 100% 달성: 77.5% → 100.0%, +22.5%p)
+**현재 상태**: ✅ STEP NEXT-44-γ-2 완료 (Global Safety Sweep: 타 보험사 과잉 제거 없음 검증, Quality Report 갱신)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **🔒 Global Over-Filtering Prevention** | STEP NEXT-44-γ-2 | ✅ 완료 | 2025-12-31 |
 | **📈 Hanwha Amount Recall 100%** | STEP NEXT-44-γ | ✅ 완료 | 2025-12-31 |
 | **🔒 Step1 Proposal Fact Contract LOCK** | STEP NEXT-44-β | ✅ 완료 | 2025-12-31 |
 | **🔧 Step1 Extractor Hardening** | STEP NEXT-32 | ✅ 완료 | 2025-12-31 |
@@ -46,6 +47,56 @@
 ---
 
 ## 🎯 최신 완료 항목 (2025-12-31)
+
+### STEP NEXT-44-γ-2 — Global Safety Sweep ✅
+
+**목표**: STEP NEXT-44-γ의 Hanwha 전용 필터가 타 보험사 데이터를 과잉 제거하지 않음을 검증
+
+**Constitutional Fix**:
+- **Lines 132-146** (`proposal_fact_extractor_v2.py`): Hanwha 필터를 `if self.insurer == "hanwha"` 가드로 스코프 제한
+- Before: Hanwha 전용 필터가 전체 보험사에 적용됨 (44-γ 오류)
+- After: Hanwha 전용 필터는 Hanwha에만, 공통 필터는 전체 보험사에 적용
+
+**산출물**:
+
+1. **Global Re-run** (8 Insurers)
+   - Baseline backup: `backups/step1_44g2_baseline/`
+   - Re-ran Step1 for all 8 insurers with scoped filters
+   - Result: **Zero delta** (all insurers maintain exact coverage counts)
+
+2. **Hard Gates (ALL PASSED)**:
+
+| Gate | Threshold | Actual | Status |
+|------|-----------|--------|--------|
+| Non-Hanwha (7) | coverage_count drop <= 10% | 0% (zero delta) | ✅ PASS |
+| Hanwha | 30-40 range | 35 | ✅ PASS |
+| All 8 | evidences.length >= 1 | 100% | ✅ PASS |
+| KB/Hyundai | 0 rejected patterns | 0 | ✅ PASS |
+
+3. **Over-Filtering Verification**:
+   - Tool: `tools/audit/verify_step1_44g2_overfiltering.py`
+   - Result: ✅ **All 8 insurers passed** (before == after)
+   - No coverage removals detected
+
+4. **Regression Tests Added** (`tests/test_step1_proposal_fact_regression.py`):
+   - `TestStep1GlobalOverFilteringRegression` (9 new tests)
+   - Coverage count stability tests (7 non-Hanwha insurers)
+   - Known coverage preservation tests (Samsung, Meritz)
+   - **55 total tests, all passing ✅**
+
+5. **Quality Report**: `docs/audit/STEP_NEXT_44G2_STEP1_QUALITY_REPORT_GLOBAL.md`
+   - Before/after coverage count table
+   - Fact completeness metrics
+   - Hanwha filter scope verification
+
+**Key Findings**:
+1. **Problem**: Hanwha filters (benefit descriptions, bracket texts, 100+ char length) were global in 44-γ
+2. **Solution**: Scoped Hanwha filters to `if self.insurer == "hanwha"` guard
+3. **Result**: Zero over-filtering across all 7 non-Hanwha insurers (delta = 0 for all)
+
+**Impact**: Hanwha-specific improvements (44-γ) now provably isolated. No cross-contamination.
+
+---
 
 ### STEP NEXT-44-γ — Hanwha Amount Recall 100% 달성 ✅
 
