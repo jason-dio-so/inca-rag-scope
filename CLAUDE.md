@@ -39,14 +39,51 @@ docs/audit/AMOUNT_STATUS_DASHBOARD.md
 
 ---
 
+## Output SSOT (Single Source of Truth) — STEP NEXT-49
+
+**ALL pipeline outputs are in `data/scope_v3/`** (SSOT enforced):
+```
+data/scope_v3/{insurer}_step1_raw_scope_v3.jsonl          # Step1 output
+data/scope_v3/{insurer}_step2_sanitized_scope_v1.jsonl    # Step2-a output
+data/scope_v3/{insurer}_step2_canonical_scope_v1.jsonl    # Step2-b output
+data/scope_v3/{insurer}_step2_dropped.jsonl               # Step2-a audit
+data/scope_v3/{insurer}_step2_mapping_report.jsonl        # Step2-b audit
+```
+
+**Run Metadata** (reproducibility):
+```
+data/scope_v3/LATEST                    # Current run ID
+data/scope_v3/_RUNS/{run_id}/           # Run-specific metadata
+  ├── manifest.yaml                     # Input manifest (if used)
+  ├── profiles_sha.txt                  # Profile checksums
+  ├── outputs_sha.txt                   # Output checksums
+  └── SUMMARY.md                        # Execution counts
+```
+
+**Constitutional Rule** (STEP NEXT-52-HK enforced):
+1. **Step1/Step2 outputs** → `data/scope_v3/` ONLY
+2. **Step3+ inputs** → `data/scope_v3/` ONLY
+3. **NEVER read or write** to `data/scope/` (legacy, archived)
+
+**SSOT Enforcement Guardrails** (STEP NEXT-52-HK):
+- Code-level validation: Step2-a and Step2-b reject non-`scope_v3/` paths (exit 2)
+- Test suite: `tests/test_scope_ssot_no_legacy_step2_outputs.py` fails if any Step2 outputs exist in `data/scope/`
+- Physical archive: Legacy Step2 outputs moved to `archive/scope_legacy/run_20260101_step_next_52_hk/`
+
+**Legacy directories** (archived, DO NOT USE):
+- `data/scope/` → Legacy only (see `data/scope/README.md`)
+- `data/scope_v2/` → `archive/scope_v2_legacy/`
+
+---
+
 ## Input/Intermediate Files (NOT SSOT)
 
-**Sanitized Scope (INPUT)**:
+**Canonical Mapping Source (INPUT)**:
 ```
-data/scope/{insurer}_scope_mapped.sanitized.csv
+data/sources/mapping/담보명mapping자료.xlsx
 ```
-- Pipeline INPUT contract (sanitized)
-- SSOT가 아님 (coverage_cards가 SSOT)
+- 신정원 통일코드 매핑의 단일 출처
+- 이 파일에 없는 담보는 처리 금지
 
 **Stats (보조)**:
 ```
@@ -83,42 +120,116 @@ STATUS.md
 - Scope 외 데이터 처리
 - 보고서에 "추천", "제안", "결론" 삽입
 
-## 실행 기본 명령 (Canonical Pipeline)
+## 실행 기본 명령 (Canonical Pipeline - STEP NEXT-46)
+
+### Step1: Extract Scope (Raw Extraction)
+```bash
+# Step1a: Build profile (run once per insurer, or when PDF changes)
+python -m pipeline.step1_summary_first.profile_builder_v3 \
+  --manifest data/sources/proposal/MANIFEST.yaml \
+  --insurer hanwha
+
+# Step1b: Extract raw scope from proposal PDF
+python -m pipeline.step1_summary_first.extractor_v3 \
+  --manifest data/sources/proposal/MANIFEST.yaml \
+  --insurer hanwha
+
+# Output: data/scope_v3/hanwha_step1_raw_scope_v3.jsonl (SSOT)
+```
+
+### Step2-a: Sanitize Scope (Fragment/Noise Removal)
+```bash
+# Step2-a: Sanitize raw extraction (deterministic pattern matching)
+python -m pipeline.step2_sanitize_scope.run --insurer hanwha
+
+# Input:  data/scope_v3/hanwha_step1_raw_scope_v3.jsonl
+# Output: data/scope_v3/hanwha_step2_sanitized_scope_v1.jsonl (SSOT)
+#         data/scope_v3/hanwha_step2_dropped.jsonl (audit trail)
+```
+
+### Step2-b: Canonical Mapping (신정원 통일코드)
+```bash
+# Step2-b: Map to canonical coverage codes (deterministic only)
+python -m pipeline.step2_canonical_mapping.run --insurer hanwha
+
+# Input:  data/scope_v3/hanwha_step2_sanitized_scope_v1.jsonl
+# Output: data/scope_v3/hanwha_step2_canonical_scope_v1.jsonl (SSOT)
+#         data/scope_v3/hanwha_step2_mapping_report.jsonl
+```
+
+### Step3+: Downstream Pipeline
+```bash
+# Step3: Extract evidence text
+python -m pipeline.step3_extract_text.run --insurer hanwha
+
+# Step5: Search evidence
+python -m pipeline.step4_evidence_search.search_evidence --insurer hanwha
+
+# Step6: Build coverage cards (SSOT)
+python -m pipeline.step5_build_cards.build_cards --insurer hanwha
+
+# Step7 (optional): Amount enrichment
+python -m pipeline.step7_amount_extraction.extract_and_enrich_amounts --insurer hanwha
+```
+
+### Quick Start (All Steps)
+```bash
+# Run all steps for single insurer
+INSURER=hanwha
+
+# Step1: Extract raw scope
+python -m pipeline.step1_summary_first.profile_builder_v3 --manifest data/sources/proposal/MANIFEST.yaml --insurer $INSURER
+python -m pipeline.step1_summary_first.extractor_v3 --manifest data/sources/proposal/MANIFEST.yaml --insurer $INSURER
+
+# Step2-a: Sanitize
+python -m pipeline.step2_sanitize_scope.run --insurer $INSURER
+
+# Step2-b: Canonical mapping
+python -m pipeline.step2_canonical_mapping.run --insurer $INSURER
+
+# Step3+: Downstream
+python -m pipeline.step3_extract_text.run --insurer $INSURER
+python -m pipeline.step4_evidence_search.search_evidence --insurer $INSURER
+python -m pipeline.step5_build_cards.build_cards --insurer $INSURER
+```
+
+### Health Check
 ```bash
 # 테스트
 pytest -q
-
-# Canonical Pipeline 실행 (예: Hanwha)
-python -m pipeline.step1_extract_scope.run --insurer hanwha
-python -m pipeline.step2_canonical_mapping.map_to_canonical --insurer hanwha
-python -m pipeline.step1_sanitize_scope.run --insurer hanwha
-python -m pipeline.step3_extract_text.run --insurer hanwha
-python -m pipeline.step4_evidence_search.search_evidence --insurer hanwha
-python -m pipeline.step5_build_cards.build_cards --insurer hanwha
-
-# Amount enrichment (optional)
-python -m pipeline.step7_amount_extraction.extract_and_enrich_amounts --insurer hanwha
 
 # 현재 상태 확인
 git status -sb
 ls data/scope | head
 ```
 
-## Pipeline Architecture (Canonical Steps - STEP NEXT-31-P2)
+## Pipeline Architecture (Canonical Steps - STEP NEXT-46)
 
 **Canonical Pipeline** (정식 실행 순서):
-1. **step1_extract_scope**: 가입설계서 PDF → raw scope CSV
-2. **step2_canonical_mapping**: raw scope → canonical coverage codes (mapping)
-3. **step1_sanitize_scope**: mapped scope → sanitized scope (INPUT contract)
+1. **step1_summary_first** (v3): 가입설계서 PDF → raw scope JSONL (`*_step1_raw_scope.jsonl`)
+   - FROZEN: NO sanitization / filtering / judgment logic
+   - Output: Raw extraction with proposal_facts + evidences
+2. **step2_sanitize_scope** (Step2-a): raw scope → sanitized scope JSONL (`*_step2_sanitized_scope_v1.jsonl`)
+   - Deterministic pattern matching (NO LLM)
+   - Drops: fragments, clauses, premium waiver targets, sentence-like noise
+   - Audit trail: `*_step2_dropped.jsonl`
+3. **step2_canonical_mapping** (Step2-b): sanitized scope → canonical scope JSONL (`*_step2_canonical_scope_v1.jsonl`)
+   - Maps to 신정원 unified coverage codes (deterministic only)
+   - NO row reduction (anti-contamination gate)
+   - Unmapped when ambiguous (no guessing)
+   - Audit trail: `*_step2_mapping_report.jsonl`
 4. **step3_extract_text**: PDF → evidence text (약관/사업방법서/상품요약서)
-5. **step4_evidence_search**: sanitized scope + text → evidence_pack.jsonl
-6. **step5_build_cards**: sanitized scope + evidence_pack → coverage_cards.jsonl (SSOT)
+5. **step4_evidence_search**: canonical scope + text → evidence_pack.jsonl
+6. **step5_build_cards**: canonical scope + evidence_pack → coverage_cards.jsonl (SSOT)
 7. **step7_amount_extraction** (optional): coverage_cards + PDF → amount enrichment
 
-**Constitutional Enforcement** (STEP NEXT-31-P1):
-- Step4 MUST use sanitized CSV (hard gate: RuntimeError if unsanitized)
+**Constitutional Enforcement** (STEP NEXT-47):
+- Step1 is FROZEN (no further filtering/sanitization logic allowed)
+- Step2-a handles ALL sanitization (fragments, clauses, variants)
+- Step2-b maps to canonical codes (deterministic only, NO LLM, NO guessing)
+- Step2-b MUST preserve row count (anti-reduction gate)
+- Step4 MUST use canonical scope input (hard gate: RuntimeError if wrong input)
 - Step5 join-rate gate: 95% threshold (RuntimeError if < 95%)
-- Step4 and Step5 use identical scope snapshot via `resolve_scope_csv()`
 
 **Audit Tools** (외부, pipeline 아님):
 - `tools/audit/run_step_next_17b_audit.py`: AMOUNT_STATUS_DASHBOARD.md 생성
