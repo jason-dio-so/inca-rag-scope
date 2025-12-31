@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2025-12-31
-**현재 상태**: ✅ STEP NEXT-43 완료 (Production API E2E: DB-backed 검증 완료, "확인 불가" 처리 정상)
+**현재 상태**: ✅ STEP NEXT-44-β 완료 (Step1 Proposal Fact Contract LOCK + KB/현대 안정화 완료, Hard Gates 100% 통과)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **🔒 Step1 Proposal Fact Contract LOCK** | STEP NEXT-44-β | ✅ 완료 | 2025-12-31 |
 | **🔧 Step1 Extractor Hardening** | STEP NEXT-32 | ✅ 완료 | 2025-12-31 |
 | **🔐 Content-Hash Lock Hardening** | STEP NEXT-31-P3-β | ✅ 완료 | 2025-12-31 |
 | **🔐 Content-Hash Lock** | STEP NEXT-31-P3 | ✅ 완료 | 2025-12-31 |
@@ -44,6 +45,75 @@
 ---
 
 ## 🎯 최신 완료 항목 (2025-12-31)
+
+### STEP NEXT-44-β — Step1 Proposal Fact Contract LOCK + Extractor Stabilization ✅
+
+**목표**: Step1(가입설계서 PDF) Proposal Facts 추출을 SSOT 계약으로 고정(LOCK)하고, KB/현대 담보명 오염 문제를 완전히 제거
+
+**Constitutional Rules (Enforced)**:
+- ✅ Fact-only: PDF 원문 그대로 추출 (계산/추론/정규화 금지)
+- ✅ Evidence mandatory: 모든 추출 값은 최소 1개 evidence 필수
+- ✅ Null allowed: PDF에 없으면 null (정상)
+- ✅ Layer discipline: Step1만 수행, DB/Loader/Step2~7 미실행
+- ❌ KB/현대 실패 케이스를 "품질 이슈로 기록만" 금지 → extractor 로직으로 해결
+
+**산출물**:
+
+1. **Step1 SSOT Contract** (`docs/spec/STEP_NEXT_44B_STEP1_PROPOSAL_FACT_CONTRACT.md`)
+   - JSONL 레코드 스키마 (LOCKED)
+   - proposal_facts 필드 정의 (coverage_amount_text, premium_amount_text, payment_period_text, payment_method_text, renewal_terms_text, evidences)
+   - 담보명 판별 규칙 (rejection patterns, table column priority)
+   - KB/현대 특수 처리 규칙
+
+2. **Extractor 로직 수정** (`pipeline/step1_extract_scope/proposal_fact_extractor_v2.py`)
+   - REJECT_PATTERNS 적용 (금액-only, 행 번호-only 거부)
+   - `_is_rejected_coverage_name()` Hard Gate
+   - `_build_proposal_entry()` 계약 스키마 준수 (evidences 배열)
+   - `_find_column_indices()` 테이블 컬럼 우선순위 강화
+
+3. **8개 보험사 Step1 재실행** (`data/scope/*_step1_raw_scope.jsonl`)
+   - samsung: 62 coverages (98.4% amount)
+   - meritz: 36 coverages (91.7% amount)
+   - kb: 37 coverages (97.3% amount, 0.0% period - PDF 구조)
+   - db: 50 coverages (88.0% amount)
+   - hanwha: 80 coverages (77.5% amount)
+   - heungkuk: 23 coverages (100.0% amount, 0.0% period - PDF 구조)
+   - hyundai: 35 coverages (100.0% amount)
+   - lotte: 65 coverages (93.8% amount)
+   - **TOTAL: 388 coverages**
+
+4. **Quality Report** (`docs/audit/STEP_NEXT_44B_STEP1_QUALITY_REPORT.md`)
+   - Overall stats: coverage_amount 91.5%, premium 87.6%, period 68.6%
+   - Per-insurer breakdown
+   - Rejected pattern check: **0건 across all 8 insurers**
+   - Evidence compliance: 100.0% (388/388)
+
+5. **Regression Tests** (`tests/test_step1_proposal_fact_regression.py`)
+   - KB: no amount patterns in coverage names (42 tests PASSED)
+   - Hyundai: no row number patterns
+   - All insurers: no rejected patterns, evidences required, coverage name valid, schema compliance
+   - Quality checks: coverage amount fill rate
+
+**Hard Gates (ALL PASSED)**:
+
+| Gate | Condition | Result | Status |
+|------|-----------|--------|--------|
+| **KB Gate** | 상위 20개 샘플 중 금액 패턴-only = 0건 | 0건 | ✅ PASS |
+| **현대 Gate** | 상위 20개 샘플 중 `^\d+\.$` 패턴 = 0건 | 0건 | ✅ PASS |
+| **8개 보험사 JSONL** | 모든 보험사 JSONL 생성 | 8/8 | ✅ PASS |
+| **Evidence 필수** | 모든 레코드 evidences ≥ 1 | 388/388 | ✅ PASS |
+
+**Constitutional Compliance**:
+- ✅ NO DB/Loader/Schema changes
+- ✅ NO LLM usage
+- ✅ NO Step7 execution/mention
+- ✅ KB/현대 반드시 해결 (완료)
+
+**Next Steps (STEP NEXT-45)**:
+- DB schema design for proposal_facts (Option A: coverage_instance.proposal, Option B: proposal_fact table)
+- Decision deferred to next step
+
+---
 
 ### STEP NEXT-43 — Production API E2E (DB-backed, NO amount) ✅
 
