@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-SSOT Lock Guard Test (STEP NEXT-18X-SSOT-LOCK)
+SSOT Lock Guard Test (STEP NEXT-18X-SSOT-LOCK + STEP NEXT-31-P2)
 
 Ensures that:
-1. step10_audit modules cannot be imported (import-level fail-fast)
+1. step10_audit has been moved to _deprecated/ (STEP NEXT-31-P2)
 2. No executable code references reports/ paths
 3. Only SSOT files exist for coverage/audit data
 
@@ -17,18 +17,20 @@ from pathlib import Path
 import pytest
 
 
-def test_step10_audit_import_blocked():
+def test_step10_audit_moved_to_deprecated():
     """
-    Verify that step10_audit modules raise RuntimeError on import.
+    Verify that step10_audit has been moved to _deprecated/ (STEP NEXT-31-P2).
     This prevents accidental reuse of deprecated audit workflow.
     """
-    # Test validate_amount_lock
-    with pytest.raises(RuntimeError, match="IMPORT BLOCKED.*validate_amount_lock"):
-        import pipeline.step10_audit.validate_amount_lock
+    project_root = Path(__file__).resolve().parents[1]
 
-    # Test preserve_audit_run
-    with pytest.raises(RuntimeError, match="IMPORT BLOCKED.*preserve_audit_run"):
-        import pipeline.step10_audit.preserve_audit_run
+    # step10_audit should NOT exist in pipeline/
+    assert not (project_root / "pipeline" / "step10_audit").exists(), \
+        "step10_audit should be moved to _deprecated/"
+
+    # step10_audit SHOULD exist in _deprecated/pipeline/
+    assert (project_root / "_deprecated" / "pipeline" / "step10_audit").exists(), \
+        "step10_audit should exist in _deprecated/pipeline/"
 
 
 def test_no_reports_path_in_executable_code():
@@ -192,8 +194,8 @@ def test_no_reports_directory_in_output():
                 if stripped.startswith('"""') or stripped.startswith("'''"):
                     continue
 
-                # Skip step10_audit (already import-blocked)
-                if 'step10_audit' in str(py_file):
+                # Skip _deprecated/ (already moved out of active pipeline)
+                if '_deprecated' in str(py_file):
                     continue
 
                 for pattern, description in patterns:

@@ -107,6 +107,58 @@ class CanonicalMapper:
                         'match_type': 'normalized_alias'
                     }
 
+    def _remove_suffix_patterns(self, text: str) -> Optional[str]:
+        """
+        Remove trailing suffix patterns (condition/period/limit metadata)
+
+        STEP NEXT-27: Evidence-bound suffix removal for canonical recovery
+
+        Allowed Patterns (evidence-verified):
+        - (1년50%), (1년주기): period metadata
+        - (최초1회한): occurrence limit
+        - (1일-180일): duration range
+        - (갱신형_10년): renewal metadata
+        - (특정심장질환), (뇌졸중): condition specifier (when base coverage exists)
+        - (재진단형): diagnosis type (ARTIFACT case - excluded)
+
+        Args:
+            text: Original coverage name with suffix
+
+        Returns:
+            Suffix-removed text, or None if no suffix pattern matched
+        """
+        # Pattern 1: Period/occurrence metadata
+        # Examples: (1년50%), (최초1회한), (1년주기)
+        pattern_period = r'\((?:\d+년\d+%?|\d+년주기|최초\d+회한)\)$'
+        text_stripped = re.sub(pattern_period, '', text).strip()
+        if text_stripped != text:
+            return text_stripped
+
+        # Pattern 2: Duration range
+        # Examples: (1일-180일)
+        pattern_duration = r'\(\d+일-\d+일\)$'
+        text_stripped = re.sub(pattern_duration, '', text).strip()
+        if text_stripped != text:
+            return text_stripped
+
+        # Pattern 3: Renewal metadata
+        # Examples: (갱신형_10년)
+        pattern_renewal = r'\(갱신형_\d+년\)$'
+        text_stripped = re.sub(pattern_renewal, '', text).strip()
+        if text_stripped != text:
+            return text_stripped
+
+        # Pattern 4: Condition specifier (only if base coverage exists in mapping)
+        # Examples: (특정심장질환), (뇌졸중)
+        # IMPORTANT: Only for cases where Excel has base coverage without condition
+        pattern_condition = r'\([^)]+질환\)$|\(뇌졸중\)$'
+        text_stripped = re.sub(pattern_condition, '', text).strip()
+        if text_stripped != text:
+            return text_stripped
+
+        # No pattern matched
+        return None
+
     def map_coverage(self, coverage_name_raw: str) -> Dict:
         """
         담보명을 canonical로 매핑
@@ -135,7 +187,26 @@ class CanonicalMapper:
             result['mapping_status'] = 'matched'
             return result
 
-        # 3. Unmatched
+        # 3. Suffix-normalized match (STEP NEXT-27)
+        # Only attempt if coverage has suffix pattern
+        suffix_removed = self._remove_suffix_patterns(coverage_name_raw)
+        if suffix_removed:
+            # Try exact match on suffix-removed string
+            if suffix_removed in self.mapping_dict:
+                result = self.mapping_dict[suffix_removed].copy()
+                result['mapping_status'] = 'matched'
+                result['match_type'] = 'suffix_normalized'
+                return result
+
+            # Try normalized match on suffix-removed string
+            normalized_suffix_removed = self._normalize(suffix_removed)
+            if normalized_suffix_removed in self.mapping_dict:
+                result = self.mapping_dict[normalized_suffix_removed].copy()
+                result['mapping_status'] = 'matched'
+                result['match_type'] = 'suffix_normalized'
+                return result
+
+        # 4. Unmatched
         return {
             'coverage_code': '',
             'coverage_name_canonical': '',

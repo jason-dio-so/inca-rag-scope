@@ -703,8 +703,28 @@ def create_evidence_pack(
                 'suggested_canonical_code': ''  # 비워둠
             })
 
-    # Evidence pack JSONL 저장
+    # STEP NEXT-31-P3: Evidence pack JSONL 저장 (meta record 첫 줄)
+    from core.scope_gate import calculate_scope_content_hash
+    from datetime import datetime
+
+    # Calculate scope content hash (scope_mapped_csv is already Path or str)
+    scope_path = Path(scope_mapped_csv) if not isinstance(scope_mapped_csv, Path) else scope_mapped_csv
+    scope_content_hash = calculate_scope_content_hash(scope_path)
+
+    # Write evidence pack with meta record as first line
     with open(output_pack_jsonl, 'w', encoding='utf-8') as f:
+        # Write meta record (first line)
+        meta_record = {
+            'record_type': 'meta',
+            'insurer': insurer,
+            'scope_file': scope_path.name,
+            'scope_content_hash': scope_content_hash,
+            'created_at': datetime.utcnow().isoformat() + 'Z',
+            'schema_version': 'v1'
+        }
+        f.write(json.dumps(meta_record, ensure_ascii=False) + '\n')
+
+        # Write evidence records
         for item in evidence_pack:
             f.write(json.dumps(item, ensure_ascii=False) + '\n')
 
@@ -729,7 +749,19 @@ def main():
     base_dir = Path(__file__).parent.parent.parent
     insurer = args.insurer
 
-    scope_mapped_csv = base_dir / "data" / "scope" / f"{insurer}_scope_mapped.csv"
+    # STEP NEXT-31-P1: Use sanitized scope ONLY (same as Step5)
+    from core.scope_gate import resolve_scope_csv
+    scope_mapped_csv = resolve_scope_csv(insurer, base_dir / "data" / "scope")
+
+    # STEP NEXT-31-P1: Hard gate - MUST be sanitized CSV
+    if not scope_mapped_csv.name.endswith('.sanitized.csv'):
+        raise RuntimeError(
+            f"[STEP NEXT-31-P1 GATE] Step4 MUST use sanitized scope CSV.\n"
+            f"Found: {scope_mapped_csv.name}\n"
+            f"Required: {insurer}_scope_mapped.sanitized.csv\n"
+            f"Run step1_sanitize_scope first to generate sanitized CSV."
+        )
+
     evidence_text_dir = base_dir / "data" / "evidence_text"
     output_pack_jsonl = base_dir / "data" / "evidence_pack" / f"{insurer}_evidence_pack.jsonl"
     output_unmatched_csv = base_dir / "data" / "scope" / f"{insurer}_unmatched_review.csv"
