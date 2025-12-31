@@ -62,12 +62,16 @@ STATUS.md
 
 ---
 
-## DEPRECATED (완전 제거됨)
+## DEPRECATED (완전 제거됨 / _deprecated로 이동)
 
-**❌ DO NOT USE**:
+**❌ DO NOT USE** (STEP NEXT-31-P2: Moved to _deprecated/):
 - `reports/*.md` — STEP NEXT-18X-SSOT에서 완전 제거
 - `data/evidence_pack/` — Step5+에서 coverage_cards로 통합
-- `pipeline/step10_audit/*` — STEP NEXT-18X-SSOT-FINAL-A에서 DEPRECATED
+- `_deprecated/pipeline/step0_scope_filter/` — Canonical pipeline 미사용
+- `_deprecated/pipeline/step7_compare/` — 비교는 API layer에서 수행
+- `_deprecated/pipeline/step8_multi_compare/` — 비교는 API layer에서 수행
+- `_deprecated/pipeline/step8_single_coverage/` — 조회는 API layer에서 수행
+- `_deprecated/pipeline/step10_audit/` — 보고서 생성은 tools/audit에서 수행
 - `pipeline/step6_build_report/` — 제거됨
 - `pipeline/step9_single_compare/` — 제거됨
 - `pipeline/step10_multi_single_compare/` — 제거됨
@@ -79,41 +83,56 @@ STATUS.md
 - Scope 외 데이터 처리
 - 보고서에 "추천", "제안", "결론" 삽입
 
-## 실행 기본 명령
+## 실행 기본 명령 (Canonical Pipeline)
 ```bash
 # 테스트
 pytest -q
 
-# Pipeline 실행 (예: 삼성생명)
-python -m pipeline.step1_load_scope.load_scope --insurer samsung
-python -m pipeline.step2_pdf_extract.extract_all --insurer samsung
-python -m pipeline.step3_search.search_coverage --insurer samsung
-python -m pipeline.step4_evidence.build_evidence --insurer samsung
-python -m pipeline.step5_validation.validate_evidence --insurer samsung
+# Canonical Pipeline 실행 (예: Hanwha)
+python -m pipeline.step1_extract_scope.run --insurer hanwha
+python -m pipeline.step2_canonical_mapping.map_to_canonical --insurer hanwha
+python -m pipeline.step1_sanitize_scope.run --insurer hanwha
+python -m pipeline.step3_extract_text.run --insurer hanwha
+python -m pipeline.step4_evidence_search.search_evidence --insurer hanwha
+python -m pipeline.step5_build_cards.build_cards --insurer hanwha
 
-# 비교 생성 (보험사 2개 이상)
-python -m pipeline.step7_compare.compare_insurers --insurers samsung,meritz,db
+# Amount enrichment (optional)
+python -m pipeline.step7_amount_extraction.extract_and_enrich_amounts --insurer hanwha
 
 # 현재 상태 확인
 git status -sb
 ls data/scope | head
 ```
 
-## Pipeline Architecture (Active Steps)
+## Pipeline Architecture (Canonical Steps - STEP NEXT-31-P2)
 
-**Current Pipeline** (SSOT-based):
-1. **step1_sanitize_scope**: mapping → sanitized scope (INPUT contract)
-2. **step5_build_cards**: scope → coverage_cards.jsonl (SSOT 생성)
-3. **step7_amount_extraction**: cards + PDF → amount enrichment
-4. **tools/audit/run_step_next_17b_audit.py**: generate AMOUNT_STATUS_DASHBOARD.md (Audit SSOT)
+**Canonical Pipeline** (정식 실행 순서):
+1. **step1_extract_scope**: 가입설계서 PDF → raw scope CSV
+2. **step2_canonical_mapping**: raw scope → canonical coverage codes (mapping)
+3. **step1_sanitize_scope**: mapped scope → sanitized scope (INPUT contract)
+4. **step3_extract_text**: PDF → evidence text (약관/사업방법서/상품요약서)
+5. **step4_evidence_search**: sanitized scope + text → evidence_pack.jsonl
+6. **step5_build_cards**: sanitized scope + evidence_pack → coverage_cards.jsonl (SSOT)
+7. **step7_amount_extraction** (optional): coverage_cards + PDF → amount enrichment
 
-**Legacy Steps** (historical, not part of current pipeline):
-- ~~step2_pdf_extract~~, ~~step3_search~~, ~~step4_evidence~~ (Step5에 통합됨)
-- ~~step6_build_report~~ (제거됨)
-- ~~step7_compare~~ (실행 금지, JSONL 출력만 남음)
-- ~~step8_multi_compare~~ (실행 금지)
-- ~~step9_single_compare~~, ~~step10_multi_single_compare~~ (제거됨)
-- ~~step10_audit~~ (DEPRECATED)
+**Constitutional Enforcement** (STEP NEXT-31-P1):
+- Step4 MUST use sanitized CSV (hard gate: RuntimeError if unsanitized)
+- Step5 join-rate gate: 95% threshold (RuntimeError if < 95%)
+- Step4 and Step5 use identical scope snapshot via `resolve_scope_csv()`
+
+**Audit Tools** (외부, pipeline 아님):
+- `tools/audit/run_step_next_17b_audit.py`: AMOUNT_STATUS_DASHBOARD.md 생성
+
+**DEPRECATED Steps** (STEP NEXT-31-P2: Moved to _deprecated/):
+- ~~step0_scope_filter~~ → _deprecated/pipeline/step0_scope_filter/
+- ~~step2_extract_pdf~~ → removed (ghost directory)
+- ~~step6_build_report~~ → removed
+- ~~step7_compare~~ → _deprecated/pipeline/step7_compare/
+- ~~step8_multi_compare~~ → _deprecated/pipeline/step8_multi_compare/
+- ~~step8_single_coverage~~ → _deprecated/pipeline/step8_single_coverage/
+- ~~step9_single_compare~~ → removed
+- ~~step10_multi_single_compare~~ → removed
+- ~~step10_audit~~ → _deprecated/pipeline/step10_audit/
 
 ## Working Directory
 `/Users/cheollee/inca-rag-scope`

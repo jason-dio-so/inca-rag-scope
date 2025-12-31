@@ -166,26 +166,110 @@ def build_coverage_cards(
                 'mapping_status': row['mapping_status']
             }
 
-    # Evidence pack JSONL 읽기
+    # STEP NEXT-31-P3: Evidence pack JSONL 읽기 (meta record validation)
+    from core.scope_gate import calculate_scope_content_hash
+    from pathlib import Path as PathlibPath
+
+    # Calculate current scope content hash
+    current_scope_hash = calculate_scope_content_hash(PathlibPath(scope_mapped_csv))
+
     evidence_data = {}
+    meta_validated = False
+    first_record_processed = False
+
     with open(evidence_pack_jsonl, 'r', encoding='utf-8') as f:
         for line in f:
-            if line.strip():
-                item = json.loads(line)
-                coverage_name_raw = item['coverage_name_raw']
+            # Skip empty lines
+            if not line.strip():
+                continue
 
-                # Scope gate 검증
-                if not scope_gate.is_in_scope(coverage_name_raw):
-                    continue
+            item = json.loads(line)
 
-                evidences = [Evidence.from_dict(e) for e in item.get('evidences', [])]
-                hits_by_doc_type = item.get('hits_by_doc_type', {})
-                flags = item.get('flags', [])
-                evidence_data[coverage_name_raw] = {
-                    'evidences': evidences,
-                    'hits_by_doc_type': hits_by_doc_type,
-                    'flags': flags
-                }
+            # STEP NEXT-31-P3-β: Validate meta record (first non-empty line)
+            if not first_record_processed:
+                first_record_processed = True
+
+                if item.get('record_type') != 'meta':
+                    raise RuntimeError(
+                        f"\n[STEP NEXT-31-P3 GATE FAILED]\n"
+                        f"Evidence pack missing meta record (first non-empty line).\n"
+                        f"File: {evidence_pack_jsonl}\n"
+                        f"Action: Run step4_evidence_search again for {insurer}"
+                    )
+
+                # Validate scope_content_hash
+                pack_scope_hash = item.get('scope_content_hash')
+                if pack_scope_hash != current_scope_hash:
+                    raise RuntimeError(
+                        f"\n[STEP NEXT-31-P3 GATE FAILED]\n"
+                        f"Scope content hash mismatch - stale evidence_pack detected.\n"
+                        f"Details:\n"
+                        f"  - Insurer: {insurer}\n"
+                        f"  - Scope file: {PathlibPath(scope_mapped_csv).name}\n"
+                        f"  - Evidence pack created with hash: {pack_scope_hash}\n"
+                        f"  - Current scope hash: {current_scope_hash}\n"
+                        f"Action: Run step4_evidence_search again to regenerate evidence_pack"
+                    )
+
+                meta_validated = True
+                print(f"\n[STEP NEXT-31-P3 Content-Hash Gate]")
+                print(f"  Scope file: {PathlibPath(scope_mapped_csv).name}")
+                print(f"  Scope hash: {current_scope_hash[:16]}...")
+                print(f"  Evidence pack created: {item.get('created_at')}")
+                print(f"  ✓ Content hash validated")
+                continue  # Skip meta record, process evidence records only
+
+            # Process evidence records (non-meta)
+            coverage_name_raw = item['coverage_name_raw']
+
+            # Scope gate 검증
+            if not scope_gate.is_in_scope(coverage_name_raw):
+                continue
+
+            evidences = [Evidence.from_dict(e) for e in item.get('evidences', [])]
+            hits_by_doc_type = item.get('hits_by_doc_type', {})
+            flags = item.get('flags', [])
+            evidence_data[coverage_name_raw] = {
+                'evidences': evidences,
+                'hits_by_doc_type': hits_by_doc_type,
+                'flags': flags
+            }
+
+    # Ensure meta was validated
+    if not meta_validated:
+        raise RuntimeError(
+            f"\n[STEP NEXT-31-P3 GATE FAILED]\n"
+            f"Evidence pack has no meta record.\n"
+            f"File: {evidence_pack_jsonl}\n"
+            f"Action: Run step4_evidence_search again for {insurer}"
+        )
+
+    # STEP NEXT-31-P1: Join-rate Gate (95% threshold)
+    scope_rows = len(scope_data)
+    pack_rows = len(evidence_data)
+    join_hits = sum(1 for coverage_name_raw in scope_data if coverage_name_raw in evidence_data)
+    join_rate = join_hits / scope_rows if scope_rows > 0 else 0.0
+
+    print(f"\n[STEP NEXT-31-P1 Join-rate Gate]")
+    print(f"  Scope rows: {scope_rows}")
+    print(f"  Evidence pack rows: {pack_rows}")
+    print(f"  Join hits: {join_hits}")
+    print(f"  Join rate: {join_rate:.2%}")
+
+    # HARD GATE: join_rate < 95% → FAIL
+    if join_rate < 0.95:
+        raise RuntimeError(
+            f"\n[STEP NEXT-31-P1 GATE FAILED]\n"
+            f"Join rate {join_rate:.2%} is below 95% threshold.\n"
+            f"This indicates stale or mismatched evidence_pack.\n"
+            f"Details:\n"
+            f"  - Insurer: {insurer}\n"
+            f"  - Scope rows: {scope_rows}\n"
+            f"  - Evidence pack rows: {pack_rows}\n"
+            f"  - Join hits: {join_hits}\n"
+            f"  - Join rate: {join_rate:.2%}\n"
+            f"Action: Re-run step4_evidence_search with the same sanitized scope CSV."
+        )
 
     # Coverage cards 생성
     cards: List[CoverageCard] = []

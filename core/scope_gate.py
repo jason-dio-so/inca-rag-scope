@@ -6,6 +6,7 @@ scope CSV에 없는 담보는 즉시 reject
 """
 
 import csv
+import hashlib
 from pathlib import Path
 from typing import Set, Optional
 
@@ -168,6 +169,31 @@ def load_scope_gate(insurer: str, scope_dir: Optional[str] = None) -> ScopeGate:
     scope_dir_path = Path(scope_dir) if scope_dir else None
     scope_csv = resolve_scope_csv(insurer, scope_dir_path)
     return ScopeGate(str(scope_csv))
+
+
+def calculate_scope_content_hash(scope_csv_path: Path) -> str:
+    """
+    STEP NEXT-31-P3: Calculate content-based hash of scope CSV file.
+
+    Args:
+        scope_csv_path: Path to scope CSV file
+
+    Returns:
+        str: SHA256 hex digest of file content
+
+    Raises:
+        FileNotFoundError: If scope CSV doesn't exist
+    """
+    if not scope_csv_path.exists():
+        raise FileNotFoundError(f"Scope CSV not found: {scope_csv_path}")
+
+    # Read entire file as bytes (including newlines)
+    with open(scope_csv_path, 'rb') as f:
+        content_bytes = f.read()
+
+    # Calculate SHA256 hash
+    hash_obj = hashlib.sha256(content_bytes)
+    return hash_obj.hexdigest()
 
 
 # Example usage
