@@ -124,24 +124,26 @@ class ProposalFactExtractor:
                         if self._is_rejected_coverage_name(coverage_name_raw):
                             continue
 
-                        # STEP NEXT-44-γ: Filter out non-coverage rows (enhanced for Hanwha)
-                        # 1. Standard filters
+                        # STEP NEXT-44-γ-2: Filter out non-coverage rows
+                        # 1. Common filters (all insurers)
                         if any(x in coverage_name_raw for x in ['합계', '광화문', '준법감시', '설계번호', '피보험자', '구분', '☞', '※', '▶', '선택계약', '기본계약', '경과기간', '납입보험료']):
                             continue
 
-                        # 2. Hanwha-specific: Filter out benefit description texts (not coverage names)
-                        # These are typically long sentences describing payment conditions
-                        if any(x in coverage_name_raw for x in ['보험가입금액 지급', '보험금을 지급하지 않는', '보험금 지급', '진단확정', '치료를 목적으로', '직접 결과로', '보험기간 중']):
-                            continue
+                        # 2. Hanwha-only filters (STEP NEXT-44-γ improvement, scoped to Hanwha only)
+                        if self.insurer == "hanwha":
+                            # Filter out benefit description texts (not coverage names)
+                            # These are typically long sentences describing payment conditions
+                            if any(x in coverage_name_raw for x in ['보험가입금액 지급', '보험금을 지급하지 않는', '보험금 지급', '진단확정', '치료를 목적으로', '직접 결과로', '보험기간 중']):
+                                continue
 
-                        # 3. Filter out standalone bracket texts (section markers)
-                        if re.match(r'^\[.*\]$', coverage_name_raw):
-                            continue
+                            # Filter out standalone bracket texts (section markers)
+                            if re.match(r'^\[.*\]$', coverage_name_raw):
+                                continue
 
-                        # 4. Filter out overly long texts (likely descriptions, not coverage names)
-                        # Typical coverage name: 10-50 chars, descriptions: 50+ chars
-                        if len(coverage_name_raw) > 100:
-                            continue
+                            # Filter out overly long texts (likely descriptions, not coverage names)
+                            # Typical coverage name: 10-50 chars, descriptions: 50+ chars
+                            if len(coverage_name_raw) > 100:
+                                continue
 
                         # Skip duplicates
                         if coverage_name_raw in seen_names:
