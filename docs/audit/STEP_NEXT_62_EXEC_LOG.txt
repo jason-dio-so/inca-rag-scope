@@ -1,0 +1,160 @@
+================================================================================
+Step7 Amount Comparison Engine (STEP NEXT-62)
+================================================================================
+Input:  data/compare/*_coverage_cards.jsonl
+Output: data/scope_v3/*_amount_comparison.jsonl
+
+📂 Found 12 coverage_cards files:
+   - db_coverage_cards.jsonl
+   - db_over41_coverage_cards.jsonl
+   - db_under40_coverage_cards.jsonl
+   - hanwha_coverage_cards.jsonl
+   - heungkuk_coverage_cards.jsonl
+   - hyundai_coverage_cards.jsonl
+   - kb_coverage_cards.jsonl
+   - lotte_coverage_cards.jsonl
+   - lotte_female_coverage_cards.jsonl
+   - lotte_male_coverage_cards.jsonl
+   - meritz_coverage_cards.jsonl
+   - samsung_coverage_cards.jsonl
+
+[Step 7-1] Parsing amount structures...
+📊 Parsed 391 coverage cards from 12 files
+⚠️  GATE-7-2 WARNING: db_over41/A1100 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A1100 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A1100 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A1100 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A1300 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A1300 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A1300 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A1300 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A3300_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A3300_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A3300_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A3300_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A4101 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A4101 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A4101 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A4101 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A4102 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A4102 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A4102 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A4102 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A4103 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A4103 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A4103 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A4103 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A4104_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A4104_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A4104_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A4104_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A4104_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A4104_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A4105 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A4105 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte/A4105 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A4200_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A4200_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A4200_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A4200_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A4209 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A4209 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A4209 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A4209 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A4210 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A4210 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A4210 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A4210 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A4301_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A4301_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A5100 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A5100 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A5100 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A5100 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A5104_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A5104_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A5104_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A5104_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A5107_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A5107_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A5107_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A5107_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A5200 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A5200 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A5298_001 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A5298_001 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A5298_001 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A5298_001 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A5300 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A5300 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A5300 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A5300 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A5300 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A5300 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A6100_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A6100_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A6200 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A6200 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A6300_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A6300_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A9617_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A9617_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A9617_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A9617_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A9617_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A9617_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A9619_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A9619_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A9619_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A9619_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A9619_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A9619_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A9619_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A9619_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A9619_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A9619_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A9640_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A9640_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A4299_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A4299_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A4299_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A4299_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A9630_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_over41/A9630_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A9630_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: db_under40/A9630_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: heungkuk/A9630_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: heungkuk/A9630_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A9630_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A9630_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A9630_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A9630_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_female/A9620_1 has no evidence_refs
+⚠️  GATE-7-2 WARNING: lotte_male/A9620_1 has no evidence_refs
+✅ Generated 31 coverage comparisons
+
+[Step 7-2] Writing 31 comparisons to data/scope_v3/amount_comparisons_all.jsonl...
+✅ Written to data/scope_v3/amount_comparisons_all.jsonl
+
+[GATE-7-3] Determinism validation...
+  SHA256: dea794f6dc7101aa469610b082cbbb99b9d988d642c2ea33f8d0fff70bfe146e
+  Hash recorded: data/scope_v3/amount_comparisons_all.sha256
+
+================================================================================
+SUMMARY
+================================================================================
+Total comparisons: 31
+Output file: data/scope_v3/amount_comparisons_all.jsonl
+SHA256: dea794f6dc7101aa...
+
+Coverage distribution by insurer count:
+  12 insurers: 4 coverages
+  11 insurers: 4 coverages
+  10 insurers: 7 coverages
+  9 insurers: 4 coverages
+  8 insurers: 5 coverages
+  7 insurers: 2 coverages
+  6 insurers: 2 coverages
+  1 insurers: 3 coverages
+
+✅ Step7 Amount Comparison complete

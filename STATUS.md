@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-01
-**현재 상태**: ✅ **All-Insurer Pipeline Complete** (STEP NEXT-61C: 10개 축 전체 Step3-5 실행 + GATE-4-2 100% PASS)
+**현재 상태**: ✅ **Amount Comparison Engine Complete** (STEP NEXT-62: Step7 지급 금액 구조 비교 완성)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ Amount Comparison Engine** | STEP NEXT-62 | ✅ 완료 | 2026-01-01 |
 | **✅ All-Insurer Execution + Evidence Quality Gates** | STEP NEXT-61C | ✅ 완료 | 2026-01-01 |
 | **✅ Meritz Execution** | STEP NEXT-61B | ✅ 완료 | 2026-01-01 |
 | **✅ Evidence Pipeline Compliance** | STEP NEXT-61 | ✅ 완료 | 2026-01-01 |
