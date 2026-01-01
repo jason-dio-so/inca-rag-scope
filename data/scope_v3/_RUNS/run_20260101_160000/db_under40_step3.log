@@ -1,0 +1,17 @@
+[Step 3] PDF Text Extraction
+[Step 3] Manifest: /Users/cheollee/inca-rag-scope/data/evidence_sources/db_manifest.csv
+[Step 3] Output: /Users/cheollee/inca-rag-scope/data/evidence_text/db/
+[Extract] 약관: data/sources/insurers/db/약관/DB_약관.pdf
+  ✓ GATE-3-1 passed: 1192 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/db/약관/DB_약관.page.jsonl
+[Extract] 사업방법서: data/sources/insurers/db/사업방법서/DB_사업방법서.pdf
+  ✓ GATE-3-1 passed: 110 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/db/사업방법서/DB_사업방법서.page.jsonl
+[Extract] 상품요약서: data/sources/insurers/db/상품요약서/DB_상품요약서.pdf
+  ✓ GATE-3-1 passed: 114 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/db/상품요약서/DB_상품요약서.page.jsonl
+
+[Step 3] Extraction completed:
+  - Success: 3
+  - Failed: 0
+  - Total: 3

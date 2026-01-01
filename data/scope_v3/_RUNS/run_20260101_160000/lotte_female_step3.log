@@ -1,0 +1,26 @@
+[Step 3] PDF Text Extraction
+[Step 3] Manifest: /Users/cheollee/inca-rag-scope/data/evidence_sources/lotte_manifest.csv
+[Step 3] Output: /Users/cheollee/inca-rag-scope/data/evidence_text/lotte/
+[Extract] 약관: data/sources/insurers/lotte/약관/롯데_약관(남).pdf
+  ✓ GATE-3-1 passed: 1381 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/lotte/약관/롯데_약관(남).page.jsonl
+[Extract] 약관: data/sources/insurers/lotte/약관/롯데_약관(여).pdf
+  ✓ GATE-3-1 passed: 1395 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/lotte/약관/롯데_약관(여).page.jsonl
+[Extract] 사업방법서: data/sources/insurers/lotte/사업방법서/롯데_사업방법서(남).pdf
+  ✓ GATE-3-1 passed: 115 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/lotte/사업방법서/롯데_사업방법서(남).page.jsonl
+[Extract] 사업방법서: data/sources/insurers/lotte/사업방법서/롯데_사업방법서(여).pdf
+  ✓ GATE-3-1 passed: 127 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/lotte/사업방법서/롯데_사업방법서(여).page.jsonl
+[Extract] 상품요약서: data/sources/insurers/lotte/상품요약서/롯데_상품요약서(남).pdf
+  ✓ GATE-3-1 passed: 135 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/lotte/상품요약서/롯데_상품요약서(남).page.jsonl
+[Extract] 상품요약서: data/sources/insurers/lotte/상품요약서/롯데_상품요약서(여).pdf
+  ✓ GATE-3-1 passed: 138 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/lotte/상품요약서/롯데_상품요약서(여).page.jsonl
+
+[Step 3] Extraction completed:
+  - Success: 6
+  - Failed: 0
+  - Total: 6

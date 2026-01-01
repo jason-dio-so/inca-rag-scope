@@ -1,0 +1,27 @@
+[Step 5] Using STEP NEXT-61 canonical JSONL (converted to temp CSV)
+[Step 5] Build Coverage Cards (STEP NEXT-61)
+[Step 5] Insurer: heungkuk
+[Step 5] Input scope: /var/folders/8c/r6cmpwpx2gb0hyhykzj3390w0000gn/T/step5_heungkuk_r6ma2npj.csv
+[Step 5] Input evidence: /Users/cheollee/inca-rag-scope/data/evidence_pack/heungkuk_evidence_pack.jsonl
+
+[STEP NEXT-61 Meta Validation]
+  Scope file: step5_heungkuk_r6ma2npj.csv (temp CSV from JSONL)
+  Evidence pack created: 2026-01-01T07:04:10.430875Z
+  ✓ Hash validation skipped (JSONL→CSV conversion)
+
+[STEP NEXT-31-P1 Join-rate Gate]
+  Scope rows: 35
+  Evidence pack rows: 35
+  Join hits: 35
+  Join rate: 100.00%
+  ✓ GATE-5-2 passed: Join rate 100.00% ≥ 95%
+  ✓ GATE-5-1 passed: Coverage count matches (35)
+
+[Step 5] Coverage cards created:
+  - Total coverages: 35
+  - Matched: 32
+  - Unmatched: 3
+  - Evidence found: 33
+  - Evidence not found: 2
+
+✓ Cards: /Users/cheollee/inca-rag-scope/data/compare/heungkuk_coverage_cards.jsonl

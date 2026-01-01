@@ -1,0 +1,17 @@
+[Step 3] PDF Text Extraction
+[Step 3] Manifest: /Users/cheollee/inca-rag-scope/data/evidence_sources/heungkuk_manifest.csv
+[Step 3] Output: /Users/cheollee/inca-rag-scope/data/evidence_text/heungkuk/
+[Extract] 약관: data/sources/insurers/heungkuk/약관/흥국_약관.pdf
+  ✓ GATE-3-1 passed: 1352 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/heungkuk/약관/흥국_약관.page.jsonl
+[Extract] 사업방법서: data/sources/insurers/heungkuk/사업방법서/흥국_사업방법서.pdf
+  ✓ GATE-3-1 passed: 80 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/heungkuk/사업방법서/흥국_사업방법서.page.jsonl
+[Extract] 상품요약서: data/sources/insurers/heungkuk/상품요약서/흥국_상품요약서.pdf
+  ✓ GATE-3-1 passed: 86 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/heungkuk/상품요약서/흥국_상품요약서.page.jsonl
+
+[Step 3] Extraction completed:
+  - Success: 3
+  - Failed: 0
+  - Total: 3

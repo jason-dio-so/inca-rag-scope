@@ -1,0 +1,27 @@
+[Step 5] Using STEP NEXT-61 canonical JSONL (converted to temp CSV)
+[Step 5] Build Coverage Cards (STEP NEXT-61)
+[Step 5] Insurer: samsung
+[Step 5] Input scope: /var/folders/8c/r6cmpwpx2gb0hyhykzj3390w0000gn/T/step5_samsung_2881i6fs.csv
+[Step 5] Input evidence: /Users/cheollee/inca-rag-scope/data/evidence_pack/samsung_evidence_pack.jsonl
+
+[STEP NEXT-61 Meta Validation]
+  Scope file: step5_samsung_2881i6fs.csv (temp CSV from JSONL)
+  Evidence pack created: 2026-01-01T07:03:45.411267Z
+  ✓ Hash validation skipped (JSONL→CSV conversion)
+
+[STEP NEXT-31-P1 Join-rate Gate]
+  Scope rows: 31
+  Evidence pack rows: 31
+  Join hits: 31
+  Join rate: 100.00%
+  ✓ GATE-5-2 passed: Join rate 100.00% ≥ 95%
+  ✓ GATE-5-1 passed: Coverage count matches (31)
+
+[Step 5] Coverage cards created:
+  - Total coverages: 31
+  - Matched: 27
+  - Unmatched: 4
+  - Evidence found: 31
+  - Evidence not found: 0
+
+✓ Cards: /Users/cheollee/inca-rag-scope/data/compare/samsung_coverage_cards.jsonl
