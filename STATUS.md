@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-01
-**현재 상태**: 🔒 **Step2 Full Rebuild Complete** (STEP NEXT-57: Step1 SSOT 고정 + Step2 전면 재생성 완료)
+**현재 상태**: 🔒 **Pipeline Alignment Complete** (STEP NEXT-57B: Program Inventory + Legacy Purge 완료)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **🔒 Pipeline Alignment + Legacy Purge** | STEP NEXT-57B | ✅ 완료 | 2026-01-01 |
 | **🔒 Step2 Full Rebuild** | STEP NEXT-57 | ✅ 완료 | 2026-01-01 |
 | **🔒 Pipeline Constitution Lock** | STEP NEXT-56 | ✅ 완료 | 2026-01-01 |
 | **✅ Step1 Stabilization + Change Control** | STEP NEXT-55A | ✅ 완료 | 2026-01-01 |
@@ -58,6 +59,57 @@
 ---
 
 ## 🎯 최신 진행 항목 (2026-01-01)
+
+### STEP NEXT-57B — Pipeline Alignment + Legacy Purge (Program Inventory + 실행 경로 단일화) 🔒 **COMPLETE**
+
+**목표**: "서로 안맞는 느낌" 제거 — 실행 경로 100% 확정 + 레거시 프로그램 아카이브
+
+**문제 정의**:
+- Multiple entrypoint confusion: `run_pipeline_v3.sh` vs `rebuild_insurer.sh` (conflicting paths)
+- SSOT violation: `rebuild_insurer.sh` writes to `data/scope/` (legacy path)
+- Documentation drift: Docstrings show old `data/scope/` examples
+
+**실행 흐름**:
+1. **Program Inventory**: 전체 엔트리포인트/모듈 스캔 + 입출력/의존 문서화
+2. **Constitutional Gates**: 4개 Gates 실행 (entrypoint/SSOT/variant/independence)
+3. **Legacy Archival**: `rebuild_insurer.sh` → `archive/legacy_pipelines/`
+4. **Docstring Fix**: Step2 `__init__.py` 경로 예시 `scope_v3/` 업데이트
+5. **Singleton Test**: `test_pipeline_entrypoint_singleton.py` 추가 (7 tests)
+
+**Constitutional Gates 결과**:
+- ⚠️ **GATE-57B-1: Multiple Entrypoint** — `rebuild_insurer.sh` conflicts with canonical pipeline
+- ❌ **GATE-57B-2: SSOT Violation** — `rebuild_insurer.sh` uses `data/scope/` (6 legacy path refs)
+- ✅ **GATE-57B-3: Variant Axis** — DB/LOTTE pairs exist, no single merged files
+- ✅ **GATE-57B-4: Step2 Independence** — No Step1 imports, no PDF/LLM usage
+
+**Fix Actions**:
+1. **Archived**: `tools/rebuild_insurer.sh` → `archive/legacy_pipelines/run_20260101_step_next_57b/`
+2. **Deprecated**: `map_to_canonical.py` docstring updated (class still used by `run.py`)
+3. **Updated**: Step2 `__init__.py` docstrings (`data/scope/` → `data/scope_v3/`)
+4. **Added**: `tests/test_pipeline_entrypoint_singleton.py` (7 regression prevention tests)
+
+**결과**:
+- Active entrypoints: 3 → 2 (rebuild_insurer.sh archived)
+- SSOT-compliant rate: 66% → 100%
+- Legacy path refs (tools/): 6 → 0
+- Gates passing: 2/4 (50%) → 4/4 (100%)
+- **Single execution path**: `tools/run_pipeline_v3.sh` ONLY
+
+**Program Inventory**:
+| Type | Count | Status |
+|------|-------|--------|
+| Canonical entrypoints | 5 | ✅ |
+| Legacy entrypoints | 1 (archived) | ✅ |
+| Step2 imports Step1 | 0 | ✅ |
+| Step2 uses PDF | 0 | ✅ |
+
+**파일 수정**: 6개
+- 1 archived (rebuild_insurer.sh)
+- 3 docstring updates (Step2 modules)
+- 1 test added (singleton)
+- 1 archive README
+
+---
 
 ### STEP NEXT-57 — Step2 Full Rebuild (Step1 SSOT 고정 + Step2 전면 재생성) 🔒 **COMPLETE**
 

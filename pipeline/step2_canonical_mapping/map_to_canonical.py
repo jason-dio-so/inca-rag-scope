@@ -1,8 +1,13 @@
 """
-Step 2: Canonical Mapping
+Step 2: Canonical Mapping (CanonicalMapper Class)
 
-입력: data/scope/{INSURER}_scope.csv
-출력: data/scope/{INSURER}_scope_mapped.csv
+⚠️ DEPRECATED AS ENTRYPOINT: Use `pipeline.step2_canonical_mapping.run` instead
+
+This file contains CanonicalMapper class (still used by run.py).
+DO NOT execute this file directly as `python -m ...`.
+
+입력: data/scope_v3/{INSURER}_{VARIANT?}_step2_sanitized_scope_v1.jsonl
+출력: data/scope_v3/{INSURER}_{VARIANT?}_step2_canonical_scope_v1.jsonl
 
 Mapping source: data/sources/mapping/담보명mapping자료.xlsx ONLY
 LLM 금지 - exact/normalized matching만 사용

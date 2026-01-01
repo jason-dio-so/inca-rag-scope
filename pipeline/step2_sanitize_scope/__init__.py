@@ -12,9 +12,9 @@ Constitutional rules:
     4. Audit trail required (dropped entries preserved)
 
 Input:
-    data/scope/{insurer}_step1_raw_scope_v3.jsonl
+    data/scope_v3/{insurer}_{variant?}_step1_raw_scope_v3.jsonl
 
 Output:
-    data/scope/{insurer}_step2_sanitized_scope_v1.jsonl
-    data/scope/{insurer}_step2_dropped.jsonl (audit trail)
+    data/scope_v3/{insurer}_{variant?}_step2_sanitized_scope_v1.jsonl
+    data/scope_v3/{insurer}_{variant?}_step2_dropped.jsonl (audit trail)
 """
