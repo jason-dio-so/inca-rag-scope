@@ -48,7 +48,15 @@ DROP_PATTERNS = [
 
 # NORMALIZATION patterns (STEP NEXT-52: Transform but don't drop)
 NORMALIZATION_PATTERNS = [
-    # STEP NEXT-55: Leading markers removal (MUST be first)
+    # STEP NEXT-59C: Numeric prefix with punctuation (DB/Hyundai/KB pattern)
+    # MUST be first to catch "1.", "2)", "3-" before other patterns
+    # "1. 상해사망" → "상해사망"
+    # "3) 질병사망" → "질병사망"
+    # "4- 후유장해" → "후유장해"
+    (r'^\s*\d+\s*[.)]\s*', '', 'NUMERIC_PREFIX_DOT_PAREN'),
+    (r'^\s*\d+\s*[-–—]\s*', '', 'NUMERIC_PREFIX_DASH'),
+
+    # STEP NEXT-55: Leading markers removal
     # ". 상해사망" → "상해사망"
     # "• 질병사망" → "질병사망"
     (r'^\s*[·•]+\s*', '', 'LEADING_BULLET_MARKER'),
@@ -197,6 +205,10 @@ def sanitize_step1_output(
     # Sanitize
     kept_entries = []
     dropped_entries = []
+    normalization_stats = {
+        'applied_count': 0,  # Rows where normalization was applied
+        'not_applied_count': 0  # Rows where no normalization was needed
+    }
 
     for entry in entries:
         coverage_name_raw = entry.get('coverage_name_raw', '')
@@ -213,6 +225,12 @@ def sanitize_step1_output(
         else:
             # Apply normalization (STEP NEXT-52)
             normalized_name, transformations = normalize_coverage_name(coverage_name_raw)
+
+            # STEP NEXT-59C: Track normalization execution
+            if transformations:
+                normalization_stats['applied_count'] += 1
+            else:
+                normalization_stats['not_applied_count'] += 1
 
             # Check if normalization resulted in empty string
             if not normalized_name:
@@ -255,12 +273,16 @@ def sanitize_step1_output(
         reason = entry['drop_reason']
         drop_reason_counts[reason] = drop_reason_counts.get(reason, 0) + 1
 
+    # STEP NEXT-59C: Include normalization execution stats
     return {
         'input_total': len(entries),
         'kept': len(kept_entries),
         'dropped': len(dropped_entries),
         'drop_reason_counts': drop_reason_counts,
-        'dropped_entries': dropped_entries
+        'dropped_entries': dropped_entries,
+        'normalization_applied_rows': normalization_stats['applied_count'],
+        'normalization_not_applied_rows': normalization_stats['not_applied_count'],
+        'normalization_rate': normalization_stats['applied_count'] / (normalization_stats['applied_count'] + normalization_stats['not_applied_count']) if (normalization_stats['applied_count'] + normalization_stats['not_applied_count']) > 0 else 0.0
     }
 
 
