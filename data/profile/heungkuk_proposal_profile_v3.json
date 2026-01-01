@@ -1,7 +1,7 @@
 {
   "profile_version": "v3",
   "builder_version": "step-next-45d",
-  "generated_at": "2026-01-01T11:45:27.121841+09:00",
+  "generated_at": "2026-01-01T13:04:35.898407+09:00",
   "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "heungkuk",
   "variant": "default",
