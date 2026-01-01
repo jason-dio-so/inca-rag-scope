@@ -1,0 +1,1 @@
+{"insurer": "samsung", "coverage_name_raw": "보험료 납입면제대상Ⅱ", "proposal_facts": {"coverage_amount_text": "10만원", "premium_text": "189", "period_text": "20년납 100세만기", "payment_method_text": null, "evidences": [{"doc_type": "가입설계서", "page": 2, "y0": 253.12950134277344, "y1": 261.1294860839844, "extraction_mode": "hybrid"}]}, "sanitized": false, "drop_reason": "PREMIUM_WAIVER_TARGET"}

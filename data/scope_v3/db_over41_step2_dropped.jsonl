@@ -1,0 +1,1 @@
+{"insurer": "db", "coverage_name_raw": ". 보험료납입면제대상보장(10대사유)", "proposal_facts": {"coverage_amount_text": "10만원", "premium_text": "110", "period_text": "20년/20년", "payment_method_text": null, "evidences": [{"doc_type": "가입설계서", "page": 4, "y0": 180.80873107910156, "y1": 191.4300994873047, "extraction_mode": "hybrid"}]}, "sanitized": false, "drop_reason": "PREMIUM_WAIVER_TARGET"}
