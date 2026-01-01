@@ -1,0 +1,70 @@
+=== samsung ===
+32 lines: data/evidence_pack/samsung_evidence_pack.jsonl (2026-01-01 16:03)
+  SHA256: bb0ab4aa5ed3b048b7bd31599e61f32acbd7cb50f6275924dfad27671a962312
+4 lines: data/scope_v3/samsung_step4_unmatched_review.jsonl (2026-01-01 16:03)
+  SHA256: 985d21861cb3eef56cd6b690b8b77d1bed7aea2833417b08538b848a8f5f48af
+31 lines: data/compare/samsung_coverage_cards.jsonl (2026-01-01 16:03)
+  SHA256: b84be3df39d1f7478a735be2ab1199305cb68b114be1372e8d922fdf35affa9b
+=== meritz ===
+30 lines: data/evidence_pack/meritz_evidence_pack.jsonl (2026-01-01 16:03)
+  SHA256: 03912fbbd77788a4f787749426f845c1f477eb6a1256f2a3c7d28e0a3e02a87b
+9 lines: data/scope_v3/meritz_step4_unmatched_review.jsonl (2026-01-01 16:03)
+  SHA256: 32366703ce1e75ea6971588bf10ca8d2b839f5cc013d3a77241bcb46dd11ba45
+29 lines: data/compare/meritz_coverage_cards.jsonl (2026-01-01 16:03)
+  SHA256: 3e900a00897ca1ed408352584de70f3e98b727131a2b37a88462f89d7a157e35
+=== hanwha ===
+33 lines: data/evidence_pack/hanwha_evidence_pack.jsonl (2026-01-01 16:04)
+  SHA256: 2044dcc48bb3e15a2acd45466e2521abc9b723e9d168411a3792d35a2496c9e7
+4 lines: data/scope_v3/hanwha_step4_unmatched_review.jsonl (2026-01-01 16:04)
+  SHA256: 66e865e2b8ba49b71ec44498ec95594266807d5c7b2230f7700be8fb345718d5
+32 lines: data/compare/hanwha_coverage_cards.jsonl (2026-01-01 16:04)
+  SHA256: 678bfcf3a915d60ce49654756f520629611a73a28e160772b2396d9b0634de13
+=== heungkuk ===
+36 lines: data/evidence_pack/heungkuk_evidence_pack.jsonl (2026-01-01 16:04)
+  SHA256: 9d9c12712868ae6d5319ef38e7c0855bf81a70fbe27169484d7878c19eb9016b
+3 lines: data/scope_v3/heungkuk_step4_unmatched_review.jsonl (2026-01-01 16:04)
+  SHA256: 1f4861fd8fdc89cc4c598000a437576010355c33d57f3beba3010b8bdf0f7efb
+35 lines: data/compare/heungkuk_coverage_cards.jsonl (2026-01-01 16:04)
+  SHA256: cf48a82e011a0473ea96e3f0a5da9f49db08a9c9fa56ffd526154ab136ad88b3
+=== hyundai ===
+37 lines: data/evidence_pack/hyundai_evidence_pack.jsonl (2026-01-01 16:04)
+  SHA256: eefb4c57cd69a5b4c6048e473cce8485190b5977e50cca2a2441e70aa335a265
+11 lines: data/scope_v3/hyundai_step4_unmatched_review.jsonl (2026-01-01 16:04)
+  SHA256: 92412409850047f4ed10a37a731a45f85c307b3502e332fb29cffd6f20ce0eae
+36 lines: data/compare/hyundai_coverage_cards.jsonl (2026-01-01 16:04)
+  SHA256: c96fd2c24670d3499813f06aefb351ada0b417825b31f83beefb45ba8063f9dc
+=== kb ===
+43 lines: data/evidence_pack/kb_evidence_pack.jsonl (2026-01-01 16:04)
+  SHA256: 3f0a87bbeab28270ed5f6cb7941199d300dce529b305771677fabda268d1b3e7
+13 lines: data/scope_v3/kb_step4_unmatched_review.jsonl (2026-01-01 16:04)
+  SHA256: 3e2e6b2fcfd155483dc6e3554de5c2b4efc4a9ef9a9aba3949b5180408e24f1d
+42 lines: data/compare/kb_coverage_cards.jsonl (2026-01-01 16:04)
+  SHA256: 3199805bd1694564e4af801d7647158e8250f0c8785d0c208f9ea9488fcedb4c
+=== lotte_male ===
+31 lines: data/evidence_pack/lotte_male_evidence_pack.jsonl (2026-01-01 16:04)
+  SHA256: 0e7fd5d7b75d14be31fea812dc2c07e1f102c74d8130cbdaf9e2a814606de60e
+5 lines: data/scope_v3/lotte_male_step4_unmatched_review.jsonl (2026-01-01 16:04)
+  SHA256: a315c9a6d3bf963204efb06a24093f38747da00220b5f9b383ce3263e0190e20
+30 lines: data/compare/lotte_male_coverage_cards.jsonl (2026-01-01 16:04)
+  SHA256: 72d476d21b2bc53e4c54a123ebe507e449527da1d51f77a6785d1a9f06480e7c
+=== lotte_female ===
+31 lines: data/evidence_pack/lotte_female_evidence_pack.jsonl (2026-01-01 16:04)
+  SHA256: 1c57ef685ed2c6abcbbc9a1923c332393c2cd1008c691817f360fcfcc4a96fd8
+5 lines: data/scope_v3/lotte_female_step4_unmatched_review.jsonl (2026-01-01 16:04)
+  SHA256: a315c9a6d3bf963204efb06a24093f38747da00220b5f9b383ce3263e0190e20
+30 lines: data/compare/lotte_female_coverage_cards.jsonl (2026-01-01 16:04)
+  SHA256: 7ea43b16b93c7158d9f3999e6e67446f6d0edb0d8cf571c71dc40c3982d69257
+=== db_under40 ===
+31 lines: data/evidence_pack/db_under40_evidence_pack.jsonl (2026-01-01 16:04)
+  SHA256: 0817a0ad839fae19ac7a38319acdf605817f9b762ed65db6d77e207f8ec6d40d
+1 lines: data/scope_v3/db_under40_step4_unmatched_review.jsonl (2026-01-01 16:04)
+  SHA256: a13592580781d4acbf97082a188b680048705d322345ec161d1cce75e688b24d
+30 lines: data/compare/db_under40_coverage_cards.jsonl (2026-01-01 16:04)
+  SHA256: dd14db2b05addece86f92db43264554c8474cdb943bc3d198cb2f6285c23b058
+=== db_over41 ===
+31 lines: data/evidence_pack/db_over41_evidence_pack.jsonl (2026-01-01 16:05)
+  SHA256: 1b6b0cac9044faf754a40f92cb1af636ae6a7b5afda2d66a8115bc9e7814e442
+1 lines: data/scope_v3/db_over41_step4_unmatched_review.jsonl (2026-01-01 16:05)
+  SHA256: a13592580781d4acbf97082a188b680048705d322345ec161d1cce75e688b24d
+30 lines: data/compare/db_over41_coverage_cards.jsonl (2026-01-01 16:05)
+  SHA256: 3a880ae61904e9d018f6c58d2233d011354b7f879504d6c42cf8292c7a9859af

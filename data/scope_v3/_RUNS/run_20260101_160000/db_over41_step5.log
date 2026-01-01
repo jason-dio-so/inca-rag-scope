@@ -1,0 +1,27 @@
+[Step 5] Using STEP NEXT-61 canonical JSONL (converted to temp CSV)
+[Step 5] Build Coverage Cards (STEP NEXT-61)
+[Step 5] Insurer: db_over41
+[Step 5] Input scope: /var/folders/8c/r6cmpwpx2gb0hyhykzj3390w0000gn/T/step5_db_over41_69g819du.csv
+[Step 5] Input evidence: /Users/cheollee/inca-rag-scope/data/evidence_pack/db_over41_evidence_pack.jsonl
+
+[STEP NEXT-61 Meta Validation]
+  Scope file: step5_db_over41_69g819du.csv (temp CSV from JSONL)
+  Evidence pack created: 2026-01-01T07:05:03.934962Z
+  ✓ Hash validation skipped (JSONL→CSV conversion)
+
+[STEP NEXT-31-P1 Join-rate Gate]
+  Scope rows: 30
+  Evidence pack rows: 30
+  Join hits: 30
+  Join rate: 100.00%
+  ✓ GATE-5-2 passed: Join rate 100.00% ≥ 95%
+  ✓ GATE-5-1 passed: Coverage count matches (30)
+
+[Step 5] Coverage cards created:
+  - Total coverages: 30
+  - Matched: 29
+  - Unmatched: 1
+  - Evidence found: 0
+  - Evidence not found: 30
+
+✓ Cards: /Users/cheollee/inca-rag-scope/data/compare/db_over41_coverage_cards.jsonl

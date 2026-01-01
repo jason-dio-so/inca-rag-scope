@@ -1,0 +1,17 @@
+[Step 3] PDF Text Extraction
+[Step 3] Manifest: /Users/cheollee/inca-rag-scope/data/evidence_sources/meritz_manifest.csv
+[Step 3] Output: /Users/cheollee/inca-rag-scope/data/evidence_text/meritz/
+[Extract] 약관: data/sources/insurers/meritz/약관/메리츠_약관.pdf
+  ✓ GATE-3-1 passed: 1875 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/meritz/약관/메리츠_약관.page.jsonl
+[Extract] 사업방법서: data/sources/insurers/meritz/사업방법서/메리츠_사업설명서.pdf
+  ✓ GATE-3-1 passed: 452 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/meritz/사업방법서/메리츠_사업설명서.page.jsonl
+[Extract] 상품요약서: data/sources/insurers/meritz/상품요약서/메리츠_상품요약서.pdf
+  ✓ GATE-3-1 passed: 167 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/meritz/상품요약서/메리츠_상품요약서.page.jsonl
+
+[Step 3] Extraction completed:
+  - Success: 3
+  - Failed: 0
+  - Total: 3

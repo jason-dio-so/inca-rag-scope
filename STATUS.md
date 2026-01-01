@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-01
-**현재 상태**: ✅ **Meritz Execution Complete** (STEP NEXT-61B: Meritz 단일 보험사 Step3-5 실행 완료)
+**현재 상태**: ✅ **All-Insurer Pipeline Complete** (STEP NEXT-61C: 10개 축 전체 Step3-5 실행 + GATE-4-2 100% PASS)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ All-Insurer Execution + Evidence Quality Gates** | STEP NEXT-61C | ✅ 완료 | 2026-01-01 |
 | **✅ Meritz Execution** | STEP NEXT-61B | ✅ 완료 | 2026-01-01 |
 | **✅ Evidence Pipeline Compliance** | STEP NEXT-61 | ✅ 완료 | 2026-01-01 |
 | **✅ Hyundai Fragment Cleanup** | STEP NEXT-60-H | ✅ 완료 | 2026-01-01 |

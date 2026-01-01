@@ -1,0 +1,17 @@
+[Step 3] PDF Text Extraction
+[Step 3] Manifest: /Users/cheollee/inca-rag-scope/data/evidence_sources/hanwha_manifest.csv
+[Step 3] Output: /Users/cheollee/inca-rag-scope/data/evidence_text/hanwha/
+[Extract] 약관: data/sources/insurers/hanwha/약관/한화_약관.pdf
+  ✓ GATE-3-1 passed: 1065 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/hanwha/약관/한화_약관.page.jsonl
+[Extract] 사업방법서: data/sources/insurers/hanwha/사업방법서/한화_사업방법서.pdf
+  ✓ GATE-3-1 passed: 341 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/hanwha/사업방법서/한화_사업방법서.page.jsonl
+[Extract] 상품요약서: data/sources/insurers/hanwha/상품요약서/한화_상품요약서.pdf
+  ✓ GATE-3-1 passed: 96 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/hanwha/상품요약서/한화_상품요약서.page.jsonl
+
+[Step 3] Extraction completed:
+  - Success: 3
+  - Failed: 0
+  - Total: 3

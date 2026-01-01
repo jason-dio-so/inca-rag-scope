@@ -1,0 +1,20 @@
+[Step 3] PDF Text Extraction
+[Step 3] Manifest: /Users/cheollee/inca-rag-scope/data/evidence_sources/samsung_manifest.csv
+[Step 3] Output: /Users/cheollee/inca-rag-scope/data/evidence_text/samsung/
+[Extract] 약관: data/sources/insurers/samsung/약관/삼성_약관.pdf
+  ✓ GATE-3-1 passed: 1561 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/samsung/약관/삼성_약관.page.jsonl
+[Extract] 사업방법서: data/sources/insurers/samsung/사업방법서/삼성_사업설명서.pdf
+  ✓ GATE-3-1 passed: 149 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/samsung/사업방법서/삼성_사업설명서.page.jsonl
+[Extract] 상품요약서: data/sources/insurers/samsung/상품요약서/삼성_상품요약서.pdf
+  ✓ GATE-3-1 passed: 172 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/samsung/상품요약서/삼성_상품요약서.page.jsonl
+[Extract] 상품요약서: data/sources/insurers/samsung/상품요약서/삼성_쉬운요약서.pdf
+  ✓ GATE-3-1 passed: 21 pages extracted
+  → /Users/cheollee/inca-rag-scope/data/evidence_text/samsung/상품요약서/삼성_쉬운요약서.page.jsonl
+
+[Step 3] Extraction completed:
+  - Success: 4
+  - Failed: 0
+  - Total: 4

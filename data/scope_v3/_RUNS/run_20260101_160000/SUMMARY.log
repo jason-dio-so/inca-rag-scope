@@ -1,0 +1,142 @@
+=== STEP NEXT-61C: All-Insurer Execution ===
+Run ID: run_20260101_160000
+Start: Thu Jan  1 16:03:35 KST 2026
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Processing: samsung
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Step3] Extracting PDF text for samsung...
+✓ Step3 GATE-3-1 PASS
+[Step4] Searching evidence for samsung...
+✓ Step4 SSOT input verified
+  Evidence pack: 32 rows, 32 with evidence, fill_rate=1.00
+✓ GATE-4-2 PASS: fill_rate 1.00 ≥ 0.80
+[Step5] Building coverage cards for samsung...
+✓ GATE-5-2 PASS: join_rate 100.00%
+✅ samsung completed successfully
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Processing: meritz
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Step3] Extracting PDF text for meritz...
+✓ Step3 GATE-3-1 PASS
+[Step4] Searching evidence for meritz...
+✓ Step4 SSOT input verified
+  Evidence pack: 30 rows, 30 with evidence, fill_rate=1.00
+✓ GATE-4-2 PASS: fill_rate 1.00 ≥ 0.80
+[Step5] Building coverage cards for meritz...
+✓ GATE-5-2 PASS: join_rate 100.00%
+✅ meritz completed successfully
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Processing: hanwha
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Step3] Extracting PDF text for hanwha...
+✓ Step3 GATE-3-1 PASS
+[Step4] Searching evidence for hanwha...
+✓ Step4 SSOT input verified
+  Evidence pack: 33 rows, 33 with evidence, fill_rate=1.00
+✓ GATE-4-2 PASS: fill_rate 1.00 ≥ 0.80
+[Step5] Building coverage cards for hanwha...
+✓ GATE-5-2 PASS: join_rate 100.00%
+✅ hanwha completed successfully
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Processing: heungkuk
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Step3] Extracting PDF text for heungkuk...
+✓ Step3 GATE-3-1 PASS
+[Step4] Searching evidence for heungkuk...
+✓ Step4 SSOT input verified
+  Evidence pack: 36 rows, 36 with evidence, fill_rate=1.00
+✓ GATE-4-2 PASS: fill_rate 1.00 ≥ 0.80
+[Step5] Building coverage cards for heungkuk...
+✓ GATE-5-2 PASS: join_rate 100.00%
+✅ heungkuk completed successfully
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Processing: hyundai
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Step3] Extracting PDF text for hyundai...
+✓ Step3 GATE-3-1 PASS
+[Step4] Searching evidence for hyundai...
+✓ Step4 SSOT input verified
+  Evidence pack: 37 rows, 37 with evidence, fill_rate=1.00
+✓ GATE-4-2 PASS: fill_rate 1.00 ≥ 0.80
+[Step5] Building coverage cards for hyundai...
+✓ GATE-5-2 PASS: join_rate 100.00%
+✅ hyundai completed successfully
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Processing: kb
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Step3] Extracting PDF text for kb...
+✓ Step3 GATE-3-1 PASS
+[Step4] Searching evidence for kb...
+✓ Step4 SSOT input verified
+  Evidence pack: 43 rows, 43 with evidence, fill_rate=1.00
+✓ GATE-4-2 PASS: fill_rate 1.00 ≥ 0.80
+[Step5] Building coverage cards for kb...
+✓ GATE-5-2 PASS: join_rate 100.00%
+✅ kb completed successfully
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Processing: lotte_male
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Step3] Extracting PDF text for lotte...
+✓ Step3 GATE-3-1 PASS
+[Step4] Searching evidence for lotte_male...
+✓ Step4 SSOT input verified
+  Evidence pack: 31 rows, 31 with evidence, fill_rate=1.00
+✓ GATE-4-2 PASS: fill_rate 1.00 ≥ 0.80
+[Step5] Building coverage cards for lotte_male...
+✓ GATE-5-2 PASS: join_rate 100.00%
+✅ lotte_male completed successfully
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Processing: lotte_female
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Step3] Extracting PDF text for lotte...
+✓ Step3 GATE-3-1 PASS
+[Step4] Searching evidence for lotte_female...
+✓ Step4 SSOT input verified
+  Evidence pack: 31 rows, 31 with evidence, fill_rate=1.00
+✓ GATE-4-2 PASS: fill_rate 1.00 ≥ 0.80
+[Step5] Building coverage cards for lotte_female...
+✓ GATE-5-2 PASS: join_rate 100.00%
+✅ lotte_female completed successfully
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Processing: db_under40
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Step3] Extracting PDF text for db...
+✓ Step3 GATE-3-1 PASS
+[Step4] Searching evidence for db_under40...
+✓ Step4 SSOT input verified
+  Evidence pack: 31 rows, 31 with evidence, fill_rate=1.00
+✓ GATE-4-2 PASS: fill_rate 1.00 ≥ 0.80
+[Step5] Building coverage cards for db_under40...
+✓ GATE-5-2 PASS: join_rate 100.00%
+✅ db_under40 completed successfully
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Processing: db_over41
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Step3] Extracting PDF text for db...
+✓ Step3 GATE-3-1 PASS
+[Step4] Searching evidence for db_over41...
+✓ Step4 SSOT input verified
+  Evidence pack: 31 rows, 31 with evidence, fill_rate=1.00
+✓ GATE-4-2 PASS: fill_rate 1.00 ≥ 0.80
+[Step5] Building coverage cards for db_over41...
+✓ GATE-5-2 PASS: join_rate 100.00%
+✅ db_over41 completed successfully
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL RESULTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Total axes: 10
+Passed: 10
+Failed: 0
+
+End: Thu Jan  1 16:05:04 KST 2026
