@@ -1,0 +1,32 @@
+{"insurer": "hanwha", "coverage_name_raw": "보통약관(상해사망)", "coverage_code": "A1300", "canonical_name": "상해사망", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "상해후유장해(3-100%)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hanwha", "coverage_name_raw": "질병사망", "coverage_code": "A1100", "canonical_name": "질병사망", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "골절(치아파절제외)진단비", "coverage_code": "A4301_1", "canonical_name": "골절진단비(치아파절제외)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "화상진단비", "coverage_code": "A4302", "canonical_name": "화상진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "암(4대유사암제외)진단비", "coverage_code": "A4200_1", "canonical_name": "암진단비(유사암제외)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "4대유사암진단비", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hanwha", "coverage_name_raw": "- 4대유사암진단비(기타피부암)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hanwha", "coverage_name_raw": "- 4대유사암진단비(제자리암)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hanwha", "coverage_name_raw": "- 4대유사암진단비(경계성종양)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hanwha", "coverage_name_raw": "- 4대유사암진단비(갑상선암)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hanwha", "coverage_name_raw": "특정유사암항암방사선치료비(세부보장별각1회한)", "coverage_code": "A9617_1", "canonical_name": "항암방사선약물치료비(최초1회한)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "암(4대유사암제외)항암방사선치료비(1회한)", "coverage_code": "A9617_1", "canonical_name": "항암방사선약물치료비(최초1회한)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "암(4대유사암제외)항암약물치료비(1회한)", "coverage_code": "A9617_1", "canonical_name": "항암방사선약물치료비(최초1회한)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "특정유사암항암약물치료비(세부보장별각1회한)", "coverage_code": "A9617_1", "canonical_name": "항암방사선약물치료비(최초1회한)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "암(특정유사암포함)표적항암약물허가치료비(1회한)(갱신형)", "coverage_code": "A9619_1", "canonical_name": "표적항암약물허가치료비(최초1회한)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "카티(CAR-T)항암약물허가치료비(1회한)(갱신형)", "coverage_code": "A9620_1", "canonical_name": "카티(CAR-T)항암약물허가치료비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "뇌혈관질환진단비", "coverage_code": "A4101", "canonical_name": "뇌혈관질환진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "뇌졸중진단비", "coverage_code": "A4103", "canonical_name": "뇌졸중진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "심혈관특정질환Ⅰ진단비", "coverage_code": "A4104_1", "canonical_name": "심장질환진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "심혈관특정질환Ⅱ진단비", "coverage_code": "A4104_1", "canonical_name": "심장질환진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "심혈관특정질환Ⅰ(기타심장부정맥제외)진단비", "coverage_code": "A4104_1", "canonical_name": "심장질환진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "허혈성심장질환진단비", "coverage_code": "A4105", "canonical_name": "허혈성심장질환진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "심근병증진단비", "coverage_code": "A4104_1", "canonical_name": "심장질환진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "심장판막협착증(대동맥판막)진단비", "coverage_code": "A4104_1", "canonical_name": "심장질환진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "주요심장염증질환진단비", "coverage_code": "A4104_1", "canonical_name": "심장질환진단비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "상해수술비", "coverage_code": "A5300", "canonical_name": "상해수술비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "질병수술비", "coverage_code": "A5100", "canonical_name": "질병수술비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "암(4대유사암제외)수술비Ⅱ(수술1회당)", "coverage_code": "A5200", "canonical_name": "암수술비(유사암제외)", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "4대유사암수술비Ⅱ(수술1회당)", "coverage_code": "A5298_001", "canonical_name": "유사암수술비", "mapping_method": "exact", "mapping_confidence": 1.0}
+{"insurer": "hanwha", "coverage_name_raw": "암(갑상선암및전립선암제외)다빈치로봇수술비(1회한)(갱신형)", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
+{"insurer": "hanwha", "coverage_name_raw": "질병사망 1,", "coverage_code": null, "canonical_name": null, "mapping_method": "unmapped", "mapping_confidence": 0.0}
