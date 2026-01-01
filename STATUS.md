@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-01
-**현재 상태**: ✅ **DB/Hyundai/KB Mapping Fixed** (STEP NEXT-59C: Normalization Pattern Enhancement 완료)
+**현재 상태**: ✅ **Meritz Execution Complete** (STEP NEXT-61B: Meritz 단일 보험사 Step3-5 실행 완료)
 
 ---
 
@@ -10,6 +10,9 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ Meritz Execution** | STEP NEXT-61B | ✅ 완료 | 2026-01-01 |
+| **✅ Evidence Pipeline Compliance** | STEP NEXT-61 | ✅ 완료 | 2026-01-01 |
+| **✅ Hyundai Fragment Cleanup** | STEP NEXT-60-H | ✅ 완료 | 2026-01-01 |
 | **✅ Normalization Pattern Enhancement** | STEP NEXT-59C | ✅ 완료 | 2026-01-01 |
 | **🔒 Pipeline Alignment + Legacy Purge** | STEP NEXT-57B | ✅ 완료 | 2026-01-01 |
 | **🔒 Step2 Full Rebuild** | STEP NEXT-57 | ✅ 완료 | 2026-01-01 |
@@ -60,6 +63,69 @@
 ---
 
 ## 🎯 최신 진행 항목 (2026-01-01)
+
+### STEP NEXT-61 — Evidence-Based Comparison Pipeline (Step3–7 Constitutional Compliance) ✅ **COMPLETE**
+
+**목표**: Step3–Step7 파이프라인을 STEP NEXT-61 헌법 규칙에 완전 준수하도록 정렬
+
+**문제 정의**:
+- Step4 input path: `data/scope/` (legacy) → `data/scope_v3/` (SSOT) 마이그레이션 필요
+- Gates 미비: GATE-3-1 (page count), GATE-5-1 (coverage count), GATE-5-2 (join rate ≥ 95%) 명시적 검증 없음
+- Input contract 불일치: Step4가 CSV를 읽지만 Step2-b는 JSONL 출력
+
+**헌법 규칙 (Constitutional Rules)**:
+- 🔒 **LOCKED**: Step1/Step2 코드 수정 금지
+- ❌ **FORBIDDEN**: LLM, OCR, Embedding 사용 금지
+- ✅ **REQUIRED**: Deterministic, Rule-Based, Evidence-First
+
+**실행 흐름**:
+1. **Compliance Audit**: 현재 구현 vs STEP NEXT-61 요구사항 비교 → 85% 준수 확인
+2. **Step4 Input Migration**: `data/scope/*.csv` → `data/scope_v3/*_step2_canonical_scope_v1.jsonl`
+3. **GATE Formalization**:
+   - GATE-3-1 (Step3): Page count validation (extracted pages = PDF page count)
+   - GATE-5-1 (Step5): Coverage count match (informational)
+   - GATE-5-2 (Step5): Join rate ≥ 95% (hard gate)
+4. **Schema Version Update**: Evidence pack schema version → `step_next_61_v1`
+
+**변경 사항**:
+- `pipeline/step4_evidence_search/search_evidence.py`:
+  - Input: `scope_canonical_jsonl` (JSONL) instead of `scope_mapped_csv` (CSV)
+  - Field mapping: `mapping_method` → `mapping_status`, `canonical_name` (not `coverage_name_canonical`)
+  - Output: `data/scope_v3/{insurer}_step4_unmatched_review.jsonl` (JSONL, not CSV)
+  - Hard gate: Fail if `scope_canonical_jsonl` does not exist
+- `pipeline/step3_extract_text/extract_pdf_text.py`:
+  - GATE-3-1: Validate `len(pages_data) == len(doc)` after extraction
+- `pipeline/step5_build_cards/build_cards.py`:
+  - GATE-5-1: Warning if `scope_rows != pack_rows` (informational)
+  - GATE-5-2: Fail if `join_rate < 0.95` (already existed, now labeled)
+
+**Constitutional Gates 결과**:
+- ✅ **GATE-3-1 (Step3)**: Page count validation added (hard gate)
+- ✅ **GATE-5-1 (Step5)**: Coverage count validation added (informational warning)
+- ✅ **GATE-5-2 (Step5)**: Join rate ≥ 95% enforced (hard gate, already existed)
+- ✅ **Input SSOT**: Step4 now reads from `data/scope_v3/` ONLY
+
+**결과**:
+- Step3–Step7: 100% STEP NEXT-61 compliant
+- Step1/Step2: UNTOUCHED (🔒 LOCKED as required)
+- Evidence pipeline: Deterministic, reproducible, evidence-first
+- All gates: Formalized and enforced
+
+**파일 수정**: 3개
+- `pipeline/step4_evidence_search/search_evidence.py` (input migration + JSONL schema)
+- `pipeline/step3_extract_text/extract_pdf_text.py` (GATE-3-1 added)
+- `pipeline/step5_build_cards/build_cards.py` (GATE-5-1/5-2 labeled)
+
+**문서 생성**: 2개
+- `docs/STEP_NEXT_61_EVIDENCE_PIPELINE.md` (canonical instruction)
+- `docs/audit/STEP_NEXT_61_COMPLIANCE_AUDIT.md` (compliance matrix)
+
+**Non-Goals (Explicitly Deferred)**:
+- ❌ Step1 Amount 구조 변경 (STEP NEXT-61A로 연기)
+- ❌ NEW-RUN 정책 도입 (STEP NEXT-61A로 연기)
+- ❌ Step8 Comparison View Builder (P2 priority)
+
+---
 
 ### STEP NEXT-57B — Pipeline Alignment + Legacy Purge (Program Inventory + 실행 경로 단일화) 🔒 **COMPLETE**
 
