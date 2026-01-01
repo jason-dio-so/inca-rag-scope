@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-01
-**현재 상태**: ✅ **SSOT Guardrail Enforcement Complete** (STEP NEXT-52-HK: scope_v3 SSOT 고정 + legacy 정리 + 재발 방지)
+**현재 상태**: ✅ **Legacy Cleanup Complete** (STEP NEXT-53A: 레거시 정리 + entrypoint 고정 완료)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ Legacy Cleanup** | STEP NEXT-53A | ✅ 완료 | 2026-01-01 |
 | **✅ SSOT Guardrail Enforcement** | STEP NEXT-52-HK | ✅ 완료 | 2026-01-01 |
 | **✅ Profile Confirmation Sprint** | STEP NEXT-45-C-β-5 | ✅ 완료 | 2026-01-01 |
 | **✅ Pass B E2E Fix** | STEP NEXT-45-C-β-4 | ✅ 완료 | 2026-01-01 |
@@ -53,6 +54,45 @@
 ---
 
 ## 🎯 최신 진행 항목 (2026-01-01)
+
+### STEP NEXT-53A — Legacy Cleanup + Entrypoint Lock ✅ **COMPLETE**
+
+**목표**: 레거시 산출물/파이프라인 정리 + 단일 실행 경로 고정
+
+**완료 사항**:
+- ✅ **Cleanup Inventory**: `docs/audit/STEP_NEXT_53_CLEANUP_INVENTORY.md` 생성 (완전 현황 리스트업)
+- ✅ **Legacy Outputs Archive**:
+  - `data/scope/` → `archive/legacy_outputs/run_20260101_004654_step_next_53/data_scope/` (51 files, ~2266 lines)
+  - `data/scope_v2/` → `archive/legacy_outputs/run_20260101_004654_step_next_53/data_scope_v2/` (7 files, ~148 lines)
+- ✅ **Legacy Pipelines Archive**:
+  - `pipeline/step1_extract_scope/` → `archive/legacy_pipelines/run_20260101_004654_step_next_53/`
+  - `pipeline/step1_sanitize_scope/` → `archive/legacy_pipelines/run_20260101_004654_step_next_53/`
+- ✅ **Warning READMEs**: 원위치에 "ARCHIVED — DO NOT USE" 안내 생성 (3개 위치)
+- ✅ **Runbook Finalization**:
+  - `data/scope_v3/README.md` 업데이트 (canonical entrypoint 고정)
+  - 실행법: `manifest → step1_summary_first → step2_sanitize_scope → step2_canonical_mapping`
+- ✅ **GATE-53 Guardrails** (13/13 tests passed):
+  - **GATE-53-1**: SSOT 위반 금지 (4 tests)
+  - **GATE-53-2**: Step2 독립성 (4 tests)
+  - **GATE-53-3**: Entrypoint 문서 단일성 (5 tests)
+- ✅ **Smoke Test**: KB insurer (Step2-a → Step2-b) 실행 성공
+  - Input: 50 → Sanitized: 41 → Mapped: 29 (70.7%)
+  - Output: `data/scope_v3/kb_step2_*.jsonl` (SSOT 준수)
+
+**Archive Run ID**: `run_20260101_004654_step_next_53`
+
+**남은 파이프라인** (KEEP):
+- `pipeline/step1_summary_first/` (canonical Step1)
+- `pipeline/step2_sanitize_scope/` (canonical Step2-a)
+- `pipeline/step2_canonical_mapping/` (canonical Step2-b)
+- `pipeline/step3_extract_text/` (active downstream)
+- `pipeline/step4_evidence_search/` (active downstream)
+- `pipeline/step5_build_cards/` (active downstream)
+- `pipeline/step7_amount_extraction/` (active downstream)
+
+**다음 단계**: STEP NEXT-53B (선택) — 새 상품 재현성 테스트
+
+---
 
 ### STEP NEXT-52-HK — SSOT Guardrail Enforcement ✅ **COMPLETE**
 
