@@ -1,7 +1,7 @@
 {
   "profile_version": "v3",
   "builder_version": "step-next-45d",
-  "generated_at": "2026-01-01T02:23:27.425881+09:00",
+  "generated_at": "2026-01-01T11:45:43.384718+09:00",
   "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "samsung",
   "variant": "default",
@@ -37,7 +37,7 @@
         "column_map": {
           "has_row_number_column": false,
           "row_number_column_index": null,
-          "coverage_name": 0,
+          "coverage_name": 1,
           "coverage_amount": 2,
           "premium": 3,
           "period": 4
@@ -150,7 +150,7 @@
         "column_map": {
           "has_row_number_column": false,
           "row_number_column_index": null,
-          "coverage_name": 0,
+          "coverage_name": 1,
           "coverage_amount": 2,
           "premium": 3,
           "period": 4

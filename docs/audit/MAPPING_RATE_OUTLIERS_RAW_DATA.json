@@ -1,0 +1,89 @@
+{
+  "summary": {
+    "mean": 65.3366228430642,
+    "median": 73.52941176470588,
+    "stdev": 26.742187227623003
+  },
+  "by_insurer": {
+    "samsung": {
+      "total": 61,
+      "mapped": 52,
+      "unmapped": 9,
+      "exact": 25,
+      "normalized": 27,
+      "mapping_rate": 85.24590163934425
+    },
+    "hyundai": {
+      "total": 34,
+      "mapped": 23,
+      "unmapped": 11,
+      "exact": 22,
+      "normalized": 1,
+      "mapping_rate": 67.64705882352942
+    },
+    "kb": {
+      "total": 36,
+      "mapped": 24,
+      "unmapped": 12,
+      "exact": 24,
+      "normalized": 0,
+      "mapping_rate": 66.66666666666666
+    },
+    "meritz": {
+      "total": 36,
+      "mapped": 6,
+      "unmapped": 30,
+      "exact": 5,
+      "normalized": 1,
+      "mapping_rate": 16.666666666666664
+    },
+    "hanwha": {
+      "total": 34,
+      "mapped": 27,
+      "unmapped": 7,
+      "exact": 27,
+      "normalized": 0,
+      "mapping_rate": 79.41176470588235
+    },
+    "lotte": {
+      "total": 64,
+      "mapped": 21,
+      "unmapped": 43,
+      "exact": 20,
+      "normalized": 1,
+      "mapping_rate": 32.8125
+    },
+    "heungkuk": {
+      "total": 22,
+      "mapped": 20,
+      "unmapped": 2,
+      "exact": 18,
+      "normalized": 2,
+      "mapping_rate": 90.9090909090909
+    },
+    "db": {
+      "total": 48,
+      "mapped": 40,
+      "unmapped": 8,
+      "exact": 29,
+      "normalized": 11,
+      "mapping_rate": 83.33333333333334
+    }
+  },
+  "outliers": [
+    {
+      "insurer": "meritz",
+      "rate": 16.666666666666664,
+      "median": 73.52941176470588,
+      "deviation": 56.86274509803922,
+      "deviation_pct": 77.33333333333333
+    },
+    {
+      "insurer": "lotte",
+      "rate": 32.8125,
+      "median": 73.52941176470588,
+      "deviation": 40.716911764705884,
+      "deviation_pct": 55.375
+    }
+  ]
+}

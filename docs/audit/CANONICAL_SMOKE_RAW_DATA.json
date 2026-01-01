@@ -1,0 +1,582 @@
+{
+  "samsung": {
+    "total_entries": 61,
+    "coverage_tests": {
+      "상해사망": {
+        "status": "NOT_FOUND"
+      },
+      "질병사망": {
+        "status": "NOT_FOUND"
+      },
+      "암진단비": {
+        "status": "NOT_FOUND"
+      },
+      "뇌졸중진단비": {
+        "status": "NOT_FOUND"
+      },
+      "허혈성심장질환진단비": {
+        "status": "NOT_FOUND"
+      },
+      "일반암진단비": {
+        "status": "NOT_FOUND"
+      },
+      "골절진단비": {
+        "status": "NOT_FOUND"
+      },
+      "화상진단비": {
+        "status": "NOT_FOUND"
+      },
+      "깁스치료비": {
+        "status": "NOT_FOUND"
+      }
+    }
+  },
+  "hyundai": {
+    "total_entries": 34,
+    "coverage_tests": {
+      "상해사망": {
+        "status": "NOT_FOUND"
+      },
+      "질병사망": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "질병사망담보",
+            "method": "exact",
+            "code": "A1100",
+            "canonical_name": "질병사망"
+          }
+        ]
+      },
+      "암진단비": {
+        "status": "NOT_FOUND"
+      },
+      "뇌졸중진단비": {
+        "status": "NOT_FOUND"
+      },
+      "허혈성심장질환진단비": {
+        "status": "NOT_FOUND"
+      },
+      "일반암진단비": {
+        "status": "NOT_FOUND"
+      },
+      "골절진단비": {
+        "status": "NOT_FOUND"
+      },
+      "화상진단비": {
+        "status": "NOT_FOUND"
+      },
+      "깁스치료비": {
+        "status": "NOT_FOUND"
+      }
+    }
+  },
+  "kb": {
+    "total_entries": 36,
+    "coverage_tests": {
+      "상해사망": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "일반상해사망(기본)",
+            "method": "exact",
+            "code": "A1300",
+            "canonical_name": "상해사망"
+          }
+        ]
+      },
+      "질병사망": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A1100",
+        "canonical_name": "질병사망"
+      },
+      "암진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "암진단비(유사암제외)",
+            "method": "exact",
+            "code": "A4200_1",
+            "canonical_name": "암진단비(유사암제외)"
+          },
+          {
+            "raw_name": "10대고액치료비암진단비",
+            "method": "exact",
+            "code": "A4209",
+            "canonical_name": "고액암진단비"
+          },
+          {
+            "raw_name": "재진단암진단비",
+            "method": "exact",
+            "code": "A4299_1",
+            "canonical_name": "재진단암진단비"
+          }
+        ]
+      },
+      "뇌졸중진단비": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A4103",
+        "canonical_name": "뇌졸중진단비"
+      },
+      "허혈성심장질환진단비": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A4105",
+        "canonical_name": "허혈성심장질환진단비"
+      },
+      "일반암진단비": {
+        "status": "NOT_FOUND"
+      },
+      "골절진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "골절진단비Ⅱ(치아파절제외)",
+            "method": "exact",
+            "code": "A4301_1",
+            "canonical_name": "골절진단비(치아파절제외)"
+          }
+        ]
+      },
+      "화상진단비": {
+        "status": "NOT_FOUND"
+      },
+      "깁스치료비": {
+        "status": "NOT_FOUND"
+      }
+    }
+  },
+  "meritz": {
+    "total_entries": 36,
+    "coverage_tests": {
+      "상해사망": {
+        "status": "NOT_FOUND"
+      },
+      "질병사망": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A1100",
+        "canonical_name": "질병사망"
+      },
+      "암진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "유사암진단비",
+            "method": "exact",
+            "code": "A4210",
+            "canonical_name": "유사암진단비"
+          },
+          {
+            "raw_name": "5대고액치료비암진단비",
+            "method": "exact",
+            "code": "A4209",
+            "canonical_name": "고액암진단비"
+          },
+          {
+            "raw_name": "재진단암진단비(1년 대기형)",
+            "method": "normalized",
+            "code": "A4200_5",
+            "canonical_name": "재진단암진단비(1년대기형)"
+          },
+          {
+            "raw_name": "27 유사암진단비",
+            "method": "unmapped",
+            "code": null,
+            "canonical_name": null
+          },
+          {
+            "raw_name": "36 재진단암진단비(1년 대기형)",
+            "method": "unmapped",
+            "code": null,
+            "canonical_name": null
+          }
+        ]
+      },
+      "뇌졸중진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "155 뇌졸중진단비",
+            "method": "unmapped",
+            "code": null,
+            "canonical_name": null
+          }
+        ]
+      },
+      "허혈성심장질환진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "163 허혈성심장질환진단비",
+            "method": "unmapped",
+            "code": null,
+            "canonical_name": null
+          }
+        ]
+      },
+      "일반암진단비": {
+        "status": "NOT_FOUND"
+      },
+      "골절진단비": {
+        "status": "NOT_FOUND"
+      },
+      "화상진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "365 신화상치료비(화상진단비)",
+            "method": "unmapped",
+            "code": null,
+            "canonical_name": null
+          }
+        ]
+      },
+      "깁스치료비": {
+        "status": "NOT_FOUND"
+      }
+    }
+  },
+  "hanwha": {
+    "total_entries": 34,
+    "coverage_tests": {
+      "상해사망": {
+        "status": "NOT_FOUND"
+      },
+      "질병사망": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A1100",
+        "canonical_name": "질병사망"
+      },
+      "암진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "4대유사암진단비",
+            "method": "unmapped",
+            "code": null,
+            "canonical_name": null
+          },
+          {
+            "raw_name": "- 4대유사암진단비(기타피부암)",
+            "method": "unmapped",
+            "code": null,
+            "canonical_name": null
+          },
+          {
+            "raw_name": "- 4대유사암진단비(제자리암)",
+            "method": "unmapped",
+            "code": null,
+            "canonical_name": null
+          },
+          {
+            "raw_name": "- 4대유사암진단비(경계성종양)",
+            "method": "unmapped",
+            "code": null,
+            "canonical_name": null
+          },
+          {
+            "raw_name": "- 4대유사암진단비(갑상선암)",
+            "method": "unmapped",
+            "code": null,
+            "canonical_name": null
+          }
+        ]
+      },
+      "뇌졸중진단비": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A4103",
+        "canonical_name": "뇌졸중진단비"
+      },
+      "허혈성심장질환진단비": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A4105",
+        "canonical_name": "허혈성심장질환진단비"
+      },
+      "일반암진단비": {
+        "status": "NOT_FOUND"
+      },
+      "골절진단비": {
+        "status": "NOT_FOUND"
+      },
+      "화상진단비": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A4302",
+        "canonical_name": "화상진단비"
+      },
+      "깁스치료비": {
+        "status": "NOT_FOUND"
+      }
+    }
+  },
+  "lotte": {
+    "total_entries": 64,
+    "coverage_tests": {
+      "상해사망": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A1300",
+        "canonical_name": "상해사망"
+      },
+      "질병사망": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A1100",
+        "canonical_name": "질병사망"
+      },
+      "암진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "일반암진단비Ⅱ",
+            "method": "exact",
+            "code": "A4200_1",
+            "canonical_name": "암진단비(유사암제외)"
+          },
+          {
+            "raw_name": "갑상선암·기타피부암·유사암진단비",
+            "method": "exact",
+            "code": "A4210",
+            "canonical_name": "유사암진단비"
+          },
+          {
+            "raw_name": "재진단암진단비",
+            "method": "exact",
+            "code": "A4299_1",
+            "canonical_name": "재진단암진단비"
+          },
+          {
+            "raw_name": "고액치료비암진단비",
+            "method": "exact",
+            "code": "A4209",
+            "canonical_name": "고액암진단비"
+          },
+          {
+            "raw_name": "42 갑상선암·기타피부암·유사암진단비",
+            "method": "unmapped",
+            "code": null,
+            "canonical_name": null
+          },
+          {
+            "raw_name": "57 재진단암진단비",
+            "method": "unmapped",
+            "code": null,
+            "canonical_name": null
+          },
+          {
+            "raw_name": "58 고액치료비암진단비",
+            "method": "unmapped",
+            "code": null,
+            "canonical_name": null
+          }
+        ]
+      },
+      "뇌졸중진단비": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A4103",
+        "canonical_name": "뇌졸중진단비"
+      },
+      "허혈성심장질환진단비": {
+        "status": "FOUND",
+        "method": "unmapped",
+        "code": null,
+        "canonical_name": null
+      },
+      "일반암진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "일반암진단비Ⅱ",
+            "method": "exact",
+            "code": "A4200_1",
+            "canonical_name": "암진단비(유사암제외)"
+          }
+        ]
+      },
+      "골절진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "골절진단비(치아파절제외)",
+            "method": "exact",
+            "code": "A4301_1",
+            "canonical_name": "골절진단비(치아파절제외)"
+          }
+        ]
+      },
+      "화상진단비": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A4302",
+        "canonical_name": "화상진단비"
+      },
+      "깁스치료비": {
+        "status": "NOT_FOUND"
+      }
+    }
+  },
+  "heungkuk": {
+    "total_entries": 22,
+    "coverage_tests": {
+      "상해사망": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "일반상해사망",
+            "method": "exact",
+            "code": "A1300",
+            "canonical_name": "상해사망"
+          }
+        ]
+      },
+      "질병사망": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "질병사망(감액없음)",
+            "method": "exact",
+            "code": "A1100",
+            "canonical_name": "질병사망"
+          }
+        ]
+      },
+      "암진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "암진단비(유사암제외)",
+            "method": "exact",
+            "code": "A4200_1",
+            "canonical_name": "암진단비(유사암제외)"
+          },
+          {
+            "raw_name": "유사암진단비",
+            "method": "exact",
+            "code": "A4210",
+            "canonical_name": "유사암진단비"
+          },
+          {
+            "raw_name": "고액치료비암진단비",
+            "method": "exact",
+            "code": "A4209",
+            "canonical_name": "고액암진단비"
+          }
+        ]
+      },
+      "뇌졸중진단비": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A4103",
+        "canonical_name": "뇌졸중진단비"
+      },
+      "허혈성심장질환진단비": {
+        "status": "NOT_FOUND"
+      },
+      "일반암진단비": {
+        "status": "NOT_FOUND"
+      },
+      "골절진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "골절진단비(치아파절제외)",
+            "method": "exact",
+            "code": "A4301_1",
+            "canonical_name": "골절진단비(치아파절제외)"
+          }
+        ]
+      },
+      "화상진단비": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A4302",
+        "canonical_name": "화상진단비"
+      },
+      "깁스치료비": {
+        "status": "NOT_FOUND"
+      }
+    }
+  },
+  "db": {
+    "total_entries": 48,
+    "coverage_tests": {
+      "상해사망": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A1300",
+        "canonical_name": "상해사망"
+      },
+      "질병사망": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A1100",
+        "canonical_name": "질병사망"
+      },
+      "암진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "계속받는암진단비(유사암,대장점막내암및전립선암제외)",
+            "method": "exact",
+            "code": "A4299_1",
+            "canonical_name": "재진단암진단비"
+          },
+          {
+            "raw_name": "암진단비Ⅱ(유사암제외)",
+            "method": "exact",
+            "code": "A4200_1",
+            "canonical_name": "암진단비(유사암제외)"
+          },
+          {
+            "raw_name": "유사암진단비Ⅱ(1년감액지급)",
+            "method": "exact",
+            "code": "A4210",
+            "canonical_name": "유사암진단비"
+          },
+          {
+            "raw_name": "고액치료비암진단비",
+            "method": "exact",
+            "code": "A4209",
+            "canonical_name": "고액암진단비"
+          }
+        ]
+      },
+      "뇌졸중진단비": {
+        "status": "FOUND",
+        "method": "exact",
+        "code": "A4103",
+        "canonical_name": "뇌졸중진단비"
+      },
+      "허혈성심장질환진단비": {
+        "status": "NOT_FOUND"
+      },
+      "일반암진단비": {
+        "status": "NOT_FOUND"
+      },
+      "골절진단비": {
+        "status": "SIMILAR_FOUND",
+        "similar": [
+          {
+            "raw_name": "골절진단비(치아제외)",
+            "method": "exact",
+            "code": "A4301_1",
+            "canonical_name": "골절진단비(치아파절제외)"
+          }
+        ]
+      },
+      "화상진단비": {
+        "status": "NOT_FOUND"
+      },
+      "깁스치료비": {
+        "status": "NOT_FOUND"
+      }
+    }
+  }
+}

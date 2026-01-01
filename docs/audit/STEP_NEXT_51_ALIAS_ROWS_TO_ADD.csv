@@ -1,0 +1,42 @@
+﻿ins_cd,보험사명,cre_cvr_cd,신정원코드명,담보명(가입설계서),reason,confidence,source
+N01,메리츠,A1100,질병사망,3 질병사망,aggressive_normalize (matched: 질병사망),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A3300_1,상해후유장해(3-100%),5 일반상해후유장해(3~100%),aggressive_normalize (matched: 일반상해후유장해(3~100%)),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A4101,뇌혈관질환진단비,153 뇌혈관질환진단비,aggressive_normalize (matched: 뇌혈관질환진단비),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A4102,뇌출혈진단비,159 뇌출혈진단비,aggressive_normalize (matched: 뇌출혈진단비),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A4103,뇌졸중진단비,155 뇌졸중진단비,aggressive_normalize (matched: 뇌졸중진단비),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A4105,허혈성심장질환진단비,163 허혈성심장질환진단비,aggressive_normalize (matched: 허혈성심장질환진단비),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A4200_5,재진단암진단비(1년대기형),36 재진단암진단비(1년 대기형),aggressive_normalize (matched: 재진단암진단비(1년대기형)),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A4210,유사암진단비,27 유사암진단비,aggressive_normalize (matched: 유사암진단비),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A5100,질병수술비,237 질병수술비,aggressive_normalize (matched: 질병수술비),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A5107_1,허혈성심장질환수술비,171 허혈성심장질환수술비,aggressive_normalize (matched: 허혈성심장질환수술비),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A5200_6,(10년갱신)갱신형다빈치로봇암수술비(암특정암제외),641 (10년갱신)갱신형 다빈치로봇 암수술비(암(특정암제외)),aggressive_normalize (matched: (10년갱신)갱신형다빈치로봇암수술비(암(특정암제외))),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A5200_7,(10년갱신)갱신형다빈치로봇암수술비(특정암),642 (10년갱신)갱신형 다빈치로봇 암수술비(특정암),aggressive_normalize (matched: (10년갱신)갱신형다빈치로봇암수술비(특정암)),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A5298_001,유사암수술비,39 유사암수술비,aggressive_normalize (matched: 유사암수술비),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A5300,상해수술비,227 상해수술비,aggressive_normalize (matched: 상해수술비),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A6100_1,질병입원비,330 질병입원일당(1일이상),aggressive_normalize (matched: 질병입원일당(1일이상)),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A6300_1,상해입원비,329 일반상해입원일당(1일이상),aggressive_normalize (matched: 일반상해입원일당(1일이상)),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A9619_3,(10년갱신)갱신형표적항암약물허가치료비Ⅱ,633 (10년갱신)갱신형 표적항암약물허가치료비Ⅱ,aggressive_normalize (matched: (10년갱신)갱신형표적항암약물허가치료비Ⅱ),0.9,STEP_NEXT_51_alias_expansion
+N01,메리츠,A9640_1,혈전용해치료비,179 혈전용해치료비Ⅱ(뇌졸중),aggressive_normalize (matched: 혈전용해치료비Ⅱ(뇌졸중)),0.9,STEP_NEXT_51_alias_expansion
+N02,한화,A3300_1,상해후유장해(3-100%),상해후유장해(3-100%),aggressive_normalize (matched: 상해후유장해(3~100%)),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A4102,뇌출혈진단비,121 뇌출혈진단비,aggressive_normalize (matched: 뇌출혈진단비),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A4103,뇌졸중진단비,119 뇌졸중진단비,aggressive_normalize (matched: 뇌졸중진단비),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A4105,허혈성심장질환진단비,허혈성심장질환진단비,aggressive_normalize (matched: 허혈성심장질환진단비),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A4209,고액암진단비,58 고액치료비암진단비,aggressive_normalize (matched: 고액치료비암진단비),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A4210,유사암진단비,42 갑상선암·기타피부암·유사암진단비,aggressive_normalize (matched: 갑상선암·기타피부암·유사암진단비),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A4299_1,재진단암진단비,57 재진단암진단비,aggressive_normalize (matched: 재진단암진단비),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A4302,화상진단비,309 화상진단비,aggressive_normalize (matched: 화상진단비),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A5100,질병수술비,193 질병입원수술비(당일입원제외),aggressive_normalize (matched: 질병입원수술비(당일입원제외)),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A5100,질병수술비,194 질병통원수술비(당일입원포함),aggressive_normalize (matched: 질병통원수술비(당일입원포함)),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A5107_1,허혈성심장질환수술비,144 허혈심장질환수술비,aggressive_normalize (matched: 허혈심장질환수술비),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A5298_001,유사암수술비,65 갑상선암·기타피부암·유사암수술비(매회),aggressive_normalize (matched: 갑상선암·기타피부암·유사암수술비(매회)),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A5300,상해수술비,163 상해통원수술비(당일입원포함),aggressive_normalize (matched: 상해통원수술비(당일입원포함)),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A6100_1,질병입원비,질병입원비(1일-180일),aggressive_normalize (matched: 질병입원비(1일-180일)),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A6100_1,질병입원비,243 질병입원비(1일-180일),aggressive_normalize (matched: 질병입원비(1일-180일)),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A9617_1,항암방사선약물치료비(최초1회한),82 항암방사선치료비,aggressive_normalize (matched: 항암방사선치료비),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A9617_1,항암방사선약물치료비(최초1회한),83 항암약물치료비,aggressive_normalize (matched: 항암약물치료비),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A9619_1,표적항암약물허가치료비(최초1회한),89 표적항암약물허가치료비(유방암및비뇨생식기암)(1회한)(갱신형),aggressive_normalize (matched: 표적항암약물허가치료비(유방암및비뇨생식기암)(1회한)(갱신형)),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A9619_1,표적항암약물허가치료비(최초1회한),90 표적항암약물허가치료비(3대주요기관암)(1회한)(갱신형),aggressive_normalize (matched: 표적항암약물허가치료비(3대주요기관암)(1회한)(갱신형)),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A9619_1,표적항암약물허가치료비(최초1회한),"92 표적항암약물허가치료비(13대특정암,갑상선암및기타피부암)(1회한) (갱신형)","aggressive_normalize (matched: 표적항암약물허가치료비(13대특정암,갑상선암및기타피부암)(1회한)(갱신형))",0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A9620_1,카티(CAR-T)항암약물허가치료비,97 카티(CAR-T)항암약물허가치료비(1회한)(갱신형),aggressive_normalize (matched: 카티(CAR-T)항암약물허가치료비(1회한)(갱신형)),0.9,STEP_NEXT_51_alias_expansion
+N03,롯데,A9630_1,다빈치로봇암수술비,87 다빈치로봇암수술비(갑상선암및전립선암제외)(최초1회한)(갱신형),aggressive_normalize (matched: 다빈치로봇암수술비(갑상선암및전립선암제외)(최초1회한)(갱신형)),0.9,STEP_NEXT_51_alias_expansion
+N09,현대,A9640_1,혈전용해치료비,혈전용해치료비Ⅱ(최초1회한)(특정심장질환)담보,aggressive_normalize (matched: 혈전용해치료비Ⅱ(최초1회한)(특정심장질환) 보장),0.9,STEP_NEXT_51_alias_expansion

@@ -136,13 +136,14 @@ def parse_summary_row_text(text: str) -> Optional[dict]:
     text = " ".join(text.split())
 
     # Pattern breakdown:
-    # ^(\d+)?\s*              # Optional seq_num at start
+    # ^(\d+)?                 # Optional seq_num at start
+    # [.\)\s]*                # Optional separators (dot, paren, whitespace) after seq_num
     # (.+?)\s+                # coverage_name (non-greedy)
     # (\d+[천백만억]*원)\s+    # amount (Korean format)
     # ([\d,]+)\s+             # premium (digits with commas)
     # (.+)$                   # period (rest of string)
 
-    pattern = r"^(\d+)?\s*(.+?)\s+(\d+[천백만억]*원)\s+([\d,]+)\s+(.+)$"
+    pattern = r"^(\d+)?[.\)\s]*(.+?)\s+(\d+[천백만억]*원)\s+([\d,]+)\s+(.+)$"
     match = re.match(pattern, text)
 
     if not match:
@@ -150,8 +151,8 @@ def parse_summary_row_text(text: str) -> Optional[dict]:
 
     seq_num, coverage_name, amount, premium, period = match.groups()
 
-    # Clean up coverage_name (remove leading/trailing whitespace)
-    coverage_name = coverage_name.strip()
+    # Clean up coverage_name (remove leading/trailing whitespace and any remaining dots)
+    coverage_name = coverage_name.strip().lstrip('.')
 
     # Filter out header rows
     if "보장명" in coverage_name or "가입금액" in coverage_name:
@@ -281,6 +282,12 @@ def merge_row_band_to_summary_row(
     if len(final_coverage_name) < 10 and not re.search(r"[가-힣a-zA-Z]{2,}", final_coverage_name):
         # Fragment detected, skip this row
         return None
+
+    # STEP NEXT-55: Prepend seq_num to coverage_name_raw if present
+    # This preserves the "1. ", "2. ", etc. prefixes from the PDF
+    # Step2-a will remove them during normalization
+    if parsed["seq_num"]:
+        final_coverage_name = f"{parsed['seq_num']}. {final_coverage_name}"
 
     # Get row y-range (min/max across all blocks in band)
     y0 = min(b.y0 for b in row_band)

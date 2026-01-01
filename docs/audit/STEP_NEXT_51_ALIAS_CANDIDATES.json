@@ -1,0 +1,617 @@
+[
+  {
+    "unmapped_raw_name": "혈전용해치료비Ⅱ(최초1회한)(특정심장질환)담보",
+    "unmapped_insurers": [
+      "hyundai"
+    ],
+    "unmapped_count": 1,
+    "normalized": "혈전용해치료비Ⅱ(최초1회한)(특정심장질환)",
+    "aggressive_normalized": "혈전용해치료비Ⅱ(최초1회한)(특정심장질환)",
+    "code": "A9640_1",
+    "canonical_name": "혈전용해치료비",
+    "matched_excel_raw": "혈전용해치료비Ⅱ(최초1회한)(특정심장질환) 보장",
+    "matched_excel_ins_cd": "N10",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "3 질병사망",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "3질병사망",
+    "aggressive_normalized": "질병사망",
+    "code": "A1100",
+    "canonical_name": "질병사망",
+    "matched_excel_raw": "질병사망",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "5 일반상해후유장해(3~100%)",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "5일반상해후유장해(3~100%)",
+    "aggressive_normalized": "일반상해후유장해(3-100%)",
+    "code": "A3300_1",
+    "canonical_name": "상해후유장해(3-100%)",
+    "matched_excel_raw": "일반상해후유장해(3~100%)",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "27 유사암진단비",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "27유사암진단비",
+    "aggressive_normalized": "유사암진단비",
+    "code": "A4210",
+    "canonical_name": "유사암진단비",
+    "matched_excel_raw": "유사암진단비",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "36 재진단암진단비(1년 대기형)",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "36재진단암진단비(1년대기형)",
+    "aggressive_normalized": "재진단암진단비(1년대기형)",
+    "code": "A4200_5",
+    "canonical_name": "재진단암진단비(1년대기형)",
+    "matched_excel_raw": "재진단암진단비(1년대기형)",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "153 뇌혈관질환진단비",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "153뇌혈관질환진단비",
+    "aggressive_normalized": "뇌혈관질환진단비",
+    "code": "A4101",
+    "canonical_name": "뇌혈관질환진단비",
+    "matched_excel_raw": "뇌혈관질환진단비",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "155 뇌졸중진단비",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "155뇌졸중진단비",
+    "aggressive_normalized": "뇌졸중진단비",
+    "code": "A4103",
+    "canonical_name": "뇌졸중진단비",
+    "matched_excel_raw": "뇌졸중진단비",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "159 뇌출혈진단비",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "159뇌출혈진단비",
+    "aggressive_normalized": "뇌출혈진단비",
+    "code": "A4102",
+    "canonical_name": "뇌출혈진단비",
+    "matched_excel_raw": "뇌출혈진단비",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "163 허혈성심장질환진단비",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "163허혈성심장질환진단비",
+    "aggressive_normalized": "허혈성심장질환진단비",
+    "code": "A4105",
+    "canonical_name": "허혈성심장질환진단비",
+    "matched_excel_raw": "허혈성심장질환진단비",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "329 일반상해입원일당(1일이상)",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "329일반상해입원일당(1일이상)",
+    "aggressive_normalized": "일반상해입원일당(1일이상)",
+    "code": "A6300_1",
+    "canonical_name": "상해입원비",
+    "matched_excel_raw": "일반상해입원일당(1일이상)",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "330 질병입원일당(1일이상)",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "330질병입원일당(1일이상)",
+    "aggressive_normalized": "질병입원일당(1일이상)",
+    "code": "A6100_1",
+    "canonical_name": "질병입원비",
+    "matched_excel_raw": "질병입원일당(1일이상)",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "39 유사암수술비",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "39유사암수술비",
+    "aggressive_normalized": "유사암수술비",
+    "code": "A5298_001",
+    "canonical_name": "유사암수술비",
+    "matched_excel_raw": "유사암수술비",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "171 허혈성심장질환수술비",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "171허혈성심장질환수술비",
+    "aggressive_normalized": "허혈성심장질환수술비",
+    "code": "A5107_1",
+    "canonical_name": "허혈성심장질환수술비",
+    "matched_excel_raw": "허혈성심장질환수술비",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "227 상해수술비",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "227상해수술비",
+    "aggressive_normalized": "상해수술비",
+    "code": "A5300",
+    "canonical_name": "상해수술비",
+    "matched_excel_raw": "상해수술비",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "237 질병수술비",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "237질병수술비",
+    "aggressive_normalized": "질병수술비",
+    "code": "A5100",
+    "canonical_name": "질병수술비",
+    "matched_excel_raw": "질병수술비",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "641 (10년갱신)갱신형 다빈치로봇 암수술비(암(특정암제외))",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "641(10년갱신)갱신형다빈치로봇암수술비(암(특정암제외))",
+    "aggressive_normalized": "(10년갱신)갱신형다빈치로봇암수술비(암(특정암제외))",
+    "code": "A5200_6",
+    "canonical_name": "(10년갱신)갱신형다빈치로봇암수술비(암특정암제외)",
+    "matched_excel_raw": "(10년갱신)갱신형다빈치로봇암수술비(암(특정암제외))",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "642 (10년갱신)갱신형 다빈치로봇 암수술비(특정암)",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "642(10년갱신)갱신형다빈치로봇암수술비(특정암)",
+    "aggressive_normalized": "(10년갱신)갱신형다빈치로봇암수술비(특정암)",
+    "code": "A5200_7",
+    "canonical_name": "(10년갱신)갱신형다빈치로봇암수술비(특정암)",
+    "matched_excel_raw": "(10년갱신)갱신형다빈치로봇암수술비(특정암)",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "179 혈전용해치료비Ⅱ(뇌졸중)",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "179혈전용해치료비Ⅱ(뇌졸중)",
+    "aggressive_normalized": "혈전용해치료비Ⅱ(뇌졸중)",
+    "code": "A9640_1",
+    "canonical_name": "혈전용해치료비",
+    "matched_excel_raw": "혈전용해치료비Ⅱ(뇌졸중)",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "633 (10년갱신)갱신형 표적항암약물허가치료비Ⅱ",
+    "unmapped_insurers": [
+      "meritz"
+    ],
+    "unmapped_count": 1,
+    "normalized": "633(10년갱신)갱신형표적항암약물허가치료비",
+    "aggressive_normalized": "(10년갱신)갱신형표적항암약물허가치료비",
+    "code": "A9619_3",
+    "canonical_name": "(10년갱신)갱신형표적항암약물허가치료비Ⅱ",
+    "matched_excel_raw": "(10년갱신)갱신형표적항암약물허가치료비Ⅱ",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "상해후유장해(3-100%)",
+    "unmapped_insurers": [
+      "hanwha"
+    ],
+    "unmapped_count": 1,
+    "normalized": "상해후유장해(3-100%)",
+    "aggressive_normalized": "상해후유장해(3-100%)",
+    "code": "A3300_1",
+    "canonical_name": "상해후유장해(3-100%)",
+    "matched_excel_raw": "상해후유장해(3~100%)",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "허혈성심장질환진단비",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "허혈성심장질환진단비",
+    "aggressive_normalized": "허혈성심장질환진단비",
+    "code": "A4105",
+    "canonical_name": "허혈성심장질환진단비",
+    "matched_excel_raw": "허혈성심장질환진단비",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "질병입원비(1일-180일)",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "질병입원비(1일-180일)",
+    "aggressive_normalized": "질병입원비(1일-180일)",
+    "code": "A6100_1",
+    "canonical_name": "질병입원비",
+    "matched_excel_raw": "질병입원비(1일-180일)",
+    "matched_excel_ins_cd": "N05",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "42 갑상선암·기타피부암·유사암진단비",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "42갑상선암·기타피부암·유사암진단비",
+    "aggressive_normalized": "갑상선암기타피부암유사암진단비",
+    "code": "A4210",
+    "canonical_name": "유사암진단비",
+    "matched_excel_raw": "갑상선암·기타피부암·유사암진단비",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "57 재진단암진단비",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "57재진단암진단비",
+    "aggressive_normalized": "재진단암진단비",
+    "code": "A4299_1",
+    "canonical_name": "재진단암진단비",
+    "matched_excel_raw": "재진단암진단비",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "58 고액치료비암진단비",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "58고액치료비암진단비",
+    "aggressive_normalized": "고액치료비암진단비",
+    "code": "A4209",
+    "canonical_name": "고액암진단비",
+    "matched_excel_raw": "고액치료비암진단비",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "65 갑상선암·기타피부암·유사암수술비(매회)",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "65갑상선암·기타피부암·유사암수술비(매회)",
+    "aggressive_normalized": "갑상선암기타피부암유사암수술비(매회)",
+    "code": "A5298_001",
+    "canonical_name": "유사암수술비",
+    "matched_excel_raw": "갑상선암·기타피부암·유사암수술비(매회)",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "82 항암방사선치료비",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "82항암방사선치료비",
+    "aggressive_normalized": "항암방사선치료비",
+    "code": "A9617_1",
+    "canonical_name": "항암방사선약물치료비(최초1회한)",
+    "matched_excel_raw": "항암방사선치료비",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "83 항암약물치료비",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "83항암약물치료비",
+    "aggressive_normalized": "항암약물치료비",
+    "code": "A9617_1",
+    "canonical_name": "항암방사선약물치료비(최초1회한)",
+    "matched_excel_raw": "항암약물치료비",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "87 다빈치로봇암수술비(갑상선암및전립선암제외)(최초1회한)(갱신형)",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "87다빈치로봇암수술비(갑상선암및전립선암제외)",
+    "aggressive_normalized": "다빈치로봇암수술비(갑상선암및전립선암제외)",
+    "code": "A9630_1",
+    "canonical_name": "다빈치로봇암수술비",
+    "matched_excel_raw": "다빈치로봇암수술비(갑상선암및전립선암제외)(최초1회한)(갱신형)",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "89 표적항암약물허가치료비(유방암및비뇨생식기암)(1회한)(갱신형)",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "89표적항암약물허가치료비(유방암및비뇨생식기암)",
+    "aggressive_normalized": "표적항암약물허가치료비(유방암및비뇨생식기암)",
+    "code": "A9619_1",
+    "canonical_name": "표적항암약물허가치료비(최초1회한)",
+    "matched_excel_raw": "표적항암약물허가치료비(유방암및비뇨생식기암)(1회한)(갱신형)",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "90 표적항암약물허가치료비(3대주요기관암)(1회한)(갱신형)",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "90표적항암약물허가치료비(3대주요기관암)",
+    "aggressive_normalized": "표적항암약물허가치료비(3대주요기관암)",
+    "code": "A9619_1",
+    "canonical_name": "표적항암약물허가치료비(최초1회한)",
+    "matched_excel_raw": "표적항암약물허가치료비(3대주요기관암)(1회한)(갱신형)",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "92 표적항암약물허가치료비(13대특정암,갑상선암및기타피부암)(1회한) (갱신형)",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "92표적항암약물허가치료비(13대특정암,갑상선암및기타피부암)",
+    "aggressive_normalized": "표적항암약물허가치료비(13대특정암,갑상선암및기타피부암)",
+    "code": "A9619_1",
+    "canonical_name": "표적항암약물허가치료비(최초1회한)",
+    "matched_excel_raw": "표적항암약물허가치료비(13대특정암,갑상선암및기타피부암)(1회한)(갱신형)",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "97 카티(CAR-T)항암약물허가치료비(1회한)(갱신형)",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "97카티(CAR-T)항암약물허가치료비",
+    "aggressive_normalized": "카티(CAR-T)항암약물허가치료비",
+    "code": "A9620_1",
+    "canonical_name": "카티(CAR-T)항암약물허가치료비",
+    "matched_excel_raw": "카티(CAR-T)항암약물허가치료비(1회한)(갱신형)",
+    "matched_excel_ins_cd": "N02",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "243 질병입원비(1일-180일)",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "243질병입원비(1일-180일)",
+    "aggressive_normalized": "질병입원비(1일-180일)",
+    "code": "A6100_1",
+    "canonical_name": "질병입원비",
+    "matched_excel_raw": "질병입원비(1일-180일)",
+    "matched_excel_ins_cd": "N05",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "119 뇌졸중진단비",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "119뇌졸중진단비",
+    "aggressive_normalized": "뇌졸중진단비",
+    "code": "A4103",
+    "canonical_name": "뇌졸중진단비",
+    "matched_excel_raw": "뇌졸중진단비",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "121 뇌출혈진단비",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "121뇌출혈진단비",
+    "aggressive_normalized": "뇌출혈진단비",
+    "code": "A4102",
+    "canonical_name": "뇌출혈진단비",
+    "matched_excel_raw": "뇌출혈진단비",
+    "matched_excel_ins_cd": "N01",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "144 허혈심장질환수술비",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "144허혈심장질환수술비",
+    "aggressive_normalized": "허혈심장질환수술비",
+    "code": "A5107_1",
+    "canonical_name": "허혈성심장질환수술비",
+    "matched_excel_raw": "허혈심장질환수술비",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "163 상해통원수술비(당일입원포함)",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "163상해통원수술비(당일입원포함)",
+    "aggressive_normalized": "상해통원수술비(당일입원포함)",
+    "code": "A5300",
+    "canonical_name": "상해수술비",
+    "matched_excel_raw": "상해통원수술비(당일입원포함)",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "193 질병입원수술비(당일입원제외)",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "193질병입원수술비(당일입원제외)",
+    "aggressive_normalized": "질병입원수술비(당일입원제외)",
+    "code": "A5100",
+    "canonical_name": "질병수술비",
+    "matched_excel_raw": "질병입원수술비(당일입원제외)",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "194 질병통원수술비(당일입원포함)",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "194질병통원수술비(당일입원포함)",
+    "aggressive_normalized": "질병통원수술비(당일입원포함)",
+    "code": "A5100",
+    "canonical_name": "질병수술비",
+    "matched_excel_raw": "질병통원수술비(당일입원포함)",
+    "matched_excel_ins_cd": "N03",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  },
+  {
+    "unmapped_raw_name": "309 화상진단비",
+    "unmapped_insurers": [
+      "lotte"
+    ],
+    "unmapped_count": 1,
+    "normalized": "309화상진단비",
+    "aggressive_normalized": "화상진단비",
+    "code": "A4302",
+    "canonical_name": "화상진단비",
+    "matched_excel_raw": "화상진단비",
+    "matched_excel_ins_cd": "N02",
+    "match_method": "aggressive_normalize",
+    "confidence": 0.9
+  }
+]
