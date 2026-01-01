@@ -31,6 +31,41 @@ _RUNS/{run_id}/         # Run-specific metadata
 
 ---
 
+## Canonical Pipeline Entrypoint
+
+**STEP NEXT-53 Constitutional Rule**: Use ONLY this execution path.
+
+### Step1 → Step2-a → Step2-b (Fixed Order)
+```bash
+# Step1: Profile + Extract (manifest-driven)
+python -m pipeline.step1_summary_first.profile_builder_v3 \
+  --manifest data/manifests/proposal_pdfs_v1.json \
+  --insurer hanwha
+
+python -m pipeline.step1_summary_first.extractor_v3 \
+  --manifest data/manifests/proposal_pdfs_v1.json \
+  --insurer hanwha
+
+# Step2-a: Sanitize (JSONL-only, no PDF, no LLM)
+python -m pipeline.step2_sanitize_scope.run --insurer hanwha
+
+# Step2-b: Canonical mapping (JSONL-only, deterministic)
+python -m pipeline.step2_canonical_mapping.run --insurer hanwha
+```
+
+**Inputs**:
+- Manifest SSOT: `data/manifests/proposal_pdfs_v1.json`
+- Mapping INPUT: `data/sources/mapping/담보명mapping자료.xlsx`
+
+**Outputs** (all in `data/scope_v3/`):
+- `*_step1_raw_scope_v3.jsonl`
+- `*_step2_sanitized_scope_v1.jsonl`
+- `*_step2_canonical_scope_v1.jsonl`
+
+See `CLAUDE.md` for full runbook.
+
+---
+
 ## Usage
 
 ### Get Latest Run
@@ -74,10 +109,15 @@ Examples:
 ## Legacy Directories (DO NOT USE)
 
 **Archived** (read-only reference):
-- `archive/scope_v1_legacy/` (formerly `data/scope/`)
-- `archive/scope_v2_legacy/` (formerly `data/scope_v2/`)
+- `archive/scope_legacy/run_20260101_step_next_52_hk/` (legacy Step2 outputs)
+- `archive/legacy_outputs/run_20260101_004654_step_next_53/data_scope/` (legacy Step1 outputs)
+- `archive/legacy_outputs/run_20260101_004654_step_next_53/data_scope_v2/` (v2 Step1 outputs)
+- `archive/scope_v1_legacy/` (historical)
+- `archive/scope_v2_legacy/` (historical)
 
 **DO NOT** reference these directories in new code or downstream steps.
+
+See `data/scope/README.md` for migration guide.
 
 ---
 

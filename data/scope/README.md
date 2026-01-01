@@ -1,31 +1,28 @@
-# LEGACY DIRECTORY — DO NOT USE
+# ⚠️ ARCHIVED — DO NOT USE
 
-**⚠️ WARNING: This directory is DEPRECATED.**
+**This directory has been archived as of STEP NEXT-53 (2026-01-01)**
 
-## Status
-- **LEGACY ONLY** — All outputs have been migrated to `data/scope_v3/`
-- **DO NOT READ** — Downstream steps must use `data/scope_v3/` only
-- **DO NOT WRITE** — Pipeline outputs must go to `data/scope_v3/` only
-
-## SSOT (Single Source of Truth)
-**ALL pipeline outputs MUST be in `data/scope_v3/`**:
+## Archive Location
 ```
-data/scope_v3/{insurer}_step1_raw_scope_v3.jsonl          # Step1 output
-data/scope_v3/{insurer}_step2_sanitized_scope_v1.jsonl    # Step2-a output
-data/scope_v3/{insurer}_step2_canonical_scope_v1.jsonl    # Step2-b output
-data/scope_v3/{insurer}_step2_dropped.jsonl               # Step2-a audit
-data/scope_v3/{insurer}_step2_mapping_report.jsonl        # Step2-b audit
+archive/legacy_outputs/run_20260101_004654_step_next_53/data_scope/
 ```
 
-## Constitutional Rule
-1. **Step1 output** → `data/scope_v3/`
-2. **Step2-a/Step2-b output** → `data/scope_v3/`
-3. **Step3+ input** → `data/scope_v3/` ONLY
+## Use Instead
+**SSOT (Single Source of Truth)**: `data/scope_v3/`
 
-## Archive History
-- **2026-01-01 (STEP NEXT-52-HK)**: Legacy Step2 outputs moved to `archive/scope_legacy/run_20260101_step_next_52_hk/`
+All pipeline outputs now reside in `data/scope_v3/`:
+- `*_step1_raw_scope_v3.jsonl` — Step1 extraction
+- `*_step2_sanitized_scope_v1.jsonl` — Step2-a sanitization
+- `*_step2_canonical_scope_v1.jsonl` — Step2-b canonical mapping
 
-## Enforcement
-- Code-level validation in Step2-a and Step2-b rejects non-`scope_v3/` paths
-- Test suite fails if any `*_step2_*.jsonl` files exist in this directory
-- See `tests/test_scope_ssot_no_legacy_step2_outputs.py`
+## Why Archived?
+This directory contained legacy Step1 outputs from deprecated pipelines:
+- `step1_extract_scope` (replaced by `step1_summary_first`)
+- Manual CSV exports and mapping artifacts
+
+The canonical pipeline now follows:
+```
+manifest → step1_summary_first → step2_sanitize_scope → step2_canonical_mapping
+```
+
+See `CLAUDE.md` for current runbook.
