@@ -1,7 +1,7 @@
 {
   "profile_version": "v3",
   "builder_version": "step-next-45d",
-  "generated_at": "2026-01-01T02:23:16.082024+09:00",
+  "generated_at": "2026-01-01T11:45:31.924710+09:00",
   "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "kb",
   "variant": "default",
@@ -148,7 +148,7 @@
         "column_map": {
           "has_row_number_column": true,
           "row_number_column_index": 0,
-          "coverage_name": null,
+          "coverage_name": 1,
           "coverage_amount": 3,
           "premium": 4,
           "period": 5
@@ -386,7 +386,7 @@
         "column_map": {
           "has_row_number_column": true,
           "row_number_column_index": 0,
-          "coverage_name": null,
+          "coverage_name": 1,
           "coverage_amount": 3,
           "premium": 4,
           "period": 5

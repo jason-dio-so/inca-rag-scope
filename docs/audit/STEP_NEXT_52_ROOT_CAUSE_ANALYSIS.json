@@ -1,0 +1,245 @@
+{
+  "by_insurer": {
+    "samsung": {
+      "sanitized_count": 61,
+      "canonical_count": 61,
+      "row_count_match": true,
+      "sanitized_fragments": {},
+      "canonical_fragments": {},
+      "root_cause": "CLEAN"
+    },
+    "hyundai": {
+      "sanitized_count": 34,
+      "canonical_count": 34,
+      "row_count_match": true,
+      "sanitized_fragments": {},
+      "canonical_fragments": {},
+      "root_cause": "CLEAN"
+    },
+    "kb": {
+      "sanitized_count": 36,
+      "canonical_count": 36,
+      "row_count_match": true,
+      "sanitized_fragments": {},
+      "canonical_fragments": {},
+      "root_cause": "CLEAN"
+    },
+    "meritz": {
+      "sanitized_count": 36,
+      "canonical_count": 36,
+      "row_count_match": true,
+      "sanitized_fragments": {
+        "leading_number": [
+          "159 뇌출혈진단비",
+          "237 질병수술비",
+          "364 신화상치료비(화상수술비)",
+          "27 유사암진단비",
+          "365 신화상치료비(화상진단비)",
+          "171 허혈성심장질환수술비",
+          "5 일반상해후유장해(3~100%)",
+          "163 허혈성심장질환진단비",
+          "715 (20년갱신)갱신형 중증질환자(뇌혈관질환) 산정특례대상 진단비(연 간1회한)",
+          "179 혈전용해치료비Ⅱ(뇌졸중)",
+          "641 (10년갱신)갱신형 다빈치로봇 암수술비(암(특정암제외))",
+          "333 일반상해중환자실입원일당(1일이상)",
+          "633 (10년갱신)갱신형 표적항암약물허가치료비Ⅱ",
+          "366 신화상치료비(중증화상및부식진단비)",
+          "642 (10년갱신)갱신형 다빈치로봇 암수술비(특정암)",
+          "330 질병입원일당(1일이상)",
+          "36 재진단암진단비(1년 대기형)",
+          "3 질병사망",
+          "155 뇌졸중진단비",
+          "39 유사암수술비",
+          "153 뇌혈관질환진단비",
+          "227 상해수술비",
+          "329 일반상해입원일당(1일이상)"
+        ]
+      },
+      "canonical_fragments": {
+        "leading_number": [
+          "159 뇌출혈진단비",
+          "237 질병수술비",
+          "364 신화상치료비(화상수술비)",
+          "27 유사암진단비",
+          "365 신화상치료비(화상진단비)",
+          "171 허혈성심장질환수술비",
+          "5 일반상해후유장해(3~100%)",
+          "163 허혈성심장질환진단비",
+          "715 (20년갱신)갱신형 중증질환자(뇌혈관질환) 산정특례대상 진단비(연 간1회한)",
+          "179 혈전용해치료비Ⅱ(뇌졸중)",
+          "641 (10년갱신)갱신형 다빈치로봇 암수술비(암(특정암제외))",
+          "333 일반상해중환자실입원일당(1일이상)",
+          "633 (10년갱신)갱신형 표적항암약물허가치료비Ⅱ",
+          "366 신화상치료비(중증화상및부식진단비)",
+          "642 (10년갱신)갱신형 다빈치로봇 암수술비(특정암)",
+          "330 질병입원일당(1일이상)",
+          "36 재진단암진단비(1년 대기형)",
+          "3 질병사망",
+          "155 뇌졸중진단비",
+          "39 유사암수술비",
+          "153 뇌혈관질환진단비",
+          "227 상해수술비",
+          "329 일반상해입원일당(1일이상)"
+        ]
+      },
+      "root_cause": "A_SANITIZATION_GAP"
+    },
+    "hanwha": {
+      "sanitized_count": 34,
+      "canonical_count": 34,
+      "row_count_match": true,
+      "sanitized_fragments": {
+        "sub_item_marker": [
+          "- 4대유사암진단비(갑상선암)",
+          "- 4대유사암진단비(제자리암)",
+          "- 4대유사암진단비(경계성종양)",
+          "- 4대유사암진단비(기타피부암)"
+        ]
+      },
+      "canonical_fragments": {
+        "sub_item_marker": [
+          "- 4대유사암진단비(갑상선암)",
+          "- 4대유사암진단비(제자리암)",
+          "- 4대유사암진단비(경계성종양)",
+          "- 4대유사암진단비(기타피부암)"
+        ]
+      },
+      "root_cause": "A_SANITIZATION_GAP"
+    },
+    "lotte": {
+      "sanitized_count": 64,
+      "canonical_count": 64,
+      "row_count_match": true,
+      "sanitized_fragments": {
+        "leading_number": [
+          "193 질병입원수술비(당일입원제외)",
+          "42 갑상선암·기타피부암·유사암진단비",
+          "121 뇌출혈진단비",
+          "82 항암방사선치료비",
+          "97 카티(CAR-T)항암약물허가치료비(1회한)(갱신형)",
+          "92 표적항암약물허가치료비(13대특정암,갑상선암및기타피부암)(1회한) (갱신형)",
+          "123 뇌경색증(I63) 혈전용해치료비",
+          "163 상해통원수술비(당일입원포함)",
+          "136 급성심근경색증(I21) 혈전용해치료비",
+          "144 허혈심장질환수술비",
+          "65 갑상선암·기타피부암·유사암수술비(매회)",
+          "119 뇌졸중진단비",
+          "83 항암약물치료비",
+          "57 재진단암진단비",
+          "309 화상진단비",
+          "58 고액치료비암진단비",
+          "89 표적항암약물허가치료비(유방암및비뇨생식기암)(1회한)(갱신형)",
+          "243 질병입원비(1일-180일)",
+          "87 다빈치로봇암수술비(갑상선암및전립선암제외)(최초1회한)(갱신형)",
+          "90 표적항암약물허가치료비(3대주요기관암)(1회한)(갱신형)",
+          "99 암직접입원비(요양병원제외)(1일-120일)",
+          "194 질병통원수술비(당일입원포함)"
+        ]
+      },
+      "canonical_fragments": {
+        "leading_number": [
+          "193 질병입원수술비(당일입원제외)",
+          "42 갑상선암·기타피부암·유사암진단비",
+          "121 뇌출혈진단비",
+          "82 항암방사선치료비",
+          "97 카티(CAR-T)항암약물허가치료비(1회한)(갱신형)",
+          "92 표적항암약물허가치료비(13대특정암,갑상선암및기타피부암)(1회한) (갱신형)",
+          "123 뇌경색증(I63) 혈전용해치료비",
+          "163 상해통원수술비(당일입원포함)",
+          "136 급성심근경색증(I21) 혈전용해치료비",
+          "144 허혈심장질환수술비",
+          "65 갑상선암·기타피부암·유사암수술비(매회)",
+          "119 뇌졸중진단비",
+          "83 항암약물치료비",
+          "57 재진단암진단비",
+          "309 화상진단비",
+          "58 고액치료비암진단비",
+          "89 표적항암약물허가치료비(유방암및비뇨생식기암)(1회한)(갱신형)",
+          "243 질병입원비(1일-180일)",
+          "87 다빈치로봇암수술비(갑상선암및전립선암제외)(최초1회한)(갱신형)",
+          "90 표적항암약물허가치료비(3대주요기관암)(1회한)(갱신형)",
+          "99 암직접입원비(요양병원제외)(1일-120일)",
+          "194 질병통원수술비(당일입원포함)"
+        ]
+      },
+      "root_cause": "A_SANITIZATION_GAP"
+    },
+    "heungkuk": {
+      "sanitized_count": 22,
+      "canonical_count": 22,
+      "row_count_match": true,
+      "sanitized_fragments": {},
+      "canonical_fragments": {},
+      "root_cause": "CLEAN"
+    },
+    "db": {
+      "sanitized_count": 48,
+      "canonical_count": 48,
+      "row_count_match": true,
+      "sanitized_fragments": {},
+      "canonical_fragments": {},
+      "root_cause": "CLEAN"
+    }
+  },
+  "root_cause": {},
+  "fragment_examples": {
+    "leading_number": [
+      {
+        "insurer": "meritz",
+        "name": "159 뇌출혈진단비",
+        "in_sanitized": true,
+        "in_canonical": true
+      },
+      {
+        "insurer": "meritz",
+        "name": "237 질병수술비",
+        "in_sanitized": true,
+        "in_canonical": true
+      },
+      {
+        "insurer": "meritz",
+        "name": "364 신화상치료비(화상수술비)",
+        "in_sanitized": true,
+        "in_canonical": true
+      },
+      {
+        "insurer": "lotte",
+        "name": "193 질병입원수술비(당일입원제외)",
+        "in_sanitized": true,
+        "in_canonical": true
+      },
+      {
+        "insurer": "lotte",
+        "name": "42 갑상선암·기타피부암·유사암진단비",
+        "in_sanitized": true,
+        "in_canonical": true
+      },
+      {
+        "insurer": "lotte",
+        "name": "121 뇌출혈진단비",
+        "in_sanitized": true,
+        "in_canonical": true
+      }
+    ],
+    "sub_item_marker": [
+      {
+        "insurer": "hanwha",
+        "name": "- 4대유사암진단비(갑상선암)",
+        "in_sanitized": true,
+        "in_canonical": true
+      },
+      {
+        "insurer": "hanwha",
+        "name": "- 4대유사암진단비(제자리암)",
+        "in_sanitized": true,
+        "in_canonical": true
+      },
+      {
+        "insurer": "hanwha",
+        "name": "- 4대유사암진단비(경계성종양)",
+        "in_sanitized": true,
+        "in_canonical": true
+      }
+    ]
+  }
+}

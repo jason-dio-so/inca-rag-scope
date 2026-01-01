@@ -154,7 +154,74 @@ class ProfileBuilderV3:
             **profile
         }
 
+        # STEP NEXT-55A: Profile Lock - prevent column_map regression
+        self._verify_profile_lock(profile_with_provenance)
+
         return profile_with_provenance
+
+    def _verify_profile_lock(self, new_profile: Dict[str, Any]) -> None:
+        """
+        STEP NEXT-55A: Profile Lock - Change Control Gate
+
+        Verify that column_map doesn't change for the same PDF fingerprint.
+        If an existing profile has the same fingerprint but different column_map, exit with error.
+
+        This prevents silent regression in column detection logic.
+        """
+        # Determine output path for this insurer/variant
+        output_dir = Path(__file__).parent.parent.parent / "data" / "profile"
+        if self.variant == "default":
+            output_filename = f"{self.insurer}_proposal_profile_v3.json"
+        else:
+            output_filename = f"{self.insurer}_{self.variant}_proposal_profile_v3.json"
+        output_path = output_dir / output_filename
+
+        # Check if profile already exists
+        if not output_path.exists():
+            return  # New profile, no lock to verify
+
+        # Load existing profile
+        try:
+            with open(output_path, 'r', encoding='utf-8') as f:
+                existing_profile = json.load(f)
+        except Exception as e:
+            logger.warning(f"{self.insurer}: Failed to load existing profile for lock verification: {e}")
+            return
+
+        # Compare fingerprints
+        existing_fp = existing_profile.get('pdf_fingerprint', {})
+        new_fp = new_profile.get('pdf_fingerprint', {})
+
+        # If fingerprints don't match, this is a new PDF (allow changes)
+        if existing_fp.get('sha256_first_2mb') != new_fp.get('sha256_first_2mb'):
+            logger.info(f"{self.insurer}: PDF fingerprint changed (new PDF detected), allowing profile regeneration")
+            return
+
+        # Same fingerprint - verify column_map hasn't changed
+        existing_column_maps = []
+        new_column_maps = []
+
+        for sig in existing_profile.get('summary_table', {}).get('primary_signatures', []):
+            cm = sig.get('column_map', {})
+            existing_column_maps.append((sig['page'], sig['table_index'], cm.get('coverage_name')))
+
+        for sig in new_profile.get('summary_table', {}).get('primary_signatures', []):
+            cm = sig.get('column_map', {})
+            new_column_maps.append((sig['page'], sig['table_index'], cm.get('coverage_name')))
+
+        # Compare column_maps
+        if existing_column_maps != new_column_maps:
+            logger.error(f"{self.insurer}: PROFILE LOCK VIOLATION!")
+            logger.error(f"  Same PDF fingerprint ({new_fp.get('sha256_first_2mb', '')[:16]}...)")
+            logger.error(f"  But column_map changed:")
+            logger.error(f"    Existing: {existing_column_maps}")
+            logger.error(f"    New:      {new_column_maps}")
+            logger.error(f"  This indicates column detection logic regression.")
+            logger.error(f"  Fix: Restore column detection logic or update lock if intentional.")
+            import sys
+            sys.exit(2)
+
+        logger.info(f"{self.insurer}: Profile lock verified (column_map stable)")
 
     def _is_summary_table(self, table: List[List[Any]], page: int, table_idx: int) -> tuple[bool, bool, Optional[Dict]]:
         """
@@ -486,6 +553,173 @@ class ProfileBuilderV3:
 
         return 0  # Default to first row
 
+    def _detect_category_columns(self, table: List[List[Any]], header_row: List[Any]) -> List[int]:
+        """
+        STEP NEXT-55A: Detect category columns (Samsung case)
+
+        Category columns have:
+        1. Low diversity: unique values < 30% of total rows
+        2. Short text: avg length < 5 chars
+        3. Category keywords: "진단", "입원", "수술", "사망", "후유장해", "기본계약", "납입"
+        4. High sparsity: empty values > 50%
+
+        Returns: List of column indices that are category columns
+        """
+        # Sample data rows (skip header, sample first 30 rows)
+        data_rows = table[1:min(31, len(table))]
+        if len(data_rows) < 5:
+            return []
+
+        # Determine column count
+        col_counts = [len(row) for row in data_rows if row]
+        if not col_counts:
+            return []
+        col_count = max(set(col_counts), key=col_counts.count)
+
+        category_keywords = ['진단', '입원', '수술', '사망', '후유장해', '기본계약', '납입', '배상', '장해']
+        category_columns = []
+
+        for col_idx in range(min(3, col_count)):  # Only check first 3 columns
+            # Extract column values
+            col_values = []
+            for row in data_rows:
+                if col_idx < len(row):
+                    val = str(row[col_idx]).strip() if row[col_idx] else ''
+                    col_values.append(val)
+
+            if not col_values:
+                continue
+
+            # Criterion 1: Empty ratio (sparsity)
+            empty_count = sum(1 for val in col_values if not val)
+            empty_ratio = empty_count / len(col_values)
+
+            # Criterion 2: Unique diversity (measured against total rows, not just non-empty)
+            # Category columns have few unique values spread across many rows
+            non_empty_values = [val for val in col_values if val]
+            if not non_empty_values:
+                continue
+            unique_values = set(non_empty_values)
+            # Diversity = unique values / total rows (not non-empty rows)
+            # This captures sparsity: 4 unique values across 30 rows = 13.3% diversity
+            diversity_ratio = len(unique_values) / len(col_values)
+
+            # Criterion 3: Average text length
+            avg_length = sum(len(val) for val in non_empty_values) / len(non_empty_values) if non_empty_values else 0
+
+            # Criterion 4: Category keyword presence
+            keyword_match_count = sum(1 for val in non_empty_values if any(kw in val for kw in category_keywords))
+            keyword_ratio = keyword_match_count / len(non_empty_values) if non_empty_values else 0
+
+            # Decision: Is this a category column?
+            is_category = (
+                empty_ratio > 0.50 and  # Sparse (>50% empty)
+                diversity_ratio < 0.30 and  # Low diversity (<30% unique)
+                avg_length < 6 and  # Short text (<6 chars on average)
+                keyword_ratio > 0.30  # Category keywords present (>30% of values)
+            )
+
+            if is_category:
+                category_columns.append(col_idx)
+                logger.info(f"{self.insurer}: Column {col_idx} identified as category column "
+                           f"(empty: {empty_ratio:.1%}, diversity: {diversity_ratio:.1%}, "
+                           f"avg_len: {avg_length:.1f}, keyword: {keyword_ratio:.1%})")
+
+        return category_columns
+
+    def _detect_coverage_name_column_by_content(
+        self,
+        table: List[List[Any]],
+        category_column_indices: List[int],
+        row_number_column_index: Optional[int]
+    ) -> Optional[int]:
+        """
+        STEP NEXT-55A: Content-based coverage_name detection (Samsung fallback)
+
+        When header is empty/missing, detect coverage_name column by analyzing cell content:
+        - Korean text presence (>50% of rows)
+        - Longer text (avg > 5 chars)
+        - Not a category column, not a row-number column
+        - Not an amount/premium/period column (no numeric patterns)
+
+        Returns: Column index or None
+        """
+        # Sample data rows (skip header)
+        data_rows = table[1:min(31, len(table))]
+        if len(data_rows) < 5:
+            return None
+
+        # Determine column count
+        col_counts = [len(row) for row in data_rows if row]
+        if not col_counts:
+            return None
+        col_count = max(set(col_counts), key=col_counts.count)
+
+        korean_pattern = re.compile(r'[가-힣]{3,}')  # Korean text (3+ chars)
+        numeric_pattern = re.compile(r'\d+[,\d]*원?|^\d+$')  # Numbers/amounts
+
+        candidate_scores = []
+
+        for col_idx in range(min(5, col_count)):  # Check first 5 columns
+            # Skip category/row-number columns
+            if col_idx in category_column_indices:
+                continue
+            if col_idx == row_number_column_index:
+                continue
+
+            # Extract column values
+            col_values = []
+            for row in data_rows:
+                if col_idx < len(row):
+                    val = str(row[col_idx]).strip() if row[col_idx] else ''
+                    col_values.append(val)
+
+            if not col_values:
+                continue
+
+            # Score criteria
+            non_empty = [v for v in col_values if v]
+            if not non_empty:
+                continue
+
+            korean_count = sum(1 for v in non_empty if korean_pattern.search(v))
+            korean_ratio = korean_count / len(non_empty)
+
+            avg_length = sum(len(v) for v in non_empty) / len(non_empty)
+
+            numeric_count = sum(1 for v in non_empty if numeric_pattern.search(v))
+            numeric_ratio = numeric_count / len(non_empty)
+
+            # Coverage name column should have:
+            # - High Korean ratio (>50%)
+            # - Long text (>5 chars avg)
+            # - Low numeric ratio (<30%)
+            score = 0.0
+            if korean_ratio > 0.5:
+                score += korean_ratio
+            if avg_length > 5:
+                score += (avg_length / 20.0)  # Normalize (max ~1.0)
+            if numeric_ratio < 0.3:
+                score += (1.0 - numeric_ratio)
+
+            candidate_scores.append((col_idx, score, korean_ratio, avg_length, numeric_ratio))
+
+        if not candidate_scores:
+            return None
+
+        # Sort by score (descending), then by leftmost column (ascending)
+        candidate_scores.sort(key=lambda x: (-x[1], x[0]))
+        best = candidate_scores[0]
+
+        # Require minimum score threshold
+        if best[1] < 1.0:
+            return None
+
+        logger.info(f"{self.insurer}: Content-based coverage_name candidate: col {best[0]} "
+                   f"(score: {best[1]:.2f}, korean: {best[2]:.1%}, avg_len: {best[3]:.1f}, numeric: {best[4]:.1%})")
+
+        return best[0]
+
     def _detect_column_map(self, header_row: List[Any], table: List[List[Any]]) -> Dict[str, Any]:
         """
         Detect column mapping with KB row-number offset detection
@@ -517,6 +751,12 @@ class ProfileBuilderV3:
             column_map['row_number_column_index'] = 0
             logger.info(f"{self.insurer}: Row-number column detected at index 0 (KB pattern)")
 
+        # STEP NEXT-55A: Detect category columns (Samsung case)
+        # Category columns have low diversity, short text, repeating category keywords, high sparsity
+        category_column_indices = self._detect_category_columns(table, header_row)
+        if category_column_indices:
+            logger.info(f"{self.insurer}: Category columns detected at indices: {category_column_indices}")
+
         # Detect field columns (with offset if row-number column exists)
         col_offset = 1 if column_map['has_row_number_column'] else 0
 
@@ -529,6 +769,10 @@ class ProfileBuilderV3:
                 # Apply offset for KB case
                 if column_map['has_row_number_column'] and idx == 0:
                     # This is the row-number column header, skip
+                    continue
+                # STEP NEXT-55A: Skip category columns
+                if idx in category_column_indices:
+                    logger.info(f"{self.insurer}: Skipping category column {idx} for coverage_name mapping")
                     continue
                 column_map['coverage_name'] = idx
 
@@ -543,6 +787,19 @@ class ProfileBuilderV3:
             # Period column
             if any(kw in cell_text for kw in self.PERIOD_KEYWORDS):
                 column_map['period'] = idx
+
+        # STEP NEXT-55A: Fallback - if coverage_name not found via header keywords,
+        # use content-based detection (Samsung case: column 1 has empty header but actual coverage names)
+        if column_map['coverage_name'] is None:
+            logger.info(f"{self.insurer}: coverage_name not found via header keywords, using content-based fallback")
+            coverage_name_col = self._detect_coverage_name_column_by_content(
+                table,
+                category_column_indices,
+                column_map.get('row_number_column_index')
+            )
+            if coverage_name_col is not None:
+                column_map['coverage_name'] = coverage_name_col
+                logger.info(f"{self.insurer}: coverage_name detected at column {coverage_name_col} (content-based)")
 
         return column_map
 

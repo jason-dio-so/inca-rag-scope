@@ -1,7 +1,7 @@
 {
   "profile_version": "v3",
   "builder_version": "step-next-45d",
-  "generated_at": "2026-01-01T02:23:24.328520+09:00",
+  "generated_at": "2026-01-01T11:45:40.263037+09:00",
   "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "meritz",
   "variant": "default",
@@ -39,7 +39,7 @@
         "column_map": {
           "has_row_number_column": false,
           "row_number_column_index": null,
-          "coverage_name": 0,
+          "coverage_name": 2,
           "coverage_amount": 3,
           "premium": 4,
           "period": 5
@@ -218,7 +218,7 @@
         "column_map": {
           "has_row_number_column": false,
           "row_number_column_index": null,
-          "coverage_name": 0,
+          "coverage_name": 2,
           "coverage_amount": 3,
           "premium": 4,
           "period": 5
