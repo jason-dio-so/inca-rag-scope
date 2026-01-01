@@ -1,7 +1,7 @@
 {
   "profile_version": "v3",
   "builder_version": "step-next-45d",
-  "generated_at": "2026-01-01T11:45:28.738137+09:00",
+  "generated_at": "2026-01-01T13:04:37.541604+09:00",
   "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "hyundai",
   "variant": "default",
