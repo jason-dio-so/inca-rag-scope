@@ -38,13 +38,26 @@ class IntentRouter:
     CRITICAL RULES:
     1. NO LLM-based classification
     2. Rule-based pattern matching
-    3. FAQ template takes precedence
-    4. Unknown intent → ask for clarification
+    3. Category takes precedence over keywords
+    4. FAQ template supported
+    5. Unknown intent → ask for clarification
     """
+
+    # STEP NEXT-UI-01: Category → Example mapping
+    CATEGORY_MAPPING: Dict[str, MessageKind] = {
+        "단순보험료 비교": "EX1_PREMIUM_DISABLED",
+        "② 상품/담보 설명": "EX2_DETAIL_DIFF",
+        "상품 비교": "EX3_INTEGRATED",  # Default for category
+        "보험 상식": "KNOWLEDGE_BASE"  # Future RAG
+    }
 
     # Keyword patterns for each intent
     PATTERNS: Dict[MessageKind, List[str]] = {
-        "EX2_DETAIL": [
+        "EX2_DETAIL_DIFF": [
+            r"다른.*상품",  # "다른 상품"
+            r"다른.*찾",    # "다른 찾아줘"
+            r"차이",
+            r"상이",
             r"상세",
             r"보장.*비교",
             r"면책",
@@ -82,21 +95,28 @@ class IntentRouter:
         """
         Detect intent from ChatRequest
 
-        Priority:
-        1. FAQ template (if provided) → 100% confidence
-        2. Keyword pattern matching → 0-100% confidence
-        3. Unknown → 0% confidence
+        Priority (STEP NEXT-UI-01):
+        1. Category (selectedCategory) → 100% confidence
+        2. FAQ template (if provided) → 100% confidence
+        3. Keyword pattern matching → 0-100% confidence
+        4. Unknown → 0% confidence
 
         Returns:
             (MessageKind, confidence_score)
         """
-        # Priority 1: FAQ template
+        # Priority 1: Category-based routing
+        if hasattr(request, 'selected_category') and request.selected_category:
+            kind = IntentRouter.CATEGORY_MAPPING.get(request.selected_category)
+            if kind:
+                return (kind, 1.0)
+
+        # Priority 2: FAQ template
         if request.faq_template_id:
             template = FAQTemplateRegistry.get_template(request.faq_template_id)
             if template:
                 return (template.example_kind, 1.0)
 
-        # Priority 2: Pattern matching
+        # Priority 3: Pattern matching
         message_lower = request.message.lower()
         scores: Dict[MessageKind, float] = {}
 
@@ -118,7 +138,7 @@ class IntentRouter:
                 return (best_kind, best_score)
 
         # Unknown intent
-        return ("EX2_DETAIL", 0.0)  # Default fallback
+        return ("EX2_DETAIL_DIFF", 0.0)  # Default fallback
 
     @staticmethod
     def route(request: ChatRequest) -> MessageKind:
@@ -159,10 +179,11 @@ class SlotValidator:
 
     # Required slots per MessageKind
     REQUIRED_SLOTS: Dict[MessageKind, List[str]] = {
-        "EX2_DETAIL": ["coverage_names", "insurers"],
+        "EX2_DETAIL_DIFF": ["coverage_names", "insurers", "compare_field"],
         "EX3_INTEGRATED": ["coverage_names", "insurers"],
         "EX4_ELIGIBILITY": ["disease_name", "insurers"],
-        "EX1_PREMIUM_DISABLED": []  # No slots required (immediate disabled response)
+        "EX1_PREMIUM_DISABLED": [],  # No slots required (immediate disabled response)
+        "PREMIUM_COMPARE": []
     }
 
     @staticmethod
@@ -178,6 +199,12 @@ class SlotValidator:
 
         for slot in required:
             value = getattr(request, slot, None)
+
+            # Special handling for compare_field: default to "보장한도"
+            if slot == "compare_field" and (value is None or value == ""):
+                request.compare_field = "보장한도"
+                continue
+
             if value is None or (isinstance(value, list) and len(value) == 0):
                 missing.append(slot)
 
@@ -247,6 +274,29 @@ class QueryCompiler:
     """
 
     @staticmethod
+    def extract_compare_field(message: str) -> str:
+        """
+        Extract compare field from query text (STEP NEXT-COMPARE-FILTER)
+
+        Returns:
+            Field name for comparison (보장한도, 지급유형, etc.)
+        """
+        field_patterns = {
+            "보장한도": [r"보장한도", r"한도", r"입원한도", r"보장기간"],
+            "지급유형": [r"지급유형", r"지급방식", r"지급조건", r"지급형태"],
+            "보장금액": [r"보장금액", r"가입금액", r"금액"],
+            "조건": [r"조건", r"면책", r"감액"]
+        }
+
+        message_lower = message.lower()
+        for field, patterns in field_patterns.items():
+            for pattern in patterns:
+                if re.search(pattern, message_lower):
+                    return field
+
+        return "보장한도"  # Default
+
+    @staticmethod
     def compile_coverage_names(raw_names: List[str]) -> List[str]:
         """
         Normalize coverage names to canonical form
@@ -304,13 +354,19 @@ class QueryCompiler:
         }
 
         # Compile slots based on kind
-        if kind in ["EX2_DETAIL", "EX3_INTEGRATED"]:
+        if kind in ["EX2_DETAIL_DIFF", "EX3_INTEGRATED"]:
             query["coverage_names"] = QueryCompiler.compile_coverage_names(
                 request.coverage_names or []
             )
             query["insurers"] = QueryCompiler.compile_insurer_codes(
                 request.insurers or []
             )
+            if kind == "EX2_DETAIL_DIFF":
+                # Auto-detect compare_field from message if not provided
+                if not request.compare_field:
+                    query["compare_field"] = QueryCompiler.extract_compare_field(request.message)
+                else:
+                    query["compare_field"] = request.compare_field
 
         elif kind == "EX4_ELIGIBILITY":
             query["disease_name"] = request.disease_name
@@ -368,10 +424,16 @@ class IntentDispatcher:
         # Step 3: Compile query
         compiled_query = QueryCompiler.compile(request, kind)
 
-        # Step 4: Dispatch to handler (imported at runtime to avoid circular deps)
-        from apps.api.chat_handlers import HandlerRegistry
+        # Step 4: Dispatch to handler
+        # STEP NEXT-UI-01: Use deterministic handlers by default (LLM OFF)
+        if request.llm_mode == "OFF":
+            from apps.api.chat_handlers_deterministic import HandlerRegistryDeterministic
+            handler = HandlerRegistryDeterministic.get_handler(kind)
+        else:
+            # LLM ON mode (optional, for text refinement only)
+            from apps.api.chat_handlers import HandlerRegistry
+            handler = HandlerRegistry.get_handler(kind)
 
-        handler = HandlerRegistry.get_handler(kind)
         if handler is None:
             raise ValueError(f"No handler for kind: {kind}")
 

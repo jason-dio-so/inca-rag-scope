@@ -405,8 +405,14 @@
     ]
   },
   "detail_table": {
-    "exists": false,
-    "pages": []
+    "exists": true,
+    "priority": 1,
+    "pages": [5, 6, 7],
+    "structure": {
+      "type": "text_based_layout",
+      "description": "Hyundai: Coverage name + description in text layout. Pattern: Line1='number. 담보명', Line2='납기/만기 금액 보험료', Line3+=보장설명 텍스트 until next coverage."
+    },
+    "notes": "Text-based extraction from '위험보장 및 보험금 지급내용' section. Description follows payment info line."
   },
   "known_anomalies": [],
   "evidences": [

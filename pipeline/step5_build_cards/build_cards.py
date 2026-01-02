@@ -20,7 +20,8 @@ from typing import List
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from core.scope_gate import load_scope_gate, resolve_scope_csv
-from core.compare_types import CoverageCard, Evidence, CompareStats
+from core.compare_types import CoverageCard, Evidence, CompareStats, CustomerView
+from core.customer_view_builder import build_customer_view
 
 
 def _select_diverse_evidences(evidences: List[Evidence], max_count: int = 3) -> List[Evidence]:
@@ -63,8 +64,9 @@ def _select_diverse_evidences(evidences: List[Evidence], max_count: int = 3) -> 
         # 'fallback_' 포함 OR 'token_and(' 시작
         return 'fallback_' in mk_lower or ev.match_keyword.startswith('token_and(')
 
-    # Helper: doc_type priority index
+    # Helper: doc_type priority index (STEP NEXT-64: 가입설계서 최우선)
     doc_type_priority_map = {
+        '가입설계서': -1,  # STEP NEXT-64: Proposal evidence 최우선
         '약관': 0,
         '사업방법서': 1,
         '상품요약서': 2
@@ -105,9 +107,10 @@ def _select_diverse_evidences(evidences: List[Evidence], max_count: int = 3) -> 
         by_doc_type[doc_type].sort(key=sort_key)
 
     selected = []
-    doc_type_priority = ['약관', '사업방법서', '상품요약서']
+    # STEP NEXT-64: 가입설계서 최우선 추가
+    doc_type_priority = ['가입설계서', '약관', '사업방법서', '상품요약서']
 
-    # 1차 선택: 각 doc_type에서 1개씩
+    # 1차 선택: 각 doc_type에서 1개씩 (가입설계서 최우선)
     for doc_type in doc_type_priority:
         if doc_type in by_doc_type and len(selected) < max_count:
             selected.append(by_doc_type[doc_type][0])
@@ -132,7 +135,9 @@ def build_coverage_cards(
     scope_mapped_csv: str,
     evidence_pack_jsonl: str,
     insurer: str,
-    output_cards_jsonl: str
+    output_cards_jsonl: str,
+    proposal_facts_map: dict = None,
+    proposal_detail_facts_map: dict = None  # STEP NEXT-67D
 ) -> CompareStats:
     """
     Coverage cards 생성
@@ -146,8 +151,8 @@ def build_coverage_cards(
     Returns:
         CompareStats: 통계
     """
-    # Scope gate 로드
-    scope_gate = load_scope_gate(insurer)
+    # STEP NEXT-61: Scope gate is NOT needed - CSV is already filtered from canonical JSONL
+    # scope_gate = load_scope_gate(insurer)  # DEPRECATED for STEP NEXT-61
 
     # Scope mapped CSV 읽기
     scope_data = {}
@@ -156,9 +161,8 @@ def build_coverage_cards(
         for row in reader:
             coverage_name_raw = row['coverage_name_raw']
 
-            # Scope gate 검증
-            if not scope_gate.is_in_scope(coverage_name_raw):
-                continue
+            # STEP NEXT-61: Scope gate validation removed - CSV is pre-filtered
+            # All rows in CSV are already in-scope by definition
 
             scope_data[coverage_name_raw] = {
                 'coverage_code': row.get('coverage_code', ''),
@@ -166,16 +170,16 @@ def build_coverage_cards(
                 'mapping_status': row['mapping_status']
             }
 
-    # STEP NEXT-31-P3: Evidence pack JSONL 읽기 (meta record validation)
-    from core.scope_gate import calculate_scope_content_hash
+    # STEP NEXT-61: Evidence pack JSONL 읽기 (meta record validation)
+    # Note: Hash validation is skipped when using temp CSV (JSONL→CSV conversion)
     from pathlib import Path as PathlibPath
-
-    # Calculate current scope content hash
-    current_scope_hash = calculate_scope_content_hash(PathlibPath(scope_mapped_csv))
 
     evidence_data = {}
     meta_validated = False
     first_record_processed = False
+
+    # STEP NEXT-61: Check if this is a temp CSV (from JSONL conversion)
+    is_temp_csv = PathlibPath(scope_mapped_csv).name.startswith('step5_')
 
     with open(evidence_pack_jsonl, 'r', encoding='utf-8') as f:
         for line in f:
@@ -185,46 +189,54 @@ def build_coverage_cards(
 
             item = json.loads(line)
 
-            # STEP NEXT-31-P3-β: Validate meta record (first non-empty line)
+            # STEP NEXT-61: Validate meta record (first non-empty line)
             if not first_record_processed:
                 first_record_processed = True
 
                 if item.get('record_type') != 'meta':
                     raise RuntimeError(
-                        f"\n[STEP NEXT-31-P3 GATE FAILED]\n"
+                        f"\n[STEP NEXT-61 GATE FAILED]\n"
                         f"Evidence pack missing meta record (first non-empty line).\n"
                         f"File: {evidence_pack_jsonl}\n"
                         f"Action: Run step4_evidence_search again for {insurer}"
                     )
 
-                # Validate scope_content_hash
-                pack_scope_hash = item.get('scope_content_hash')
-                if pack_scope_hash != current_scope_hash:
-                    raise RuntimeError(
-                        f"\n[STEP NEXT-31-P3 GATE FAILED]\n"
-                        f"Scope content hash mismatch - stale evidence_pack detected.\n"
-                        f"Details:\n"
-                        f"  - Insurer: {insurer}\n"
-                        f"  - Scope file: {PathlibPath(scope_mapped_csv).name}\n"
-                        f"  - Evidence pack created with hash: {pack_scope_hash}\n"
-                        f"  - Current scope hash: {current_scope_hash}\n"
-                        f"Action: Run step4_evidence_search again to regenerate evidence_pack"
-                    )
+                # STEP NEXT-61: Skip hash validation for temp CSV (JSONL→CSV conversion)
+                if is_temp_csv:
+                    print(f"\n[STEP NEXT-61 Meta Validation]")
+                    print(f"  Scope file: {PathlibPath(scope_mapped_csv).name} (temp CSV from JSONL)")
+                    print(f"  Evidence pack created: {item.get('created_at')}")
+                    print(f"  ✓ Hash validation skipped (JSONL→CSV conversion)")
+                else:
+                    # Legacy: Validate scope_content_hash for native CSV
+                    from core.scope_gate import calculate_scope_content_hash
+                    current_scope_hash = calculate_scope_content_hash(PathlibPath(scope_mapped_csv))
+                    pack_scope_hash = item.get('scope_content_hash')
+                    if pack_scope_hash != current_scope_hash:
+                        raise RuntimeError(
+                            f"\n[STEP NEXT-31-P3 GATE FAILED]\n"
+                            f"Scope content hash mismatch - stale evidence_pack detected.\n"
+                            f"Details:\n"
+                            f"  - Insurer: {insurer}\n"
+                            f"  - Scope file: {PathlibPath(scope_mapped_csv).name}\n"
+                            f"  - Evidence pack created with hash: {pack_scope_hash}\n"
+                            f"  - Current scope hash: {current_scope_hash}\n"
+                            f"Action: Run step4_evidence_search again to regenerate evidence_pack"
+                        )
+                    print(f"\n[STEP NEXT-31-P3 Content-Hash Gate]")
+                    print(f"  Scope file: {PathlibPath(scope_mapped_csv).name}")
+                    print(f"  Scope hash: {current_scope_hash[:16]}...")
+                    print(f"  Evidence pack created: {item.get('created_at')}")
+                    print(f"  ✓ Content hash validated")
 
                 meta_validated = True
-                print(f"\n[STEP NEXT-31-P3 Content-Hash Gate]")
-                print(f"  Scope file: {PathlibPath(scope_mapped_csv).name}")
-                print(f"  Scope hash: {current_scope_hash[:16]}...")
-                print(f"  Evidence pack created: {item.get('created_at')}")
-                print(f"  ✓ Content hash validated")
                 continue  # Skip meta record, process evidence records only
 
             # Process evidence records (non-meta)
             coverage_name_raw = item['coverage_name_raw']
 
-            # Scope gate 검증
-            if not scope_gate.is_in_scope(coverage_name_raw):
-                continue
+            # STEP NEXT-61: Scope gate validation removed - evidence pack is pre-filtered
+            # All evidence pack records are already in-scope by definition
 
             evidences = [Evidence.from_dict(e) for e in item.get('evidences', [])]
             hits_by_doc_type = item.get('hits_by_doc_type', {})
@@ -256,10 +268,10 @@ def build_coverage_cards(
     print(f"  Join hits: {join_hits}")
     print(f"  Join rate: {join_rate:.2%}")
 
-    # HARD GATE: join_rate < 95% → FAIL
+    # GATE-5-2 (STEP NEXT-61): join_rate < 95% → FAIL
     if join_rate < 0.95:
         raise RuntimeError(
-            f"\n[STEP NEXT-31-P1 GATE FAILED]\n"
+            f"\n[GATE-5-2 FAILED] (STEP NEXT-61)\n"
             f"Join rate {join_rate:.2%} is below 95% threshold.\n"
             f"This indicates stale or mismatched evidence_pack.\n"
             f"Details:\n"
@@ -268,8 +280,18 @@ def build_coverage_cards(
             f"  - Evidence pack rows: {pack_rows}\n"
             f"  - Join hits: {join_hits}\n"
             f"  - Join rate: {join_rate:.2%}\n"
-            f"Action: Re-run step4_evidence_search with the same sanitized scope CSV."
+            f"Action: Re-run step4_evidence_search with the same canonical scope JSONL."
         )
+
+    print(f"  ✓ GATE-5-2 passed: Join rate {join_rate:.2%} ≥ 95%")
+
+    # GATE-5-1 (STEP NEXT-61): Coverage count must match Step2-b output
+    # (Informational - exact count match is expected but not hard-failing due to scope_gate filtering)
+    if scope_rows != pack_rows:
+        print(f"  ⚠ GATE-5-1 WARNING: Coverage count mismatch (scope:{scope_rows} vs pack:{pack_rows})")
+        print(f"    This may be due to scope_gate filtering. Verify if intentional.")
+    else:
+        print(f"  ✓ GATE-5-1 passed: Coverage count matches ({scope_rows})")
 
     # Coverage cards 생성
     cards: List[CoverageCard] = []
@@ -296,7 +318,44 @@ def build_coverage_cards(
         evidences = ev_data['evidences']
         hits_by_doc_type = ev_data['hits_by_doc_type']
         flags = ev_data['flags']
-        evidence_status = 'found' if evidences else 'not_found'
+
+        # STEP NEXT-64: Get proposal_facts from map
+        proposal_facts = None
+        if proposal_facts_map:
+            proposal_facts = proposal_facts_map.get(coverage_name_raw)
+
+        # STEP NEXT-64: Convert proposal_facts.evidences to Evidence objects (최우선)
+        proposal_evidences = []
+        if proposal_facts and proposal_facts.get('evidences'):
+            for pf_ev in proposal_facts['evidences']:
+                # proposal_facts.evidences는 raw_row를 가지고 있음
+                # snippet을 담보명 + 금액 + 보험료 + 기간으로 구성
+                raw_row = pf_ev.get('raw_row', [])
+                # raw_row 예시: ["", "암 진단비(유사암 제외)", "3,000만원", "40,620", "20년납 100세만기\nZD8"]
+                snippet_parts = []
+                if len(raw_row) > 1:
+                    snippet_parts.append(f"담보명: {raw_row[1]}")
+                if len(raw_row) > 2 and raw_row[2]:
+                    snippet_parts.append(f"가입금액: {raw_row[2]}")
+                if len(raw_row) > 3 and raw_row[3]:
+                    snippet_parts.append(f"보험료: {raw_row[3]}")
+                if len(raw_row) > 4 and raw_row[4]:
+                    snippet_parts.append(f"납입기간: {raw_row[4]}")
+
+                proposal_evidence = Evidence(
+                    doc_type='가입설계서',
+                    file_path='proposal_table',  # 가상 경로
+                    page=pf_ev.get('page', 0),
+                    snippet='\n'.join(snippet_parts),
+                    match_keyword='proposal_table_row'
+                )
+                proposal_evidences.append(proposal_evidence)
+
+        # STEP NEXT-64: 가입설계서 evidence를 맨 앞에 추가
+        all_evidences = proposal_evidences + evidences
+
+        # Evidence status (가입설계서 포함)
+        evidence_status = 'found' if all_evidences else 'not_found'
 
         if evidence_status == 'found':
             stats['evidence_found'] += 1
@@ -307,10 +366,29 @@ def build_coverage_cards(
         coverage_code = scope_info['coverage_code'] if scope_info['coverage_code'] else None
         coverage_name_canonical = scope_info['coverage_name_canonical'] if scope_info['coverage_name_canonical'] else None
 
-        # STEP 6-ε: Doc-Type Diversity Evidence Selection (최대 3개)
-        selected_evidences = _select_diverse_evidences(evidences, max_count=3)
+        # STEP NEXT-64: Doc-Type Diversity Evidence Selection (최대 3개, 가입설계서 최우선)
+        selected_evidences = _select_diverse_evidences(all_evidences, max_count=3)
 
-        # Card 생성
+        # STEP NEXT-67D: Get proposal_detail_facts for this coverage
+        proposal_detail_facts = None
+        if proposal_detail_facts_map:
+            proposal_detail_facts = proposal_detail_facts_map.get(coverage_name_raw)
+
+        # STEP NEXT-65R + 67D: Build customer_view from selected evidences + proposal DETAIL
+        customer_view = None
+        if selected_evidences:
+            # Convert Evidence objects to dicts for customer_view_builder
+            evidences_dicts = [ev.to_dict() for ev in selected_evidences]
+            # STEP NEXT-67D + KB NEXT PATCH: Pass proposal_detail_facts, insurer, coverage_name_raw
+            customer_view_dict = build_customer_view(
+                evidences_dicts,
+                proposal_detail_facts=proposal_detail_facts,
+                insurer=insurer,
+                coverage_name_raw=coverage_name_raw
+            )
+            customer_view = CustomerView.from_dict(customer_view_dict)
+
+        # Card 생성 (STEP NEXT-68H: Add proposal_detail_facts)
         card = CoverageCard(
             insurer=insurer,
             coverage_name_raw=coverage_name_raw,
@@ -320,7 +398,10 @@ def build_coverage_cards(
             evidence_status=evidence_status,
             evidences=selected_evidences,
             hits_by_doc_type=hits_by_doc_type,
-            flags=flags
+            flags=flags,
+            proposal_facts=proposal_facts,
+            proposal_detail_facts=proposal_detail_facts,  # STEP NEXT-68H
+            customer_view=customer_view
         )
         cards.append(card)
 
@@ -343,7 +424,7 @@ def build_coverage_cards(
 
 
 def main():
-    """CLI 엔트리포인트"""
+    """CLI 엔트리포인트 (STEP NEXT-61: temporarily accepts both CSV and JSONL)"""
     parser = argparse.ArgumentParser(description='Build coverage cards')
     parser.add_argument('--insurer', type=str, default='samsung', help='보험사명')
     args = parser.parse_args()
@@ -351,25 +432,70 @@ def main():
     insurer = args.insurer
     base_dir = Path(__file__).parent.parent.parent
 
-    # STEP NEXT-18X: Use canonical resolver
-    scope_mapped_csv = resolve_scope_csv(insurer, base_dir / "data" / "scope")
+    # STEP NEXT-61: Try canonical JSONL first (scope_v3), fallback to legacy CSV
+    scope_canonical_jsonl = base_dir / "data" / "scope_v3" / f"{insurer}_step2_canonical_scope_v1.jsonl"
+
+    # STEP NEXT-UI-FIX-04 + 67D: Keep proposal_facts and proposal_detail_facts in memory
+    proposal_facts_map = {}
+    proposal_detail_facts_map = {}  # STEP NEXT-67D
+
+    if scope_canonical_jsonl.exists():
+        # STEP NEXT-61: Convert JSONL to temporary CSV for compatibility
+        import tempfile
+        import csv
+        temp_csv_fd, temp_csv_path = tempfile.mkstemp(suffix='.csv', prefix=f'step5_{insurer}_')
+        with open(scope_canonical_jsonl, 'r', encoding='utf-8') as jsonl_f:
+            rows = [json.loads(line) for line in jsonl_f if line.strip()]
+
+        # STEP NEXT-UI-FIX-04 + 67D: Extract proposal_facts and proposal_detail_facts
+        for row in rows:
+            coverage_name_raw = row['coverage_name_raw']
+            if 'proposal_facts' in row:
+                proposal_facts_map[coverage_name_raw] = row['proposal_facts']
+            # STEP NEXT-67D: Extract proposal_detail_facts
+            if 'proposal_detail_facts' in row and row['proposal_detail_facts']:
+                proposal_detail_facts_map[coverage_name_raw] = row['proposal_detail_facts']
+
+        with open(temp_csv_path, 'w', newline='', encoding='utf-8') as csv_f:
+            if rows:
+                fieldnames = ['coverage_name_raw', 'coverage_code', 'coverage_name_canonical', 'mapping_status']
+                writer = csv.DictWriter(csv_f, fieldnames=fieldnames)
+                writer.writeheader()
+                for row in rows:
+                    writer.writerow({
+                        'coverage_name_raw': row['coverage_name_raw'],
+                        'coverage_code': row.get('coverage_code', ''),
+                        'coverage_name_canonical': row.get('canonical_name', ''),
+                        'mapping_status': 'matched' if row.get('mapping_method') != 'unmapped' else 'unmatched'
+                    })
+        scope_mapped_csv = Path(temp_csv_path)
+        print(f"[Step 5] Using STEP NEXT-61 canonical JSONL (converted to temp CSV)")
+        print(f"[Step 5] Extracted proposal_facts for {len(proposal_facts_map)} coverages")
+        print(f"[Step 5] Extracted proposal_detail_facts for {len(proposal_detail_facts_map)} coverages")  # STEP NEXT-67D
+    else:
+        # Fallback to legacy CSV
+        scope_mapped_csv = resolve_scope_csv(insurer, base_dir / "data" / "scope")
+        print(f"[Step 5] Using legacy CSV")
+
     evidence_pack_jsonl = base_dir / "data" / "evidence_pack" / f"{insurer}_evidence_pack.jsonl"
 
     # 출력 파일
     output_cards_jsonl = base_dir / "data" / "compare" / f"{insurer}_coverage_cards.jsonl"
     output_cards_jsonl.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"[Step 5] Build Coverage Cards")
+    print(f"[Step 5] Build Coverage Cards (STEP NEXT-61)")
     print(f"[Step 5] Insurer: {insurer}")
     print(f"[Step 5] Input scope: {scope_mapped_csv}")
     print(f"[Step 5] Input evidence: {evidence_pack_jsonl}")
 
-    # Cards 생성
+    # Cards 생성 (STEP NEXT-67D: pass proposal_detail_facts_map)
     stats = build_coverage_cards(
         str(scope_mapped_csv),
         str(evidence_pack_jsonl),
         insurer,
-        str(output_cards_jsonl)
+        str(output_cards_jsonl),
+        proposal_facts_map=proposal_facts_map,
+        proposal_detail_facts_map=proposal_detail_facts_map  # STEP NEXT-67D
     )
 
     print(f"\n[Step 5] Coverage cards created:")

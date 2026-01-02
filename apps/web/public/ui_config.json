@@ -1,0 +1,73 @@
+{
+  "categories": [
+    {
+      "id": "premium_compare",
+      "label": "① 단순보험료 비교",
+      "description": "보험료 Top-4 비교 (가입설계서 기준)",
+      "example_kind": "EX1_PREMIUM_DISABLED",
+      "default_prompt": "보험료가 저렴한 순서로 보여주세요",
+      "requires_slots": []
+    },
+    {
+      "id": "coverage_detail",
+      "label": "② 상품/담보 설명",
+      "description": "담보별 보장한도, 지급유형, 조건 상세 설명",
+      "example_kind": "EX2_DETAIL_DIFF",
+      "default_prompt": "암진단비 담보의 보장한도를 알려주세요",
+      "requires_slots": ["coverage_names", "insurers"]
+    },
+    {
+      "id": "product_compare",
+      "label": "③ 상품 비교",
+      "description": "2개 보험사 직접 비교 또는 subtype 보장 여부 확인",
+      "example_kind": "EX3_INTEGRATED",
+      "default_prompt": "삼성화재와 메리츠화재의 암진단비를 비교해주세요",
+      "requires_slots": ["insurers", "coverage_names"],
+      "sub_examples": [
+        {
+          "label": "2사 비교",
+          "example_kind": "EX3_INTEGRATED"
+        },
+        {
+          "label": "보장 여부 확인",
+          "example_kind": "EX4_ELIGIBILITY"
+        }
+      ]
+    },
+    {
+      "id": "knowledge_base",
+      "label": "④ 보험 상식",
+      "description": "보험 관련 일반 지식 (RAG 기반)",
+      "example_kind": "KNOWLEDGE_BASE",
+      "default_prompt": "보험 상식을 알려주세요",
+      "requires_slots": [],
+      "status": "준비중"
+    }
+  ],
+  "available_insurers": [
+    {"code": "samsung", "display": "삼성화재"},
+    {"code": "meritz", "display": "메리츠화재"},
+    {"code": "db", "display": "DB손해보험"},
+    {"code": "kb", "display": "KB손해보험"},
+    {"code": "hanwha", "display": "한화손해보험"},
+    {"code": "hyundai", "display": "현대해상"},
+    {"code": "lotte", "display": "롯데손해보험"},
+    {"code": "heungkuk", "display": "흥국화재"}
+  ],
+  "common_coverages": [
+    "암진단비",
+    "암진단비(유사암제외)",
+    "뇌출혈진단비",
+    "급성심근경색진단비",
+    "뇌혈관질환진단비",
+    "허혈성심장질환진단비",
+    "상해사망",
+    "질병사망"
+  ],
+  "ui_settings": {
+    "default_llm_mode": "OFF",
+    "evidence_collapsed_by_default": true,
+    "max_insurers_per_query": 4,
+    "enable_forbidden_phrase_check": true
+  }
+}

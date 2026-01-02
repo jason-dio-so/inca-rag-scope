@@ -498,8 +498,18 @@
     ]
   },
   "detail_table": {
-    "exists": false,
-    "pages": []
+    "exists": true,
+    "type": "summary_embedded_detail",
+    "source": "summary_table",
+    "pages": [5, 6],
+    "columns": {
+      "coverage_name_and_desc": ["보장명 및 보장내용", "보장명및보장내용"]
+    },
+    "extraction_strategy": {
+      "mode": "multiline_split",
+      "coverage_name_pattern": "^(\\d+\\s+)?[가-힣A-Za-z0-9\\[\\]\\(\\)]+",
+      "description_starts_after_first_line": true
+    }
   },
   "known_anomalies": [
     "KB: Row-number column detected at index 0 (coverage name in column 1, not 0)"

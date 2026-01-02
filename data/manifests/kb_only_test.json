@@ -1,0 +1,12 @@
+{
+  "version": "kb_only_test",
+  "generated_at": "2026-01-02T00:00:00+09:00",
+  "items": [
+    {
+      "insurer": "kb",
+      "variant": "default",
+      "doc_type": "가입설계서",
+      "pdf_path": "data/sources/insurers/kb/가입설계서/KB_가입설계서.pdf"
+    }
+  ]
+}

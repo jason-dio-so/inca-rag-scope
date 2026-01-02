@@ -1,0 +1,20 @@
+{
+  "embedding_model": "jhgan/ko-sroberta-multitask",
+  "embedding_version": "v1.0",
+  "doc_types": [
+    "약관",
+    "사업방법서",
+    "상품요약서"
+  ],
+  "axes": [
+    "samsung",
+    "meritz",
+    "hanwha",
+    "heungkuk",
+    "hyundai",
+    "kb",
+    "db",
+    "lotte_male",
+    "lotte_female"
+  ]
+}

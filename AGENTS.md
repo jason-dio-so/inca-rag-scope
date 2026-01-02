@@ -22,3 +22,13 @@ Forbidden
 	•	Step 경계 붕괴
 	•	결과를 바꾸는 무단 재실행
 	•	LLM 기반 Canonical 생성
+
+## STEP NEXT-61 vs 61A Decision
+
+- STEP NEXT-61: ACTIVE (Evidence-based comparison pipeline, Step3–7)
+- STEP NEXT-61A: DEFERRED (Amount-first / NEW-RUN architecture)
+
+Rationale:
+Step1/Step2 are LOCKED and production-stable.
+Current customer value is delivered via Step3–7 evidence comparison.
+Structural refactors are postponed to v2.

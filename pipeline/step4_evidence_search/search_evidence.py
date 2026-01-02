@@ -1,13 +1,13 @@
 """
 Step 4: Evidence Search (Deterministic, No LLM, No Embedding)
 
-입력:
-- data/scope/{INSURER}_scope_mapped.csv
-- data/evidence_text/{INSURER}/**/*.page.jsonl
+STEP NEXT-61 Compliance:
+- Input SSOT: data/scope_v3/{INSURER}_step2_canonical_scope_v1.jsonl
+- Evidence text: data/evidence_text/{INSURER}/**/*.page.jsonl
 
 출력:
 - data/evidence_pack/{INSURER}_evidence_pack.jsonl
-- data/scope/{INSURER}_unmatched_review.csv
+- data/scope_v3/{INSURER}_step4_unmatched_review.jsonl
 """
 
 import csv
@@ -610,35 +610,37 @@ class EvidenceSearcher:
 
 
 def create_evidence_pack(
-    scope_mapped_csv: str,
+    scope_canonical_jsonl: str,
     evidence_text_dir: str,
     insurer: str,
     output_pack_jsonl: str,
-    output_unmatched_csv: str
+    output_unmatched_jsonl: str
 ) -> Dict:
     """
-    Evidence pack 생성
+    Evidence pack 생성 (STEP NEXT-61 Compliant)
 
     Args:
-        scope_mapped_csv: scope mapped CSV 경로
+        scope_canonical_jsonl: Step2-b canonical scope JSONL 경로 (SSOT)
         evidence_text_dir: evidence text 디렉토리
         insurer: 보험사명
         output_pack_jsonl: 출력 evidence pack JSONL
-        output_unmatched_csv: 출력 unmatched review CSV
+        output_unmatched_jsonl: 출력 unmatched review JSONL
 
     Returns:
         dict: 통계
     """
-    # Scope gate 로드
-    scope_gate = load_scope_gate(insurer)
+    # STEP NEXT-61: Scope gate is NOT needed - canonical JSONL is already filtered
+    # scope_gate = load_scope_gate(insurer)  # DEPRECATED for STEP NEXT-61
 
     # Evidence searcher 초기화
     searcher = EvidenceSearcher(evidence_text_dir, insurer)
 
-    # Scope mapped CSV 읽기
-    with open(scope_mapped_csv, 'r', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        scope_rows = list(reader)
+    # Step2-b canonical JSONL 읽기 (STEP NEXT-61 Input SSOT)
+    scope_rows = []
+    with open(scope_canonical_jsonl, 'r', encoding='utf-8') as f:
+        for line in f:
+            if line.strip():
+                scope_rows.append(json.loads(line))
 
     # Evidence pack 생성
     evidence_pack = []
@@ -647,18 +649,18 @@ def create_evidence_pack(
 
     for row in scope_rows:
         coverage_name_raw = row['coverage_name_raw']
-        # STEP NEXT-34-ε: Read search_key from Step1 output (fallback to raw if missing)
-        coverage_name_search_key = row.get('coverage_name_search_key', coverage_name_raw)
+        # STEP NEXT-61: Use normalized name as search key (fallback to raw)
+        coverage_name_search_key = row.get('coverage_name_normalized', coverage_name_raw)
 
-        # Scope gate 검증
-        if not scope_gate.is_in_scope(coverage_name_raw):
-            print(f"[SKIP] Not in scope: {coverage_name_raw}")
-            continue
+        # STEP NEXT-61: Scope gate validation removed - canonical JSONL is pre-filtered
+        # All rows in canonical JSONL are already in-scope by definition
 
         stats['total'] += 1
-        mapping_status = row['mapping_status']
+        # STEP NEXT-61: mapping_method determines status (exact/fuzzy/unmapped)
+        mapping_method = row.get('mapping_method', 'unmapped')
+        mapping_status = 'matched' if mapping_method != 'unmapped' else 'unmatched'
         coverage_code = row.get('coverage_code', '')
-        coverage_name_canonical = row.get('coverage_name_canonical', '')
+        coverage_name_canonical = row.get('canonical_name', '')
 
         if mapping_status == 'matched':
             stats['matched'] += 1
@@ -714,13 +716,14 @@ def create_evidence_pack(
                 'suggested_canonical_code': ''  # 비워둠
             })
 
-    # STEP NEXT-31-P3: Evidence pack JSONL 저장 (meta record 첫 줄)
-    from core.scope_gate import calculate_scope_content_hash
+    # STEP NEXT-61: Evidence pack JSONL 저장 (meta record 첫 줄)
     from datetime import datetime
+    import hashlib
 
-    # Calculate scope content hash (scope_mapped_csv is already Path or str)
-    scope_path = Path(scope_mapped_csv) if not isinstance(scope_mapped_csv, Path) else scope_mapped_csv
-    scope_content_hash = calculate_scope_content_hash(scope_path)
+    # Calculate scope content hash (STEP NEXT-61: JSONL input)
+    scope_path = Path(scope_canonical_jsonl)
+    with open(scope_path, 'rb') as f:
+        scope_content_hash = hashlib.sha256(f.read()).hexdigest()[:8]
 
     # Write evidence pack with meta record as first line
     with open(output_pack_jsonl, 'w', encoding='utf-8') as f:
@@ -731,7 +734,7 @@ def create_evidence_pack(
             'scope_file': scope_path.name,
             'scope_content_hash': scope_content_hash,
             'created_at': datetime.utcnow().isoformat() + 'Z',
-            'schema_version': 'v1'
+            'schema_version': 'step_next_61_v1'
         }
         f.write(json.dumps(meta_record, ensure_ascii=False) + '\n')
 
@@ -739,57 +742,54 @@ def create_evidence_pack(
         for item in evidence_pack:
             f.write(json.dumps(item, ensure_ascii=False) + '\n')
 
-    # Unmatched review CSV 저장
-    with open(output_unmatched_csv, 'w', newline='', encoding='utf-8') as f:
-        fieldnames = ['coverage_name_raw', 'top_hits', 'suggested_canonical_code']
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(unmatched_rows)
+    # STEP NEXT-61: Unmatched review JSONL 저장 (not CSV)
+    with open(output_unmatched_jsonl, 'w', encoding='utf-8') as f:
+        for unmatched_row in unmatched_rows:
+            f.write(json.dumps(unmatched_row, ensure_ascii=False) + '\n')
 
     return stats
 
 
 def main():
-    """CLI 실행"""
+    """CLI 실행 (STEP NEXT-61 Compliant)"""
     import argparse
 
-    parser = argparse.ArgumentParser(description='Evidence search')
-    parser.add_argument('--insurer', type=str, default='samsung', help='보험사명')
+    parser = argparse.ArgumentParser(description='Evidence search (STEP NEXT-61)')
+    parser.add_argument('--insurer', type=str, required=True, help='보험사명')
     args = parser.parse_args()
 
     base_dir = Path(__file__).parent.parent.parent
     insurer = args.insurer
 
-    # STEP NEXT-31-P1: Use sanitized scope ONLY (same as Step5)
-    from core.scope_gate import resolve_scope_csv
-    scope_mapped_csv = resolve_scope_csv(insurer, base_dir / "data" / "scope")
+    # STEP NEXT-61 GATE: Input MUST be from data/scope_v3/
+    scope_canonical_jsonl = base_dir / "data" / "scope_v3" / f"{insurer}_step2_canonical_scope_v1.jsonl"
 
-    # STEP NEXT-31-P1: Hard gate - MUST be sanitized CSV
-    if not scope_mapped_csv.name.endswith('.sanitized.csv'):
+    if not scope_canonical_jsonl.exists():
         raise RuntimeError(
-            f"[STEP NEXT-31-P1 GATE] Step4 MUST use sanitized scope CSV.\n"
-            f"Found: {scope_mapped_csv.name}\n"
-            f"Required: {insurer}_scope_mapped.sanitized.csv\n"
-            f"Run step1_sanitize_scope first to generate sanitized CSV."
+            f"[STEP NEXT-61 GATE] Step4 MUST use Step2-b canonical scope JSONL.\n"
+            f"Expected: {scope_canonical_jsonl}\n"
+            f"File not found. Run Step2-b first:\n"
+            f"  python -m pipeline.step2_canonical_mapping.run --insurer {insurer}"
         )
 
     evidence_text_dir = base_dir / "data" / "evidence_text"
     output_pack_jsonl = base_dir / "data" / "evidence_pack" / f"{insurer}_evidence_pack.jsonl"
-    output_unmatched_csv = base_dir / "data" / "scope" / f"{insurer}_unmatched_review.csv"
+    output_unmatched_jsonl = base_dir / "data" / "scope_v3" / f"{insurer}_step4_unmatched_review.jsonl"
 
     # 출력 디렉토리 생성
     output_pack_jsonl.parent.mkdir(parents=True, exist_ok=True)
+    output_unmatched_jsonl.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"[Step 4] Evidence Search")
-    print(f"[Step 4] Input: {scope_mapped_csv}")
+    print(f"[Step 4] Evidence Search (STEP NEXT-61)")
+    print(f"[Step 4] Input SSOT: {scope_canonical_jsonl}")
     print(f"[Step 4] Evidence text: {evidence_text_dir}/{insurer}/")
 
     stats = create_evidence_pack(
-        str(scope_mapped_csv),
+        str(scope_canonical_jsonl),
         str(evidence_text_dir),
         insurer,
         str(output_pack_jsonl),
-        str(output_unmatched_csv)
+        str(output_unmatched_jsonl)
     )
 
     print(f"\n[Step 4] Evidence pack created:")
@@ -799,7 +799,7 @@ def main():
     print(f"  - With evidence: {stats['with_evidence']}")
     print(f"  - Without evidence: {stats['without_evidence']}")
     print(f"\n✓ Evidence pack: {output_pack_jsonl}")
-    print(f"✓ Unmatched review: {output_unmatched_csv}")
+    print(f"✓ Unmatched review: {output_unmatched_jsonl}")
 
 
 if __name__ == "__main__":

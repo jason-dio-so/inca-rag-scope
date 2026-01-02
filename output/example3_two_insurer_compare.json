@@ -1,0 +1,5 @@
+{
+  "coverage_code": "A4200_1",
+  "status": "FAIL",
+  "reason": "evidence_fill_rate 50.0% < 0.8"
+}
