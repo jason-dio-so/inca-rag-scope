@@ -25,6 +25,12 @@ export interface NormalizedTable {
     meta?: {
       proposal_detail_ref?: string;
       evidence_refs?: string[];
+      kpi_summary?: {
+        payment_type: string;
+        limit_summary?: string | null;
+        kpi_evidence_refs?: string[];
+        extraction_notes?: string;
+      };
     };
   }>;
 }
@@ -165,6 +171,7 @@ function normalizeRows(
       ? {
           proposal_detail_ref: rowObj.meta.proposal_detail_ref,
           evidence_refs: Array.isArray(rowObj.meta.evidence_refs) ? rowObj.meta.evidence_refs : undefined,
+          kpi_summary: rowObj.meta.kpi_summary,  // STEP NEXT-75
         }
       : undefined;
 

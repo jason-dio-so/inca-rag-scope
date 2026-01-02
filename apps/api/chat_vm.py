@@ -70,10 +70,19 @@ class TableCell(BaseModel):
     meta: Optional[CellMeta] = None
 
 
+class KPISummaryMeta(BaseModel):
+    """STEP NEXT-75: KPI Summary for row-level display"""
+    payment_type: str
+    limit_summary: Optional[str] = None
+    kpi_evidence_refs: List[str] = []
+    extraction_notes: str = ""
+
+
 class TableRowMeta(BaseModel):
     """STEP NEXT-73R: Row-level metadata for refs"""
     proposal_detail_ref: Optional[str] = None
     evidence_refs: Optional[List[str]] = None
+    kpi_summary: Optional[KPISummaryMeta] = None  # STEP NEXT-75
 
 
 class TableRow(BaseModel):

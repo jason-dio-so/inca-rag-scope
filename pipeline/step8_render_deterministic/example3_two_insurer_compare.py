@@ -189,7 +189,11 @@ class TwoInsurerComparer:
         period1 = proposal_facts1.get("period_text") or "명시 없음"
         period2 = proposal_facts2.get("period_text") or "명시 없음"
 
-        # Build comparison table (STEP NEXT-73R: Add proposal_detail_ref)
+        # STEP NEXT-75: Extract kpi_summary from slim cards
+        kpi_summary1 = card1.get("kpi_summary")
+        kpi_summary2 = card2.get("kpi_summary")
+
+        # Build comparison table (STEP NEXT-73R: Add proposal_detail_ref, STEP NEXT-75: Add kpi_summary)
         comparison_table = {
             insurer1: {
                 "amount": amount1 or "명시 없음",
@@ -197,7 +201,8 @@ class TwoInsurerComparer:
                 "period": period1,
                 "payment_type": payment1 or "명시 없음",
                 "evidence_refs": evidence_refs1,
-                "proposal_detail_ref": proposal_detail_ref1  # STEP NEXT-73R
+                "proposal_detail_ref": proposal_detail_ref1,  # STEP NEXT-73R
+                "kpi_summary": kpi_summary1  # STEP NEXT-75
             },
             insurer2: {
                 "amount": amount2 or "명시 없음",
@@ -205,7 +210,8 @@ class TwoInsurerComparer:
                 "period": period2,
                 "payment_type": payment2 or "명시 없음",
                 "evidence_refs": evidence_refs2,
-                "proposal_detail_ref": proposal_detail_ref2  # STEP NEXT-73R
+                "proposal_detail_ref": proposal_detail_ref2,  # STEP NEXT-73R
+                "kpi_summary": kpi_summary2  # STEP NEXT-75
             }
         }
 
