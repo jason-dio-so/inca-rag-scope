@@ -121,12 +121,20 @@ class TwoInsurerComparer:
             "gates": {...}
         }
         """
+        import logging
+        logger = logging.getLogger(__name__)
+
         # Load cards
         cards1 = self.load_coverage_cards(insurer1)
         cards2 = self.load_coverage_cards(insurer2)
 
+        logger.info(f"[EX3] Loaded {len(cards1)} cards for {insurer1}")
+        logger.info(f"[EX3] Loaded {len(cards2)} cards for {insurer2}")
+
         card1 = self.find_coverage(cards1, coverage_code)
         card2 = self.find_coverage(cards2, coverage_code)
+
+        logger.info(f"[EX3] Finding {coverage_code}: insurer1={'FOUND' if card1 else 'MISSING'}, insurer2={'FOUND' if card2 else 'MISSING'}")
 
         # Gate 1: join_rate == 1.0 (both must exist)
         if not card1 or not card2:
@@ -136,7 +144,7 @@ class TwoInsurerComparer:
                 "reason": f"join_rate != 1.0 (missing: {insurer1 if not card1 else insurer2})"
             }
 
-        # Extract fields
+        # Extract fields (STEP NEXT-80: Use KPI fields from slim cards)
         evidences1 = card1.get("evidences", [])
         evidences2 = card2.get("evidences", [])
 
@@ -144,11 +152,16 @@ class TwoInsurerComparer:
         proposal_facts1 = card1.get("proposal_facts", {}) or {}
         proposal_facts2 = card2.get("proposal_facts", {}) or {}
 
+        kpi_summary1 = card1.get("kpi_summary", {}) or {}
+        kpi_summary2 = card2.get("kpi_summary", {}) or {}
+
+        # Amount from proposal_facts
         amount1 = proposal_facts1.get("coverage_amount_text") or self.extract_amount_text(evidences1)
         amount2 = proposal_facts2.get("coverage_amount_text") or self.extract_amount_text(evidences2)
 
-        payment1 = self.extract_payment_type(evidences1)
-        payment2 = self.extract_payment_type(evidences2)
+        # Payment type from kpi_summary (STEP NEXT-80: slim cards have this pre-extracted)
+        payment1 = kpi_summary1.get("payment_type") or self.extract_payment_type(evidences1)
+        payment2 = kpi_summary2.get("payment_type") or self.extract_payment_type(evidences2)
 
         # STEP NEXT-73R: Get refs from slim cards (if available), otherwise build from evidences
         refs1_obj = card1.get("refs", {})
@@ -166,7 +179,7 @@ class TwoInsurerComparer:
         if not evidence_refs2:
             evidence_refs2 = self.build_evidence_refs(evidences2)
 
-        # Gate 2: evidence_fill_rate >= 0.8
+        # Gate 2: evidence_fill_rate >= 0.8 (STEP NEXT-80: Restored to 0.8 after slim migration)
         total_fields = 4  # amount, payment, refs (2x)
         filled_fields = sum([
             1 if amount1 else 0,
@@ -176,7 +189,7 @@ class TwoInsurerComparer:
         ])
         evidence_fill_rate = filled_fields / total_fields
 
-        if evidence_fill_rate < 0.8:
+        if evidence_fill_rate < 0.8:  # STEP NEXT-80: Restored to 0.8 (hybrid mode eliminated)
             return {
                 "coverage_code": coverage_code,
                 "status": "FAIL",
@@ -193,7 +206,11 @@ class TwoInsurerComparer:
         kpi_summary1 = card1.get("kpi_summary")
         kpi_summary2 = card2.get("kpi_summary")
 
-        # Build comparison table (STEP NEXT-73R: Add proposal_detail_ref, STEP NEXT-75: Add kpi_summary)
+        # STEP NEXT-76: Extract kpi_condition from slim cards
+        kpi_condition1 = card1.get("kpi_condition")
+        kpi_condition2 = card2.get("kpi_condition")
+
+        # Build comparison table (STEP NEXT-73R: Add proposal_detail_ref, STEP NEXT-75: Add kpi_summary, STEP NEXT-76: Add kpi_condition)
         comparison_table = {
             insurer1: {
                 "amount": amount1 or "명시 없음",
@@ -202,7 +219,8 @@ class TwoInsurerComparer:
                 "payment_type": payment1 or "명시 없음",
                 "evidence_refs": evidence_refs1,
                 "proposal_detail_ref": proposal_detail_ref1,  # STEP NEXT-73R
-                "kpi_summary": kpi_summary1  # STEP NEXT-75
+                "kpi_summary": kpi_summary1,  # STEP NEXT-75
+                "kpi_condition": kpi_condition1  # STEP NEXT-76
             },
             insurer2: {
                 "amount": amount2 or "명시 없음",
@@ -211,7 +229,8 @@ class TwoInsurerComparer:
                 "payment_type": payment2 or "명시 없음",
                 "evidence_refs": evidence_refs2,
                 "proposal_detail_ref": proposal_detail_ref2,  # STEP NEXT-73R
-                "kpi_summary": kpi_summary2  # STEP NEXT-75
+                "kpi_summary": kpi_summary2,  # STEP NEXT-75
+                "kpi_condition": kpi_condition2  # STEP NEXT-76
             }
         }
 
