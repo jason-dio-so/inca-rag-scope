@@ -22,6 +22,10 @@ export interface NormalizedTable {
   rows: Array<{
     label: string;
     values: string[];
+    meta?: {
+      proposal_detail_ref?: string;
+      evidence_refs?: string[];
+    };
   }>;
 }
 
@@ -77,7 +81,7 @@ function normalizeColumns(cols: unknown): string[] {
 function normalizeRows(
   rows: unknown,
   expectedColumnCount: number
-): Array<{ label: string; values: string[] }> {
+): Array<{ label: string; values: string[]; meta?: { proposal_detail_ref?: string; evidence_refs?: string[] } }> {
   if (!Array.isArray(rows)) return [];
 
   return rows.map((row, rowIdx) => {
@@ -98,6 +102,7 @@ function normalizeRows(
         label: rowObj.label,
         values: rowObj.values,
         cells: rowObj.cells,
+        meta: rowObj.meta,
       });
     }
 
@@ -155,9 +160,18 @@ function normalizeRows(
       values = values.slice(0, targetLength);
     }
 
+    // STEP NEXT-73R-P2: Preserve row.meta for lazy loading
+    const meta = rowObj.meta && typeof rowObj.meta === "object"
+      ? {
+          proposal_detail_ref: rowObj.meta.proposal_detail_ref,
+          evidence_refs: Array.isArray(rowObj.meta.evidence_refs) ? rowObj.meta.evidence_refs : undefined,
+        }
+      : undefined;
+
     return {
       label,
       values,
+      ...(meta && { meta }),
     };
   });
 }
