@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-02
-**현재 상태**: ✅ **Slim Store Lazy Loading Backend 연결 완료** (STEP NEXT-73R-P1: Store API + row.meta refs)
+**현재 상태**: ✅ **Intent Router Lock + EX2_LIMIT_FIND** (STEP NEXT-78: EX2/EX4 Anti-Confusion Gates)
 
 ---
 
@@ -10,6 +10,12 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ Intent Router Lock** | STEP NEXT-78 | ✅ 완료 | 2026-01-02 |
+| **✅ EX3_COMPARE Schema Lock** | STEP NEXT-77 | ✅ 완료 | 2026-01-02 |
+| **✅ KPI Condition Display** | STEP NEXT-76 | ✅ 완료 | 2026-01-02 |
+| **✅ KPI Summary Display** | STEP NEXT-75 | ✅ 완료 | 2026-01-02 |
+| **✅ KPI Summary Extraction** | STEP NEXT-74 | ✅ 완료 | 2026-01-02 |
+| **✅ Slim Store UI Lazy Load** | STEP NEXT-73R-P2 | ✅ 완료 | 2026-01-02 |
 | **✅ Slim Store Backend Wiring** | STEP NEXT-73R-P1 | ✅ 완료 | 2026-01-02 |
 | **✅ Coverage Cards Slim화** | STEP NEXT-72 | ✅ 완료 | 2026-01-02 |
 | **✅ UI Rendering Stabilization** | STEP NEXT-UI-02-FIX2 | ✅ 완료 | 2026-01-01 |

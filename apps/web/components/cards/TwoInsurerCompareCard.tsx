@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { NormalizedTable } from "@/lib/normalize/table";
 import { ProposalDetailStoreItem, EvidenceStoreItem } from "@/lib/types";
 import { getProposalDetail, batchGetEvidence } from "@/lib/api";
 import EvidenceToggle from "./EvidenceToggle";
 import KPIBadge from "./KPIBadge";
+import { KPIConditionBadge } from "./KPIConditionBadge";
 
 interface TwoInsurerCompareCardProps {
   section: NormalizedTable;
@@ -24,6 +25,12 @@ export default function TwoInsurerCompareCard({
   const [kpiModalLoading, setKpiModalLoading] = useState(false);
   const [kpiModalError, setKpiModalError] = useState<string | undefined>();
   const [kpiEvidences, setKpiEvidences] = useState<EvidenceStoreItem[]>([]);
+
+  // STEP NEXT-76: Condition evidence modal
+  const [conditionModalOpen, setConditionModalOpen] = useState(false);
+  const [conditionModalLoading, setConditionModalLoading] = useState(false);
+  const [conditionModalError, setConditionModalError] = useState<string | undefined>();
+  const [conditionEvidences, setConditionEvidences] = useState<EvidenceStoreItem[]>([]);
 
   const handleViewDetail = async (ref: string) => {
     setModalOpen(true);
@@ -74,6 +81,29 @@ export default function TwoInsurerCompareCard({
     setKpiModalError(undefined);
   };
 
+  const handleConditionInfo = async (refs: string[]) => {
+    setConditionModalOpen(true);
+    setConditionModalLoading(true);
+    setConditionModalError(undefined);
+    setConditionEvidences([]);
+
+    try {
+      const result = await batchGetEvidence(refs);
+      const evidences = refs.map(ref => result[ref]).filter(Boolean);
+      setConditionEvidences(evidences);
+    } catch (err) {
+      setConditionModalError(err instanceof Error ? err.message : "조건 근거를 불러오지 못했습니다");
+    } finally {
+      setConditionModalLoading(false);
+    }
+  };
+
+  const closeConditionModal = () => {
+    setConditionModalOpen(false);
+    setConditionEvidences([]);
+    setConditionModalError(undefined);
+  };
+
   return (
     <>
       <div className="border border-gray-200 rounded-lg overflow-hidden">
@@ -96,8 +126,8 @@ export default function TwoInsurerCompareCard({
             </thead>
             <tbody>
               {section.rows.map((row, idx) => (
-                <>
-                  <tr key={idx} className="border-t border-gray-200 hover:bg-gray-50">
+                <React.Fragment key={idx}>
+                  <tr className="border-t border-gray-200 hover:bg-gray-50">
                     <td className="px-4 py-2 font-medium text-gray-700 bg-gray-50">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center justify-between gap-2">
@@ -126,6 +156,19 @@ export default function TwoInsurerCompareCard({
                             />
                           </div>
                         )}
+                        {/* STEP NEXT-76: Condition Display */}
+                        {row.meta?.kpi_condition && (
+                          <div className="mt-1 pt-1 border-t border-gray-200">
+                            <KPIConditionBadge
+                              kpiCondition={row.meta.kpi_condition}
+                              onEvidenceClick={
+                                row.meta.kpi_condition.condition_evidence_refs && row.meta.kpi_condition.condition_evidence_refs.length > 0
+                                  ? (refs) => handleConditionInfo(refs)
+                                  : undefined
+                              }
+                            />
+                          </div>
+                        )}
                       </div>
                     </td>
                     {row.values.map((cell, cellIdx) => (
@@ -136,13 +179,13 @@ export default function TwoInsurerCompareCard({
                   </tr>
                   {/* Evidence toggle row (if evidence_refs exist) */}
                   {row.meta?.evidence_refs && row.meta.evidence_refs.length > 0 && (
-                    <tr key={`${idx}-evidence`}>
+                    <tr>
                       <td colSpan={section.columns.length} className="px-4 py-2 bg-gray-50">
                         <EvidenceToggle evidenceRefs={row.meta.evidence_refs} defaultCollapsed={true} />
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
@@ -215,6 +258,83 @@ export default function TwoInsurerCompareCard({
             <div className="bg-gray-50 px-6 py-3 border-t flex justify-end">
               <button
                 onClick={closeModal}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm font-medium"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STEP NEXT-76: Condition Evidence Modal */}
+      {conditionModalOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={closeConditionModal}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[70vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="bg-orange-50 px-6 py-4 border-b border-orange-200 flex items-center justify-between">
+              <h3 className="font-medium text-orange-800">조건 근거 자료</h3>
+              <button
+                onClick={closeConditionModal}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(70vh-120px)]">
+              {conditionModalLoading && (
+                <div className="text-center py-8 text-gray-500">
+                  불러오는 중…
+                </div>
+              )}
+
+              {conditionModalError && !conditionModalLoading && (
+                <div className="text-center py-8 text-red-600">
+                  {conditionModalError}
+                </div>
+              )}
+
+              {!conditionModalLoading && !conditionModalError && conditionEvidences.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  근거 없음
+                </div>
+              )}
+
+              {!conditionModalLoading && !conditionModalError && conditionEvidences.length > 0 && (
+                <div className="space-y-3">
+                  {conditionEvidences.map((ev, idx) => (
+                    <div key={idx} className="border-l-4 border-orange-300 pl-3 py-2 bg-orange-50 rounded">
+                      <div className="text-sm font-medium text-gray-700">
+                        {ev.insurer} - {ev.coverage_code}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        {ev.doc_type} (p.{ev.page})
+                      </div>
+                      {ev.snippet && (
+                        <div className="text-xs text-gray-700 mt-2">
+                          {ev.snippet}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="bg-gray-50 px-6 py-3 border-t flex justify-end">
+              <button
+                onClick={closeConditionModal}
                 className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm font-medium"
               >
                 닫기

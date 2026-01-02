@@ -47,7 +47,10 @@ from apps.api.chat_vm import (
     ChatRequest,
     CoverageDiffResultSection,
     DiffGroup,
-    InsurerDetail
+    InsurerDetail,
+    OverallEvaluationSection,
+    OverallEvaluation,
+    OverallEvaluationReason
 )
 # from apps.api.policy.forbidden_language import ForbiddenLanguageValidator
 
@@ -394,8 +397,21 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
     def execute(self, compiled_query: Dict[str, Any], request: ChatRequest) -> AssistantMessageVM:
         """
         Execute two-insurer comparison (LLM OFF)
+
+        STEP NEXT-77: Use EX3CompareComposer for locked schema response
         """
-        comparer = TwoInsurerComparer()
+        from apps.api.response_composers.ex3_compare_composer import EX3CompareComposer
+        from pathlib import Path
+
+        # Use absolute path to data/compare
+        project_root = Path(__file__).parent.parent.parent
+        cards_dir = project_root / "data" / "compare"
+
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"[EX3] Loading cards from: {cards_dir.absolute()}")
+
+        comparer = TwoInsurerComparer(cards_dir=cards_dir)
 
         insurers = compiled_query.get("insurers", [])
         if len(insurers) < 2:
@@ -407,9 +423,10 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
         result = comparer.compare_two_insurers(insurer1, insurer2, coverage_code)
 
         if result["status"] == "FAIL":
-            # Gate failed
+            # Gate failed - use EX3_COMPARE (STEP NEXT-80: explicit kind lock)
             return AssistantMessageVM(
-                kind="EX3_INTEGRATED",
+                request_id=request.request_id,
+                kind="EX3_COMPARE",  # STEP NEXT-80: Always use EX3_COMPARE (not EX3_INTEGRATED)
                 title="비교 불가",
                 summary_bullets=[
                     f"비교 실패: {result['reason']}"
@@ -422,111 +439,89 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
                 }
             )
 
-        # Build comparison table (STEP NEXT-73R: Add row.meta with refs, STEP NEXT-75: Add kpi_summary)
+        # STEP NEXT-77: Use EX3CompareComposer to build response
         comparison_table = result["comparison_table"]
 
-        # Extract refs and kpi_summary for each insurer
-        from apps.api.chat_vm import TableRowMeta, KPISummaryMeta
+        # STEP NEXT-81B: Get coverage name (NEVER pass coverage_code as fallback)
+        coverage_name = result.get("coverage_name")  # None if not available (composer will handle)
 
-        # STEP NEXT-75: Convert kpi_summary dict to KPISummaryMeta if present
-        kpi1 = comparison_table[insurer1].get("kpi_summary")
-        kpi2 = comparison_table[insurer2].get("kpi_summary")
-
-        kpi_meta1 = KPISummaryMeta(**kpi1) if kpi1 else None
-        kpi_meta2 = KPISummaryMeta(**kpi2) if kpi2 else None
-
-        # Row 1: 보장금액
-        rows = [
-            TableRow(
-                cells=[
-                    TableCell(text="보장금액"),
-                    TableCell(text=comparison_table[insurer1]["amount"]),
-                    TableCell(text=comparison_table[insurer2]["amount"])
-                ],
-                meta=TableRowMeta(
-                    proposal_detail_ref=comparison_table[insurer1].get("proposal_detail_ref"),
-                    evidence_refs=comparison_table[insurer1].get("evidence_refs", []),
-                    kpi_summary=kpi_meta1  # STEP NEXT-75
-                )
-            ),
-            # Row 2: 보험료
-            TableRow(
-                cells=[
-                    TableCell(text="보험료"),
-                    TableCell(text=comparison_table[insurer1].get("premium", "명시 없음")),
-                    TableCell(text=comparison_table[insurer2].get("premium", "명시 없음"))
-                ],
-                meta=TableRowMeta(
-                    proposal_detail_ref=comparison_table[insurer1].get("proposal_detail_ref"),
-                    evidence_refs=comparison_table[insurer1].get("evidence_refs", []),
-                    kpi_summary=kpi_meta1  # STEP NEXT-75
-                )
-            ),
-            # Row 3: 납입/만기
-            TableRow(
-                cells=[
-                    TableCell(text="납입/만기"),
-                    TableCell(text=comparison_table[insurer1].get("period", "명시 없음")),
-                    TableCell(text=comparison_table[insurer2].get("period", "명시 없음"))
-                ],
-                meta=TableRowMeta(
-                    proposal_detail_ref=comparison_table[insurer1].get("proposal_detail_ref"),
-                    evidence_refs=comparison_table[insurer1].get("evidence_refs", []),
-                    kpi_summary=kpi_meta1  # STEP NEXT-75
-                )
-            ),
-            # Row 4: 지급유형
-            TableRow(
-                cells=[
-                    TableCell(text="지급유형"),
-                    TableCell(text=comparison_table[insurer1]["payment_type"]),
-                    TableCell(text=comparison_table[insurer2]["payment_type"])
-                ],
-                meta=TableRowMeta(
-                    proposal_detail_ref=comparison_table[insurer1].get("proposal_detail_ref"),
-                    evidence_refs=comparison_table[insurer1].get("evidence_refs", []),
-                    kpi_summary=kpi_meta1  # STEP NEXT-75
-                )
-            )
-        ]
-
-        table = ComparisonTableSection(
-            table_kind="INTEGRATED_COMPARE",
-            title=f"{insurer1} vs {insurer2} 비교",
-            columns=["구분", insurer1, insurer2],
-            rows=rows
+        # Compose EX3_COMPARE response
+        response_dict = EX3CompareComposer.compose(
+            insurers=[insurer1, insurer2],
+            coverage_code=coverage_code,
+            comparison_data=comparison_table,
+            coverage_name=coverage_name
         )
 
-        # Build summary from Step8 templates
-        summary_bullets = result["summary"]
+        # Convert dict response to AssistantMessageVM
+        # Build sections from response_dict
+        from apps.api.chat_vm import TableRowMeta, KPISummaryMeta, KPIConditionMeta
 
-        # Build common notes
-        common_notes = CommonNotesSection(
-            title="공통사항 및 유의사항",
-            bullets=[],
-            groups=[
-                BulletGroup(
-                    title="공통사항",
-                    bullets=["가입설계서 기준 비교입니다"]
-                ),
-                BulletGroup(
-                    title="유의사항",
-                    bullets=["실제 약관과 다를 수 있습니다"]
+        sections = []
+        for section_dict in response_dict["sections"]:
+            if section_dict["kind"] == "kpi_summary":
+                # Skip for now (not in current VM schema)
+                # TODO: Add KPISummarySection to chat_vm.py if needed
+                pass
+            elif section_dict["kind"] == "comparison_table":
+                # Build ComparisonTableSection
+                rows = []
+                for row_dict in section_dict["rows"]:
+                    cells = [TableCell(**cell) for cell in row_dict["cells"]]
+
+                    # Build meta
+                    meta = None
+                    if row_dict.get("meta"):
+                        meta_dict = row_dict["meta"]
+                        kpi_summary_meta = None
+                        if meta_dict.get("kpi_summary"):
+                            kpi_summary_meta = KPISummaryMeta(**meta_dict["kpi_summary"])
+
+                        kpi_condition_meta = None
+                        if meta_dict.get("kpi_condition"):
+                            kpi_condition_meta = KPIConditionMeta(**meta_dict["kpi_condition"])
+
+                        meta = TableRowMeta(
+                            proposal_detail_ref=meta_dict.get("proposal_detail_ref"),
+                            evidence_refs=meta_dict.get("evidence_refs"),
+                            kpi_summary=kpi_summary_meta,
+                            kpi_condition=kpi_condition_meta
+                        )
+
+                    rows.append(TableRow(
+                        cells=cells,
+                        is_header=row_dict.get("is_header", False),
+                        meta=meta
+                    ))
+
+                table = ComparisonTableSection(
+                    table_kind=section_dict["table_kind"],
+                    title=section_dict["title"],
+                    columns=section_dict["columns"],
+                    rows=rows
                 )
-            ]
-        )
+                sections.append(table)
+            elif section_dict["kind"] == "common_notes":
+                # Build CommonNotesSection
+                groups = None
+                if section_dict.get("groups"):
+                    groups = [BulletGroup(**g) for g in section_dict["groups"]]
+
+                common_notes = CommonNotesSection(
+                    title=section_dict["title"],
+                    bullets=section_dict.get("bullets", []),
+                    groups=groups
+                )
+                sections.append(common_notes)
 
         vm = AssistantMessageVM(
-            kind="EX3_INTEGRATED",
-            title=f"{insurer1} vs {insurer2} {coverage_code} 비교",
-            summary_bullets=summary_bullets,
-            sections=[table, common_notes],
-            lineage={
-                "handler": "Example3HandlerDeterministic",
-                "llm_used": False,
-                "deterministic": True,
-                "gates": result["gates"]
-            }
+            request_id=request.request_id,
+            kind="EX3_COMPARE",  # STEP NEXT-77: New kind
+            title=response_dict["title"],
+            summary_bullets=response_dict["summary_bullets"],
+            sections=sections,
+            bubble_markdown=response_dict.get("bubble_markdown"),  # STEP NEXT-81B
+            lineage=response_dict["lineage"]
         )
 
         self._validate_forbidden_phrases(vm)
@@ -543,7 +538,11 @@ class Example4HandlerDeterministic(BaseDeterministicHandler):
     def execute(self, compiled_query: Dict[str, Any], request: ChatRequest) -> AssistantMessageVM:
         """
         Execute subtype eligibility check (LLM OFF)
+
+        STEP NEXT-79: Use EX4EligibilityComposer for locked schema response with overall evaluation
         """
+        from apps.api.response_composers.ex4_eligibility_composer import EX4EligibilityComposer
+
         checker = SubtypeEligibilityChecker()
 
         insurers = compiled_query.get("insurers", [])
@@ -551,52 +550,73 @@ class Example4HandlerDeterministic(BaseDeterministicHandler):
 
         result = checker.check_subtype_eligibility(insurers, subtype)
 
-        # Build eligibility table
-        rows = []
-        for row_data in result["rows"]:
-            rows.append(TableRow(
-                cells=[
-                    TableCell(text=row_data["insurer"]),
-                    TableCell(text=row_data["status"]),
-                    TableCell(text=row_data["evidence_type"] or "판단근거 없음"),
-                    TableCell(text=(row_data["evidence_snippet"] or "")[:100])
+        # STEP NEXT-79: Use EX4EligibilityComposer to build response
+        query_focus_terms = [subtype]
+
+        # Compose EX4_ELIGIBILITY response
+        response_dict = EX4EligibilityComposer.compose(
+            insurers=insurers,
+            subtype_keyword=subtype,
+            eligibility_data=result["rows"],
+            query_focus_terms=query_focus_terms
+        )
+
+        # Convert dict response to AssistantMessageVM
+        sections = []
+        for section_dict in response_dict["sections"]:
+            if section_dict["kind"] == "comparison_table":
+                # Build ComparisonTableSection
+                rows = []
+                for row_dict in section_dict["rows"]:
+                    cells = [TableCell(**cell) for cell in row_dict["cells"]]
+                    rows.append(TableRow(
+                        cells=cells,
+                        is_header=row_dict.get("is_header", False),
+                        meta=row_dict.get("meta")
+                    ))
+
+                table = ComparisonTableSection(
+                    table_kind=section_dict["table_kind"],
+                    title=section_dict["title"],
+                    columns=section_dict["columns"],
+                    rows=rows
+                )
+                sections.append(table)
+            elif section_dict["kind"] == "overall_evaluation":
+                # STEP NEXT-79: Build OverallEvaluationSection
+                overall_eval_data = section_dict["overall_evaluation"]
+                reasons = [
+                    OverallEvaluationReason(**reason)
+                    for reason in overall_eval_data["reasons"]
                 ]
-            ))
-
-        table = ComparisonTableSection(
-            table_kind="ELIGIBILITY_MATRIX",
-            title=f"{subtype} 보장 가능 여부",
-            columns=["보험사", "보장여부", "근거유형", "근거내용"],
-            rows=rows
-        )
-
-        # Build summary
-        statuses = [row["status"] for row in result["rows"]]
-        summary_bullets = [
-            f"{subtype}에 대한 보장 가능 여부를 확인했습니다",
-            f"O: {statuses.count('O')}개, X: {statuses.count('X')}개, Unknown: {statuses.count('Unknown')}개"
-        ]
-
-        # Build common notes
-        common_notes = CommonNotesSection(
-            title="유의사항",
-            bullets=[
-                "O: 보장 가능, X: 면책, △: 감액, Unknown: 판단 근거 없음",
-                "약관 및 상품요약서 기준입니다"
-            ],
-            groups=None
-        )
+                overall_eval = OverallEvaluation(
+                    decision=overall_eval_data["decision"],
+                    summary=overall_eval_data["summary"],
+                    reasons=reasons,
+                    notes=overall_eval_data["notes"]
+                )
+                overall_eval_section = OverallEvaluationSection(
+                    title=section_dict["title"],
+                    overall_evaluation=overall_eval
+                )
+                sections.append(overall_eval_section)
+            elif section_dict["kind"] == "common_notes":
+                # Build CommonNotesSection
+                common_notes = CommonNotesSection(
+                    title=section_dict["title"],
+                    bullets=section_dict.get("bullets", []),
+                    groups=section_dict.get("groups")
+                )
+                sections.append(common_notes)
 
         vm = AssistantMessageVM(
+            request_id=request.request_id,
             kind="EX4_ELIGIBILITY",
-            title=f"{subtype} 보장 가능 여부 확인",
-            summary_bullets=summary_bullets,
-            sections=[table, common_notes],
-            lineage={
-                "handler": "Example4HandlerDeterministic",
-                "llm_used": False,
-                "deterministic": True
-            }
+            title=response_dict["title"],
+            summary_bullets=response_dict["summary_bullets"],
+            sections=sections,
+            bubble_markdown=response_dict.get("bubble_markdown"),  # STEP NEXT-81B
+            lineage=response_dict["lineage"]
         )
 
         self._validate_forbidden_phrases(vm)
@@ -613,8 +633,10 @@ class HandlerRegistryDeterministic:
     _HANDLERS: Dict[MessageKind, BaseDeterministicHandler] = {
         "PREMIUM_COMPARE": Example1HandlerDeterministic(),
         "EX1_PREMIUM_DISABLED": Example1HandlerDeterministic(),
-        "EX2_DETAIL_DIFF": Example2DiffHandlerDeterministic(),
+        "EX2_DETAIL_DIFF": Example2DiffHandlerDeterministic(),  # LEGACY
+        "EX2_LIMIT_FIND": Example2DiffHandlerDeterministic(),   # STEP NEXT-78: Reuse EX2Diff
         "EX3_INTEGRATED": Example3HandlerDeterministic(),
+        "EX3_COMPARE": Example3HandlerDeterministic(),  # STEP NEXT-77: New kind
         "EX4_ELIGIBILITY": Example4HandlerDeterministic()
     }
 

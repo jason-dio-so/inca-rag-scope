@@ -1,4 +1,45 @@
-AGENTS.md
+# EXECUTION BASELINE (SSOT)
+
+## System Reality (as of STEP NEXT-76)
+
+This project operates under the following fixed assumptions.
+Any deviation is considered a bug or hallucination.
+
+### 1. Single Source of Truth
+
+- coverage_cards_slim.jsonl is the ONLY authoritative input
+- coverage_cards.jsonl (full) is DEPRECATED
+- PostgreSQL-based chat logic is OUT OF SCOPE
+
+### 2. Data Architecture
+
+- coverage_cards_slim.jsonl: comparison & judgment layer
+- proposal_detail_store.jsonl: proposal detail origin
+- evidence_store.jsonl: evidence origin
+- Access to detail/evidence is REF-ONLY (PD:, EV:)
+
+### 3. KPI is the Judge
+
+All comparisons MUST rely on:
+- KPI Summary (payment type, limit)
+- KPI Condition (exclusion, waiting, reduction, renewal)
+
+raw_text is for display only.
+raw_text must NEVER be used as a judgment basis.
+
+"명시 없음" is allowed ONLY when KPI is UNKNOWN.
+
+### 4. Chat Rules
+
+- Chat is a Presenter, NOT a Judge
+- Chat must summarize existing results
+- Chat must not infer, guess, or recompute
+
+### 5. Forbidden Assumptions
+
+- Do NOT assume DB-backed /chat is active
+- Do NOT assume full coverage_cards exist
+- Do NOT reintroduce vector/LLM logic into comparison
 
 Purpose
 
