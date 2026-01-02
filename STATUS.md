@@ -1,8 +1,8 @@
 # inca-rag-scope - 작업 현황 보고서
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
-**최종 업데이트**: 2026-01-01
-**현재 상태**: ✅ **Amount Comparison Engine Complete** (STEP NEXT-62: Step7 지급 금액 구조 비교 완성)
+**최종 업데이트**: 2026-01-02
+**현재 상태**: ✅ **Coverage Cards Slim화 완료** (STEP NEXT-72: 파일 크기 48% 감소 + DETAIL/EVIDENCE 분리 저장소 구축)
 
 ---
 
@@ -10,6 +10,8 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ Coverage Cards Slim화** | STEP NEXT-72 | ✅ 완료 | 2026-01-02 |
+| **✅ UI Rendering Stabilization** | STEP NEXT-UI-02-FIX2 | ✅ 완료 | 2026-01-01 |
 | **✅ Amount Comparison Engine** | STEP NEXT-62 | ✅ 완료 | 2026-01-01 |
 | **✅ All-Insurer Execution + Evidence Quality Gates** | STEP NEXT-61C | ✅ 완료 | 2026-01-01 |
 | **✅ Meritz Execution** | STEP NEXT-61B | ✅ 완료 | 2026-01-01 |
@@ -2562,3 +2564,80 @@ AssistantMessageVM {
 
 **Archive**: 이전 단계 (STEP 4 ~ STEP 9) → `STATUS_ARCHIVE.md`
 **최종 업데이트**: 2025-12-29 | **작성자**: Pipeline Team
+
+---
+
+## 2026-01-02: STEP NEXT-66 — Vector Index MVP (File-Based) ✅
+
+**Objective**: Enrich customer_view with benefit descriptions, payment types, limits, and exclusions using vector search (LLM OFF).
+
+### Deliverables
+
+**Stage A: Chunking & File Index**
+- ✅ `core/vector_chunk.py` — Deterministic text chunker (200~500 char, SHA256 dedup)
+- ✅ `core/vector_search_file.py` — File-based vector search (cosine similarity)
+- ✅ `scripts/build_vector_index_file_v1.py` — Index builder
+- ✅ Embedding model: `jhgan/ko-sroberta-multitask` v1.0 (FROZEN)
+- ✅ Index format: `data/vector_index/v1/{axis}__chunks.jsonl` + `{axis}__embeddings.npy`
+
+**Stage B: Customer View Enrichment**
+- ✅ `core/customer_view_builder_v2.py` — Vector-enhanced enrichment
+  - Query variant generation (canonical + disease keywords)
+  - Evidence priority: 사업방법서 > 상품요약서 > 약관
+  - Deterministic rule filters (NO LLM)
+- ✅ `scripts/enrich_cards_with_vector.py` — Batch enrichment script
+- ✅ Test results: Exclusion notes working, benefit descriptions need tuning
+
+**Stage C: PGVector Migration (Scripted, Not Yet Tested)**
+- ✅ `scripts/vector_ingest_pg.py` — Postgres ingestion script
+- ✅ `core/vector_search_pg.py` — PGVector backend
+- ⏸️ **Pending**: Postgres setup + performance testing
+
+### Index Build Results
+
+**Samsung**:
+- 8,886 chunks (약관: 8,374, 사업방법서: 221, 상품요약서: 262)
+- Embeddings: 768-dim, ~40MB total
+
+**Meritz**:
+- 13,558 chunks (약관: 12,062, 사업방법서: 1,204, 상품요약서: 292)
+- Embeddings: 768-dim, ~60MB total
+
+### Test Results (A4200_1 암진단비 — Samsung)
+
+**Extracted Fields**:
+- ✅ **Exclusion notes**: 유사암 제외, 소액암, 제자리암, 경계성종양
+- ✅ **Evidence refs**: chunk_id, page, doc_type tracked
+- ⚠️ **Benefit description**: Extracting exclusion clauses (not benefit explanation) — needs filter tuning
+- ❌ **Payment type / Limit conditions**: Low coverage (~0%) — need query expansion
+
+### Constitutional Compliance
+
+✅ NO LLM usage (all deterministic pattern matching)
+✅ NO OCR (uses existing page.jsonl from step3)
+✅ Evidence traceability (chunk_id/page/doc_type)
+✅ Step1/Step2 unchanged (SSOT preserved)
+✅ Embedding model frozen (reproducible)
+✅ File-based MVP (JSONL + numpy arrays)
+
+### Next Steps
+
+1. **Improve filters** for benefit_description:
+   - Prioritize "지급 사유" sections over "제외 사항"
+   - Add negative keywords (다만, 제외, 면책)
+   - Increase top_k for broader coverage
+
+2. **PGVector migration** (Stage C):
+   - Set up Postgres with pgvector extension
+   - Run `scripts/vector_ingest_pg.py --axis all --create-index`
+   - Performance test (file vs. PG)
+
+3. **Integration with UI** (apps/web):
+   - Display customer_view fields in comparison tables
+   - Evidence accordion with chunk references
+
+### Proof Document
+
+- `docs/audit/STEP_NEXT_66_VECTOR_FILEBASE_PROOF.md` (Stage A/B complete)
+
+---

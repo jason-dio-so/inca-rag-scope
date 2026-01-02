@@ -40,6 +40,38 @@ class Evidence:
 
 
 @dataclass
+class CustomerView:
+    """STEP NEXT-65R: Customer-facing benefit explanation"""
+    benefit_description: str
+    payment_type: Optional[str] = None  # "lump_sum" | "per_day" | "per_event" | null
+    limit_conditions: List[str] = field(default_factory=list)
+    exclusion_notes: List[str] = field(default_factory=list)
+    evidence_refs: List[dict] = field(default_factory=list)
+    extraction_notes: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            'benefit_description': self.benefit_description,
+            'payment_type': self.payment_type,
+            'limit_conditions': self.limit_conditions,
+            'exclusion_notes': self.exclusion_notes,
+            'evidence_refs': self.evidence_refs,
+            'extraction_notes': self.extraction_notes
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'CustomerView':
+        return cls(
+            benefit_description=data.get('benefit_description', ''),
+            payment_type=data.get('payment_type'),
+            limit_conditions=data.get('limit_conditions', []),
+            exclusion_notes=data.get('exclusion_notes', []),
+            evidence_refs=data.get('evidence_refs', []),
+            extraction_notes=data.get('extraction_notes', '')
+        )
+
+
+@dataclass
 class CoverageCard:
     """Coverage Card - 담보별 종합 정보"""
     insurer: str
@@ -51,10 +83,13 @@ class CoverageCard:
     evidences: List[Evidence] = field(default_factory=list)
     hits_by_doc_type: dict = field(default_factory=dict)  # NEW
     flags: List[str] = field(default_factory=list)  # NEW
+    proposal_facts: Optional[dict] = None  # STEP NEXT-UI-FIX-04: Step1 가입설계서 금액/보험료/기간
+    proposal_detail_facts: Optional[dict] = None  # STEP NEXT-68H: Step1 가입설계서 DETAIL 보장내용
+    customer_view: Optional[CustomerView] = None  # STEP NEXT-65R: Customer-facing explanation
 
     def to_dict(self) -> dict:
         """딕셔너리로 변환 (JSONL 출력용)"""
-        return {
+        result = {
             'insurer': self.insurer,
             'coverage_name_raw': self.coverage_name_raw,
             'coverage_code': self.coverage_code,
@@ -63,13 +98,21 @@ class CoverageCard:
             'evidence_status': self.evidence_status,
             'evidences': [e.to_dict() for e in self.evidences],
             'hits_by_doc_type': self.hits_by_doc_type,
-            'flags': self.flags
+            'flags': self.flags,
+            'proposal_facts': self.proposal_facts,
+            'proposal_detail_facts': self.proposal_detail_facts  # STEP NEXT-68H
         }
+        if self.customer_view:
+            result['customer_view'] = self.customer_view.to_dict()
+        return result
 
     @classmethod
     def from_dict(cls, data: dict) -> 'CoverageCard':
         """딕셔너리에서 생성 (JSONL 읽기용)"""
         evidences = [Evidence.from_dict(e) for e in data.get('evidences', [])]
+        customer_view = None
+        if 'customer_view' in data and data['customer_view']:
+            customer_view = CustomerView.from_dict(data['customer_view'])
         return cls(
             insurer=data['insurer'],
             coverage_name_raw=data['coverage_name_raw'],
@@ -79,7 +122,10 @@ class CoverageCard:
             evidence_status=data['evidence_status'],
             evidences=evidences,
             hits_by_doc_type=data.get('hits_by_doc_type', {}),
-            flags=data.get('flags', [])
+            flags=data.get('flags', []),
+            proposal_facts=data.get('proposal_facts'),
+            proposal_detail_facts=data.get('proposal_detail_facts'),  # STEP NEXT-68H
+            customer_view=customer_view
         )
 
     def get_top_evidence_ref(self) -> str:
@@ -152,3 +198,132 @@ class CompareStats:
             'evidence_found': self.evidence_found,
             'evidence_not_found': self.evidence_not_found
         }
+
+
+# ============================================================
+# STEP NEXT-72: Slim Coverage Cards + Split Stores
+# ============================================================
+
+@dataclass
+class ProposalDetailRecord:
+    """STEP NEXT-72: 가입설계서 DETAIL 저장소 레코드"""
+    proposal_detail_ref: str  # PD:{insurer}:{coverage_code}
+    insurer: str
+    coverage_code: str
+    doc_type: str  # "가입설계서"
+    page: int
+    benefit_description_text: str
+    hash: str  # sha256
+
+    def to_dict(self) -> dict:
+        return {
+            'proposal_detail_ref': self.proposal_detail_ref,
+            'insurer': self.insurer,
+            'coverage_code': self.coverage_code,
+            'doc_type': self.doc_type,
+            'page': self.page,
+            'benefit_description_text': self.benefit_description_text,
+            'hash': self.hash
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'ProposalDetailRecord':
+        return cls(
+            proposal_detail_ref=data['proposal_detail_ref'],
+            insurer=data['insurer'],
+            coverage_code=data['coverage_code'],
+            doc_type=data['doc_type'],
+            page=data['page'],
+            benefit_description_text=data['benefit_description_text'],
+            hash=data['hash']
+        )
+
+
+@dataclass
+class EvidenceRecord:
+    """STEP NEXT-72: 근거 자료 저장소 레코드"""
+    evidence_ref: str  # EV:{insurer}:{coverage_code}:{nn}
+    insurer: str
+    coverage_code: str
+    doc_type: str
+    page: int
+    snippet: str
+    match_keyword: str
+    hash: str  # sha256
+
+    def to_dict(self) -> dict:
+        return {
+            'evidence_ref': self.evidence_ref,
+            'insurer': self.insurer,
+            'coverage_code': self.coverage_code,
+            'doc_type': self.doc_type,
+            'page': self.page,
+            'snippet': self.snippet,
+            'match_keyword': self.match_keyword,
+            'hash': self.hash
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'EvidenceRecord':
+        return cls(
+            evidence_ref=data['evidence_ref'],
+            insurer=data['insurer'],
+            coverage_code=data['coverage_code'],
+            doc_type=data['doc_type'],
+            page=data['page'],
+            snippet=data['snippet'],
+            match_keyword=data['match_keyword'],
+            hash=data['hash']
+        )
+
+
+@dataclass
+class CoverageCardSlim:
+    """STEP NEXT-72: 경량 Coverage Card (UI/비교용, refs only)"""
+    insurer: str
+    coverage_code: Optional[str]
+    coverage_name_canonical: Optional[str]
+    coverage_name_raw: str
+    mapping_status: str  # "matched" | "unmatched"
+    proposal_facts: Optional[dict] = None
+    customer_view: Optional[CustomerView] = None
+    refs: dict = field(default_factory=dict)  # {proposal_detail_ref, evidence_refs}
+
+    def to_dict(self) -> dict:
+        result = {
+            'insurer': self.insurer,
+            'coverage_code': self.coverage_code,
+            'coverage_name_canonical': self.coverage_name_canonical,
+            'coverage_name_raw': self.coverage_name_raw,
+            'mapping_status': self.mapping_status,
+            'proposal_facts': self.proposal_facts,
+            'refs': self.refs
+        }
+        if self.customer_view:
+            result['customer_view'] = self.customer_view.to_dict()
+        return result
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'CoverageCardSlim':
+        customer_view = None
+        if 'customer_view' in data and data['customer_view']:
+            customer_view = CustomerView.from_dict(data['customer_view'])
+        return cls(
+            insurer=data['insurer'],
+            coverage_code=data.get('coverage_code'),
+            coverage_name_canonical=data.get('coverage_name_canonical'),
+            coverage_name_raw=data['coverage_name_raw'],
+            mapping_status=data['mapping_status'],
+            proposal_facts=data.get('proposal_facts'),
+            customer_view=customer_view,
+            refs=data.get('refs', {})
+        )
+
+    def sort_key(self) -> tuple:
+        """정렬 키 (기존 CoverageCard와 동일 규칙)"""
+        status_priority = 0 if self.mapping_status == "matched" else 1
+        if self.mapping_status == "matched":
+            sort_value = self.coverage_code or ""
+        else:
+            sort_value = self.coverage_name_raw
+        return (status_priority, sort_value)

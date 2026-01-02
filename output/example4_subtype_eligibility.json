@@ -1,0 +1,26 @@
+{
+  "subtype_keyword": "제자리암",
+  "rows": [
+    {
+      "insurer": "samsung",
+      "status": "Unknown",
+      "evidence_type": "판단근거 없음",
+      "evidence_snippet": "",
+      "evidence_ref": ""
+    },
+    {
+      "insurer": "meritz",
+      "status": "Unknown",
+      "evidence_type": "판단근거 없음",
+      "evidence_snippet": "",
+      "evidence_ref": ""
+    },
+    {
+      "insurer": "lotte",
+      "status": "Unknown",
+      "evidence_type": "판단근거 없음",
+      "evidence_snippet": "",
+      "evidence_ref": ""
+    }
+  ]
+}

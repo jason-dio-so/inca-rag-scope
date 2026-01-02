@@ -35,6 +35,16 @@ DROP_PATTERNS = [
     (r'시$', 'TRAILING_CLAUSE_TIME'),
     (r'(으로|로)\s*진단확정된', 'CONDITION_FRAGMENT'),
 
+    # Category 1b: STEP NEXT-60-H Broken Fragment Rules (General, NOT Hyundai-specific)
+    (r'^\(?갱신형\)?담보$', 'BROKEN_RENEWAL_담보'),  # (갱신형)담보, 갱신형담보
+    (r'^담보명$', 'COLUMN_HEADER_담보명'),  # Table header remnant
+    (r'^\d+\.?\d*$', 'STANDALONE_NUMBER'),  # Pure numbers (5, 91.5, etc.)
+    (r'^[가-힣](\s+[가-힣])+(\s+[가-힣\(%)]*)*$', 'FRAGMENTED_HANGUL'),  # "남 자", "보 험 가 격 지 수 (%)"
+    (r'^갱신차수$', 'ADMIN_FIELD_갱신차수'),  # Administrative field
+    (r'^\)담보$', 'BROKEN_CLOSING_담보'),  # Just ")담보"
+    (r'^[료초][\d회한]*[(\)]', 'BROKEN_FRAGMENT_료초'),  # "료(연간...", "초1회한)" - fragments
+    (r'^\d+회한[(\)]', 'BROKEN_FRAGMENT_회한'),  # "1회한)(갱신형)..." - fragments
+
     # Category 2: Sentence-like Noise
     (r'지급\s*(조건|사유|내용)', 'PAYMENT_EXPLANATION'),
     (r'보장\s*(개시일|내용)', 'COVERAGE_EXPLANATION'),
@@ -48,6 +58,10 @@ DROP_PATTERNS = [
 
 # NORMALIZATION patterns (STEP NEXT-52: Transform but don't drop)
 NORMALIZATION_PATTERNS = [
+    # STEP NEXT-60-H: Remove embedded newlines (PDF table extraction artifact)
+    # "표적항암약물허가치료(갱신형\n)담보" → "표적항암약물허가치료(갱신형)담보"
+    (r'\n', '', 'EMBEDDED_NEWLINE'),
+
     # STEP NEXT-59C: Numeric prefix with punctuation (DB/Hyundai/KB pattern)
     # MUST be first to catch "1.", "2)", "3-" before other patterns
     # "1. 상해사망" → "상해사망"
@@ -138,11 +152,13 @@ def deduplicate_variants(entries: List[Dict]) -> Tuple[List[Dict], List[Dict]]:
     Remove duplicate variants (keep first occurrence only).
 
     STEP NEXT-52: Enhanced to use normalized names for deduplication.
+    STEP NEXT-70: Enhanced to merge proposal_detail_facts when encountering duplicates.
 
     Handles:
         - DB: under40 vs over41
         - Lotte: male vs female
         - Prefix variations: "155 뇌졸중진단비" vs "뇌졸중진단비"
+        - KB: Merge DETAIL from variant signatures (pages 5-6) into summary (pages 2-3)
 
     Args:
         entries: List of sanitized entries
@@ -162,12 +178,21 @@ def deduplicate_variants(entries: List[Dict]) -> Tuple[List[Dict], List[Dict]]:
         normalized_name = entry.get('coverage_name_normalized', coverage_name_raw)
 
         if normalized_name in seen_normalized_names:
-            # Duplicate variant - keep first occurrence
+            # STEP NEXT-70: Merge proposal_detail_facts if current entry has it but first doesn't
+            first_entry = seen_normalized_names[normalized_name]
+            current_has_detail = entry.get('proposal_detail_facts') is not None
+            first_has_detail = first_entry.get('proposal_detail_facts') is not None
+
+            if current_has_detail and not first_has_detail:
+                # Current entry has DETAIL but first doesn't - merge it
+                first_entry['proposal_detail_facts'] = entry['proposal_detail_facts']
+
+            # Duplicate variant - drop current entry
             dropped.append({
                 **entry,
                 'sanitized': False,
                 'drop_reason': 'DUPLICATE_VARIANT',
-                'duplicate_of': seen_normalized_names[normalized_name]['coverage_name_raw']
+                'duplicate_of': first_entry['coverage_name_raw']
             })
         else:
             seen_normalized_names[normalized_name] = entry

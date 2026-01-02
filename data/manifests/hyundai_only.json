@@ -1,0 +1,12 @@
+{
+  "version": "hyundai_only_step_next_68h",
+  "generated_at": "2026-01-02T00:00:00+09:00",
+  "items": [
+    {
+      "insurer": "hyundai",
+      "variant": "default",
+      "doc_type": "가입설계서",
+      "pdf_path": "data/sources/insurers/hyundai/가입설계서/현대_가입설계서_2511.pdf"
+    }
+  ]
+}

@@ -34,6 +34,10 @@ from pipeline.step1_summary_first.pdf_fingerprint import (
     compute_pdf_fingerprint,
     fingerprints_match
 )
+from pipeline.step1_summary_first.detail_extractor import (
+    DetailTableExtractor,
+    match_summary_to_detail
+)
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +115,11 @@ class ExtractorV3:
         )
 
     def extract(self) -> List[ProposalFact]:
-        """Extract proposal facts with summary-first SSOT"""
+        """
+        Extract proposal facts with summary-first SSOT
+
+        STEP NEXT-67D: Also extract DETAIL table (보장/보상내용) if exists
+        """
         summary_exists = self.profile["summary_table"]["exists"]
 
         if not summary_exists:
@@ -119,7 +127,40 @@ class ExtractorV3:
             raise RuntimeError(f"{self.insurer}: Summary table required but not found in profile v3")
 
         logger.info(f"{self.insurer}: Extracting from summary table (SSOT)")
-        return self._extract_from_summary()
+        summary_facts = self._extract_from_summary()
+
+        # STEP NEXT-67D: Extract DETAIL table and match to summary
+        detail_extractor = DetailTableExtractor(self.pdf_path, self.profile, self.insurer)
+        detail_facts = detail_extractor.extract_detail_facts()
+
+        if detail_facts:
+            # Convert ProposalFact objects to dicts for matching
+            summary_dicts = [
+                {
+                    "coverage_name_raw": fact.coverage_name_raw,
+                    "proposal_facts": fact.proposal_facts
+                }
+                for fact in summary_facts
+            ]
+
+            # Match and enrich
+            enriched_dicts = match_summary_to_detail(summary_dicts, detail_facts)
+
+            # Convert back to ProposalFact objects
+            # Note: ProposalFact is a simple dataclass, so we need to handle the new field
+            # For now, we'll return dicts and update the dataclass later
+            return enriched_dicts
+        else:
+            # No detail facts: add null placeholder to all summary facts
+            summary_dicts = [
+                {
+                    "coverage_name_raw": fact.coverage_name_raw,
+                    "proposal_facts": fact.proposal_facts,
+                    "proposal_detail_facts": None
+                }
+                for fact in summary_facts
+            ]
+            return summary_dicts
 
     def _extract_from_summary(self) -> List[ProposalFact]:
         """
@@ -552,18 +593,18 @@ def main():
             facts = extractor.extract()
 
             # Save facts to JSONL
+            # STEP NEXT-67D: facts are now dicts (not ProposalFact objects)
             output_path = output_dir / output_filename
             with open(output_path, 'w', encoding='utf-8') as f:
                 for fact in facts:
-                    json.dump(
-                        {
-                            "insurer": insurer,
-                            "coverage_name_raw": fact.coverage_name_raw,
-                            "proposal_facts": fact.proposal_facts
-                        },
-                        f,
-                        ensure_ascii=False
-                    )
+                    # fact is already a dict with coverage_name_raw, proposal_facts, proposal_detail_facts
+                    fact_dict = {
+                        "insurer": insurer,
+                        "coverage_name_raw": fact["coverage_name_raw"],
+                        "proposal_facts": fact["proposal_facts"],
+                        "proposal_detail_facts": fact.get("proposal_detail_facts")
+                    }
+                    json.dump(fact_dict, f, ensure_ascii=False)
                     f.write('\n')
 
             # Read baseline for comparison

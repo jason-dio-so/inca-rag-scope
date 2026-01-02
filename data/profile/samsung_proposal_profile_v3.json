@@ -249,8 +249,37 @@
     "variant_signatures": []
   },
   "detail_table": {
-    "exists": false,
-    "pages": []
+    "exists": true,
+    "priority": 2,
+    "pages": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "table_name_candidates": [
+      "담보별 보장내용"
+    ],
+    "columns": {
+      "coverage_name": [
+        "담보별 보장내용"
+      ],
+      "description": [
+        "담보별 보장내용"
+      ],
+      "coverage_amount": [
+        "가입금액"
+      ],
+      "premium": [
+        "보험료(원)"
+      ]
+    },
+    "structure": {
+      "row_count": "5-14 rows per page",
+      "col_count": "7 columns",
+      "header_pattern": "담보별 보장내용 | 가입금액 | 보험료(원) | 납입기간\n보험기간"
+    },
+    "notes": "상세 테이블은 페이지 4-7에 존재. 보장내용 설명문 포함 (column 1: 담보명, column 2: 설명). 요약 테이블 우선 사용."
   },
   "known_anomalies": [],
   "evidences": [

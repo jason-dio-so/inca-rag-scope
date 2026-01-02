@@ -266,8 +266,39 @@
     ]
   },
   "detail_table": {
-    "exists": false,
-    "pages": []
+    "exists": true,
+    "priority": 2,
+    "pages": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "table_name_candidates": [
+      "가입담보 및 보장내용"
+    ],
+    "columns": {
+      "coverage_name_and_desc": [
+        "가입담보 및 보장내용"
+      ],
+      "coverage_amount": [
+        "가입금액"
+      ],
+      "premium": [
+        "보험료"
+      ],
+      "payment_period": [
+        "만기/납기"
+      ]
+    },
+    "structure": {
+      "row_count": "15-23 rows per page",
+      "col_count": "5 columns",
+      "header_pattern": "가입담보 및 보장내용 | 가입금액 | 보험료 | 만기/납기"
+    },
+    "notes": "상세 테이블은 페이지 5-10에 존재. **CRITICAL**: '가입담보 및 보장내용' merged column에 담보명 + 보장설명문이 섞여 있음. 요약 테이블 우선 사용 필수."
   },
   "known_anomalies": [
     "Hanwha: Merged header '가입담보 및 보장내용' detected (requires Hanwha-specific filters from 44-γ)"

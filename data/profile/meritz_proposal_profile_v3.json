@@ -95,7 +95,7 @@
         "column_map": {
           "has_row_number_column": false,
           "row_number_column_index": null,
-          "coverage_name": 0,
+          "coverage_name": 2,
           "coverage_amount": 3,
           "premium": 4,
           "period": 5
@@ -274,7 +274,7 @@
         "column_map": {
           "has_row_number_column": false,
           "row_number_column_index": null,
-          "coverage_name": 0,
+          "coverage_name": 2,
           "coverage_amount": 3,
           "premium": 4,
           "period": 5
@@ -383,8 +383,20 @@
     ]
   },
   "detail_table": {
-    "exists": false,
-    "pages": []
+    "exists": true,
+    "pages": [
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "columns": {
+      "coverage_name_and_desc": [
+        "가입담보 및 보장내용",
+        "담보명 및 보장내용"
+      ]
+    }
   },
   "known_anomalies": [],
   "evidences": [

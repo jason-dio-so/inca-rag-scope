@@ -157,15 +157,15 @@ python -m pipeline.step2_canonical_mapping.run --insurer hanwha
 #         data/scope_v3/hanwha_step2_mapping_report.jsonl
 ```
 
-### Step3+: Downstream Pipeline
+### Step3+: Downstream Pipeline (STEP NEXT-61 Compliant)
 ```bash
 # Step3: Extract evidence text
 python -m pipeline.step3_extract_text.run --insurer hanwha
 
-# Step5: Search evidence
+# Step4: Search evidence (STEP NEXT-61: reads from data/scope_v3/)
 python -m pipeline.step4_evidence_search.search_evidence --insurer hanwha
 
-# Step6: Build coverage cards (SSOT)
+# Step5: Build coverage cards (SSOT)
 python -m pipeline.step5_build_cards.build_cards --insurer hanwha
 
 # Step7 (optional): Amount enrichment

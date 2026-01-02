@@ -615,8 +615,36 @@
     ]
   },
   "detail_table": {
-    "exists": false,
-    "pages": []
+    "exists": true,
+    "priority": 2,
+    "pages": [
+      7,
+      8,
+      9
+    ],
+    "table_name_candidates": [
+      "가입담보[만기/납기]"
+    ],
+    "columns": {
+      "coverage_name_and_desc": [
+        "가입담보[만기/납기]"
+      ],
+      "coverage_amount": [
+        "가입금액(만원)"
+      ],
+      "premium": [
+        "보험료(원)"
+      ],
+      "description": [
+        "보장(보상)내용"
+      ]
+    },
+    "structure": {
+      "row_count": "19-24 rows per page",
+      "col_count": "4 columns",
+      "header_pattern": "가입담보[만기/납기] | 가입금액(만원) | 보험료(원) | 보장(보상)내용"
+    },
+    "notes": "상세 테이블은 페이지 7-9에 존재. 보장내용 설명문 포함. 요약 테이블 우선 사용."
   },
   "known_anomalies": [],
   "evidences": [

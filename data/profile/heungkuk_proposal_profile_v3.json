@@ -264,8 +264,14 @@
     ]
   },
   "detail_table": {
-    "exists": false,
-    "pages": []
+    "exists": true,
+    "priority": 1,
+    "pages": [9, 10, 11, 12, 13, 14],
+    "structure": {
+      "type": "text_based_layout",
+      "description": "Heungkuk: Coverage name + description in text layout (not table). Name line: '담보명 납입/만기 금액 보험료'. Description: following lines until next coverage or exclusion marker."
+    },
+    "notes": "Text-based extraction. Page text pattern: Line1=coverage+period+amount, Line2+=description until '[보험금을 지급하지 않는 사항]' or next coverage."
   },
   "known_anomalies": [],
   "evidences": [

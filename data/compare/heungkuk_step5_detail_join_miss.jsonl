@@ -1,0 +1,4 @@
+{"insurer": "heungkuk", "coverage_name_raw": "[갱신형]카티(CAR-T) 항암약물허가치료비(연간1회한)(갱신형_10년)", "reason": "NO_DETAIL_IN_STEP1", "debug": {"note": "Step1 extraction did not find DETAIL table row for this coverage"}}
+{"insurer": "heungkuk", "coverage_name_raw": "[갱신형]다빈치및레보아이로봇 암수술비(갑상선암 및 전립선암 제외)(최초1회한)(갱\n신형_10년)", "reason": "NO_DETAIL_IN_STEP1", "debug": {"note": "Step1 extraction did not find DETAIL table row for this coverage"}}
+{"insurer": "heungkuk", "coverage_name_raw": "[갱신형]다빈치및레보아이로봇 암수술비(갑상선암 및 전립선암)(최초1회한)(갱신형\n_10년)", "reason": "NO_DETAIL_IN_STEP1", "debug": {"note": "Step1 extraction did not find DETAIL table row for this coverage"}}
+{"insurer": "heungkuk", "coverage_name_raw": "[갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년)", "reason": "NO_DETAIL_IN_STEP1", "debug": {"note": "Step1 extraction did not find DETAIL table row for this coverage"}}

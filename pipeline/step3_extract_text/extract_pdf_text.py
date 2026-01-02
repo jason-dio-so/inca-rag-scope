@@ -48,6 +48,7 @@ class PDFTextExtractor:
         doc = pymupdf.open(str(pdf_path))
 
         pages_data = []
+        expected_page_count = len(doc)
 
         try:
             for page_num in range(len(doc)):
@@ -63,11 +64,22 @@ class PDFTextExtractor:
         finally:
             doc.close()
 
+        # GATE-3-1 (STEP NEXT-61): Page count validation
+        actual_page_count = len(pages_data)
+        if actual_page_count != expected_page_count:
+            raise RuntimeError(
+                f"[GATE-3-1 FAILED] Page count mismatch for {pdf_path.name}\n"
+                f"Expected: {expected_page_count} pages (from PDF metadata)\n"
+                f"Extracted: {actual_page_count} pages\n"
+                f"This indicates extraction failure. Check PDF integrity."
+            )
+
         # JSONL 저장
         with open(output_file, 'w', encoding='utf-8') as f:
             for page_data in pages_data:
                 f.write(json.dumps(page_data, ensure_ascii=False) + '\n')
 
+        print(f"  ✓ GATE-3-1 passed: {actual_page_count} pages extracted")
         return str(output_file)
 
     def extract_from_manifest(self, manifest_csv: str, insurer: str) -> List[Dict]:

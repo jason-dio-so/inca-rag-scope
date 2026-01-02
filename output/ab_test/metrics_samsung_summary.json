@@ -1,0 +1,48 @@
+{
+  "a_coverage": {
+    "total": 31,
+    "benefit_description_nonempty": 18,
+    "benefit_description_rate": 0.5806451612903226,
+    "payment_type_detected": 4,
+    "payment_type_rate": 0.12903225806451613,
+    "limit_conditions_nonempty": 10,
+    "limit_conditions_rate": 0.3225806451612903,
+    "exclusion_notes_nonempty": 25,
+    "exclusion_notes_rate": 0.8064516129032258
+  },
+  "b_coverage": {
+    "total": 31,
+    "benefit_description_nonempty": 0,
+    "benefit_description_rate": 0.0,
+    "payment_type_detected": 0,
+    "payment_type_rate": 0.0,
+    "limit_conditions_nonempty": 31,
+    "limit_conditions_rate": 1.0,
+    "exclusion_notes_nonempty": 0,
+    "exclusion_notes_rate": 0.0
+  },
+  "coverage_delta": {
+    "benefit_description_rate_delta": -0.5806451612903226,
+    "payment_type_rate_delta": -0.12903225806451613,
+    "limit_conditions_rate_delta": 0.6774193548387097,
+    "exclusion_notes_rate_delta": -0.8064516129032258
+  },
+  "a_quality": {
+    "total_snippets": 18,
+    "toc_like_count": 18,
+    "toc_like_ratio": 1.0,
+    "explanatory_count": 0,
+    "explanatory_ratio": 0.0
+  },
+  "b_quality": {
+    "total_snippets": 0,
+    "toc_like_count": 0,
+    "toc_like_ratio": 0.0,
+    "explanatory_count": 0,
+    "explanatory_ratio": 0.0
+  },
+  "quality_delta": {
+    "toc_like_ratio_delta": -1.0,
+    "explanatory_ratio_delta": 0.0
+  }
+}

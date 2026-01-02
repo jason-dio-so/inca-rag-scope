@@ -1,0 +1,41 @@
+{
+  "coverage_code": "A4200_1",
+  "rows": [
+    {
+      "insurer": "samsung",
+      "amount": "명시 없음",
+      "payment_type": "명시 없음",
+      "limit": "명시 없음",
+      "conditions": "4-1",
+      "evidence_refs": [
+        "약관 p.5",
+        "사업방법서 p.7",
+        "상품요약서 p.5"
+      ]
+    },
+    {
+      "insurer": "meritz",
+      "amount": "명시 없음",
+      "payment_type": "명시 없음",
+      "limit": "명시 없음",
+      "conditions": "1년경과시점 전일 이전 ",
+      "evidence_refs": [
+        "약관 p.17",
+        "상품요약서 p.1",
+        "약관 p.17"
+      ]
+    },
+    {
+      "insurer": "lotte",
+      "amount": "명시 없음",
+      "payment_type": "명시 없음",
+      "limit": "연간10회",
+      "conditions": "2-66",
+      "evidence_refs": [
+        "약관 p.11",
+        "사업방법서 p.8",
+        "상품요약서 p.3"
+      ]
+    }
+  ]
+}

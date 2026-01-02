@@ -11,7 +11,7 @@ DESIGN PRINCIPLES:
 5. Deterministic compiler generates VM (NO LLM inference)
 
 MESSAGE KINDS:
-- EX2_DETAIL: Coverage detail comparison (보장한도/면책/감액 등)
+- EX2_DETAIL_DIFF: Coverage diff comparison (담보 조건 차이 탐색)
 - EX3_INTEGRATED: Integrated comparison (통합 비교표 + 공통사항 + 유의사항)
 - EX4_ELIGIBILITY: Eligibility matrix (질병 경계조건 기반 보장 가능 여부)
 - EX1_PREMIUM_DISABLED: Premium comparison disabled (보험료 데이터 소스 미연동)
@@ -34,7 +34,8 @@ SectionKind = Literal[
     "comparison_table",     # Comparison table (all table types unified)
     "insurer_explanations", # Insurer-by-insurer parallel explanations
     "common_notes",         # Common notes/notices (unified)
-    "evidence_accordion"    # Evidence (collapsible accordion)
+    "evidence_accordion",   # Evidence (collapsible accordion)
+    "coverage_diff_result"  # STEP NEXT-COMPARE-FILTER: Diff grouping result
 ]
 
 # Legacy mapping (backward compat - to be removed)
@@ -211,14 +212,62 @@ class EvidenceAccordionSection(BaseModel):
 
 
 # ============================================================================
-# Section Union Type (5 CORE TYPES ONLY)
+# Coverage Diff Result Section (STEP NEXT-COMPARE-FILTER)
+# ============================================================================
+
+class InsurerDetail(BaseModel):
+    """Detailed insurer data for diff group"""
+    insurer: str
+    raw_text: str
+    evidence_refs: List[Dict[str, Any]] = []
+    notes: Optional[List[str]] = None
+
+
+class DiffGroup(BaseModel):
+    """Group of insurers with same value (STEP NEXT-COMPARE-FILTER-DETAIL-02 enriched)"""
+    value_display: str
+    insurers: List[str]
+    value_normalized: Optional[Dict[str, Any]] = None
+    insurer_details: Optional[List[InsurerDetail]] = None
+
+
+class CoverageDiffResultSection(BaseModel):
+    """
+    Coverage difference result section
+
+    STEP NEXT-COMPARE-FILTER: Dedicated section for diff queries
+    STEP NEXT-COMPARE-FILTER-DETAIL-02: Enriched with normalized values and evidence
+
+    USAGE:
+    - Query: "보장한도가 다른 상품 찾아줘"
+    - Response: Groups insurers by field value
+
+    PRESENTATION:
+    - If status="ALL_SAME": Show single message
+    - If status="DIFF": Show groups with diff_summary
+    - insurer_details: expandable accordion with raw_text + evidence_refs
+
+    FRONTEND COMPONENT: CoverageDiffCard
+    """
+    kind: Literal["coverage_diff_result"] = "coverage_diff_result"
+    title: str
+    field_label: str
+    status: Literal["DIFF", "ALL_SAME"]
+    groups: List[DiffGroup]
+    diff_summary: Optional[str] = None
+    extraction_notes: Optional[List[str]] = None  # For "명시 없음" explanations
+
+
+# ============================================================================
+# Section Union Type (6 CORE TYPES)
 # ============================================================================
 
 Section = (
     ComparisonTableSection |
     InsurerExplanationsSection |
     CommonNotesSection |
-    EvidenceAccordionSection
+    EvidenceAccordionSection |
+    CoverageDiffResultSection
 )
 
 # Note: summary is part of AssistantMessageVM.summary_bullets (not a section)
@@ -230,10 +279,11 @@ Section = (
 # ============================================================================
 
 MessageKind = Literal[
-    "EX2_DETAIL",           # 예시2: 상품/담보 설명
+    "EX2_DETAIL_DIFF",      # 예시2: 담보 조건 차이 탐색
     "EX3_INTEGRATED",       # 예시3: 통합 비교
     "EX4_ELIGIBILITY",      # 예시4: 보장 가능 여부
-    "EX1_PREMIUM_DISABLED"  # 예시1: 보험료 비교 불가
+    "EX1_PREMIUM_DISABLED", # 예시1: 보험료 비교 불가
+    "PREMIUM_COMPARE"       # 예시1: 보험료 비교 (활성)
 ]
 
 
@@ -295,17 +345,21 @@ class ChatRequest(BaseModel):
     """
     Chat request from frontend
 
-    FLOW (Production):
-    1. Frontend specifies `kind` (from FAQ button click) → 100% deterministic
-    2. If `kind` is None, fallback to intent router (keyword-based, lower accuracy)
-    3. Slot validator → check required fields
-    4. Compiler → generate CompareRequest
-    5. Handler → execute query + build VM
+    FLOW (Production - STEP NEXT-UI-01):
+    1. Frontend specifies `selected_category` (sidebar click) → category-based routing
+    2. OR Frontend specifies `kind` (from FAQ button) → 100% deterministic
+    3. If both None, fallback to intent router (keyword-based, lower accuracy)
+    4. Slot validator → check required fields
+    5. Compiler → generate CompareRequest
+    6. Handler → execute query + build VM
 
-    CRITICAL: For production UI, always set `kind` from FAQ template selection.
+    CRITICAL: For production UI, set `selected_category` from sidebar selection.
     """
     request_id: uuid.UUID = Field(default_factory=uuid.uuid4)
     message: str  # User input text (for display/logging)
+
+    # STEP NEXT-UI-01: Category-based routing (highest priority)
+    selected_category: Optional[str] = None  # "단순보험료 비교", "상품/담보 설명", etc.
 
     # PRODUCTION: Set this from FAQ button click (deterministic)
     kind: Optional[MessageKind] = None  # If set, skip intent router
@@ -316,6 +370,10 @@ class ChatRequest(BaseModel):
     coverage_names: Optional[List[str]] = None
     insurers: Optional[List[str]] = None
     disease_name: Optional[str] = None
+    compare_field: Optional[str] = None  # STEP NEXT-COMPARE-FILTER-01: "보장한도", "보장금액", etc.
+
+    # STEP NEXT-UI-01: LLM mode toggle
+    llm_mode: Literal["OFF", "ON"] = "OFF"  # Default: LLM OFF
 
     # User profile (from top form)
     user_profile: Optional[Dict[str, Any]] = None  # birth_date, gender, etc.
@@ -376,7 +434,7 @@ class FAQTemplateRegistry:
             title="담보 상세 비교 (보장한도/면책/감액)",
             prompt_template="{coverage_names}에 대해 {insurers} 간 보장 상세를 비교해주세요",
             required_slots=["coverage_names", "insurers"],
-            example_kind="EX2_DETAIL"
+            example_kind="EX2_DETAIL_DIFF"
         ),
         FAQTemplate(
             template_id="ex3_integrated_compare",
