@@ -422,36 +422,60 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
                 }
             )
 
-        # Build comparison table
+        # Build comparison table (STEP NEXT-73R: Add row.meta with refs)
         comparison_table = result["comparison_table"]
+
+        # Extract refs for each insurer
+        from apps.api.chat_vm import TableRowMeta
+
+        # Row 1: 보장금액
         rows = [
             TableRow(
                 cells=[
                     TableCell(text="보장금액"),
                     TableCell(text=comparison_table[insurer1]["amount"]),
                     TableCell(text=comparison_table[insurer2]["amount"])
-                ]
+                ],
+                meta=TableRowMeta(
+                    proposal_detail_ref=comparison_table[insurer1].get("proposal_detail_ref"),
+                    evidence_refs=comparison_table[insurer1].get("evidence_refs", [])
+                )
             ),
+            # Row 2: 보험료
             TableRow(
                 cells=[
                     TableCell(text="보험료"),
                     TableCell(text=comparison_table[insurer1].get("premium", "명시 없음")),
                     TableCell(text=comparison_table[insurer2].get("premium", "명시 없음"))
-                ]
+                ],
+                meta=TableRowMeta(
+                    proposal_detail_ref=comparison_table[insurer1].get("proposal_detail_ref"),
+                    evidence_refs=comparison_table[insurer1].get("evidence_refs", [])
+                )
             ),
+            # Row 3: 납입/만기
             TableRow(
                 cells=[
                     TableCell(text="납입/만기"),
                     TableCell(text=comparison_table[insurer1].get("period", "명시 없음")),
                     TableCell(text=comparison_table[insurer2].get("period", "명시 없음"))
-                ]
+                ],
+                meta=TableRowMeta(
+                    proposal_detail_ref=comparison_table[insurer1].get("proposal_detail_ref"),
+                    evidence_refs=comparison_table[insurer1].get("evidence_refs", [])
+                )
             ),
+            # Row 4: 지급유형
             TableRow(
                 cells=[
                     TableCell(text="지급유형"),
                     TableCell(text=comparison_table[insurer1]["payment_type"]),
                     TableCell(text=comparison_table[insurer2]["payment_type"])
-                ]
+                ],
+                meta=TableRowMeta(
+                    proposal_detail_ref=comparison_table[insurer1].get("proposal_detail_ref"),
+                    evidence_refs=comparison_table[insurer1].get("evidence_refs", [])
+                )
             )
         ]
 

@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-02
-**현재 상태**: ✅ **Coverage Cards Slim화 완료** (STEP NEXT-72: 파일 크기 48% 감소 + DETAIL/EVIDENCE 분리 저장소 구축)
+**현재 상태**: ✅ **Slim Store Lazy Loading Backend 연결 완료** (STEP NEXT-73R-P1: Store API + row.meta refs)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ Slim Store Backend Wiring** | STEP NEXT-73R-P1 | ✅ 완료 | 2026-01-02 |
 | **✅ Coverage Cards Slim화** | STEP NEXT-72 | ✅ 완료 | 2026-01-02 |
 | **✅ UI Rendering Stabilization** | STEP NEXT-UI-02-FIX2 | ✅ 완료 | 2026-01-01 |
 | **✅ Amount Comparison Engine** | STEP NEXT-62 | ✅ 완료 | 2026-01-01 |
