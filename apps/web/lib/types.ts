@@ -28,13 +28,23 @@ export interface CellMeta {
 }
 
 export interface TableCell {
-  value_text: string;
+  value_text?: string;  // Legacy
+  text?: string;        // STEP NEXT-73R: Backend uses 'text'
   meta?: CellMeta;
 }
 
+// STEP NEXT-73R: Row-level metadata for refs
+export interface TableRowMeta {
+  proposal_detail_ref?: string;
+  evidence_refs?: string[];
+}
+
 export interface TableRow {
-  label: string;
-  values: TableCell[];
+  label?: string;       // Legacy
+  values?: TableCell[]; // Legacy
+  cells?: TableCell[];  // STEP NEXT-73R: Backend uses 'cells'
+  is_header?: boolean;
+  meta?: TableRowMeta;  // STEP NEXT-73R
 }
 
 export interface ComparisonTableSection {
@@ -93,6 +103,28 @@ export interface AssistantMessageVM {
   summary_bullets?: string[];
   sections?: Section[];
   lineage?: Lineage;
+}
+
+// STEP NEXT-73R: Store API types
+export interface ProposalDetailStoreItem {
+  proposal_detail_ref: string;
+  insurer: string;
+  coverage_code: string;
+  doc_type: string;
+  page: number;
+  benefit_description_text: string;
+  hash: string;
+}
+
+export interface EvidenceStoreItem {
+  evidence_ref: string;
+  insurer: string;
+  coverage_code: string;
+  doc_type: string;
+  page: number;
+  snippet: string;
+  match_keyword: string;
+  hash: string;
 }
 
 export interface ChatResponse {

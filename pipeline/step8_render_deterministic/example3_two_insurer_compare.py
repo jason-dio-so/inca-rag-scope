@@ -31,12 +31,28 @@ from pipeline.step8_render_deterministic.templates import DeterministicTemplates
 class TwoInsurerComparer:
     """Deterministic two-insurer comparison (NO LLM)"""
 
-    def __init__(self, cards_dir: Path = Path("data/compare")):
+    def __init__(self, cards_dir: Path = Path("data/compare"), use_slim: bool = True):
         self.cards_dir = cards_dir
         self.templates = DeterministicTemplates()
+        self.use_slim = use_slim  # STEP NEXT-73R: Prefer slim cards
 
     def load_coverage_cards(self, insurer: str) -> List[Dict[str, Any]]:
-        """Load coverage cards (SSOT)"""
+        """
+        Load coverage cards (SSOT)
+
+        STEP NEXT-73R: Try slim cards first, fallback to legacy
+        """
+        # Try slim cards first
+        if self.use_slim:
+            slim_file = self.cards_dir / f"{insurer}_coverage_cards_slim.jsonl"
+            if slim_file.exists():
+                cards = []
+                with open(slim_file, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        cards.append(json.loads(line))
+                return cards
+
+        # Fallback to legacy cards
         cards_file = self.cards_dir / f"{insurer}_coverage_cards.jsonl"
         if not cards_file.exists():
             return []
@@ -134,8 +150,21 @@ class TwoInsurerComparer:
         payment1 = self.extract_payment_type(evidences1)
         payment2 = self.extract_payment_type(evidences2)
 
-        refs1 = self.build_evidence_refs(evidences1)
-        refs2 = self.build_evidence_refs(evidences2)
+        # STEP NEXT-73R: Get refs from slim cards (if available), otherwise build from evidences
+        refs1_obj = card1.get("refs", {})
+        refs2_obj = card2.get("refs", {})
+
+        proposal_detail_ref1 = refs1_obj.get("proposal_detail_ref")
+        proposal_detail_ref2 = refs2_obj.get("proposal_detail_ref")
+
+        evidence_refs1 = refs1_obj.get("evidence_refs", [])
+        evidence_refs2 = refs2_obj.get("evidence_refs", [])
+
+        # Fallback to legacy evidence refs (for backward compat)
+        if not evidence_refs1:
+            evidence_refs1 = self.build_evidence_refs(evidences1)
+        if not evidence_refs2:
+            evidence_refs2 = self.build_evidence_refs(evidences2)
 
         # Gate 2: evidence_fill_rate >= 0.8
         total_fields = 4  # amount, payment, refs (2x)
@@ -160,21 +189,23 @@ class TwoInsurerComparer:
         period1 = proposal_facts1.get("period_text") or "명시 없음"
         period2 = proposal_facts2.get("period_text") or "명시 없음"
 
-        # Build comparison table
+        # Build comparison table (STEP NEXT-73R: Add proposal_detail_ref)
         comparison_table = {
             insurer1: {
                 "amount": amount1 or "명시 없음",
                 "premium": premium1,
                 "period": period1,
                 "payment_type": payment1 or "명시 없음",
-                "evidence_refs": refs1
+                "evidence_refs": evidence_refs1,
+                "proposal_detail_ref": proposal_detail_ref1  # STEP NEXT-73R
             },
             insurer2: {
                 "amount": amount2 or "명시 없음",
                 "premium": premium2,
                 "period": period2,
                 "payment_type": payment2 or "명시 없음",
-                "evidence_refs": refs2
+                "evidence_refs": evidence_refs2,
+                "proposal_detail_ref": proposal_detail_ref2  # STEP NEXT-73R
             }
         }
 

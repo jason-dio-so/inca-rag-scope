@@ -70,10 +70,17 @@ class TableCell(BaseModel):
     meta: Optional[CellMeta] = None
 
 
+class TableRowMeta(BaseModel):
+    """STEP NEXT-73R: Row-level metadata for refs"""
+    proposal_detail_ref: Optional[str] = None
+    evidence_refs: Optional[List[str]] = None
+
+
 class TableRow(BaseModel):
     """Table row (header or data)"""
     cells: List[TableCell]
     is_header: bool = False
+    meta: Optional[TableRowMeta] = None  # STEP NEXT-73R: Row-level refs
 
 
 class ComparisonTableSection(BaseModel):
