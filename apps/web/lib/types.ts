@@ -33,10 +33,19 @@ export interface TableCell {
   meta?: CellMeta;
 }
 
+// STEP NEXT-75: KPI Summary for UI display
+export interface KPISummaryMeta {
+  payment_type: string;
+  limit_summary?: string | null;
+  kpi_evidence_refs?: string[];
+  extraction_notes?: string;
+}
+
 // STEP NEXT-73R: Row-level metadata for refs
 export interface TableRowMeta {
   proposal_detail_ref?: string;
   evidence_refs?: string[];
+  kpi_summary?: KPISummaryMeta;  // STEP NEXT-75
 }
 
 export interface TableRow {

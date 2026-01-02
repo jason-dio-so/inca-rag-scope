@@ -422,11 +422,18 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
                 }
             )
 
-        # Build comparison table (STEP NEXT-73R: Add row.meta with refs)
+        # Build comparison table (STEP NEXT-73R: Add row.meta with refs, STEP NEXT-75: Add kpi_summary)
         comparison_table = result["comparison_table"]
 
-        # Extract refs for each insurer
-        from apps.api.chat_vm import TableRowMeta
+        # Extract refs and kpi_summary for each insurer
+        from apps.api.chat_vm import TableRowMeta, KPISummaryMeta
+
+        # STEP NEXT-75: Convert kpi_summary dict to KPISummaryMeta if present
+        kpi1 = comparison_table[insurer1].get("kpi_summary")
+        kpi2 = comparison_table[insurer2].get("kpi_summary")
+
+        kpi_meta1 = KPISummaryMeta(**kpi1) if kpi1 else None
+        kpi_meta2 = KPISummaryMeta(**kpi2) if kpi2 else None
 
         # Row 1: 보장금액
         rows = [
@@ -438,7 +445,8 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
                 ],
                 meta=TableRowMeta(
                     proposal_detail_ref=comparison_table[insurer1].get("proposal_detail_ref"),
-                    evidence_refs=comparison_table[insurer1].get("evidence_refs", [])
+                    evidence_refs=comparison_table[insurer1].get("evidence_refs", []),
+                    kpi_summary=kpi_meta1  # STEP NEXT-75
                 )
             ),
             # Row 2: 보험료
@@ -450,7 +458,8 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
                 ],
                 meta=TableRowMeta(
                     proposal_detail_ref=comparison_table[insurer1].get("proposal_detail_ref"),
-                    evidence_refs=comparison_table[insurer1].get("evidence_refs", [])
+                    evidence_refs=comparison_table[insurer1].get("evidence_refs", []),
+                    kpi_summary=kpi_meta1  # STEP NEXT-75
                 )
             ),
             # Row 3: 납입/만기
@@ -462,7 +471,8 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
                 ],
                 meta=TableRowMeta(
                     proposal_detail_ref=comparison_table[insurer1].get("proposal_detail_ref"),
-                    evidence_refs=comparison_table[insurer1].get("evidence_refs", [])
+                    evidence_refs=comparison_table[insurer1].get("evidence_refs", []),
+                    kpi_summary=kpi_meta1  # STEP NEXT-75
                 )
             ),
             # Row 4: 지급유형
@@ -474,7 +484,8 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
                 ],
                 meta=TableRowMeta(
                     proposal_detail_ref=comparison_table[insurer1].get("proposal_detail_ref"),
-                    evidence_refs=comparison_table[insurer1].get("evidence_refs", [])
+                    evidence_refs=comparison_table[insurer1].get("evidence_refs", []),
+                    kpi_summary=kpi_meta1  # STEP NEXT-75
                 )
             )
         ]
