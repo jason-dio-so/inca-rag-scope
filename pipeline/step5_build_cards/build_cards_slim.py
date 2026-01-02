@@ -28,9 +28,11 @@ from core.compare_types import (
     EvidenceRecord,
     Evidence,
     CustomerView,
-    CompareStats
+    CompareStats,
+    KPISummary
 )
 from core.customer_view_builder import build_customer_view
+from core.kpi_extractor import extract_kpi_from_text, PaymentType
 
 
 def _calculate_hash(text: str) -> str:
@@ -315,6 +317,89 @@ def build_coverage_cards_slim(
             )
             customer_view = CustomerView.from_dict(customer_view_dict)
 
+        # 6b. STEP NEXT-74: KPI 추출 (지급유형 / 한도)
+        kpi_summary = None
+        kpi_extraction_notes = []
+
+        # Priority 1: 가입설계서 DETAIL
+        if proposal_detail_facts and proposal_detail_facts.get('benefit_description_text'):
+            benefit_text = proposal_detail_facts['benefit_description_text']
+            kpi_result = extract_kpi_from_text(benefit_text)
+
+            kpi_evidence_refs = []
+            if proposal_detail_ref:
+                kpi_evidence_refs.append(proposal_detail_ref)
+
+            kpi_summary = KPISummary(
+                payment_type=kpi_result['payment_type'].value,
+                limit_summary=kpi_result['limit_summary'],
+                kpi_evidence_refs=kpi_evidence_refs,
+                extraction_notes=f"Extracted from proposal DETAIL (page {proposal_detail_facts.get('detail_page', 0)})"
+            )
+        # Priority 2-4: Fallback to evidences (사업방법서 > 상품요약서 > 약관)
+        elif selected_evidences:
+            # Try evidences in priority order
+            doc_type_priority = ['사업방법서', '상품요약서', '약관']
+            kpi_result = None
+            source_evidence = None
+
+            for doc_type in doc_type_priority:
+                for ev in selected_evidences:
+                    if ev.doc_type == doc_type and ev.snippet:
+                        candidate_kpi = extract_kpi_from_text(ev.snippet)
+                        # Accept if we got meaningful extraction
+                        if candidate_kpi['payment_type'] != PaymentType.UNKNOWN or candidate_kpi['limit_summary']:
+                            kpi_result = candidate_kpi
+                            source_evidence = ev
+                            break
+                if kpi_result:
+                    break
+
+            # If still no result, try first evidence with any extraction
+            if not kpi_result:
+                for ev in selected_evidences:
+                    if ev.snippet:
+                        candidate_kpi = extract_kpi_from_text(ev.snippet)
+                        if candidate_kpi['payment_type'] != PaymentType.UNKNOWN or candidate_kpi['limit_summary']:
+                            kpi_result = candidate_kpi
+                            source_evidence = ev
+                            break
+
+            # Create KPI summary if we found anything
+            if kpi_result:
+                kpi_evidence_refs = []
+                # Find the ref for source evidence
+                if source_evidence:
+                    for idx, ev in enumerate(selected_evidences, start=1):
+                        if ev == source_evidence and evidence_refs:
+                            # Find corresponding ref
+                            if idx <= len(evidence_refs):
+                                kpi_evidence_refs.append(evidence_refs[idx-1])
+                            break
+
+                kpi_summary = KPISummary(
+                    payment_type=kpi_result['payment_type'].value,
+                    limit_summary=kpi_result['limit_summary'],
+                    kpi_evidence_refs=kpi_evidence_refs,
+                    extraction_notes=f"Extracted from {source_evidence.doc_type if source_evidence else 'evidence'}" if source_evidence else "Extracted from evidence"
+                )
+            else:
+                # No meaningful extraction - create UNKNOWN
+                kpi_summary = KPISummary(
+                    payment_type=PaymentType.UNKNOWN.value,
+                    limit_summary=None,
+                    kpi_evidence_refs=[],
+                    extraction_notes="No KPI patterns matched"
+                )
+        else:
+            # No sources available
+            kpi_summary = KPISummary(
+                payment_type=PaymentType.UNKNOWN.value,
+                limit_summary=None,
+                kpi_evidence_refs=[],
+                extraction_notes="No evidence or proposal detail available"
+            )
+
         # 7. Slim card 생성
         refs = {
             'proposal_detail_ref': proposal_detail_ref,
@@ -329,7 +414,8 @@ def build_coverage_cards_slim(
             mapping_status=mapping_status,
             proposal_facts=proposal_facts_map.get(coverage_name_raw),
             customer_view=customer_view,
-            refs=refs
+            refs=refs,
+            kpi_summary=kpi_summary
         )
         cards_slim.append(card_slim)
 
