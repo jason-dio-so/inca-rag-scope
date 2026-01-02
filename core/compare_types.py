@@ -278,6 +278,32 @@ class EvidenceRecord:
 
 
 @dataclass
+class KPISummary:
+    """STEP NEXT-74: KPI Summary (지급유형 / 한도)"""
+    payment_type: str  # "LUMP_SUM" | "PER_DAY" | "PER_EVENT" | "REIMBURSEMENT" | "UNKNOWN"
+    limit_summary: Optional[str] = None
+    kpi_evidence_refs: List[str] = field(default_factory=list)
+    extraction_notes: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            'payment_type': self.payment_type,
+            'limit_summary': self.limit_summary,
+            'kpi_evidence_refs': self.kpi_evidence_refs,
+            'extraction_notes': self.extraction_notes
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'KPISummary':
+        return cls(
+            payment_type=data['payment_type'],
+            limit_summary=data.get('limit_summary'),
+            kpi_evidence_refs=data.get('kpi_evidence_refs', []),
+            extraction_notes=data.get('extraction_notes', '')
+        )
+
+
+@dataclass
 class CoverageCardSlim:
     """STEP NEXT-72: 경량 Coverage Card (UI/비교용, refs only)"""
     insurer: str
@@ -288,6 +314,7 @@ class CoverageCardSlim:
     proposal_facts: Optional[dict] = None
     customer_view: Optional[CustomerView] = None
     refs: dict = field(default_factory=dict)  # {proposal_detail_ref, evidence_refs}
+    kpi_summary: Optional[KPISummary] = None  # STEP NEXT-74
 
     def to_dict(self) -> dict:
         result = {
@@ -301,6 +328,8 @@ class CoverageCardSlim:
         }
         if self.customer_view:
             result['customer_view'] = self.customer_view.to_dict()
+        if self.kpi_summary:
+            result['kpi_summary'] = self.kpi_summary.to_dict()
         return result
 
     @classmethod
@@ -308,6 +337,11 @@ class CoverageCardSlim:
         customer_view = None
         if 'customer_view' in data and data['customer_view']:
             customer_view = CustomerView.from_dict(data['customer_view'])
+
+        kpi_summary = None
+        if 'kpi_summary' in data and data['kpi_summary']:
+            kpi_summary = KPISummary.from_dict(data['kpi_summary'])
+
         return cls(
             insurer=data['insurer'],
             coverage_code=data.get('coverage_code'),
@@ -316,7 +350,8 @@ class CoverageCardSlim:
             mapping_status=data['mapping_status'],
             proposal_facts=data.get('proposal_facts'),
             customer_view=customer_view,
-            refs=data.get('refs', {})
+            refs=data.get('refs', {}),
+            kpi_summary=kpi_summary
         )
 
     def sort_key(self) -> tuple:
