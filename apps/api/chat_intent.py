@@ -51,19 +51,31 @@ class IntentRouter:
         "보험 상식": "KNOWLEDGE_BASE"  # Future RAG
     }
 
+    # STEP NEXT-78: Disease subtypes for EX4 detection
+    DISEASE_SUBTYPES = [
+        "제자리암", "경계성종양", "유사암",
+        "갑상선암", "기타피부암", "대장점막내암",
+        "전립선암", "방광암"
+    ]
+
     # Keyword patterns for each intent
     PATTERNS: Dict[MessageKind, List[str]] = {
-        "EX2_DETAIL_DIFF": [
-            r"다른.*상품",  # "다른 상품"
-            r"다른.*찾",    # "다른 찾아줘"
+        "EX2_LIMIT_FIND": [  # STEP NEXT-78: Renamed from EX2_DETAIL_DIFF
+            r"보장한도.*다른",
+            r"한도.*다른",
+            r"한도.*차이",
+            r"보장한도.*비교",
+            r"조건.*다른",
+            r"조건.*차이",
+            r"면책.*다른",
+            r"감액.*다른",
+            r"지급유형.*다른"
+        ],
+        "EX2_DETAIL_DIFF": [  # LEGACY (backward compat)
+            r"다른.*상품",
+            r"다른.*찾",
             r"차이",
-            r"상이",
             r"상세",
-            r"보장.*비교",
-            r"면책",
-            r"감액",
-            r"보장한도",
-            r"보장기간",
             r"담보.*설명"
         ],
         "EX3_INTEGRATED": [
@@ -73,12 +85,17 @@ class IntentRouter:
             r"공통사항",
             r"유의사항"
         ],
-        "EX4_ELIGIBILITY": [
+        "EX4_ELIGIBILITY": [  # STEP NEXT-78: Strengthened with disease subtypes
             r"보장.*가능",
             r"보장.*여부",
             r"질병.*하위",
             r"경계.*조건",
-            r"적용.*여부"
+            r"적용.*여부",
+            r"제자리암",
+            r"경계성종양",
+            r"유사암",
+            r"갑상선암",
+            r"기타피부암"
         ],
         "EX1_PREMIUM_DISABLED": [
             r"보험료",
@@ -95,11 +112,15 @@ class IntentRouter:
         """
         Detect intent from ChatRequest
 
-        Priority (STEP NEXT-UI-01):
+        Priority (STEP NEXT-80 LOCKED):
         1. Category (selectedCategory) → 100% confidence
         2. FAQ template (if provided) → 100% confidence
-        3. Keyword pattern matching → 0-100% confidence
-        4. Unknown → 0% confidence
+        3. Anti-confusion gates (EX2 vs EX4) → 100% confidence
+        4. Keyword pattern matching → 0-100% confidence
+        5. Unknown → 0% confidence
+
+        NOTE: This method is ONLY called when request.kind is NOT provided.
+        Explicit kind (request.kind) is handled in route() with ABSOLUTE priority.
 
         Returns:
             (MessageKind, confidence_score)
@@ -116,8 +137,21 @@ class IntentRouter:
             if template:
                 return (template.example_kind, 1.0)
 
-        # Priority 3: Pattern matching
         message_lower = request.message.lower()
+
+        # STEP NEXT-78: Priority 3 - Anti-confusion gates
+        # Gate 1: Disease subtype detection → EX4_ELIGIBILITY
+        for subtype in IntentRouter.DISEASE_SUBTYPES:
+            if subtype in message_lower:
+                return ("EX4_ELIGIBILITY", 1.0)
+
+        # Gate 2: Limit/condition comparison → EX2_LIMIT_FIND
+        limit_patterns = [r"보장한도.*다른", r"한도.*다른", r"한도.*차이", r"조건.*다른", r"면책.*다른", r"감액.*다른"]
+        for pattern in limit_patterns:
+            if re.search(pattern, message_lower):
+                return ("EX2_LIMIT_FIND", 1.0)
+
+        # Priority 4: Pattern matching (fallback)
         scores: Dict[MessageKind, float] = {}
 
         for kind, patterns in IntentRouter.PATTERNS.items():
@@ -138,26 +172,30 @@ class IntentRouter:
                 return (best_kind, best_score)
 
         # Unknown intent
-        return ("EX2_DETAIL_DIFF", 0.0)  # Default fallback
+        return ("EX2_LIMIT_FIND", 0.0)  # Default fallback (STEP NEXT-78: changed from EX2_DETAIL_DIFF)
 
     @staticmethod
     def route(request: ChatRequest) -> MessageKind:
         """
         Route request to MessageKind
 
-        PRIORITY (Production Hardening):
-        1. Explicit `kind` from request → 100% deterministic (NO router)
-        2. FAQ template → high confidence
-        3. Keyword patterns → fallback (lower accuracy)
+        PRIORITY (STEP NEXT-80 LOCKED):
+        1. Explicit `kind` from request → 100% priority (ABSOLUTE, NO OVERRIDE)
+        2. detect_intent() → category/FAQ/gates/patterns (ONLY if kind is None)
+
+        CRITICAL RULE:
+        - If request.kind is provided, NEVER call detect_intent()
+        - If request.kind is provided, NEVER apply anti-confusion gates
+        - Explicit kind = UI contract guarantee (e.g., Example 3 button)
 
         Returns:
             MessageKind for handler dispatch
         """
-        # Priority 1: Explicit kind (production flow)
+        # STEP NEXT-80: Priority 1 - Explicit kind (ABSOLUTE, NO OVERRIDE)
         if request.kind is not None:
             return request.kind
 
-        # Priority 2-3: Detect from FAQ/keywords
+        # Priority 2-5: Detect from category/FAQ/gates/patterns (ONLY if kind is None)
         kind, confidence = IntentRouter.detect_intent(request)
         return kind
 
@@ -179,8 +217,10 @@ class SlotValidator:
 
     # Required slots per MessageKind
     REQUIRED_SLOTS: Dict[MessageKind, List[str]] = {
-        "EX2_DETAIL_DIFF": ["coverage_names", "insurers", "compare_field"],
+        "EX2_DETAIL_DIFF": ["coverage_names", "insurers", "compare_field"],  # LEGACY
+        "EX2_LIMIT_FIND": ["coverage_names", "insurers", "compare_field"],  # STEP NEXT-78
         "EX3_INTEGRATED": ["coverage_names", "insurers"],
+        "EX3_COMPARE": ["coverage_names", "insurers"],  # STEP NEXT-77
         "EX4_ELIGIBILITY": ["disease_name", "insurers"],
         "EX1_PREMIUM_DISABLED": [],  # No slots required (immediate disabled response)
         "PREMIUM_COMPARE": []
@@ -296,6 +336,16 @@ class QueryCompiler:
 
         return "보장한도"  # Default
 
+    # Coverage name → code mapping (STEP NEXT-80: Fixed to actual coverage codes)
+    COVERAGE_NAME_TO_CODE = {
+        "암진단비(유사암제외)": "A4200_1",
+        "암진단비": "A4200_1",  # STEP NEXT-80: Fixed A4100_1 → A4200_1 (actual code in slim cards)
+        "뇌출혈진단비": "A4300_1",
+        "급성심근경색진단비": "A4400_1",
+        "상해사망": "A1100_1",
+        "질병사망": "A1200_1",
+    }
+
     @staticmethod
     def compile_coverage_names(raw_names: List[str]) -> List[str]:
         """
@@ -305,6 +355,19 @@ class QueryCompiler:
         For now, pass-through (assume frontend sends canonical names)
         """
         return raw_names  # TODO: Add mapping table lookup
+
+    @staticmethod
+    def map_coverage_name_to_code(coverage_name: str) -> str:
+        """
+        Map coverage name to code (STEP NEXT-80: Quick fix for EX3_COMPARE)
+
+        Args:
+            coverage_name: Human-readable name (e.g., "암진단비(유사암제외)")
+
+        Returns:
+            Coverage code (e.g., "A4200_1")
+        """
+        return QueryCompiler.COVERAGE_NAME_TO_CODE.get(coverage_name, coverage_name)
 
     @staticmethod
     def compile_insurer_codes(raw_insurers: List[str]) -> List[str]:
@@ -354,19 +417,25 @@ class QueryCompiler:
         }
 
         # Compile slots based on kind
-        if kind in ["EX2_DETAIL_DIFF", "EX3_INTEGRATED"]:
+        if kind in ["EX2_DETAIL_DIFF", "EX2_LIMIT_FIND", "EX3_INTEGRATED", "EX3_COMPARE"]:
             query["coverage_names"] = QueryCompiler.compile_coverage_names(
                 request.coverage_names or []
             )
             query["insurers"] = QueryCompiler.compile_insurer_codes(
                 request.insurers or []
             )
-            if kind == "EX2_DETAIL_DIFF":
+            if kind in ["EX2_DETAIL_DIFF", "EX2_LIMIT_FIND"]:
                 # Auto-detect compare_field from message if not provided
                 if not request.compare_field:
                     query["compare_field"] = QueryCompiler.extract_compare_field(request.message)
                 else:
                     query["compare_field"] = request.compare_field
+            # Add coverage_code for EX3_COMPARE
+            if kind == "EX3_COMPARE":
+                # Map coverage name to code (STEP NEXT-80)
+                if query["coverage_names"]:
+                    coverage_name = query["coverage_names"][0]
+                    query["coverage_code"] = QueryCompiler.map_coverage_name_to_code(coverage_name)
 
         elif kind == "EX4_ELIGIBILITY":
             query["disease_name"] = request.disease_name
