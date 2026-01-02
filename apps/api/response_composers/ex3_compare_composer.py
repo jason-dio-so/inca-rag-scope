@@ -65,15 +65,10 @@ class EX3CompareComposer:
             EX3_COMPARE message dict
         """
         # STEP NEXT-81B: Get display-safe coverage name (NO code exposure)
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info(f"[EX3_COMPOSE] coverage_name={coverage_name}, coverage_code={coverage_code}")
-
         display_name = display_coverage_name(
             coverage_name=coverage_name,
             coverage_code=coverage_code
         )
-        logger.info(f"[EX3_COMPOSE] display_name={display_name}")
 
         # Build title
         insurer1, insurer2 = insurers[0], insurers[1]
