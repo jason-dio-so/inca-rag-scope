@@ -50,6 +50,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
         "http://localhost:9000",
@@ -755,12 +757,12 @@ async def chat(request_dict: dict):
         # Parse request
         request = ChatRequest(**request_dict)
 
-        logger.info(f"Chat request: {request.request_id} | message: {request.message[:100]}")
+        logger.info(f"Chat request: {request.request_id} | message: {request.message[:100]} | kind: {request.kind}")
 
         # Dispatch to intent handler
         response = IntentDispatcher.dispatch(request)
 
-        logger.info(f"Chat response: need_more_info={response.need_more_info}")
+        logger.info(f"Chat response: need_more_info={response.need_more_info} | kind: {response.message.kind if response.message else None}")
 
         # Return response (Pydantic model → JSON)
         return response.model_dump(mode='json', exclude_none=True)

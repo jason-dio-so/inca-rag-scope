@@ -1,5 +1,133 @@
 # CLAUDE Context – inca-rag-scope
 
+# EXECUTION BASELINE (SSOT)
+
+This file defines the **current reality** of the system.
+Any output that contradicts this baseline is considered a **bug or hallucination**.
+
+---
+
+## 1. Active Architecture (as of STEP NEXT-79)
+
+### Primary Data
+- coverage_cards_slim.jsonl  ← **Primary comparison input**
+- proposal_detail_store.jsonl ← 가입설계서 DETAIL 원문 저장소
+- evidence_store.jsonl        ← 근거 스니펫 저장소
+
+### Access Rule
+- All DETAIL / EVIDENCE access is **ref-based only**
+  - PD:{insurer}:{coverage_code}
+  - EV:{insurer}:{coverage_code}:{idx}
+
+❌ No direct raw text embedding in cards  
+❌ No full coverage_cards.jsonl usage
+
+---
+
+## 2. Data Flow (Authoritative)
+
+Step5 (Slim Cards + refs)
+ → Store Loader (in-memory)
+ → API (lazy load by ref)
+ → UI (modal / toggle)
+
+---
+
+## 3. KPI Implementation (COMPLETE)
+
+### KPI Summary (STEP NEXT-74)
+- payment_type (정액형 / 일당형 / 건별 / 실손 / UNKNOWN)
+- limit_summary
+- kpi_evidence_refs
+
+### KPI Condition (STEP NEXT-76)
+- exclusion_condition
+- waiting_period
+- reduction_condition
+- renewal_type
+
+Rules:
+- Deterministic only (regex-based)
+- Priority: Proposal DETAIL → Evidence
+- UNKNOWN must be explicit, never inferred
+
+---
+
+## 4. /chat API Rules
+
+- /chat MUST operate on Slim Cards output
+- Judgment is based on:
+  - customer_view
+  - kpi_summary
+  - kpi_condition
+- raw_text is **supplementary only**
+
+### STEP NEXT-77: EX3_COMPARE Response Schema Lock
+
+- **SSOT**: `docs/ui/EX3_COMPARE_OUTPUT_SCHEMA.md`
+- **Composer**: `apps/api/response_composers/ex3_compare_composer.py`
+- **MessageKind**: `EX3_COMPARE` (added to `chat_vm.py`)
+- **Rules**:
+  - ❌ NO raw text in response body (refs only)
+  - ✅ All refs use `PD:` or `EV:` prefix
+  - ✅ KPI section (optional) with refs
+  - ✅ Table rows with `meta.proposal_detail_ref` + `meta.evidence_refs`
+  - ✅ Deterministic only (NO LLM)
+
+### STEP NEXT-78: Intent Router Lock + EX2_LIMIT_FIND
+
+- **SSOT**: `docs/ui/INTENT_ROUTER_RULES.md`
+- **Composer**: `apps/api/response_composers/ex2_limit_find_composer.py`
+- **MessageKind**: `EX2_LIMIT_FIND` (added to `chat_vm.py`)
+- **Intent Separation** (Anti-Confusion Gates):
+  - EX2_LIMIT_FIND: 보장한도/조건 **값 차이 비교** (NO O/X)
+  - EX4_ELIGIBILITY: 질병 하위개념 **보장 가능 여부** (O/X/△)
+- **Routing Priority**:
+  1. Explicit kind (100%)
+  2. Category (100%)
+  3. Anti-confusion gates (100%)
+  4. Pattern matching (fallback)
+- **Rules**:
+  - ❌ NO O/X/△ in EX2_LIMIT_FIND output
+  - ✅ Disease subtypes (제자리암, 유사암, etc.) → EX4_ELIGIBILITY
+  - ✅ "보장한도 다른" → EX2_LIMIT_FIND
+  - ✅ Intent is LOCKED (cannot be overridden)
+
+### STEP NEXT-79: EX4_ELIGIBILITY Overall Evaluation Lock
+
+- **SSOT**: `docs/audit/STEP_NEXT_79_EX4_OVERALL_EVALUATION_LOCK.md`
+- **Composer**: `apps/api/response_composers/ex4_eligibility_composer.py`
+- **MessageKind**: `EX4_ELIGIBILITY` (already in `chat_vm.py`)
+- **Rules**:
+  - ✅ `overall_evaluation` section MANDATORY (not optional)
+  - ✅ `decision` ∈ {RECOMMEND, NOT_RECOMMEND, NEUTRAL}
+  - ✅ Deterministic decision rules (Rules A/B/C)
+  - ✅ All reasons MUST have refs (except Unknown status)
+  - ❌ NO LLM usage
+  - ❌ NO scoring/weighting/inference
+  - ❌ NO emotional phrases ("좋아 보임", "합리적")
+- **Decision Rules**:
+  - Rule A (RECOMMEND): O majority > X count
+  - Rule B (NOT_RECOMMEND): X majority > O count
+  - Rule C (NEUTRAL): Mixed/△-dominant
+- **Contract Test**: `tests/test_ex4_overall_evaluation_contract.py`
+
+❌ Do NOT assume PostgreSQL as SSOT
+❌ DB connection errors are out-of-scope
+
+---
+
+## 5. Forbidden Assumptions (Hard Stop)
+
+- coverage_cards.jsonl (full) is deprecated
+- Vector DB / LLM inference is NOT used for KPI
+- “명시 없음” is allowed **only if**
+  - DETAIL does not exist structurally
+
+---
+
+If unsure, ASK. Do not guess.
+
 ## Project Purpose
 가입설계서 30~40개 보장 scope에 대한 **근거 자료 자동 수집 + 사실 비교** 파이프라인.
 보험사별 약관/사업방법서/상품요약서에서 "scope 내 담보"만 검색 → 원문 추출 → 보험사 간 사실 대조표 생성.

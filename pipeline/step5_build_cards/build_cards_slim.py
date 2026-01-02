@@ -29,10 +29,12 @@ from core.compare_types import (
     Evidence,
     CustomerView,
     CompareStats,
-    KPISummary
+    KPISummary,
+    KPIConditionSummary
 )
 from core.customer_view_builder import build_customer_view
 from core.kpi_extractor import extract_kpi_from_text, PaymentType
+from core.kpi_condition_extractor import KPIConditionExtractor
 
 
 def _calculate_hash(text: str) -> str:
@@ -320,10 +322,12 @@ def build_coverage_cards_slim(
         # 6b. STEP NEXT-74: KPI 추출 (지급유형 / 한도)
         kpi_summary = None
         kpi_extraction_notes = []
+        benefit_text_for_condition = None
 
         # Priority 1: 가입설계서 DETAIL
         if proposal_detail_facts and proposal_detail_facts.get('benefit_description_text'):
             benefit_text = proposal_detail_facts['benefit_description_text']
+            benefit_text_for_condition = benefit_text
             kpi_result = extract_kpi_from_text(benefit_text)
 
             kpi_evidence_refs = []
@@ -400,6 +404,26 @@ def build_coverage_cards_slim(
                 extraction_notes="No evidence or proposal detail available"
             )
 
+        # 6c. STEP NEXT-76: KPI Condition 추출 (면책/감액/대기기간/갱신)
+        kpi_condition = None
+
+        # Evidence records 준비 (KPIConditionExtractor가 요구하는 형식)
+        evidence_records_for_condition = []
+        for idx, ev in enumerate(selected_evidences):
+            if idx < len(evidence_refs):
+                evidence_records_for_condition.append({
+                    'doc_type': ev.doc_type,
+                    'snippet': ev.snippet,
+                    'evidence_ref': evidence_refs[idx]
+                })
+
+        # Extract conditions
+        kpi_condition = KPIConditionExtractor.extract(
+            proposal_detail_text=benefit_text_for_condition,
+            evidence_records=evidence_records_for_condition,
+            proposal_detail_ref=proposal_detail_ref
+        )
+
         # 7. Slim card 생성
         refs = {
             'proposal_detail_ref': proposal_detail_ref,
@@ -415,7 +439,8 @@ def build_coverage_cards_slim(
             proposal_facts=proposal_facts_map.get(coverage_name_raw),
             customer_view=customer_view,
             refs=refs,
-            kpi_summary=kpi_summary
+            kpi_summary=kpi_summary,
+            kpi_condition=kpi_condition
         )
         cards_slim.append(card_slim)
 

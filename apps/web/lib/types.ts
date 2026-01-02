@@ -9,12 +9,15 @@ export type MessageKind =
   | "PREMIUM_COMPARE"
   | "EX1_PREMIUM_DISABLED"
   | "EX2_DETAIL_DIFF"
+  | "EX2_LIMIT_FIND"      // STEP NEXT-78
   | "EX3_INTEGRATED"
+  | "EX3_COMPARE"          // STEP NEXT-77
   | "EX4_ELIGIBILITY"
   | "KNOWLEDGE_BASE";
 
 export interface ChatRequest {
   message: string;
+  kind?: MessageKind;  // STEP NEXT-79-FE: Explicit kind (Priority 1)
   selected_category?: string;
   insurers?: string[];
   coverage_names?: string[];
@@ -41,11 +44,22 @@ export interface KPISummaryMeta {
   extraction_notes?: string;
 }
 
+// STEP NEXT-76: KPI Condition Summary for UI display
+export interface KPIConditionMeta {
+  waiting_period?: string | null;
+  reduction_condition?: string | null;
+  exclusion_condition?: string | null;
+  renewal_condition?: string | null;
+  condition_evidence_refs?: string[];
+  extraction_notes?: string;
+}
+
 // STEP NEXT-73R: Row-level metadata for refs
 export interface TableRowMeta {
   proposal_detail_ref?: string;
   evidence_refs?: string[];
   kpi_summary?: KPISummaryMeta;  // STEP NEXT-75
+  kpi_condition?: KPIConditionMeta;  // STEP NEXT-76
 }
 
 export interface TableRow {
@@ -92,11 +106,32 @@ export interface EvidenceAccordionSection {
   defaultCollapsed?: boolean;
 }
 
+// STEP NEXT-79-FE: Overall Evaluation for EX4_ELIGIBILITY
+export type OverallDecision = "RECOMMEND" | "NOT_RECOMMEND" | "NEUTRAL";
+
+export interface OverallEvaluationReason {
+  type: string;
+  description: string;
+  refs: string[];
+}
+
+export interface OverallEvaluationSection {
+  kind: "overall_evaluation";
+  title: string;
+  overall_evaluation: {
+    decision: OverallDecision;
+    summary: string;
+    reasons: OverallEvaluationReason[];
+    notes: string;
+  };
+}
+
 export type Section =
   | ComparisonTableSection
   | CommonNotesSection
   | EvidenceAccordionSection
-  | CoverageDiffResultSection;
+  | CoverageDiffResultSection
+  | OverallEvaluationSection;
 
 export interface Lineage {
   handler?: string;
@@ -111,6 +146,7 @@ export interface AssistantMessageVM {
   title?: string;
   summary_bullets?: string[];
   sections?: Section[];
+  bubble_markdown?: string;  // STEP NEXT-81B: Deterministic markdown summary
   lineage?: Lineage;
 }
 

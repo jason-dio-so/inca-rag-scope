@@ -1,12 +1,18 @@
 "use client";
 
-import { Message, Insurer } from "@/lib/types";
+import { Message, Insurer, MessageKind } from "@/lib/types";
 
 interface ChatPanelProps {
   messages: Message[];
   input: string;
   onInputChange: (value: string) => void;
   onSend: () => void;
+  onSendWithKind?: (
+    kind: MessageKind,
+    messageOverride?: string,
+    insurersOverride?: string[],
+    coverageNamesOverride?: string[]
+  ) => void;  // STEP NEXT-80-FE: Send with explicit kind + overrides
   isLoading: boolean;
   selectedInsurers: string[];
   availableInsurers: Insurer[];
@@ -20,6 +26,7 @@ export default function ChatPanel({
   input,
   onInputChange,
   onSend,
+  onSendWithKind,
   isLoading,
   selectedInsurers,
   availableInsurers,
@@ -34,6 +41,29 @@ export default function ChatPanel({
     }
   };
 
+  // STEP NEXT-80-FE: Example button handlers with explicit kind + message + slots
+  const handleExampleClick = (
+    kind: MessageKind,
+    defaultPrompt: string,
+    insurers?: string[],
+    coverageNames?: string[]
+  ) => {
+    console.log(`[ChatPanel] Example button clicked:`, {
+      kind,
+      prompt: defaultPrompt,
+      insurers,
+      coverageNames
+    });
+    if (onSendWithKind) {
+      console.log(`[ChatPanel] Calling onSendWithKind`);
+      // CRITICAL: Pass all overrides directly to avoid React state timing issues
+      onSendWithKind(kind, defaultPrompt, insurers, coverageNames);
+    } else {
+      onInputChange(defaultPrompt);
+      onSend();
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Messages area */}
@@ -44,6 +74,47 @@ export default function ChatPanel({
             <p className="text-sm mt-2">
               좌측에서 카테고리를 선택하고 질문을 입력하세요
             </p>
+
+            {/* STEP NEXT-80-FE: Example buttons with explicit kind + slots */}
+            <div className="mt-6 max-w-2xl mx-auto">
+              <p className="text-sm font-medium text-gray-700 mb-3">빠른 시작</p>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => handleExampleClick(
+                    "EX3_COMPARE",
+                    "삼성화재와 메리츠화재의 암진단비를 비교해주세요",
+                    ["samsung", "meritz"],  // insurers
+                    ["암진단비(유사암제외)"]  // coverage_names
+                  )}
+                  className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-left"
+                  disabled={isLoading}
+                >
+                  <div className="font-medium text-sm text-gray-800 mb-1">
+                    예제3: 2사 비교
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    삼성화재 vs 메리츠화재 암진단비
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleExampleClick(
+                    "EX4_ELIGIBILITY",
+                    "제자리암 보장 가능한가요?",
+                    ["samsung", "meritz"]  // insurers (no coverage_names for EX4)
+                  )}
+                  className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-left"
+                  disabled={isLoading}
+                >
+                  <div className="font-medium text-sm text-gray-800 mb-1">
+                    예제4: 보장 여부 확인
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    제자리암 보장 가능 여부 + 종합평가
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
         ) : (
           messages.map((msg, idx) => (

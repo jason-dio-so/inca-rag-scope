@@ -210,6 +210,15 @@ class TwoInsurerComparer:
         kpi_condition1 = card1.get("kpi_condition")
         kpi_condition2 = card2.get("kpi_condition")
 
+        # STEP NEXT-81B: Extract coverage_name from card (if available)
+        # Note: Slim cards use "coverage_name_canonical" field
+        coverage_name = (
+            card1.get("coverage_name_canonical") or
+            card1.get("coverage_name") or
+            card2.get("coverage_name_canonical") or
+            card2.get("coverage_name")
+        )
+
         # Build comparison table (STEP NEXT-73R: Add proposal_detail_ref, STEP NEXT-75: Add kpi_summary, STEP NEXT-76: Add kpi_condition)
         comparison_table = {
             insurer1: {
@@ -256,6 +265,7 @@ class TwoInsurerComparer:
 
         return {
             "coverage_code": coverage_code,
+            "coverage_name": coverage_name,  # STEP NEXT-81B: Pass coverage_name to composer
             "status": "success",
             "comparison_table": comparison_table,
             "summary": summary,

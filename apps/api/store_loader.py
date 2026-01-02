@@ -39,7 +39,9 @@ def init_store_cache(base_dir: Optional[Path] = None) -> None:
 
     # Load all proposal_detail_store.jsonl files
     proposal_files = list(detail_dir.glob("*_proposal_detail_store.jsonl"))
+    print(f"[DEBUG] Loading proposal detail stores from: {detail_dir.absolute()}")
     for file_path in proposal_files:
+        print(f"[DEBUG]   - {file_path.absolute()}")
         with open(file_path, 'r', encoding='utf-8') as f:
             for line in f:
                 if not line.strip():
@@ -51,7 +53,9 @@ def init_store_cache(base_dir: Optional[Path] = None) -> None:
 
     # Load all evidence_store.jsonl files
     evidence_files = list(detail_dir.glob("*_evidence_store.jsonl"))
+    print(f"[DEBUG] Loading evidence stores from: {detail_dir.absolute()}")
     for file_path in evidence_files:
+        print(f"[DEBUG]   - {file_path.absolute()}")
         with open(file_path, 'r', encoding='utf-8') as f:
             for line in f:
                 if not line.strip():

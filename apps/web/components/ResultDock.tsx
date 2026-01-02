@@ -7,6 +7,7 @@ import CoverageLimitCard from "./cards/CoverageLimitCard";
 import TwoInsurerCompareCard from "./cards/TwoInsurerCompareCard";
 import SubtypeEligibilityCard from "./cards/SubtypeEligibilityCard";
 import { CoverageDiffCard } from "./cards/CoverageDiffCard";
+import OverallEvaluationCard from "./cards/OverallEvaluationCard";
 import EvidenceToggle from "./cards/EvidenceToggle";
 import UnsupportedCard from "./cards/UnsupportedCard";
 
@@ -34,6 +35,10 @@ export default function ResultDock({ response }: ResultDockProps) {
       case "coverage_diff_result":
         // STEP NEXT-COMPARE-FILTER: Diff result card
         return <CoverageDiffCard key={idx} section={section} />;
+
+      case "overall_evaluation":
+        // STEP NEXT-79-FE: Overall evaluation card (EX4_ELIGIBILITY only)
+        return <OverallEvaluationCard key={idx} section={section} />;
 
       case "comparison_table":
         // STEP NEXT-UI-02-FIX7: Normalize table data before rendering

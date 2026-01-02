@@ -78,11 +78,22 @@ class KPISummaryMeta(BaseModel):
     extraction_notes: str = ""
 
 
+class KPIConditionMeta(BaseModel):
+    """STEP NEXT-76: KPI Condition Summary for row-level display"""
+    waiting_period: Optional[str] = None
+    reduction_condition: Optional[str] = None
+    exclusion_condition: Optional[str] = None
+    renewal_condition: Optional[str] = None
+    condition_evidence_refs: List[str] = []
+    extraction_notes: str = ""
+
+
 class TableRowMeta(BaseModel):
     """STEP NEXT-73R: Row-level metadata for refs"""
     proposal_detail_ref: Optional[str] = None
     evidence_refs: Optional[List[str]] = None
     kpi_summary: Optional[KPISummaryMeta] = None  # STEP NEXT-75
+    kpi_condition: Optional[KPIConditionMeta] = None  # STEP NEXT-76
 
 
 class TableRow(BaseModel):
@@ -275,7 +286,48 @@ class CoverageDiffResultSection(BaseModel):
 
 
 # ============================================================================
-# Section Union Type (6 CORE TYPES)
+# Overall Evaluation Section (STEP NEXT-79)
+# ============================================================================
+
+OverallDecision = Literal["RECOMMEND", "NOT_RECOMMEND", "NEUTRAL"]
+
+
+class OverallEvaluationReason(BaseModel):
+    """Single reason in overall evaluation"""
+    type: str
+    description: str
+    refs: List[str]
+
+
+class OverallEvaluation(BaseModel):
+    """Overall evaluation data structure"""
+    decision: OverallDecision
+    summary: str
+    reasons: List[OverallEvaluationReason]
+    notes: str
+
+
+class OverallEvaluationSection(BaseModel):
+    """
+    Overall evaluation section (STEP NEXT-79)
+
+    EX4_ELIGIBILITY 전용 종합평가 섹션
+
+    RULES:
+    - MANDATORY for EX4_ELIGIBILITY (not optional)
+    - decision ∈ {RECOMMEND, NOT_RECOMMEND, NEUTRAL}
+    - Deterministic only (NO LLM)
+    - All reasons MUST have refs (except Unknown status)
+
+    FRONTEND COMPONENT: OverallEvaluationCard
+    """
+    kind: Literal["overall_evaluation"] = "overall_evaluation"
+    title: str
+    overall_evaluation: OverallEvaluation
+
+
+# ============================================================================
+# Section Union Type (7 CORE TYPES)
 # ============================================================================
 
 Section = (
@@ -283,7 +335,8 @@ Section = (
     InsurerExplanationsSection |
     CommonNotesSection |
     EvidenceAccordionSection |
-    CoverageDiffResultSection
+    CoverageDiffResultSection |
+    OverallEvaluationSection
 )
 
 # Note: summary is part of AssistantMessageVM.summary_bullets (not a section)
@@ -295,9 +348,11 @@ Section = (
 # ============================================================================
 
 MessageKind = Literal[
-    "EX2_DETAIL_DIFF",      # 예시2: 담보 조건 차이 탐색
-    "EX3_INTEGRATED",       # 예시3: 통합 비교
-    "EX4_ELIGIBILITY",      # 예시4: 보장 가능 여부
+    "EX2_DETAIL_DIFF",      # 예시2: 담보 조건 차이 탐색 (LEGACY - use EX2_LIMIT_FIND)
+    "EX2_LIMIT_FIND",       # STEP NEXT-78: 보장한도/조건 값 차이 비교 (NO O/X)
+    "EX3_INTEGRATED",       # 예시3: 통합 비교 (LEGACY - use EX3_COMPARE)
+    "EX3_COMPARE",          # STEP NEXT-77: EX3 with locked schema (composer-based)
+    "EX4_ELIGIBILITY",      # 예시4: 보장 가능 여부 (O/X/△ matrix)
     "EX1_PREMIUM_DISABLED", # 예시1: 보험료 비교 불가
     "PREMIUM_COMPARE"       # 예시1: 보험료 비교 (활성)
 ]
@@ -329,6 +384,9 @@ class AssistantMessageVM(BaseModel):
     summary_bullets: List[str]  # 3-6 bullets (fact-only)
 
     sections: List[Section]  # Typed sections (table/explanation/etc.)
+
+    # STEP NEXT-81B: Bubble markdown (deterministic summary for central chat bubble)
+    bubble_markdown: Optional[str] = None  # Markdown summary (NO raw text, refs only)
 
     lineage: Optional[AmountAuditDTO] = None  # Audit metadata (collapsible)
 
