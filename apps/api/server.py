@@ -792,6 +792,77 @@ async def get_faq_templates():
         raise HTTPException(status_code=500, detail=f"FAQ error: {str(e)}")
 
 
+# STEP NEXT-73R-P2: Store API endpoints
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize store cache on startup"""
+    from apps.api.store_loader import init_store_cache
+    logger.info("[STEP NEXT-73R] Initializing store cache...")
+    init_store_cache()
+
+
+@app.get("/store/proposal-detail/{ref:path}")
+async def get_proposal_detail_endpoint(ref: str):
+    """
+    Get proposal detail by ref (STEP NEXT-73R)
+
+    Args:
+        ref: proposal_detail_ref (e.g., PD:samsung:A4200_1)
+
+    Returns:
+        Proposal detail record or 404
+    """
+    from apps.api.store_loader import get_proposal_detail
+
+    record = get_proposal_detail(ref)
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Proposal detail not found: {ref}")
+
+    return record
+
+
+@app.get("/store/evidence/{ref:path}")
+async def get_evidence_endpoint(ref: str):
+    """
+    Get evidence by ref (STEP NEXT-73R)
+
+    Args:
+        ref: evidence_ref (e.g., EV:samsung:A4200_1:01)
+
+    Returns:
+        Evidence record or 404
+    """
+    from apps.api.store_loader import get_evidence
+
+    record = get_evidence(ref)
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Evidence not found: {ref}")
+
+    return record
+
+
+class BatchEvidenceRequest(BaseModel):
+    refs: List[str] = Field(..., description="List of evidence_refs")
+
+
+@app.post("/store/evidence/batch")
+async def batch_get_evidence_endpoint(req: BatchEvidenceRequest):
+    """
+    Batch get evidence by refs (STEP NEXT-73R)
+
+    Args:
+        req: BatchEvidenceRequest with refs list
+
+    Returns:
+        Dict[ref, record] for all found refs
+    """
+    from apps.api.store_loader import batch_get_evidence
+
+    result = batch_get_evidence(req.refs)
+    return result
+
+
 @app.get("/")
 async def root():
     """Root endpoint with API info"""
