@@ -203,7 +203,9 @@ def test_ex2_detail_no_coverage_code_in_user_facing_text(sample_card_samsung):
 
 def test_ex2_detail_question_hints_use_display_name(sample_card_samsung):
     """
-    Test that question continuity hints use display name (STEP NEXT-98 + STEP NEXT-103)
+    Test that question continuity hints are FIXED for demo flow (STEP NEXT-104)
+
+    STEP NEXT-104: Hints are now LOCKED to demo flow (not dynamic based on insurer)
     """
     result = EX2DetailComposer.compose(
         insurer="samsung",
@@ -214,8 +216,9 @@ def test_ex2_detail_question_hints_use_display_name(sample_card_samsung):
 
     bubble_markdown = result["bubble_markdown"]
 
-    # ✅ Should contain display name in hints
-    assert "삼성화재와 다른 보험사의" in bubble_markdown
+    # ✅ Should contain FIXED demo flow hints (STEP NEXT-104)
+    assert "- 메리츠는?" in bubble_markdown
+    assert "- 암직접입원비 담보 중 보장한도가 다른 상품 찾아줘" in bubble_markdown
 
     # ❌ Should NOT contain insurer code in hints
     # Extract hints section (after "다음으로 이런 질문도")
@@ -223,7 +226,9 @@ def test_ex2_detail_question_hints_use_display_name(sample_card_samsung):
         hints_section = bubble_markdown.split("다음으로 이런 질문도")[-1]
         # Remove refs
         hints_text = re.sub(r"(PD|EV):[a-z]+:[A-Z]\d{4}_\d+(:\d+)?", "", hints_section)
+        # "메리츠" is OK (Korean display name), but "meritz" is NOT OK
         assert "samsung" not in hints_text.lower()
+        assert "meritz" not in hints_text.lower()  # Code exposure
 
 
 def test_ex2_detail_all_insurers_display_names():
