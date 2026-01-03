@@ -28,7 +28,8 @@ from collections import defaultdict
 from apps.api.response_composers.utils import (
     display_coverage_name,
     sanitize_no_coverage_code,
-    assign_coverage_group  # STEP NEXT-94
+    assign_coverage_group,  # STEP NEXT-94
+    format_insurer_name  # STEP NEXT-110A
 )
 
 
@@ -165,7 +166,7 @@ class EX4EligibilityComposer:
         eligibility_data: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """
-        Build eligibility matrix table section
+        Build eligibility matrix table section (STEP NEXT-110A: use display names)
 
         Columns: ["보험사", "보장여부", "근거유형", "근거내용"]
         """
@@ -173,8 +174,10 @@ class EX4EligibilityComposer:
         rows = []
 
         for row_data in eligibility_data:
+            # STEP NEXT-110A: Use display name, NOT code
+            insurer_display = format_insurer_name(row_data["insurer"])
             cells = [
-                {"text": row_data["insurer"]},
+                {"text": insurer_display},
                 {"text": row_data["status"]},
                 {"text": row_data["evidence_type"] or "판단근거 없음"},
                 {"text": (row_data["evidence_snippet"] or "")[:100]}
@@ -260,48 +263,52 @@ class EX4EligibilityComposer:
 
         Returns: (decision, summary, reasons)
         """
-        # Rule B: NOT_RECOMMEND if majority X
+        # Rule B: NOT_RECOMMEND if majority X (STEP NEXT-110A: use display names)
         if len(x_insurers) > len(o_insurers) and len(x_insurers) > 0:
+            x_display_names = [format_insurer_name(ins) for ins in x_insurers]
             return (
                 EX4EligibilityComposer.DECISION_NOT_RECOMMEND,
                 "보장 제외(X) 항목이 다수입니다",
                 [
                     {
                         "type": EX4EligibilityComposer.REASON_COVERAGE_MISSING,
-                        "description": f"{', '.join(x_insurers)}에서 면책 조건 확인됨",
+                        "description": f"{', '.join(x_display_names)}에서 면책 조건 확인됨",
                         "refs": EX4EligibilityComposer._extract_refs(eligibility_data, x_insurers)
                     }
                 ]
             )
 
-        # Rule A: RECOMMEND if clear O majority
+        # Rule A: RECOMMEND if clear O majority (STEP NEXT-110A: use display names)
         if len(o_insurers) > len(x_insurers) and len(o_insurers) > 0:
+            o_display_names = [format_insurer_name(ins) for ins in o_insurers]
             return (
                 EX4EligibilityComposer.DECISION_RECOMMEND,
                 "보장 가능(O) 항목이 다수입니다",
                 [
                     {
                         "type": EX4EligibilityComposer.REASON_COVERAGE_SUPERIOR,
-                        "description": f"{', '.join(o_insurers)}에서 보장 가능 확인됨",
+                        "description": f"{', '.join(o_display_names)}에서 보장 가능 확인됨",
                         "refs": EX4EligibilityComposer._extract_refs(eligibility_data, o_insurers)
                     }
                 ]
             )
 
-        # Rule C: NEUTRAL (mixed or △-dominant)
+        # Rule C: NEUTRAL (mixed or △-dominant) (STEP NEXT-110A: use display names)
         neutral_reasons = []
 
         if len(delta_insurers) > 0:
+            delta_display_names = [format_insurer_name(ins) for ins in delta_insurers]
             neutral_reasons.append({
                 "type": EX4EligibilityComposer.REASON_CONDITION_UNFAVORABLE,
-                "description": f"{', '.join(delta_insurers)}에서 감액 조건 확인됨",
+                "description": f"{', '.join(delta_display_names)}에서 감액 조건 확인됨",
                 "refs": EX4EligibilityComposer._extract_refs(eligibility_data, delta_insurers)
             })
 
         if len(unknown_insurers) > 0:
+            unknown_display_names = [format_insurer_name(ins) for ins in unknown_insurers]
             neutral_reasons.append({
                 "type": EX4EligibilityComposer.REASON_COVERAGE_MISSING,
-                "description": f"{', '.join(unknown_insurers)}에서 판단 근거 없음",
+                "description": f"{', '.join(unknown_display_names)}에서 판단 근거 없음",
                 "refs": []  # No refs for Unknown
             })
 
@@ -502,22 +509,24 @@ class EX4EligibilityComposer:
             )
 
             for insurer, status, trigger, evidence_type in insurers_in_group:
+                # STEP NEXT-110A: Use display name, NOT code
+                insurer_display = format_insurer_name(insurer)
                 trigger_text = format_trigger(trigger, evidence_type)
 
                 if status == "O":
                     if trigger_text:
-                        lines.append(f"- **{insurer}**: ○ {trigger_text}")
+                        lines.append(f"- **{insurer_display}**: ○ {trigger_text}")
                     else:
-                        lines.append(f"- **{insurer}**: ○ 보장 가능")
+                        lines.append(f"- **{insurer_display}**: ○ 보장 가능")
                 elif status == "△":
                     if trigger_text:
-                        lines.append(f"- **{insurer}**: △ {trigger_text}")
+                        lines.append(f"- **{insurer_display}**: △ {trigger_text}")
                     else:
-                        lines.append(f"- **{insurer}**: △ 감액 조건 존재")
+                        lines.append(f"- **{insurer_display}**: △ 감액 조건 존재")
                 elif status == "X":
-                    lines.append(f"- **{insurer}**: ✕ 보장 제외")
+                    lines.append(f"- **{insurer_display}**: ✕ 보장 제외")
                 else:  # Unknown
-                    lines.append(f"- **{insurer}**: ? 판단 근거 없음")
+                    lines.append(f"- **{insurer_display}**: ? 판단 근거 없음")
 
             lines.append("")
 

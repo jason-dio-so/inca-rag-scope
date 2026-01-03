@@ -99,37 +99,45 @@ Rules:
 - **Composer**: `apps/api/response_composers/ex4_eligibility_composer.py`
 - **MessageKind**: `EX4_ELIGIBILITY` (already in `chat_vm.py`)
 
-### STEP NEXT-86/96: EX2_DETAIL Lock (담보 설명 전용 모드 + Customer-First Ordering)
+### STEP NEXT-86/96/113: EX2_DETAIL Lock (담보 설명 전용 모드 + ChatGPT UX)
 
 - **SSOT**:
-  - `docs/ui/STEP_NEXT_86_EX2_LOCK.md` (Base lock)
-  - `docs/ui/STEP_NEXT_96_EX2_CUSTOMER_FIRST_ORDER.md` (Customer-first ordering)
+  - `docs/ui/STEP_NEXT_86_EX2_LOCK.md` (Base lock - DEPRECATED by STEP NEXT-113)
+  - `docs/ui/STEP_NEXT_96_EX2_CUSTOMER_FIRST_ORDER.md` (Customer-first ordering - PRESERVED in sections)
+  - `docs/audit/STEP_NEXT_113_EX2_CHATGPT_UX_LOCK.md` (ChatGPT UX redesign - CURRENT SSOT)
 - **Composer**: `apps/api/response_composers/ex2_detail_composer.py`
 - **Handler**: `apps/api/chat_handlers_deterministic.py::Example2DetailHandlerDeterministic`
 - **MessageKind**: `EX2_DETAIL` (added to `chat_vm.py`)
 - **Intent Routing**:
   - `insurers = 1` → **EX2_DETAIL** (설명 전용)
   - `insurers ≥ 2` + "차이/비교" → **EX2_LIMIT_FIND** or **EX3_COMPARE**
+- **STEP NEXT-113: ChatGPT UX Structure Redesign (LOCKED)**:
+  - **Left Bubble** = Conversational summary ONLY (2-3 sentences, NO tables/lists)
+  - **Right Panel** = All detailed info (보장 요약 + 조건 요약 + 근거 자료)
+  - **NO duplication** between bubble and sections
+  - **Product Header**: 보험사 · 담보명 · 기준 (STEP NEXT-110A preserved)
+  - **Conversational Tone**: "이 담보는..." + "정액으로..." + "조건이 적용됩니다"
 - **Rules**:
   - ❌ NO comparison / recommendation / judgment
   - ❌ NO coverage_code exposure (e.g., "A4200_1") in UI
-  - ❌ NO raw text in bubble_markdown
-  - ✅ 4-section bubble_markdown (핵심요약, 보장요약, 조건요약, 근거안내)
+  - ❌ NO tables/lists/sections in bubble_markdown (STEP NEXT-113)
+  - ❌ NO specific condition values in bubble (e.g., "50%", "90일")
+  - ✅ Lightweight bubble (2-3 sentences, readable in 10 seconds)
   - ✅ refs MUST use `PD:` / `EV:` prefix
   - ✅ "표현 없음" / "근거 없음" when missing data
   - ✅ Deterministic only (NO LLM)
-- **STEP NEXT-96: Customer-First KPI Ordering**:
+- **STEP NEXT-96: Customer-First KPI Ordering (PRESERVED in sections)**:
   - **보장 요약 순서**: 보장금액 (NEW) → 보장한도 → 지급유형
-  - **보장금액** displayed FIRST (when available)
-  - Answers customer question "얼마 받나요?" immediately
+  - **보장금액** displayed FIRST in right panel (when available)
   - View layer ONLY (NO business logic change)
-  - Fallback: No amount → original order (보장한도부터)
 - **Definition**:
-  > EX2_DETAIL = "고객 질문에 바로 답하는 담보 설명"
+  > EX2_DETAIL = "ChatGPT처럼 대화로 시작하는 담보 설명"
+  > 왼쪽 말풍선 = 설명 (conversation), 오른쪽 패널 = 상세 (drill-down)
   > 비교·추천·판단은 EX3 / EX4 전용
 - **Contract Tests**:
-  - `tests/test_ex2_bubble_contract.py` (7 tests, base contract)
-  - `tests/test_step_next_96_customer_first_order.py` (8 tests, ordering)
+  - `tests/test_step_next_113_ex2_chatgpt_ux.py` (10 tests, all PASS - CURRENT SSOT)
+  - `tests/test_ex2_bubble_contract_DEPRECATED_STEP_NEXT_113.py` (DEPRECATED - expects sections in bubble)
+  - `tests/test_step_next_96_customer_first_order_DEPRECATED_STEP_NEXT_113.py` (DEPRECATED - expects sections in bubble)
 
 ### STEP NEXT-94/95: Coverage Grouping UX (담보 군집화) Lock
 
@@ -147,17 +155,57 @@ Rules:
 - ✅ Single group → NO header, Multiple groups → show headers
 - ✅ Group label is display text ONLY (not used in statistics/judgment)
 
-**Grouping Priority**:
-1. Name keyword (explicit) > Trigger (inferred)
-2. "진단비", "진단급여" → 진단 관련 담보
-3. "수술비", "치료비", "입원", "통원" → 치료/수술 관련 담보
-4. Fallback → 기타 담보
+### STEP NEXT-112/113: EX3_COMPARE Comparison-First UX Lock (FINAL LOCK)
 
-**Constitutional Guarantees**:
-- ✅ Judgment results unchanged (O/△/X preserved)
-- ✅ Decision unchanged (RECOMMEND/NOT_RECOMMEND/NEUTRAL)
-- ✅ NO coverage_code/Unknown/raw_text exposure
-- ✅ Tests: 21 tests (14 contract + 7 runtime proof, all PASSED)
+- **SSOT**:
+  - `docs/audit/STEP_NEXT_112_EX3_COMPARISON_FIRST_LOCK.md` (Base lock - SUPERSEDED by STEP NEXT-113)
+  - `docs/audit/STEP_NEXT_113_FINAL_LOCK_EX2_EX3_UX_REBUILD.md` (CURRENT SSOT - FINAL LOCK)
+- **Composer**: `apps/api/response_composers/ex3_compare_composer.py::_build_bubble_markdown()`
+- **MessageKind**: `EX3_COMPARE` (already in `chat_vm.py`)
+- **Supersedes**: STEP NEXT-82 (deprecated bubble format), STEP NEXT-112 (intermediate lock)
+- **Scope**: View Layer ONLY (bubble_markdown format redesign)
+
+**STEP NEXT-113 FINAL LOCK (Structural UX Rebuild)**:
+- **Left Bubble**: 6-7 lines max (lightweight conversation, NO tables)
+- **Right Panel**: Side-by-side comparison table (horizontal, NO card layout)
+- **NO "일부 보험사는..."**: Explicit insurer names ONLY
+- **Structural comparison**: "{Insurer1}는... {Insurer2}는..." pattern
+
+**Bubble Structure (LOCKED)**:
+```markdown
+메리츠화재는 진단 시 **정해진 금액을 지급하는 구조**이고,
+삼성화재는 **보험기간 중 지급 횟수 기준으로 보장이 정의됩니다.**
+
+**즉,**
+- 메리츠화재: 지급 금액이 명확한 정액 구조
+- 삼성화재: 지급 조건 해석이 중요한 한도 구조
+```
+
+**Rules (FINAL LOCK)**:
+- ❌ NO "일부 보험사는..." (ABSOLUTE FORBIDDEN)
+- ❌ NO vertical cards (1 insurer per card)
+- ❌ NO tables in left bubble (table is in right panel ONLY)
+- ❌ NO recommendations / superiority judgments
+- ❌ NO coverage_code / insurer_code in bubble_markdown (refs OK)
+- ✅ Explicit insurer names in structural summary
+- ✅ 6-7 lines max in left bubble
+- ✅ Side-by-side table in right panel (same row = direct comparison)
+- ✅ Deterministic only (NO LLM)
+
+**Structural Basis Detection** (deterministic priority):
+1. `amount != "명시 없음"` → **보장금액 기준**
+2. `limit_summary exists` → **지급 한도 기준**
+3. `payment_type != "UNKNOWN"` → **{payment_type} 방식**
+4. Fallback → **기본 보장 방식**
+
+**Contract Tests**:
+- Manual verification PASS (EX3 bubble format compliant)
+- Right panel table: horizontal comparison (NO card layout)
+- Left bubble: 6 lines (within 6-7 line limit)
+- NO "일부 보험사는..." found
+
+**Definition of Success (FINAL LOCK)**:
+> "말풍선만 읽어도 '차이'를 설명할 수 있고, 표를 보면 한눈에 대비가 된다"
 
 ### STEP NEXT-97: Customer Demo UX Stabilization (UI/Flow ONLY)
 
@@ -343,6 +391,389 @@ Rules:
   - Regression: `tests/test_step_next_96_customer_first_order.py` (8 tests, all PASS)
 - **Definition of Success**:
   > "EX2_DETAIL 응답 하단 힌트가 항상 '메리츠는?' / '암직접입원비 담보 중 보장한도가 다른 상품 찾아줘' 2줄로 고정된다. 고객이 그대로 복사해서 질문하면 데모 플로우가 자연스럽게 이어진다."
+
+### STEP NEXT-106: Clarification 상태 UI Lock (담보명 입력 Disable) + Multi-Select Insurer
+
+- **SSOT**: `docs/audit/STEP_NEXT_106_CLARIFICATION_COVERAGE_INPUT_LOCK.md`
+- **Modified Files**:
+  - `apps/web/components/ChatPanel.tsx` (coverage input disabled prop)
+  - `apps/web/app/page.tsx` (LIMIT_FIND clarification state tracking + multi-select)
+- **Root Cause**:
+  1. During LIMIT_FIND clarification, coverage input remained enabled → customer confusion
+  2. Insurer selection was single-click instant submit → couldn't select multiple insurers for LIMIT_FIND
+- **Fix**:
+  1. Disable coverage input field when `isLimitFindPattern === true && insurers.length < 2`
+  2. Multi-select insurer UI with "확인 (N개 선택됨)" button
+- **Rules**:
+  - ❌ NO coverage name re-input during clarification
+  - ❌ NO automatic coverage modification
+  - ❌ NO backend/API/Intent/Composer changes
+  - ✅ View Layer UX Lock ONLY
+  - ✅ Coverage input disabled during LIMIT_FIND clarification
+  - ✅ Multi-select insurers (toggle selection, blue highlight)
+  - ✅ Auto-restore when clarification completes
+  - ✅ Context integrity strengthened (single action focus)
+- **Constitutional UX Rule**:
+  > "Clarification = Single Action Only. During clarification, leave ONLY the action the customer must perform. Lock all other input elements."
+- **Definition of Success**:
+  > "Clarification 상태에서 담보명 입력 불가. 보험사 복수 선택 가능. 고객이 '담보를 다시 써야 하나요?'라고 묻지 않음. EX2 → 전환 → LIMIT_FIND 데모 흐름 단절 없음."
+
+### STEP NEXT-108: ChatGPT UI 정합 — Left Bubble 강화 + Bottom Dock 최소화
+
+- **SSOT**: `docs/audit/STEP_NEXT_108_CHATGPT_UI_LOCK.md`
+- **Modified Files**:
+  - `apps/web/components/ChatPanel.tsx` (markdown rendering + collapsible bottom dock)
+  - `apps/web/tailwind.config.ts` (NEW - typography plugin)
+- **Packages Added**: `react-markdown`, `remark-gfm`, `@tailwindcss/typography`
+- **Root Cause**:
+  1. Left bubble (말풍선): 빈약 ("제목 + 1~2줄") → 테이블/핵심 값 안 보임
+  2. Bottom dock: 화면 절반 차지 → ChatGPT와 다르게 "설문/폼"처럼 보임
+- **Fix**:
+  1. **Left Bubble Markdown Rendering**: Assistant messages render as markdown (tables, headings, lists, links)
+  2. **Bottom Dock Collapsed by Default**: 옵션 ▾ 버튼으로 보험사/담보 선택 숨김, 질문 입력만 노출
+- **Rules**:
+  - ❌ NO backend비교/판단 로직 변경
+  - ❌ NO 추천/추론/스코어링 추가
+  - ❌ NO 버튼으로 자동 질문 실행
+  - ❌ NO coverage_code UI 노출
+  - ❌ NO LLM usage
+  - ✅ View Layer ONLY (UI rendering + layout)
+  - ✅ Markdown tables in left bubble (미니 요약 카드)
+  - ✅ Collapsible options panel (보험사/담보 선택)
+  - ✅ ChatGPT-style input (single line, rounded borders)
+  - ✅ Chat area occupies majority of screen
+- **UI Behavior**:
+  - **Initial**: "보험사/담보 선택 ▾" + input → collapsed
+  - **Active**: "대화 중: 삼성화재 · 메리츠화재" + "옵션 ▾" + input → collapsed
+  - **Expanded**: Click ▾ → shows insurer buttons + coverage input (scrollable, max-h-48)
+  - **Left Bubble**: Markdown with tables, prose styles (compact spacing, small font)
+- **Definition of Success**:
+  > "Left Bubble에 미니 테이블/요약이 즉시 보이고, Bottom Dock이 collapsed 기본값이며, 고객이 'ChatGPT처럼 대화로 진행된다'고 느끼면 성공이다."
+
+### STEP NEXT-110A: Product Header SSOT Lock (Without product_name)
+
+- **SSOT**: `docs/ui/STEP_NEXT_110A_HEADER_SSOT_LOCK.md`
+- **Modified Files**:
+  - `apps/api/response_composers/ex2_detail_composer.py` (product header at top)
+  - `apps/web/components/ChatPanel.tsx` (header styling)
+- **Evidence**: grep search confirmed NO product_name data in system
+- **Header Structure** (LOCKED):
+  ```
+  **[보험사 표시명]**
+  **담보명**
+  _기준: 가입설계서_
+  ---
+  ```
+- **SSOT Priority**:
+  1. 보험사: `format_insurer_name(insurer_code)` (삼성화재, 메리츠화재, etc.)
+  2. 담보명: `display_coverage_name(coverage_name, coverage_code)` (NO code exposure)
+  3. 기준: 고정 "가입설계서" (현재 모든 데이터 source)
+  4. 상품명: ❌ NOT IMPLEMENTED (데이터 없음, STEP NEXT-110B로 연기)
+- **Rules**:
+  - ❌ NO product_name guessing/assuming (evidence-based ONLY)
+  - ❌ NO placeholder text (혼란 초래)
+  - ❌ NO coverage_code UI 노출
+  - ❌ NO LLM usage
+  - ❌ NO business logic change
+  - ✅ Header MUST be at top of bubble_markdown
+  - ✅ Header MUST use display names (NOT codes)
+  - ✅ Header structure LOCKED (format + order)
+  - ✅ Deterministic only
+- **Frontend Styling**:
+  - **[보험사]**: Bold, Large (text-lg)
+  - **담보명**: Bold, Large
+  - _기준_: Italic
+  - Horizontal rule (---): Visual separator
+- **Tests**: `tests/test_step_next_110a_product_header_contract.py` (5/5 PASS)
+  1. Header exists at top
+  2. Header uses display names
+  3. NO coverage_code in header
+  4. Header structure locked
+  5. Regression: sections preserved
+- **Definition of Success**:
+  > "EX2_DETAIL 응답 최상단에 보험사 + 담보명 + 기준이 표시되고, coverage_code 노출 0%, 구조 LOCKED. Product_name은 데이터 없어 STEP NEXT-110B로 연기."
+
+### STEP NEXT-114 / 114B: First Impression Screen UX Lock (ChatGPT Onboarding — Final)
+
+- **SSOT**: `docs/audit/STEP_NEXT_114_FIRST_IMPRESSION_LOCK.md`
+- **Modified Files**:
+  - `apps/web/components/ChatPanel.tsx` (onboarding bubble + placeholder + removed example buttons)
+  - `apps/web/app/page.tsx` (ResultDock visibility + removed handleSendWithKind)
+- **Purpose**: Show system identity + example question in **10 seconds** at first screen (ChatGPT-style)
+- **Root Cause**:
+  - Example buttons made system look like "button demo", not ChatGPT
+  - Abstract flow explanation ("설명 → 비교 → 이해") lacked concrete guidance
+  - Placeholder "질문을 입력하세요..." too generic
+- **114B Fixes (Final Tuning)**:
+  - ✅ Conversational tone ("~해 드립니다", "~보세요")
+  - ✅ Concrete example question ("삼성화재 암진단비 설명해줘")
+  - ✅ Placeholder with same example (immediate action guidance)
+  - ✅ Left-aligned bubble (60-65% max width)
+  - ✅ Removed "이 도우미는..." introduction tone
+- **Onboarding Copy** (LOCKED — 114B Final):
+  ```
+  보험 상품을 단순히 나열하는 대신,
+  보장이 어떻게 정의되어 있는지를 기준으로 비교해 드립니다.
+
+  예를 들어
+  "삼성화재 암진단비 설명해줘"
+  같은 질문부터 시작해 보세요.
+  ```
+- **Placeholder** (LOCKED — 114B):
+  ```
+  예: 삼성화재 암진단비 설명해줘
+  ```
+- **Rules**:
+  - ❌ NO "이 도우미는..." (service introduction tone)
+  - ❌ NO "설명 → 비교 → 이해" (abstract flow diagram)
+  - ❌ NO example buttons on first screen
+  - ❌ NO data/numbers/tables in onboarding
+  - ❌ NO bullets/bold in onboarding text
+  - ❌ NO LLM usage (fixed text only)
+  - ✅ Conversational tone (assistant's first message)
+  - ✅ Concrete example question (copy-paste ready)
+  - ✅ Left-aligned bubble (ChatGPT style)
+  - ✅ Deterministic only
+- **Transition Trigger**: User sends first question → onboarding disappears, ResultDock appears
+- **Build Status**: ✅ `npm run build` succeeded (no TypeScript errors)
+- **Definition of Success** (114B Final):
+  > "사용자가 첫 화면에서 10초 안에 '아, 여기다 이렇게 물어보면 되는구나'라고 생각하고 질문을 입력하기 시작하면 성공."
+
+### STEP NEXT-115: EX2→EX3 Comparison Transition Line (Flow Guidance)
+
+- **Modified Files**: `apps/api/response_composers/ex2_detail_composer.py` (bubble_markdown)
+- **Purpose**: Guide users naturally from EX2 (explanation) to EX3 (comparison) without recommendation
+- **Fix**: Added comparison transition line at end of EX2 bubble (before question hints)
+- **Transition Line** (LOCKED):
+  ```
+  같은 {담보명}라도 보험사마다 '보장을 정의하는 기준'이 달라,
+  비교해 보면 구조 차이가 더 분명해집니다.
+  ```
+- **Rules**:
+  - ❌ NO judgment ("더 좋다", "유리하다")
+  - ❌ NO recommendation
+  - ❌ NO specific numbers/values
+  - ❌ NO LLM usage
+  - ✅ Explains comparison value (structural difference)
+  - ✅ Neutral tone ("~해집니다")
+  - ✅ Appears after main explanation, before hints
+  - ✅ Deterministic only
+- **Tests**: 10/10 PASS (test_step_next_113_ex2_chatgpt_ux.py)
+- **Definition of Success**:
+  > "EX2 말풍선을 읽은 후 사용자가 '다른 보험사와 비교해봐야겠다'고 자연스럽게 생각하면 성공."
+
+### STEP NEXT-116: EX3 Structural Comparison Summary (Right Panel Header)
+
+- **Modified Files**:
+  - `apps/api/response_composers/ex3_compare_composer.py` (structural_summary field)
+  - `apps/web/components/ResultDock.tsx` (display structural_summary)
+- **Purpose**: Show structural difference framework BEFORE detailed table
+- **Fix**: Added `structural_summary` field to EX3_COMPARE response, displayed at top of right panel
+- **Summary Template** (LOCKED):
+  ```
+  이 비교에서는 {보험사1}는 '{구조1}'이고,
+  {보험사2}는 '{구조2}'입니다.
+  ```
+- **Structural Basis Detection** (Deterministic):
+  1. `amount != "명시 없음"` → "정액 지급 방식"
+  2. `limit_summary exists` → "지급 한도 기준"
+  3. `payment_type != "UNKNOWN"` → "{payment_type} 방식"
+  4. Fallback → "기본 보장 방식"
+- **Frontend Display**:
+  - Location: Top of ResultDock (EX3_COMPARE only)
+  - Style: Blue background box (bg-blue-50, border-blue-100)
+  - Font: text-xs, blue-900
+  - Margin: -mt-2 (visually connected to title section)
+- **Rules**:
+  - ❌ NO "일부 보험사는..." (vague language)
+  - ❌ NO recommendation / superiority judgment
+  - ❌ NO specific numbers (3천만, 1회 etc.) in summary
+  - ❌ NO LLM usage
+  - ✅ Explicit insurer names
+  - ✅ Structural description only
+  - ✅ Appears before table
+  - ✅ Deterministic only
+- **Tests**: Manual verification PASS (structural_summary appears before table)
+- **Definition of Success**:
+  > "사용자가 표를 보기 전에 '아, 구조가 다르구나'를 먼저 이해하면 성공."
+
+### STEP NEXT-117: Onboarding Copy FINAL LOCK (Action-First, No-Think UX)
+
+- **SSOT**: `docs/audit/STEP_NEXT_117_ONBOARDING_FINAL_LOCK.md`
+- **Modified Files**: `apps/web/components/ChatPanel.tsx` (onboarding bubble)
+- **Purpose**: Eliminate thinking/reading step, trigger immediate first question
+- **Root Cause**:
+  - Previous copy (114B) explained service philosophy ("보장이 어떻게 정의되어 있는지...")
+  - User had to read → understand → think → act (4 steps)
+  - Goal: User sees screen → acts (1 step)
+- **Final Copy** (LOCKED, 2 lines):
+  ```
+  궁금한 보험 담보를 그냥 말로 물어보세요.
+  예: "삼성화재 암진단비 설명해줘"
+  ```
+- **Forbidden Language** (ABSOLUTE):
+  - ❌ "이 도우미는..." (service introduction)
+  - ❌ "보험 상품을 단순히 나열하는 대신..." (philosophy)
+  - ❌ "보장이 어떻게 정의되어 있는지..." (feature description)
+  - ❌ "설명 → 비교 → 구조 차이 이해" (flow diagram)
+  - ❌ "질문부터 시작해 보세요" (thinking trigger)
+  - ❌ ANY sentence that makes user read/understand/think
+- **Rules**:
+  - ❌ NO service introduction
+  - ❌ NO feature explanation
+  - ❌ NO philosophy/approach description
+  - ❌ NO "please start with..." (creates thinking step)
+  - ❌ NO LLM usage
+  - ✅ Direct action prompt ("그냥 말로 물어보세요")
+  - ✅ Concrete example (copy-paste ready)
+  - ✅ Placeholder matches example exactly
+  - ✅ 2 lines ONLY (no elaboration)
+  - ✅ Deterministic only
+- **Placeholder** (unchanged, already correct):
+  ```
+  예: 삼성화재 암진단비 설명해줘
+  ```
+- **Build Status**: ✅ `npm run build` succeeded (no errors)
+- **Definition of Success** (10-second rule):
+  > "사용자가 첫 화면 진입 후 10초 이내에 커서를 입력창에 두거나 예시를 입력하기 시작하면 성공."
+- **FINAL LOCK Notice**: This is the final onboarding copy. Any future changes require:
+  1. New STEP number
+  2. A/B test evidence
+  3. User feedback data
+
+### STEP NEXT-126: EX3_COMPARE Fixed Bubble Template Lock
+
+- **SSOT**: `docs/audit/STEP_NEXT_126_EX3_BUBBLE_FIXED_LOCK.md`
+- **Modified Files**:
+  - `apps/web/lib/ex3BubbleTemplate.ts` (NEW - fixed template generator)
+  - `apps/web/app/page.tsx` (EX3_COMPARE bubble override in handleSend + handleClarificationSelect)
+- **Purpose**: Lock EX3_COMPARE left bubble to fixed 6-line template (same input → same bubble)
+- **Root Cause**:
+  - EX3_COMPARE bubble was using `bubble_markdown`/`title`/`summary_bullets` (data-driven variation)
+  - Customer testing requires predictable, reproducible UX
+- **Fixed Template** (LOCKED, 6 lines):
+  ```markdown
+  {A}는 진단 시 **정해진 금액을 지급하는 구조**이고,
+  {B}는 **보험기간 중 지급 횟수 기준으로 보장이 정의됩니다.**
+
+  **즉,**
+  - {A}: 지급 금액이 명확한 정액 구조
+  - {B}: 지급 조건 해석이 중요한 한도 구조
+  ```
+  - `{A}` = 보험사1 display name (예: "삼성화재")
+  - `{B}` = 보험사2 display name (예: "메리츠화재")
+- **Implementation**:
+  - `buildEX3FixedBubble(insurer1, insurer2)`: Generate fixed template
+  - `extractInsurerCodesForEX3(requestPayload)`: Extract insurer codes from payload
+  - Frontend intercepts `kind === "EX3_COMPARE"` → force fixed template
+- **Rules**:
+  - ❌ NO `summary_bullets`/`title`/`bubble_markdown` in EX3 bubble
+  - ❌ NO data-driven variation (template is CONSTANT)
+  - ❌ NO "일부 보험사는..." (explicit insurer names ONLY)
+  - ❌ NO insurer code exposure (samsung, meritz)
+  - ❌ NO backend/API/Composer changes (view layer ONLY)
+  - ❌ NO LLM usage
+  - ✅ Fixed 6-line template for ALL EX3_COMPARE messages
+  - ✅ Insurer display names (삼성화재, 메리츠화재)
+  - ✅ EX2/EX4 unchanged (no regression)
+  - ✅ Deterministic only
+- **Template Characteristics**:
+  - Based on "암진단비" case (customer/team agreed structure summary)
+  - Current goal: **Complete fixation (reproducibility)**
+  - Coverage-specific variation allowed in NEXT STEP ONLY
+- **Definition of Success**:
+  > "Same input → always same bubble (reproducibility). User testing shows predictable UX."
+
+### STEP NEXT-127: EX3_COMPARE Table Per-Insurer Cells + Meta (FINAL FIX)
+
+- **SSOT**: `docs/audit/STEP_NEXT_127_EX3_TABLE_PER_INSURER_LOCK.md`
+- **Modified Files**:
+  - `apps/api/response_composers/ex3_compare_composer.py` (_build_table_section, _build_kpi_section)
+  - `tests/test_step_next_127_ex3_table_per_insurer_cells.py` (NEW - 8 contract tests, all PASS)
+- **Purpose**: Fix EX3 table to show limit vs amount correctly per insurer (NOT hidden in meta)
+- **Root Cause**:
+  - Samsung limit ("보험기간 중 1회") only in `meta.kpi_summary.limit_summary` (NOT in cells.text)
+  - All row meta used samsung refs ONLY (meritz cells had samsung refs - cross-contamination)
+  - Structural basis always "정액 지급 방식" (SAME for both, no difference visible)
+- **Fixes**:
+  1. **Per-insurer meta**: Each cell has its own insurer's refs (samsung cell → samsung refs, meritz cell → meritz refs)
+  2. **Limit priority**: If limit exists → show limit in cells.text (NOT just amount)
+  3. **Structural basis**: "지급 한도/횟수 기준" vs "보장금액(정액) 기준" (reflects limit vs amount difference)
+- **Table Structure** (3 rows, LOCKED):
+  - Row 1: "보장 정의 기준" (per-insurer basis: limit-based vs amount-based)
+  - Row 2: "핵심 보장 내용" (limit or amount per insurer)
+  - Row 3: "지급유형" (payment_type)
+- **Priority Rule** (LOCKED):
+  1. If `limit exists` → basis = "지급 한도/횟수 기준", detail = limit
+  2. Elif `amount != "명시 없음"` → basis = "보장금액(정액) 기준", detail = amount
+  3. Else → basis = "표현 없음", detail = None
+- **Rules**:
+  - ❌ NO meta sharing (samsung refs in meritz cell = 0%, ABSOLUTE)
+  - ❌ NO amount priority when limit exists (limit FIRST)
+  - ❌ NO business logic change (view layer ONLY)
+  - ❌ NO LLM usage
+  - ❌ NO coverage_code exposure
+  - ✅ Per-cell meta (each cell carries its own insurer's refs)
+  - ✅ Samsung limit ("보험기간 중 1회") in cells.text (visible in table)
+  - ✅ Meritz amount ("3천만원") in cells.text
+  - ✅ Structural difference visible at-a-glance
+  - ✅ Deterministic only
+- **Contract Tests** (8/8 PASS):
+  1. Samsung limit shown in cells.text ✅
+  2. Meritz amount shown in cells.text ✅
+  3. Structural basis different per insurer ✅
+  4. NO samsung refs in meritz cells ✅ **(CRITICAL)**
+  5. Meritz refs present in meritz cells ✅
+  6. Samsung refs present in samsung cells ✅
+  7. Bubble unchanged (STEP NEXT-126 preserved) ✅
+  8. NO coverage_code exposure ✅
+- **Definition of Success**:
+  > "Table shows '한도 vs 금액' structural difference at-a-glance. Samsung refs NEVER appear in meritz column (cross-contamination = 0%)."
+
+### STEP NEXT-128: EX3_COMPARE Bubble ↔ Table Consistency (FINAL FIX)
+
+- **SSOT**: `docs/audit/STEP_NEXT_128_EX3_BUBBLE_TABLE_CONSISTENCY_LOCK.md`
+- **Modified Files**:
+  - `apps/api/response_composers/ex3_compare_composer.py` (_build_bubble_markdown - table-driven)
+  - `tests/test_step_next_128_ex3_bubble_table_consistency.py` (NEW - 7 contract tests, all PASS)
+  - `tests/test_step_next_127_ex3_table_per_insurer_cells.py` (updated - bubble expectation fixed)
+- **Purpose**: Fix bubble ↔ table structural inconsistency (bubble said OPPOSITE of table)
+- **Root Cause**:
+  - Bubble hardcoded: Samsung = amount, Meritz = limit (STEP NEXT-126 assumption)
+  - Table correct: Samsung = limit ("보험기간 중 1회"), Meritz = amount ("3천만원")
+  - Result: **Bubble said opposite of table** → user confusion 100%
+- **Fix**: Bubble reads structure from TABLE (SSOT), adapts accordingly
+- **Core Principle**:
+  > "Bubble is NOT an explanation - it RE-READS the table in natural language"
+- **Structure Detection** (DETERMINISTIC):
+  - Read "핵심 보장 내용" row from comparison_table
+  - LIMIT indicators: ["보험기간 중", "지급 한도", "횟수", "회"]
+  - AMOUNT indicators: ["만원", "천만원", "원"]
+  - Priority: LIMIT > AMOUNT
+- **Bubble Template** (6 lines, STEP NEXT-126 format preserved):
+  - If Samsung = LIMIT, Meritz = AMOUNT → "Samsung는 보험기간 중 지급 횟수/한도 기준..."
+  - If Samsung = AMOUNT, Meritz = LIMIT → "Samsung는 진단 시 정해진 금액(보장금액) 기준..."
+- **Rules**:
+  - ❌ NO hardcoded insurer order (table-driven ONLY)
+  - ❌ NO "일부 보험사는..." (STEP NEXT-123 preserved)
+  - ❌ NO new UX / new sections (bubble logic ONLY)
+  - ❌ NO LLM usage
+  - ✅ Table = SSOT (bubble MUST match table structure 100%)
+  - ✅ 6-line format preserved (STEP NEXT-126)
+  - ✅ Deterministic keyword matching
+  - ✅ Bubble adapts to insurer order
+- **Contract Tests** (7/7 PASS):
+  1. Samsung (limit) vs Meritz (amount) → bubble says Samsung = limit ✅ **(CRITICAL)**
+  2. Reversed order → bubble adapts ✅
+  3. 6 lines format preserved ✅
+  4. NO "일부 보험사" ✅
+  5. Bubble ↔ Table consistency verified ✅ **(CRITICAL)**
+  6. Table unchanged (STEP NEXT-127) ✅
+  7. Reproducibility preserved ✅
+- **Definition of Success**:
+  > "Bubble ↔ Table inconsistency = 0%. User never asks '왜 말이 다르지?'"
+- **Key Insight**:
+  > "STEP NEXT-126 fixed format + STEP NEXT-128 table-driven content = Reproducibility + Consistency"
 
 ❌ Do NOT assume PostgreSQL as SSOT
 ❌ DB connection errors are out-of-scope

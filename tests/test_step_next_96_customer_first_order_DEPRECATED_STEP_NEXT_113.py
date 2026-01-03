@@ -305,9 +305,9 @@ def test_full_compose_with_amount_first():
     assert "암진단비" in result["title"]
     assert "설명" in result["title"]
 
-    # ✅ Bubble markdown has 4 sections
+    # ✅ Bubble markdown has 4 sections (STEP NEXT-110A: Product Header replaces 핵심 요약)
     bubble = result["bubble_markdown"]
-    assert "## 핵심 요약" in bubble
+    assert "<!-- PRODUCT_HEADER -->" in bubble
     assert "## 보장 요약" in bubble
     assert "## 조건 요약" in bubble
     assert "## 근거 자료" in bubble

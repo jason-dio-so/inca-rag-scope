@@ -64,26 +64,26 @@ export default function ResultDock({ response }: ResultDockProps) {
 
       case "common_notes":
         return (
-          <div key={idx} className="border border-gray-200 rounded-lg p-4">
-            <h3 className="font-medium text-gray-800 mb-3">{section.title}</h3>
+          <div key={idx} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+            <h3 className="font-normal text-xs text-gray-600 mb-2">{section.title}</h3>
             {section.bullets && section.bullets.length > 0 && (
-              <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
+              <ul className="list-disc list-inside space-y-1 text-xs text-gray-500">
                 {section.bullets.map((bullet, bIdx) => (
                   <li key={bIdx}>{bullet}</li>
                 ))}
               </ul>
             )}
             {section.groups && section.groups.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {section.groups.map((group, gIdx) => {
                   const groupBullets = Array.isArray(group.bullets) ? group.bullets : [];
                   return (
                     <div key={gIdx}>
-                      <h4 className="font-medium text-sm text-gray-700 mb-1">
+                      <h4 className="font-normal text-xs text-gray-500 mb-1">
                         {group.title}
                       </h4>
                       {groupBullets.length > 0 && (
-                        <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 ml-2">
+                        <ul className="list-disc list-inside space-y-0.5 text-xs text-gray-400 ml-2">
                           {groupBullets.map((bullet, bIdx) => (
                             <li key={bIdx}>{bullet}</li>
                           ))}
@@ -131,20 +131,29 @@ export default function ResultDock({ response }: ResultDockProps) {
         </div>
       )}
 
-      {/* Title */}
-      <div className="border-b border-gray-200 pb-3">
-        <h2 className="text-xl font-bold text-gray-800">{response.title ?? "결과"}</h2>
+      {/* Title - STEP NEXT-121C: Right panel is secondary (downgrade visual weight) */}
+      <div className="border-b border-gray-200 pb-2">
+        <h2 className="text-xs font-medium text-gray-600">{response.title ?? "결과"}</h2>
         {summaryBullets.length > 0 && (
-          <ul className="mt-2 space-y-1 text-sm text-gray-600">
+          <ul className="mt-1 space-y-0.5 text-xs text-gray-500">
             {summaryBullets.map((bullet, idx) => (
               <li key={idx} className="flex items-start gap-2">
-                <span className="text-blue-600 mt-0.5">•</span>
+                <span className="text-gray-400 mt-0.5">•</span>
                 <span>{bullet}</span>
               </li>
             ))}
           </ul>
         )}
       </div>
+
+      {/* STEP NEXT-116: Structural Comparison Summary (EX3_COMPARE only) */}
+      {response.kind === "EX3_COMPARE" && (response as any).structural_summary && (
+        <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 -mt-2">
+          <p className="text-xs text-blue-900 leading-relaxed">
+            {(response as any).structural_summary}
+          </p>
+        </div>
+      )}
 
       {/* Sections */}
       <div className="space-y-4">

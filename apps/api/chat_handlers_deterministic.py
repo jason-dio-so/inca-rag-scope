@@ -486,9 +486,29 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
             if has_mixed_dimension:
                 status = "MIXED_DIMENSION"
                 diff_summary = None
-                summary_bullets = [
-                    "일부 보험사는 보장 '한도/횟수', 일부는 '보장금액' 기준으로 제공됩니다"
-                ]
+                # STEP NEXT-123C: Build structural comparison summary (NO "일부 보험사는...")
+                # Extract insurers by dimension_type
+                amount_insurers = []
+                limit_insurers = []
+                for group in groups:
+                    if group.dimension_type == "AMOUNT":
+                        amount_insurers.extend(group.insurers)
+                    elif group.dimension_type == "LIMIT":
+                        limit_insurers.extend(group.insurers)
+
+                # Format insurer names
+                from apps.api.response_composers.utils import format_insurer_name
+                amount_names = ", ".join([format_insurer_name(ins) for ins in amount_insurers])
+                limit_names = ", ".join([format_insurer_name(ins) for ins in limit_insurers])
+
+                # Build structural summary (explicit insurer names, NO abstract phrases)
+                if amount_names and limit_names:
+                    summary_bullets = [
+                        f"{amount_names}는 진단 시 정액(보장금액) 기준, {limit_names}는 지급 횟수/한도 기준으로 보장이 정의됩니다."
+                    ]
+                else:
+                    # Fallback (should not happen if has_mixed_dimension is true)
+                    summary_bullets = ["보장 기준이 보험사마다 다릅니다"]
             else:
                 status = "DIFF"
                 diff_insurers = diff_result["diff_insurers"]
