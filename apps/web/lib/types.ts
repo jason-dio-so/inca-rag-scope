@@ -8,6 +8,7 @@ export type LlmMode = "OFF" | "ON";
 export type MessageKind =
   | "PREMIUM_COMPARE"
   | "EX1_PREMIUM_DISABLED"
+  | "EX2_DETAIL"           // STEP NEXT-86: 단일 담보 설명
   | "EX2_DETAIL_DIFF"
   | "EX2_LIMIT_FIND"      // STEP NEXT-78
   | "EX3_INTEGRATED"

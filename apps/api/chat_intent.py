@@ -179,14 +179,16 @@ class IntentRouter:
         """
         Route request to MessageKind
 
-        PRIORITY (STEP NEXT-80 LOCKED):
+        PRIORITY (STEP NEXT-86 UPDATED):
         1. Explicit `kind` from request → 100% priority (ABSOLUTE, NO OVERRIDE)
-        2. detect_intent() → category/FAQ/gates/patterns (ONLY if kind is None)
+        2. insurers count gate → EX2_DETAIL (insurers=1) vs others (STEP NEXT-86)
+        3. detect_intent() → category/FAQ/gates/patterns (ONLY if kind is None)
 
         CRITICAL RULE:
         - If request.kind is provided, NEVER call detect_intent()
         - If request.kind is provided, NEVER apply anti-confusion gates
         - Explicit kind = UI contract guarantee (e.g., Example 3 button)
+        - STEP NEXT-86: insurers=1 → EX2_DETAIL (설명 전용)
 
         Returns:
             MessageKind for handler dispatch
@@ -195,7 +197,12 @@ class IntentRouter:
         if request.kind is not None:
             return request.kind
 
-        # Priority 2-5: Detect from category/FAQ/gates/patterns (ONLY if kind is None)
+        # STEP NEXT-86: Priority 2 - insurers count gate (EX2_DETAIL for single insurer)
+        insurers = request.insurers or []
+        if len(insurers) == 1:
+            return "EX2_DETAIL"
+
+        # Priority 3-5: Detect from category/FAQ/gates/patterns (ONLY if kind is None)
         kind, confidence = IntentRouter.detect_intent(request)
         return kind
 
@@ -217,6 +224,7 @@ class SlotValidator:
 
     # Required slots per MessageKind
     REQUIRED_SLOTS: Dict[MessageKind, List[str]] = {
+        "EX2_DETAIL": ["coverage_names", "insurers"],  # STEP NEXT-86: 단일 담보 설명 (insurers=1)
         "EX2_DETAIL_DIFF": ["coverage_names", "insurers", "compare_field"],  # LEGACY
         "EX2_LIMIT_FIND": ["coverage_names", "insurers", "compare_field"],  # STEP NEXT-78
         "EX3_INTEGRATED": ["coverage_names", "insurers"],
@@ -370,6 +378,43 @@ class QueryCompiler:
         return QueryCompiler.COVERAGE_NAME_TO_CODE.get(coverage_name, coverage_name)
 
     @staticmethod
+    def _extract_disease_name_from_message(message: str) -> str | None:
+        """
+        STEP NEXT-86: Extract disease_name from message (deterministic)
+
+        Rules:
+        - NO LLM
+        - Conservative: Only extract when keyword is clearly present
+        - Priority order: 제자리암 > 경계성종양 > 유사암 > etc.
+
+        Args:
+            message: User input message
+
+        Returns:
+            Extracted disease name or None
+        """
+        if not message:
+            return None
+
+        # STEP NEXT-86: Use same keywords as IntentRouter.DISEASE_SUBTYPES
+        # Priority order (first match wins)
+        disease_keywords = [
+            "제자리암",
+            "경계성종양",
+            "유사암",
+            "기타피부암",
+            "갑상선암",
+            "대장점막내암"
+        ]
+
+        message_lower = message.lower()
+        for keyword in disease_keywords:
+            if keyword in message_lower:
+                return keyword
+
+        return None
+
+    @staticmethod
     def compile_insurer_codes(raw_insurers: List[str]) -> List[str]:
         """
         Normalize insurer names to internal codes
@@ -417,7 +462,7 @@ class QueryCompiler:
         }
 
         # Compile slots based on kind
-        if kind in ["EX2_DETAIL_DIFF", "EX2_LIMIT_FIND", "EX3_INTEGRATED", "EX3_COMPARE"]:
+        if kind in ["EX2_DETAIL", "EX2_DETAIL_DIFF", "EX2_LIMIT_FIND", "EX3_INTEGRATED", "EX3_COMPARE"]:
             query["coverage_names"] = QueryCompiler.compile_coverage_names(
                 request.coverage_names or []
             )
@@ -430,14 +475,15 @@ class QueryCompiler:
                     query["compare_field"] = QueryCompiler.extract_compare_field(request.message)
                 else:
                     query["compare_field"] = request.compare_field
-            # Add coverage_code for EX3_COMPARE
-            if kind == "EX3_COMPARE":
+            # Add coverage_code for EX3_COMPARE and EX2_DETAIL (STEP NEXT-86)
+            if kind in ["EX3_COMPARE", "EX2_DETAIL"]:
                 # Map coverage name to code (STEP NEXT-80)
                 if query["coverage_names"]:
                     coverage_name = query["coverage_names"][0]
                     query["coverage_code"] = QueryCompiler.map_coverage_name_to_code(coverage_name)
 
         elif kind == "EX4_ELIGIBILITY":
+            # STEP NEXT-86: disease_name should already be auto-filled by IntentDispatcher
             query["disease_name"] = request.disease_name
             query["insurers"] = QueryCompiler.compile_insurer_codes(
                 request.insurers or []
@@ -475,6 +521,22 @@ class IntentDispatcher:
         """
         # Step 1: Route intent
         kind = IntentRouter.route(request)
+
+        # STEP NEXT-86: Auto-fill disease_name for EX4_ELIGIBILITY BEFORE validation
+        if kind == "EX4_ELIGIBILITY" and not request.disease_name:
+            auto_filled = QueryCompiler._extract_disease_name_from_message(request.message)
+            if auto_filled:
+                # Create updated request with auto-filled disease_name
+                request = ChatRequest(
+                    request_id=request.request_id,
+                    message=request.message,
+                    kind=request.kind,
+                    selected_category=request.selected_category,
+                    insurers=request.insurers,
+                    coverage_names=request.coverage_names,
+                    disease_name=auto_filled,  # STEP NEXT-86: Auto-filled
+                    llm_mode=request.llm_mode
+                )
 
         # Step 2: Validate slots
         is_valid, missing_slots = SlotValidator.validate(request, kind)

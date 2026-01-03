@@ -1,0 +1,860 @@
+{
+  "scenario_1": {
+    "description": "보장한도가 다른 상품",
+    "response": {
+      "message_id": "9677c112-4181-464d-8b52-189c6e566f2c",
+      "request_id": "4ceba6c9-fca4-4dc0-abfd-068a9f620825",
+      "kind": "EX2_LIMIT_FIND",
+      "timestamp": "2026-01-03T06:15:15.475859Z",
+      "title": "삼성화재와 메리츠화재의 암직접입원비 보장한도 차이",
+      "summary_bullets": [
+        "삼성화재의 보장한도가 다릅니다",
+        "다른 값: 1일 1회, 최대 120일"
+      ],
+      "sections": [
+        {
+          "kind": "comparison_table",
+          "table_kind": "COVERAGE_DETAIL",
+          "title": "암직접입원비 보장한도 비교",
+          "columns": [
+            "보험사",
+            "보장한도",
+            "근거"
+          ],
+          "rows": [
+            {
+              "cells": [
+                {
+                  "text": "삼성화재"
+                },
+                {
+                  "text": "1일 1회, 최대 120일"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:samsung:A4200_2",
+                "evidence_refs": [
+                  "EV:samsung:A4200_2:01"
+                ],
+                "kpi_summary": {
+                  "payment_type": "일당형",
+                  "limit_summary": "1일 1회, 최대 120일",
+                  "kpi_evidence_refs": [
+                    "EV:samsung:A4200_2:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "90일",
+                  "reduction_condition": null,
+                  "exclusion_condition": null,
+                  "renewal_type": null,
+                  "condition_evidence_refs": [
+                    "EV:samsung:A4200_2:03"
+                  ],
+                  "extraction_notes": ""
+                }
+              }
+            },
+            {
+              "cells": [
+                {
+                  "text": "메리츠화재"
+                },
+                {
+                  "text": "1일 1회, 최대 60일"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:meritz:A4200_2",
+                "evidence_refs": [
+                  "EV:meritz:A4200_2:01"
+                ],
+                "kpi_summary": {
+                  "payment_type": "일당형",
+                  "limit_summary": "1일 1회, 최대 60일",
+                  "kpi_evidence_refs": [
+                    "EV:meritz:A4200_2:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "90일",
+                  "reduction_condition": null,
+                  "exclusion_condition": null,
+                  "renewal_type": null,
+                  "condition_evidence_refs": [
+                    "EV:meritz:A4200_2:02"
+                  ],
+                  "extraction_notes": ""
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "common_notes",
+          "title": "유의사항",
+          "bullets": [
+            "값 차이 비교는 KPI Summary/Condition 기준입니다",
+            "세부 근거는 각 항목의 '보장내용 보기' 또는 '근거 보기' 버튼에서 확인하세요"
+          ]
+        }
+      ],
+      "lineage": {
+        "handler": "EX2LimitFindComposer",
+        "llm_used": false,
+        "deterministic": true,
+        "diff_status": "DIFF"
+      }
+    },
+    "validation_passed": true,
+    "violations": {
+      "forbidden_words": [],
+      "coverage_code_exposure": [],
+      "ex4_contamination": false,
+      "ex3_contamination": false
+    }
+  },
+  "scenario_2": {
+    "description": "대기기간이 다른 보험사",
+    "response": {
+      "message_id": "e8a2d01d-023b-451c-82cf-5ca00923b680",
+      "request_id": "d7553dbd-175c-4267-9298-410969611174",
+      "kind": "EX2_LIMIT_FIND",
+      "timestamp": "2026-01-03T06:15:15.476402Z",
+      "title": "한화손해보험, 삼성화재, KB손해보험의 암진단비(유사암 제외) 조건 차이",
+      "summary_bullets": [
+        "삼성화재의 조건가 다릅니다",
+        "다른 값: 대기: 2년, 면책: 유사암 제외"
+      ],
+      "sections": [
+        {
+          "kind": "comparison_table",
+          "table_kind": "COVERAGE_DETAIL",
+          "title": "암진단비(유사암 제외) 조건 비교",
+          "columns": [
+            "보험사",
+            "조건",
+            "근거"
+          ],
+          "rows": [
+            {
+              "cells": [
+                {
+                  "text": "한화손해보험"
+                },
+                {
+                  "text": "대기: 90일, 면책: 유사암 제외"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:hanwha:A4200_1",
+                "evidence_refs": [
+                  "EV:hanwha:A4200_1:03"
+                ],
+                "kpi_summary": {
+                  "payment_type": "정액형",
+                  "limit_summary": "1회한 지급",
+                  "kpi_evidence_refs": [
+                    "EV:hanwha:A4200_1:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "90일",
+                  "reduction_condition": null,
+                  "exclusion_condition": "유사암 제외",
+                  "renewal_type": null,
+                  "condition_evidence_refs": [
+                    "EV:hanwha:A4200_1:03"
+                  ],
+                  "extraction_notes": ""
+                }
+              }
+            },
+            {
+              "cells": [
+                {
+                  "text": "삼성화재"
+                },
+                {
+                  "text": "대기: 2년, 면책: 유사암 제외"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:samsung:A4200_1",
+                "evidence_refs": [
+                  "EV:samsung:A4200_1:02"
+                ],
+                "kpi_summary": {
+                  "payment_type": "정액형",
+                  "limit_summary": "1회한 지급",
+                  "kpi_evidence_refs": [
+                    "EV:samsung:A4200_1:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "2년",
+                  "reduction_condition": null,
+                  "exclusion_condition": "유사암 제외",
+                  "renewal_type": null,
+                  "condition_evidence_refs": [
+                    "EV:samsung:A4200_1:02"
+                  ],
+                  "extraction_notes": ""
+                }
+              }
+            },
+            {
+              "cells": [
+                {
+                  "text": "KB손해보험"
+                },
+                {
+                  "text": "대기: 90일, 면책: 유사암 제외"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:kb:A4200_1",
+                "evidence_refs": [
+                  "EV:kb:A4200_1:02"
+                ],
+                "kpi_summary": {
+                  "payment_type": "정액형",
+                  "limit_summary": "1회한 지급",
+                  "kpi_evidence_refs": [
+                    "EV:kb:A4200_1:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "90일",
+                  "reduction_condition": null,
+                  "exclusion_condition": "유사암 제외",
+                  "renewal_type": null,
+                  "condition_evidence_refs": [
+                    "EV:kb:A4200_1:02"
+                  ],
+                  "extraction_notes": ""
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "common_notes",
+          "title": "유의사항",
+          "bullets": [
+            "값 차이 비교는 KPI Summary/Condition 기준입니다",
+            "세부 근거는 각 항목의 '보장내용 보기' 또는 '근거 보기' 버튼에서 확인하세요"
+          ]
+        }
+      ],
+      "lineage": {
+        "handler": "EX2LimitFindComposer",
+        "llm_used": false,
+        "deterministic": true,
+        "diff_status": "DIFF"
+      }
+    },
+    "validation_passed": true,
+    "violations": {
+      "forbidden_words": [],
+      "coverage_code_exposure": [],
+      "ex4_contamination": false,
+      "ex3_contamination": false
+    }
+  },
+  "scenario_3": {
+    "description": "조건이 다른 회사",
+    "response": {
+      "message_id": "336dbd8f-6d54-460d-b38e-ad79dee5d26f",
+      "request_id": "05b137e7-887c-4587-8a9e-efffaf6cc82d",
+      "kind": "EX2_LIMIT_FIND",
+      "timestamp": "2026-01-03T06:15:15.476437Z",
+      "title": "한화손해보험과 흥국화재의 암진단비(유사암 제외) 조건 차이",
+      "summary_bullets": [
+        "한화손해보험의 조건가 다릅니다",
+        "다른 값: 대기: 90일, 면책: 유사암 제외"
+      ],
+      "sections": [
+        {
+          "kind": "comparison_table",
+          "table_kind": "COVERAGE_DETAIL",
+          "title": "암진단비(유사암 제외) 조건 비교",
+          "columns": [
+            "보험사",
+            "조건",
+            "근거"
+          ],
+          "rows": [
+            {
+              "cells": [
+                {
+                  "text": "한화손해보험"
+                },
+                {
+                  "text": "대기: 90일, 면책: 유사암 제외"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:hanwha:A4200_1",
+                "evidence_refs": [
+                  "EV:hanwha:A4200_1:03"
+                ],
+                "kpi_summary": {
+                  "payment_type": "정액형",
+                  "limit_summary": "1회한 지급",
+                  "kpi_evidence_refs": [
+                    "EV:hanwha:A4200_1:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "90일",
+                  "reduction_condition": null,
+                  "exclusion_condition": "유사암 제외",
+                  "renewal_type": null,
+                  "condition_evidence_refs": [
+                    "EV:hanwha:A4200_1:03"
+                  ],
+                  "extraction_notes": ""
+                }
+              }
+            },
+            {
+              "cells": [
+                {
+                  "text": "흥국화재"
+                },
+                {
+                  "text": "대기: 90일, 감액: 1년 50%, 면책: 유사암 제외"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:heungkuk:A4200_1",
+                "evidence_refs": [
+                  "EV:heungkuk:A4200_1:02"
+                ],
+                "kpi_summary": {
+                  "payment_type": "정액형",
+                  "limit_summary": "1회한 지급",
+                  "kpi_evidence_refs": [
+                    "EV:heungkuk:A4200_1:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "90일",
+                  "reduction_condition": "1년 50%",
+                  "exclusion_condition": "유사암 제외",
+                  "renewal_type": null,
+                  "condition_evidence_refs": [
+                    "EV:heungkuk:A4200_1:02"
+                  ],
+                  "extraction_notes": ""
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "common_notes",
+          "title": "유의사항",
+          "bullets": [
+            "값 차이 비교는 KPI Summary/Condition 기준입니다",
+            "세부 근거는 각 항목의 '보장내용 보기' 또는 '근거 보기' 버튼에서 확인하세요"
+          ]
+        }
+      ],
+      "lineage": {
+        "handler": "EX2LimitFindComposer",
+        "llm_used": false,
+        "deterministic": true,
+        "diff_status": "DIFF"
+      }
+    },
+    "validation_passed": true,
+    "violations": {
+      "forbidden_words": [],
+      "coverage_code_exposure": [],
+      "ex4_contamination": false,
+      "ex3_contamination": false
+    }
+  },
+  "scenario_4": {
+    "description": "보장한도 차이 (3사)",
+    "response": {
+      "message_id": "f6eafd16-2e86-4a50-b5ac-5cea860a4c26",
+      "request_id": "9cee1ead-1e95-4a03-ba9b-11eda391e9b8",
+      "kind": "EX2_LIMIT_FIND",
+      "timestamp": "2026-01-03T06:15:15.476467Z",
+      "title": "한화손해보험, 삼성화재, KB손해보험의 암진단비(유사암 제외) 보장한도 차이",
+      "summary_bullets": [
+        "삼성화재의 보장한도가 다릅니다",
+        "다른 값: 1회한 5000만원"
+      ],
+      "sections": [
+        {
+          "kind": "comparison_table",
+          "table_kind": "COVERAGE_DETAIL",
+          "title": "암진단비(유사암 제외) 보장한도 비교",
+          "columns": [
+            "보험사",
+            "보장한도",
+            "근거"
+          ],
+          "rows": [
+            {
+              "cells": [
+                {
+                  "text": "한화손해보험"
+                },
+                {
+                  "text": "1회한 3000만원"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:hanwha:A4200_1",
+                "evidence_refs": [
+                  "EV:hanwha:A4200_1:01"
+                ],
+                "kpi_summary": {
+                  "payment_type": "정액형",
+                  "limit_summary": "1회한 3000만원",
+                  "kpi_evidence_refs": [
+                    "EV:hanwha:A4200_1:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "90일",
+                  "reduction_condition": null,
+                  "exclusion_condition": null,
+                  "renewal_type": null,
+                  "condition_evidence_refs": [],
+                  "extraction_notes": ""
+                }
+              }
+            },
+            {
+              "cells": [
+                {
+                  "text": "삼성화재"
+                },
+                {
+                  "text": "1회한 5000만원"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:samsung:A4200_1",
+                "evidence_refs": [
+                  "EV:samsung:A4200_1:01"
+                ],
+                "kpi_summary": {
+                  "payment_type": "정액형",
+                  "limit_summary": "1회한 5000만원",
+                  "kpi_evidence_refs": [
+                    "EV:samsung:A4200_1:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "90일",
+                  "reduction_condition": null,
+                  "exclusion_condition": null,
+                  "renewal_type": null,
+                  "condition_evidence_refs": [],
+                  "extraction_notes": ""
+                }
+              }
+            },
+            {
+              "cells": [
+                {
+                  "text": "KB손해보험"
+                },
+                {
+                  "text": "1회한 3000만원"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:kb:A4200_1",
+                "evidence_refs": [
+                  "EV:kb:A4200_1:01"
+                ],
+                "kpi_summary": {
+                  "payment_type": "정액형",
+                  "limit_summary": "1회한 3000만원",
+                  "kpi_evidence_refs": [
+                    "EV:kb:A4200_1:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "90일",
+                  "reduction_condition": null,
+                  "exclusion_condition": null,
+                  "renewal_type": null,
+                  "condition_evidence_refs": [],
+                  "extraction_notes": ""
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "common_notes",
+          "title": "유의사항",
+          "bullets": [
+            "값 차이 비교는 KPI Summary/Condition 기준입니다",
+            "세부 근거는 각 항목의 '보장내용 보기' 또는 '근거 보기' 버튼에서 확인하세요"
+          ]
+        }
+      ],
+      "lineage": {
+        "handler": "EX2LimitFindComposer",
+        "llm_used": false,
+        "deterministic": true,
+        "diff_status": "DIFF"
+      }
+    },
+    "validation_passed": true,
+    "violations": {
+      "forbidden_words": [],
+      "coverage_code_exposure": [],
+      "ex4_contamination": false,
+      "ex3_contamination": false
+    }
+  },
+  "scenario_5": {
+    "description": "감액 조건 필터",
+    "response": {
+      "message_id": "3895930f-7165-4159-926f-f0c50a0e1e96",
+      "request_id": "aab81a46-c41f-496d-b9b8-868588425a98",
+      "kind": "EX2_LIMIT_FIND",
+      "timestamp": "2026-01-03T06:15:15.476494Z",
+      "title": "한화손해보험, 삼성화재, 현대해상의 유사암진단비 조건 차이",
+      "summary_bullets": [
+        "한화손해보험의 조건가 다릅니다",
+        "다른 값: 대기: 90일, 감액: 1년 50%"
+      ],
+      "sections": [
+        {
+          "kind": "comparison_table",
+          "table_kind": "COVERAGE_DETAIL",
+          "title": "유사암진단비 조건 비교",
+          "columns": [
+            "보험사",
+            "조건",
+            "근거"
+          ],
+          "rows": [
+            {
+              "cells": [
+                {
+                  "text": "한화손해보험"
+                },
+                {
+                  "text": "대기: 90일, 감액: 1년 50%"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:hanwha:A4210_1",
+                "evidence_refs": [
+                  "EV:hanwha:A4210_1:02"
+                ],
+                "kpi_summary": {
+                  "payment_type": "정액형",
+                  "limit_summary": "1회한 300만원",
+                  "kpi_evidence_refs": [
+                    "EV:hanwha:A4210_1:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "90일",
+                  "reduction_condition": "1년 50%",
+                  "exclusion_condition": null,
+                  "renewal_type": null,
+                  "condition_evidence_refs": [
+                    "EV:hanwha:A4210_1:02"
+                  ],
+                  "extraction_notes": ""
+                }
+              }
+            },
+            {
+              "cells": [
+                {
+                  "text": "삼성화재"
+                },
+                {
+                  "text": "대기: 90일"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:samsung:A4210_1",
+                "evidence_refs": [
+                  "EV:samsung:A4210_1:02"
+                ],
+                "kpi_summary": {
+                  "payment_type": "정액형",
+                  "limit_summary": "1회한 300만원",
+                  "kpi_evidence_refs": [
+                    "EV:samsung:A4210_1:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "90일",
+                  "reduction_condition": null,
+                  "exclusion_condition": null,
+                  "renewal_type": null,
+                  "condition_evidence_refs": [
+                    "EV:samsung:A4210_1:02"
+                  ],
+                  "extraction_notes": ""
+                }
+              }
+            },
+            {
+              "cells": [
+                {
+                  "text": "현대해상"
+                },
+                {
+                  "text": "대기: 90일, 감액: 2년 50%"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:hyundai:A4210_1",
+                "evidence_refs": [
+                  "EV:hyundai:A4210_1:02"
+                ],
+                "kpi_summary": {
+                  "payment_type": "정액형",
+                  "limit_summary": "1회한 300만원",
+                  "kpi_evidence_refs": [
+                    "EV:hyundai:A4210_1:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "90일",
+                  "reduction_condition": "2년 50%",
+                  "exclusion_condition": null,
+                  "renewal_type": null,
+                  "condition_evidence_refs": [
+                    "EV:hyundai:A4210_1:02"
+                  ],
+                  "extraction_notes": ""
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "common_notes",
+          "title": "유의사항",
+          "bullets": [
+            "값 차이 비교는 KPI Summary/Condition 기준입니다",
+            "세부 근거는 각 항목의 '보장내용 보기' 또는 '근거 보기' 버튼에서 확인하세요"
+          ]
+        }
+      ],
+      "lineage": {
+        "handler": "EX2LimitFindComposer",
+        "llm_used": false,
+        "deterministic": true,
+        "diff_status": "DIFF"
+      }
+    },
+    "validation_passed": true,
+    "violations": {
+      "forbidden_words": [],
+      "coverage_code_exposure": [],
+      "ex4_contamination": false,
+      "ex3_contamination": false
+    }
+  },
+  "scenario_6": {
+    "description": "납입면제 조건 차이",
+    "response": {
+      "message_id": "923bda45-ecda-4c92-8115-e07dbfda4daf",
+      "request_id": "29713aee-4652-4ddb-8aee-046668cfdeb0",
+      "kind": "EX2_LIMIT_FIND",
+      "timestamp": "2026-01-03T06:15:15.476516Z",
+      "title": "한화손해보험과 롯데손해보험의 암진단비(유사암 제외) 조건 차이",
+      "summary_bullets": [
+        "한화손해보험의 조건가 다릅니다",
+        "다른 값: 대기: 90일, 면책: 유사암 제외"
+      ],
+      "sections": [
+        {
+          "kind": "comparison_table",
+          "table_kind": "COVERAGE_DETAIL",
+          "title": "암진단비(유사암 제외) 조건 비교",
+          "columns": [
+            "보험사",
+            "조건",
+            "근거"
+          ],
+          "rows": [
+            {
+              "cells": [
+                {
+                  "text": "한화손해보험"
+                },
+                {
+                  "text": "대기: 90일, 면책: 유사암 제외"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:hanwha:A4200_1",
+                "evidence_refs": [
+                  "EV:hanwha:A4200_1:03"
+                ],
+                "kpi_summary": {
+                  "payment_type": "정액형",
+                  "limit_summary": "1회한 지급",
+                  "kpi_evidence_refs": [
+                    "EV:hanwha:A4200_1:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "90일",
+                  "reduction_condition": null,
+                  "exclusion_condition": "유사암 제외",
+                  "renewal_type": null,
+                  "condition_evidence_refs": [
+                    "EV:hanwha:A4200_1:03"
+                  ],
+                  "extraction_notes": ""
+                }
+              }
+            },
+            {
+              "cells": [
+                {
+                  "text": "롯데손해보험"
+                },
+                {
+                  "text": "대기: 2년, 감액: 1년 20%, 면책: 유사암 제외"
+                },
+                {
+                  "text": "1건"
+                }
+              ],
+              "is_header": false,
+              "meta": {
+                "proposal_detail_ref": "PD:lotte:A4200_1",
+                "evidence_refs": [
+                  "EV:lotte:A4200_1:02"
+                ],
+                "kpi_summary": {
+                  "payment_type": "정액형",
+                  "limit_summary": "1회한 지급",
+                  "kpi_evidence_refs": [
+                    "EV:lotte:A4200_1:01"
+                  ],
+                  "extraction_notes": ""
+                },
+                "kpi_condition": {
+                  "waiting_period": "2년",
+                  "reduction_condition": "1년 20%",
+                  "exclusion_condition": "유사암 제외",
+                  "renewal_type": null,
+                  "condition_evidence_refs": [
+                    "EV:lotte:A4200_1:02"
+                  ],
+                  "extraction_notes": ""
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "common_notes",
+          "title": "유의사항",
+          "bullets": [
+            "값 차이 비교는 KPI Summary/Condition 기준입니다",
+            "세부 근거는 각 항목의 '보장내용 보기' 또는 '근거 보기' 버튼에서 확인하세요"
+          ]
+        }
+      ],
+      "lineage": {
+        "handler": "EX2LimitFindComposer",
+        "llm_used": false,
+        "deterministic": true,
+        "diff_status": "DIFF"
+      }
+    },
+    "validation_passed": true,
+    "violations": {
+      "forbidden_words": [],
+      "coverage_code_exposure": [],
+      "ex4_contamination": false,
+      "ex3_contamination": false
+    }
+  }
+}

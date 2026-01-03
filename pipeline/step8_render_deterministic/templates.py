@@ -99,14 +99,23 @@ class DeterministicTemplates:
     def eligibility_row(insurer: str, status: str,
                        evidence_type: Optional[str],
                        evidence_snippet: Optional[str],
-                       evidence_ref: Optional[str]) -> Dict[str, Any]:
-        """Single row for subtype eligibility"""
+                       evidence_ref: Optional[str],
+                       coverage_trigger: Optional[str] = None,
+                       proposal_detail_ref: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Single row for subtype eligibility
+
+        STEP NEXT-84: Added coverage_trigger field
+        STEP NEXT-85: Added proposal_detail_ref for PD:/EV: refs
+        """
         return {
             "insurer": insurer,
             "status": status,
             "evidence_type": evidence_type or "판단근거 없음",
             "evidence_snippet": evidence_snippet or "",
-            "evidence_ref": evidence_ref or ""
+            "evidence_ref": evidence_ref or "",
+            "coverage_trigger": coverage_trigger,  # STEP NEXT-84
+            "proposal_detail_ref": proposal_detail_ref  # STEP NEXT-85
         }
 
     # ===== Forbidden Phrases (for validation) =====

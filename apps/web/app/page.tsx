@@ -9,10 +9,24 @@ import {
   MessageKind,
 } from "@/lib/types";
 import { postChat } from "@/lib/api";
+import { extractDiseaseName } from "@/lib/diseaseName";  // STEP NEXT-86
+import {
+  isInsurerSwitchUtterance,
+  extractInsurerFromSwitch,
+  isLimitFindPattern,
+  getInsurerDisplayName,
+} from "@/lib/contextUtils";  // STEP NEXT-102
 import SidebarCategories from "@/components/SidebarCategories";
 import ChatPanel from "@/components/ChatPanel";
 import ResultDock from "@/components/ResultDock";
 import LlmModeToggle from "@/components/LlmModeToggle";
+
+// STEP NEXT-101: Conversation context type
+interface ConversationContext {
+  lockedInsurers: string[] | null;
+  lockedCoverageNames: string[] | null;
+  isLocked: boolean;
+}
 
 export default function Home() {
   const [config, setConfig] = useState<UIConfig | null>(null);
@@ -31,6 +45,13 @@ export default function Home() {
     options: Record<string, string[]>;
     draftRequest: any;
   } | null>(null);
+
+  // STEP NEXT-101: Conversation context carryover
+  const [conversationContext, setConversationContext] = useState<ConversationContext>({
+    lockedInsurers: null,
+    lockedCoverageNames: null,
+    isLocked: false,
+  });
 
   // Load UI config
   useEffect(() => {
@@ -52,6 +73,47 @@ export default function Home() {
     setError(null);
   }, [selectedCategory]);
 
+  // STEP NEXT-101: Payload builder SSOT (state → context fallback)
+  const buildChatPayload = (
+    message: string,
+    kindOverride?: MessageKind,
+    insurersOverride?: string[],
+    coverageNamesOverride?: string[],
+    diseaseNameOverride?: string
+  ) => {
+    const categoryLabel = config?.categories.find(
+      (c) => c.id === selectedCategory
+    )?.label;
+
+    // Priority 1: Override values (from example buttons)
+    // Priority 2: Current UI state
+    // Priority 3: Locked conversation context
+    const insurersToSend =
+      insurersOverride ||
+      (selectedInsurers.length > 0 ? selectedInsurers : null) ||
+      conversationContext.lockedInsurers;
+
+    const coverageNamesFromInput = coverageInput
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    const coverageNamesToSend =
+      coverageNamesOverride ||
+      (coverageNamesFromInput.length > 0 ? coverageNamesFromInput : null) ||
+      conversationContext.lockedCoverageNames;
+
+    return {
+      message,
+      kind: kindOverride,
+      selected_category: categoryLabel,
+      insurers: insurersToSend || undefined,
+      coverage_names: coverageNamesToSend || undefined,
+      disease_name: diseaseNameOverride,
+      llm_mode: llmMode,
+    };
+  };
+
   // STEP NEXT-80-FE: Send with explicit kind (accepts overrides for example buttons)
   const handleSendWithKind = async (
     kind: MessageKind,
@@ -63,6 +125,15 @@ export default function Home() {
     if (!messageToSend.trim() || !config) return;
 
     setError(null);
+
+    // STEP NEXT-101: Sync UI state when example button clicked
+    if (insurersOverride) {
+      setSelectedInsurers(insurersOverride);
+    }
+    if (coverageNamesOverride && coverageNamesOverride.length > 0) {
+      setCoverageInput(coverageNamesOverride.join(", "));
+    }
+
     const userMessage: Message = {
       role: "user",
       content: messageToSend,
@@ -72,24 +143,22 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      // Use overrides from example buttons, or fall back to state
-      const insurersToSend = insurersOverride || (selectedInsurers.length > 0 ? selectedInsurers : undefined);
-      const coverageNamesToSend = coverageNamesOverride || (
-        coverageInput
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s.length > 0)
+      // STEP NEXT-86: Auto-fill disease_name for EX4_ELIGIBILITY from message
+      let diseaseNameToSend: string | undefined = undefined;
+      if (kind === "EX4_ELIGIBILITY") {
+        diseaseNameToSend = extractDiseaseName(messageToSend) || undefined;
+      }
+
+      // STEP NEXT-101: Use buildChatPayload SSOT
+      const requestPayload = buildChatPayload(
+        messageToSend,
+        kind,
+        insurersOverride,
+        coverageNamesOverride,
+        diseaseNameToSend
       );
 
-      // STEP NEXT-80: Log request payload for debugging
-      const requestPayload = {
-        message: messageToSend,
-        kind: kind,  // Explicit kind (Priority 1)
-        insurers: insurersToSend,
-        coverage_names: coverageNamesToSend.length > 0 ? coverageNamesToSend : undefined,
-        llm_mode: llmMode,
-      };
-      console.log("[page.tsx] Sending request with explicit kind:", requestPayload);
+      console.log("[page.tsx handleSendWithKind] Request payload:", requestPayload);
 
       const response = await postChat(requestPayload);
 
@@ -106,13 +175,7 @@ export default function Home() {
         setClarification({
           missing_slots: response.missing_slots || [],
           options: response.clarification_options || {},
-          draftRequest: {
-            message: messageToSend,
-            kind: kind,
-            insurers: insurersToSend,
-            coverage_names: coverageNamesToSend.length > 0 ? coverageNamesToSend : undefined,
-            llm_mode: llmMode,
-          },
+          draftRequest: requestPayload,
         });
         return; // Don't show as error
       }
@@ -139,6 +202,20 @@ export default function Home() {
         // Success - response.message is AssistantMessageVM
         const vm = response.message;
         setLatestResponse(vm);
+
+        // STEP NEXT-101: Lock conversation context on first successful response
+        if (!conversationContext.isLocked && requestPayload.insurers) {
+          setConversationContext({
+            lockedInsurers: Array.isArray(requestPayload.insurers) ? requestPayload.insurers : [requestPayload.insurers],
+            lockedCoverageNames: requestPayload.coverage_names ?
+              (Array.isArray(requestPayload.coverage_names) ? requestPayload.coverage_names : [requestPayload.coverage_names]) : null,
+            isLocked: true,
+          });
+          console.log("[page.tsx handleSendWithKind] Locked conversation context:", {
+            insurers: requestPayload.insurers,
+            coverage_names: requestPayload.coverage_names,
+          });
+        }
 
         // STEP NEXT-81B: Use bubble_markdown if available, otherwise build from title+bullets
         let summaryText: string;
@@ -171,32 +248,87 @@ export default function Home() {
     if (!input.trim() || !config) return;
 
     setError(null);
+
+    // STEP NEXT-101: Capture message before clearing input
+    const messageToSend = input;
+
+    // STEP NEXT-103: Detect insurer switch BEFORE payload generation
+    // Capture effective values for THIS request (override state)
+    let effectiveInsurers: string[] | undefined = undefined;
+    let effectiveCoverageNames: string[] | undefined = undefined;
+    let effectiveKind: MessageKind | undefined = undefined;
+
+    if (isInsurerSwitchUtterance(messageToSend)) {
+      const newInsurer = extractInsurerFromSwitch(messageToSend);
+      if (newInsurer) {
+        console.log("[page.tsx] Insurer switch detected:", newInsurer);
+        // STEP NEXT-103: Override payload for THIS request
+        effectiveInsurers = [newInsurer];
+        effectiveCoverageNames = conversationContext.lockedCoverageNames || undefined;
+        effectiveKind = "EX2_DETAIL" as MessageKind;
+
+        // Update state for future requests (async, won't affect current request)
+        setSelectedInsurers([newInsurer]);
+        setConversationContext({
+          ...conversationContext,
+          lockedInsurers: [newInsurer],
+        });
+      }
+    }
+
+    // STEP NEXT-102: Detect LIMIT_FIND pattern and validate multi-insurer requirement
+    if (isLimitFindPattern(messageToSend)) {
+      const currentInsurers = effectiveInsurers ||
+        (selectedInsurers.length > 0 ? selectedInsurers : conversationContext.lockedInsurers || []);
+
+      if (currentInsurers.length < 2) {
+        // Need at least 2 insurers for LIMIT_FIND
+        console.log("[page.tsx] LIMIT_FIND pattern detected but only 1 insurer, showing selection UI");
+
+        // Add user message first
+        const userMessage: Message = {
+          role: "user",
+          content: messageToSend,
+        };
+        setMessages((prev) => [...prev, userMessage]);
+        setInput("");
+
+        // Show clarification with insurers selection
+        setClarification({
+          missing_slots: ["insurers"],
+          options: {
+            insurers: config.available_insurers.map(i => i.code),
+          },
+          draftRequest: {
+            message: messageToSend,
+            coverage_names: conversationContext.lockedCoverageNames || undefined,
+            llm_mode: llmMode,
+          },
+        });
+        return;
+      }
+    }
+
     const userMessage: Message = {
       role: "user",
-      content: input,
+      content: messageToSend,
     };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
     try {
-      // Prepare request
-      const categoryLabel = config.categories.find(
-        (c) => c.id === selectedCategory
-      )?.label;
+      // STEP NEXT-103: Use buildChatPayload with effective overrides (insurer switch)
+      const requestPayload = buildChatPayload(
+        messageToSend,
+        effectiveKind,
+        effectiveInsurers,
+        effectiveCoverageNames
+      );
 
-      const coverageNames = coverageInput
-        .split(",")
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0);
+      console.log("[page.tsx handleSend] Request payload:", requestPayload);
 
-      const response = await postChat({
-        message: input,
-        selected_category: categoryLabel,
-        insurers: selectedInsurers.length > 0 ? selectedInsurers : undefined,
-        coverage_names: coverageNames.length > 0 ? coverageNames : undefined,
-        llm_mode: llmMode,
-      });
+      const response = await postChat(requestPayload);
 
       console.log("chat response:", response);
 
@@ -205,18 +337,12 @@ export default function Home() {
         throw new Error("Invalid response from server");
       }
 
-      // STEP NEXT-80: Handle need_more_info (NOT an error)
+      // STEP NEXT-101: Handle need_more_info (show clarification UI)
       if (response.need_more_info === true) {
         setClarification({
           missing_slots: response.missing_slots || [],
           options: response.clarification_options || {},
-          draftRequest: {
-            message: input,
-            selected_category: categoryLabel,
-            insurers: selectedInsurers.length > 0 ? selectedInsurers : undefined,
-            coverage_names: coverageNames.length > 0 ? coverageNames : undefined,
-            llm_mode: llmMode,
-          },
+          draftRequest: requestPayload,
         });
         return;
       }
@@ -243,6 +369,20 @@ export default function Home() {
         // Success - response.message is AssistantMessageVM
         const vm = response.message;
         setLatestResponse(vm);
+
+        // STEP NEXT-101: Lock conversation context on first successful response
+        if (!conversationContext.isLocked && requestPayload.insurers) {
+          setConversationContext({
+            lockedInsurers: Array.isArray(requestPayload.insurers) ? requestPayload.insurers : [requestPayload.insurers],
+            lockedCoverageNames: requestPayload.coverage_names ?
+              (Array.isArray(requestPayload.coverage_names) ? requestPayload.coverage_names : [requestPayload.coverage_names]) : null,
+            isLocked: true,
+          });
+          console.log("[page.tsx handleSend] Locked conversation context:", {
+            insurers: requestPayload.insurers,
+            coverage_names: requestPayload.coverage_names,
+          });
+        }
 
         // STEP NEXT-81B: Use bubble_markdown if available, otherwise build from title+bullets
         let summaryText: string;
@@ -285,8 +425,19 @@ export default function Home() {
 
     if (slotName === "coverage_names") {
       updatedRequest.coverage_names = Array.isArray(value) ? value : [value];
+      // STEP NEXT-100: Update UI state so next request includes this value
+      setCoverageInput(Array.isArray(value) ? value.join(", ") : value);
     } else if (slotName === "insurers") {
-      updatedRequest.insurers = Array.isArray(value) ? value : [value];
+      // STEP NEXT-102: For LIMIT_FIND flow, ADD to existing insurers (don't replace)
+      const existingInsurers = conversationContext.lockedInsurers || [];
+      const newInsurers = Array.isArray(value) ? value : [value];
+
+      // Merge: keep existing + add new (dedupe)
+      const mergedInsurers = [...new Set([...existingInsurers, ...newInsurers])];
+
+      updatedRequest.insurers = mergedInsurers;
+      // STEP NEXT-100: Update UI state so next request includes this value
+      setSelectedInsurers(mergedInsurers);
     }
 
     // Clear clarification state
@@ -318,6 +469,20 @@ export default function Home() {
       } else {
         const vm = response.message;
         setLatestResponse(vm);
+
+        // STEP NEXT-101: Lock conversation context on successful clarification response
+        if (!conversationContext.isLocked && updatedRequest.insurers) {
+          setConversationContext({
+            lockedInsurers: Array.isArray(updatedRequest.insurers) ? updatedRequest.insurers : [updatedRequest.insurers],
+            lockedCoverageNames: updatedRequest.coverage_names ?
+              (Array.isArray(updatedRequest.coverage_names) ? updatedRequest.coverage_names : [updatedRequest.coverage_names]) : null,
+            isLocked: true,
+          });
+          console.log("[page.tsx handleClarificationSelect] Locked conversation context:", {
+            insurers: updatedRequest.insurers,
+            coverage_names: updatedRequest.coverage_names,
+          });
+        }
 
         const title = vm?.title ?? "결과";
         const bullets = Array.isArray(vm?.summary_bullets) ? vm.summary_bullets : [];
