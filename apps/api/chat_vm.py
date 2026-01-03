@@ -251,11 +251,16 @@ class InsurerDetail(BaseModel):
 
 
 class DiffGroup(BaseModel):
-    """Group of insurers with same value (STEP NEXT-COMPARE-FILTER-DETAIL-02 enriched)"""
+    """
+    Group of insurers with same value (STEP NEXT-COMPARE-FILTER-DETAIL-02 enriched)
+
+    STEP NEXT-91: Added dimension_type for mixed dimension detection
+    """
     value_display: str
     insurers: List[str]
     value_normalized: Optional[Dict[str, Any]] = None
     insurer_details: Optional[List[InsurerDetail]] = None
+    dimension_type: Optional[Literal["LIMIT", "AMOUNT"]] = None  # STEP NEXT-91
 
 
 class CoverageDiffResultSection(BaseModel):
@@ -264,6 +269,7 @@ class CoverageDiffResultSection(BaseModel):
 
     STEP NEXT-COMPARE-FILTER: Dedicated section for diff queries
     STEP NEXT-COMPARE-FILTER-DETAIL-02: Enriched with normalized values and evidence
+    STEP NEXT-91: Added MIXED_DIMENSION status for limit vs amount fallback
 
     USAGE:
     - Query: "보장한도가 다른 상품 찾아줘"
@@ -271,7 +277,8 @@ class CoverageDiffResultSection(BaseModel):
 
     PRESENTATION:
     - If status="ALL_SAME": Show single message
-    - If status="DIFF": Show groups with diff_summary
+    - If status="DIFF": Show groups with diff_summary (same dimension)
+    - If status="MIXED_DIMENSION": Show groups with dimension type tags (limit vs amount)
     - insurer_details: expandable accordion with raw_text + evidence_refs
 
     FRONTEND COMPONENT: CoverageDiffCard
@@ -279,7 +286,7 @@ class CoverageDiffResultSection(BaseModel):
     kind: Literal["coverage_diff_result"] = "coverage_diff_result"
     title: str
     field_label: str
-    status: Literal["DIFF", "ALL_SAME"]
+    status: Literal["DIFF", "ALL_SAME", "MIXED_DIMENSION"]
     groups: List[DiffGroup]
     diff_summary: Optional[str] = None
     extraction_notes: Optional[List[str]] = None  # For "명시 없음" explanations
@@ -348,6 +355,7 @@ Section = (
 # ============================================================================
 
 MessageKind = Literal[
+    "EX2_DETAIL",           # STEP NEXT-86: 단일 담보 설명 (insurers=1, NO 비교/판단)
     "EX2_DETAIL_DIFF",      # 예시2: 담보 조건 차이 탐색 (LEGACY - use EX2_LIMIT_FIND)
     "EX2_LIMIT_FIND",       # STEP NEXT-78: 보장한도/조건 값 차이 비교 (NO O/X)
     "EX3_INTEGRATED",       # 예시3: 통합 비교 (LEGACY - use EX3_COMPARE)

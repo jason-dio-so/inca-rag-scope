@@ -98,19 +98,229 @@ Rules:
 - **SSOT**: `docs/audit/STEP_NEXT_79_EX4_OVERALL_EVALUATION_LOCK.md`
 - **Composer**: `apps/api/response_composers/ex4_eligibility_composer.py`
 - **MessageKind**: `EX4_ELIGIBILITY` (already in `chat_vm.py`)
+
+### STEP NEXT-86/96: EX2_DETAIL Lock (담보 설명 전용 모드 + Customer-First Ordering)
+
+- **SSOT**:
+  - `docs/ui/STEP_NEXT_86_EX2_LOCK.md` (Base lock)
+  - `docs/ui/STEP_NEXT_96_EX2_CUSTOMER_FIRST_ORDER.md` (Customer-first ordering)
+- **Composer**: `apps/api/response_composers/ex2_detail_composer.py`
+- **Handler**: `apps/api/chat_handlers_deterministic.py::Example2DetailHandlerDeterministic`
+- **MessageKind**: `EX2_DETAIL` (added to `chat_vm.py`)
+- **Intent Routing**:
+  - `insurers = 1` → **EX2_DETAIL** (설명 전용)
+  - `insurers ≥ 2` + "차이/비교" → **EX2_LIMIT_FIND** or **EX3_COMPARE**
 - **Rules**:
-  - ✅ `overall_evaluation` section MANDATORY (not optional)
-  - ✅ `decision` ∈ {RECOMMEND, NOT_RECOMMEND, NEUTRAL}
-  - ✅ Deterministic decision rules (Rules A/B/C)
-  - ✅ All reasons MUST have refs (except Unknown status)
+  - ❌ NO comparison / recommendation / judgment
+  - ❌ NO coverage_code exposure (e.g., "A4200_1") in UI
+  - ❌ NO raw text in bubble_markdown
+  - ✅ 4-section bubble_markdown (핵심요약, 보장요약, 조건요약, 근거안내)
+  - ✅ refs MUST use `PD:` / `EV:` prefix
+  - ✅ "표현 없음" / "근거 없음" when missing data
+  - ✅ Deterministic only (NO LLM)
+- **STEP NEXT-96: Customer-First KPI Ordering**:
+  - **보장 요약 순서**: 보장금액 (NEW) → 보장한도 → 지급유형
+  - **보장금액** displayed FIRST (when available)
+  - Answers customer question "얼마 받나요?" immediately
+  - View layer ONLY (NO business logic change)
+  - Fallback: No amount → original order (보장한도부터)
+- **Definition**:
+  > EX2_DETAIL = "고객 질문에 바로 답하는 담보 설명"
+  > 비교·추천·판단은 EX3 / EX4 전용
+- **Contract Tests**:
+  - `tests/test_ex2_bubble_contract.py` (7 tests, base contract)
+  - `tests/test_step_next_96_customer_first_order.py` (8 tests, ordering)
+
+### STEP NEXT-94/95: Coverage Grouping UX (담보 군집화) Lock
+
+- **SSOT**: `docs/audit/STEP_NEXT_94_COVERAGE_GROUPING_LOCK.md`
+- **Runtime Proof**: `docs/audit/STEP_NEXT_95_GROUPING_RUNTIME_PROOF.md`
+- **Utility**: `apps/api/response_composers/utils.py::assign_coverage_group()`
+- **Applied to**: EX4_ELIGIBILITY bubble_markdown ONLY
+- **NOT Applied to**: EX2_DETAIL, EX2_LIMIT_FIND, EX3_COMPARE (단일 담보 설계)
+
+**Core Rules**:
+- ❌ NO business logic change (view layer ONLY)
+- ❌ NO LLM usage (deterministic keyword matching)
+- ❌ NO grouping in judgment/comparison logic
+- ✅ 3 groups max: "진단 관련 담보", "치료/수술 관련 담보", "기타 담보"
+- ✅ Single group → NO header, Multiple groups → show headers
+- ✅ Group label is display text ONLY (not used in statistics/judgment)
+
+**Grouping Priority**:
+1. Name keyword (explicit) > Trigger (inferred)
+2. "진단비", "진단급여" → 진단 관련 담보
+3. "수술비", "치료비", "입원", "통원" → 치료/수술 관련 담보
+4. Fallback → 기타 담보
+
+**Constitutional Guarantees**:
+- ✅ Judgment results unchanged (O/△/X preserved)
+- ✅ Decision unchanged (RECOMMEND/NOT_RECOMMEND/NEUTRAL)
+- ✅ NO coverage_code/Unknown/raw_text exposure
+- ✅ Tests: 21 tests (14 contract + 7 runtime proof, all PASSED)
+
+### STEP NEXT-97: Customer Demo UX Stabilization (UI/Flow ONLY)
+
+- **SSOT**: `docs/ui/STEP_NEXT_97_DEMO_UX_STABILIZATION.md`
+- **Modified Files**:
+  - `apps/web/components/ChatPanel.tsx` (auto-scroll + context lock)
+  - `apps/web/components/SidebarCategories.tsx` (collapsible sidebar)
+  - `apps/web/lib/normalize/table.ts` (kpi_condition type fix)
+- **Rules**:
+  - ✅ Left sidebar collapsed by default (12px, demo mode)
+  - ✅ Auto-scroll on new bubble (only if user near bottom, threshold 100px)
+  - ✅ Conversation context lock (insurer selector disabled after first message)
+  - ✅ Visual indicator: "현재 대화 조건: 삼성화재 · 메리츠화재"
+  - ✅ "조건 변경" button → confirm → page reload
+  - ❌ NO backend/API/business logic change
   - ❌ NO LLM usage
-  - ❌ NO scoring/weighting/inference
-  - ❌ NO emotional phrases ("좋아 보임", "합리적")
-- **Decision Rules**:
-  - Rule A (RECOMMEND): O majority > X count
-  - Rule B (NOT_RECOMMEND): X majority > O count
-  - Rule C (NEUTRAL): Mixed/△-dominant
-- **Contract Test**: `tests/test_ex4_overall_evaluation_contract.py`
+  - ❌ NO data structure change
+- **Definition of Success**:
+  > "고객이 설명 없이 1분 안에 써보고 '아, 이렇게 쓰는 거구나' 라고 말하면 성공"
+
+### STEP NEXT-98: Question Continuity Hints (View Layer Text ONLY)
+
+- **SSOT**: `docs/ui/STEP_NEXT_98_QUESTION_CONTINUITY_LOCK.md`
+- **Modified Files**:
+  - `apps/api/response_composers/ex2_detail_composer.py` (question hints in bubble_markdown)
+  - `apps/api/response_composers/ex4_eligibility_composer.py` (subtype expansion hints in bubble_markdown)
+- **Rules**:
+  - ✅ EX2_DETAIL: 설명 → 탐색 연결 (보장한도 차이 질문 힌트)
+  - ✅ EX4_ELIGIBILITY: 판단 → 조건 확장 비교 연결 (subtype 확장 힌트)
+  - ✅ 순수 텍스트 힌트만 (NO 버튼, NO 자동 실행)
+  - ✅ 고객이 그대로 복사해 물어도 동작
+  - ❌ NO 자동 질문 실행
+  - ❌ NO 추천/점수/랭킹
+  - ❌ NO EX2 ↔ EX4 자동 점프
+  - ❌ NO LLM usage
+  - ❌ NO business logic change
+- **Definition of Success**:
+  > "답변은 닫고, 질문은 연다 — 시스템은 사고의 다음 계단만 보여준다"
+- **Tests**: 19 contract tests PASS (7 EX2 + 12 EX4, all PASSED)
+
+### STEP NEXT-99: 고객 데모용 대표 질문 시나리오 LOCK (Docs ONLY)
+
+- **SSOT**: `docs/ui/STEP_NEXT_99_DEMO_QUESTION_FLOW.md`
+- **Audit**: `docs/audit/STEP_NEXT_99_DEMO_LOCK.md`
+- **Scope**: Demo Flow / Docs / Example UX ONLY (NO code changes)
+- **3 Locked Scenarios**:
+  - **Scenario A**: EX2 → EX3 → EX2 (설명 → 직접 비교 → 탐색 확장)
+  - **Scenario B**: EX4 → EX3 → EX2 (판단 → 비교 → 구조 이해)
+  - **Scenario C**: EX3 단독 (비교 핵심 강조)
+- **Rules**:
+  - ✅ EX3 positioned as central step (비교가 핵심)
+  - ✅ All scenarios use single coverage × multiple insurers (EX3 constitutional lock)
+  - ✅ Demo scripts for 1-min / 3-min / 5-min presentations
+  - ✅ Frontend example buttons already aligned
+  - ❌ NO functional changes (ZERO code modified)
+  - ❌ NO auto-execution / buttons / recommendations
+  - ❌ NO LLM usage
+  - ❌ NO Intent boundary violations
+- **Definition of Success**:
+  > "EX2(설명) → EX3(비교) → EX4(판단), 3가지 Intent가 자연스럽게 이어지는 질문 흐름이 곧 제품의 핵심 UX다"
+- **Code Changes**: ZERO (documentation only)
+- **Tests**: 19/19 PASS (unchanged)
+
+### STEP NEXT-100: Frontend Payload Bug Fix (View Layer ONLY)
+
+- **SSOT**: `docs/audit/STEP_NEXT_100_PAYLOAD_FIX.md`
+- **Modified Files**: `apps/web/app/page.tsx` (3 changes)
+- **Root Cause**:
+  1. Clarification 선택 후 UI state (`selectedInsurers`, `coverageInput`) 미업데이트
+  2. `undefined` 값이 `JSON.stringify`에서 자동 제거됨
+- **Fixes**:
+  - ✅ `handleClarificationSelect`: UI state 동기화 (setCoverageInput, setSelectedInsurers)
+  - ✅ `handleSend`: Request payload builder SSOT (state capture before async)
+  - ✅ Auto-retry 로직: `need_more_info` 반환 시 클라이언트 값으로 1회 자동 재시도
+- **Rules**:
+  - ❌ NO backend/API change
+  - ❌ NO LLM usage
+  - ✅ View layer ONLY (frontend only)
+  - ✅ Auto-retry 최대 1회 (무한 루프 방지)
+- **Tests**: 3/3 PASS (manual_test_step_next_100_payload.py)
+- **Definition of Success**:
+  > "Payload에 insurers/coverage_names 누락 = 0회, 고객 데모에서 추가 정보 필요 오판 노출 = 0회"
+
+### STEP NEXT-101: Conversation Context Carryover (Frontend) + Example Sync Lock
+
+- **SSOT**: `docs/audit/STEP_NEXT_101_CONTEXT_CARRYOVER.md`
+- **Modified Files**: `apps/web/app/page.tsx` (5 changes)
+- **Root Cause**:
+  - Example button은 payload에 값 주입하지만 UI state 미업데이트
+  - Follow-up 질문 시 state 비어있음 → payload 누락 → need_more_info 오발생
+- **Fixes**:
+  - ✅ `ConversationContext` state 추가 (lockedInsurers, lockedCoverageNames, isLocked)
+  - ✅ `buildChatPayload` SSOT 함수 (우선순위: override → UI state → locked context)
+  - ✅ `handleSendWithKind`: Example button 클릭 시 UI state 동기화 + context locking
+  - ✅ `handleSend`: buildChatPayload 사용 + 간소화 + context locking
+  - ✅ `handleClarificationSelect`: context locking 추가
+- **Context Lock Trigger**: 첫 성공 응답 (`need_more_info=false` + `insurers` 존재)
+- **Context Unlock**: "조건 변경" 버튼 → page reload
+- **Rules**:
+  - ❌ NO backend change
+  - ❌ NO LLM usage
+  - ✅ View layer ONLY (state/payload/UX)
+  - ✅ Payload builder는 단일 함수 (SSOT)
+  - ✅ Context 유지 (사용자가 unlock하기 전까지)
+- **Definition of Success**:
+  > "Example button → 답변 → Follow-up 타이핑 → 전송 흐름이 추가 정보 패널 없이 자연스럽게 연결"
+
+### STEP NEXT-102: EX2 Context Continuity Lock (Frontend) — Insurer Switch + LIMIT_FIND Validation
+
+- **SSOT**: `docs/ui/STEP_NEXT_102_EX2_CONTEXT_CONTINUITY_LOCK.md`
+- **Modified Files**:
+  - `apps/web/lib/contextUtils.ts` (NEW): 4 deterministic pattern matchers
+  - `apps/web/app/page.tsx` (3 changes)
+- **Root Cause**:
+  1. Insurer switch 미지원 ("메리츠는?" → 삼성 유지)
+  2. LIMIT_FIND 단일 보험사 오류 (2사 필요한데 1사만 context에 존재)
+  3. Clarification handler 덮어쓰기 (삼성 → 메리츠 replace, 원하는 동작: merge)
+- **Fixes**:
+  - ✅ `isInsurerSwitchUtterance()`: "메리츠는?" 감지 (deterministic regex)
+  - ✅ `extractInsurerFromSwitch()`: 보험사명 → code 변환
+  - ✅ `isLimitFindPattern()`: "다른 담보", "한도 차이" 감지 (keyword combination)
+  - ✅ `handleSend`: Insurer switch 감지 → context update (보험사만 전환, 담보 유지)
+  - ✅ `handleSend`: LIMIT_FIND 감지 → 2사 미만이면 clarification 패널 표시
+  - ✅ `handleClarificationSelect`: Insurer merge 로직 (기존 + 신규, replace 금지)
+- **Demo Flow**:
+  1. EX2 버튼 (삼성 암진단비) → EX2_DETAIL
+  2. "메리츠는?" → insurer switch → EX2_DETAIL (meritz)
+  3. "암직접입원비 담보 중 보장한도가 다른 상품 찾아줘" → LIMIT_FIND 감지 → 1사만 존재 → 보험사 추가 UI → 삼성 선택 → 자동 재전송 (samsung + meritz) → EX2_LIMIT_FIND 표 출력
+- **Rules**:
+  - ❌ NO LLM usage (deterministic only)
+  - ❌ NO backend change
+  - ❌ NO coverage_code UI 노출
+  - ✅ Insurer switch는 frontend pattern matching
+  - ✅ LIMIT_FIND는 2사 이상 보장
+  - ✅ Clarification은 merge (not replace)
+- **Definition of Success**:
+  > "삼성 EX2 → 메리츠는? → LIMIT_FIND 흐름이 추가 정보 패널 없이 자연스럽게 이어진다"
+
+### STEP NEXT-103: EX2 Insurer Switch Payload Override + EX2_DETAIL Display Name Lock
+
+- **SSOT**: `docs/audit/STEP_NEXT_103_EX2_SWITCH_PAYLOAD_PROOF.md`
+- **Modified Files**:
+  - `apps/web/app/page.tsx` (payload override in handleSend)
+  - `apps/api/response_composers/ex2_detail_composer.py` (display name usage)
+- **Root Cause**:
+  1. Frontend: "메리츠는?" 감지 후 state 업데이트만 하고 payload는 이전 값 전송
+  2. Backend: EX2_DETAIL title/summary에서 insurer code (samsung, meritz) 노출
+- **Fixes**:
+  - ✅ Frontend: Insurer switch 감지 시 `effectiveInsurers`/`effectiveKind` 우선 적용 (payload SSOT)
+  - ✅ Backend: `format_insurer_name()` 사용하여 display name (삼성화재, 메리츠화재) 통일
+  - ✅ Question hints도 display name 사용 ("삼성화재와 다른 보험사의...")
+- **Rules**:
+  - ❌ NO insurer code in title/summary/bubble_markdown (samsung, meritz, kb 등)
+  - ❌ NO coverage_code exposure (A4200_1 등)
+  - ✅ Display names ONLY (삼성화재, 메리츠화재, KB손해보험, 한화손해보험, 현대해상, 롯데손해보험, DB손해보험, 흥국화재)
+  - ✅ Insurer codes OK in refs (PD:samsung:, EV:meritz: 등)
+  - ✅ Deterministic only (NO LLM)
+- **Contract Tests**:
+  - `tests/test_ex2_detail_display_name_no_code.py` (7 tests, all PASS)
+  - Regression: `tests/test_ex2_bubble_contract.py` (7 tests, all PASS)
+  - Regression: `tests/test_step_next_96_customer_first_order.py` (8 tests, all PASS)
+- **Definition of Success**:
+  > "고객 데모에서 '메리츠는?'를 입력하면 즉시 메리츠 데이터로 전환되고, 응답 타이틀에 '메리츠화재'가 표시된다. 추가 설명 없이 자연스럽다."
 
 ❌ Do NOT assume PostgreSQL as SSOT
 ❌ DB connection errors are out-of-scope

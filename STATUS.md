@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-03
-**현재 상태**: ✅ **EX2_DETAIL_DIFF Refs + Limit Definition Lock** (STEP NEXT-90: Policy A + 근거 강제)
+**현재 상태**: ✅ **EX2 Insurer Switch Payload Override + Display Name Lock** (STEP NEXT-103: 메리츠는? 즉시 전환 + 표시명 고정)
 
 ---
 
@@ -10,6 +10,19 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ EX2 Insurer Switch Payload Override + Display Name Lock** | STEP NEXT-103 | ✅ 완료 | 2026-01-03 |
+| **✅ EX2 Context Continuity Lock** | STEP NEXT-102 | ✅ 완료 | 2026-01-03 |
+| **✅ EX2 Context Carryover** | STEP NEXT-101 | ✅ 완료 | 2026-01-03 |
+| **✅ Frontend Payload Bug Fix** | STEP NEXT-100 | ✅ 완료 | 2026-01-03 |
+| **✅ Demo Question Flow Lock** | STEP NEXT-99 | ✅ 완료 | 2026-01-03 |
+| **✅ Question Continuity Hints** | STEP NEXT-98 | ✅ 완료 | 2026-01-03 |
+| **✅ Demo UX Stabilization** | STEP NEXT-97 | ✅ 완료 | 2026-01-03 |
+| **✅ Customer-First KPI Ordering** | STEP NEXT-96 | ✅ 완료 | 2026-01-03 |
+| **✅ Coverage Grouping Runtime Proof** | STEP NEXT-95 | ✅ 완료 | 2026-01-03 |
+| **✅ Coverage Grouping UX Lock** | STEP NEXT-94 | ✅ 완료 | 2026-01-03 |
+| **✅ Coverage Name Display Normalization** | STEP NEXT-93 | ✅ 완료 | 2026-01-03 |
+| **✅ EX2_DETAIL_DIFF Strict Lock** | STEP NEXT-92 | ✅ 완료 | 2026-01-03 |
+| **✅ EX2_DETAIL_DIFF Mixed Dimension Lock** | STEP NEXT-91 | ✅ 완료 | 2026-01-03 |
 | **✅ EX2_DETAIL_DIFF Refs + Limit Definition Lock** | STEP NEXT-90 | ✅ 완료 | 2026-01-03 |
 | **✅ EX2_DETAIL_DIFF Code Exposure Lock** | STEP NEXT-89 | ✅ 완료 | 2026-01-03 |
 | **✅ EX2_LIMIT_FIND View Layer Lock** | STEP NEXT-88 | ✅ 완료 | 2026-01-03 |

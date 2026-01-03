@@ -31,6 +31,15 @@ export interface NormalizedTable {
         kpi_evidence_refs?: string[];
         extraction_notes?: string;
       };
+      // STEP NEXT-76: KPI Condition metadata
+      kpi_condition?: {
+        waiting_period?: string | null;
+        reduction_condition?: string | null;
+        exclusion_condition?: string | null;
+        renewal_condition?: string | null;
+        condition_evidence_refs?: string[];
+        extraction_notes?: string;
+      };
     };
   }>;
 }

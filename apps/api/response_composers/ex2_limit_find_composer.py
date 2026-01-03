@@ -27,6 +27,13 @@ CONSTITUTIONAL RULES:
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 import uuid
+from apps.api.response_composers.utils import (
+    display_coverage_name,
+    sanitize_no_coverage_code,
+    format_insurer_list,
+    format_insurer_name,
+    get_insurer_subject
+)
 
 
 class EX2LimitFindComposer:
@@ -68,8 +75,15 @@ class EX2LimitFindComposer:
         Returns:
             EX2_LIMIT_FIND message dict
         """
-        # Build title
-        title = f"{coverage_name or coverage_code} {compare_field} 차이 비교"
+        # STEP NEXT-88: Build title with proper view layer expression
+        # - Use display_coverage_name() to prevent coverage_code exposure
+        # - Include insurer context for clarity
+        safe_coverage_name = display_coverage_name(
+            coverage_name=coverage_name,
+            coverage_code=coverage_code
+        )
+        insurer_list_str = format_insurer_list(insurers)
+        title = f"{insurer_list_str}의 {safe_coverage_name} {compare_field} 차이"
 
         # Extract field values for diff analysis
         field_values = {}
@@ -99,13 +113,14 @@ class EX2LimitFindComposer:
 
             field_values[insurer] = value
 
-        # Build diff summary
+        # STEP NEXT-88: Build diff summary with proper view layer expression
         unique_values = set(field_values.values())
         if len(unique_values) == 1:
             # All same
             diff_status = "ALL_SAME"
+            insurer_subject = get_insurer_subject(insurers)
             summary_bullets = [
-                f"선택한 보험사의 {compare_field}는 모두 동일합니다",
+                f"{insurer_subject} {compare_field}는 모두 동일합니다",
                 f"공통 값: {list(unique_values)[0]}"
             ]
         else:
@@ -122,17 +137,19 @@ class EX2LimitFindComposer:
             sorted_groups = sorted(value_groups.items(), key=lambda x: len(x[1]))
             minority_value, minority_insurers = sorted_groups[0]
 
+            # STEP NEXT-88: Format insurer names properly
+            minority_display = format_insurer_list(minority_insurers)
             summary_bullets = [
-                f"{', '.join(minority_insurers)}의 {compare_field}가 다릅니다",
+                f"{minority_display}의 {compare_field}가 다릅니다",
                 f"다른 값: {minority_value}"
             ]
 
         # Build sections
         sections = []
 
-        # Section 1: Diff table
+        # Section 1: Diff table (STEP NEXT-88: use safe_coverage_name)
         table_section = EX2LimitFindComposer._build_diff_table(
-            insurers, comparison_data, compare_field, coverage_name or coverage_code
+            insurers, comparison_data, compare_field, safe_coverage_name
         )
         sections.append(table_section)
 
@@ -214,9 +231,12 @@ class EX2LimitFindComposer:
             # Build evidence cell text
             evidence_text = f"{len(refs)}건" if refs else "없음"
 
+            # STEP NEXT-88: Use display name for insurer
+            insurer_display = format_insurer_name(insurer)
+
             # Build row
             row_cells = [
-                {"text": insurer},
+                {"text": insurer_display},
                 {"text": value},
                 {"text": evidence_text}
             ]

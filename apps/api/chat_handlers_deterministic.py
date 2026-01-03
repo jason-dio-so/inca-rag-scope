@@ -222,12 +222,15 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
                 refs_data = card.get("refs", {}) or {}
 
                 # STEP NEXT-90: Extract field value with Policy A (limit fallback to amount)
+                # STEP NEXT-91: Track dimension_type for mixed dimension detection
+                dimension_type = None
                 if compare_field == "보장한도":
                     # Priority 1: KPI limit_summary
                     limit_summary = kpi_summary.get("limit_summary")
 
                     if limit_summary:
                         value = limit_summary
+                        dimension_type = "LIMIT"  # STEP NEXT-91
                         # Use kpi_evidence_refs, fallback to proposal_detail_ref
                         value_refs = kpi_summary.get("kpi_evidence_refs", [])
                         if not value_refs:
@@ -239,6 +242,7 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
 
                         if amount_text:
                             value = amount_text
+                            dimension_type = "AMOUNT"  # STEP NEXT-91
                             # Use proposal_detail_ref, generate if missing
                             pd_ref = refs_data.get("proposal_detail_ref")
                             if not pd_ref:
@@ -246,6 +250,7 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
                             value_refs = [pd_ref]
                         else:
                             value = None
+                            dimension_type = None  # STEP NEXT-91
                             # Even for "명시 없음", provide PD ref
                             pd_ref = refs_data.get("proposal_detail_ref")
                             if not pd_ref:
@@ -276,11 +281,13 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
                         value_refs = [pd_ref]
 
                 # STEP NEXT-90: Store value + refs for evidence traceability
+                # STEP NEXT-91: Store dimension_type for mixed dimension detection
                 coverage_data.append({
                     "insurer": insurer,
                     "value": value or "명시 없음",
                     "coverage_code": coverage_code,
-                    "value_refs": value_refs  # NEW: Store refs for this value
+                    "value_refs": value_refs,  # Store refs for this value
+                    "dimension_type": dimension_type  # STEP NEXT-91
                 })
             else:
                 # STEP NEXT-90: Even for missing coverage, provide minimal ref for traceability
@@ -298,17 +305,45 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
         groups = []
         value_to_data = {}
 
+        # STEP NEXT-92: Detect mixed dimensions (LIMIT vs AMOUNT)
+        # Only trigger MIXED when BOTH sides have actual values (not "명시 없음")
+        dimension_types_seen = set()
+        valid_values_by_dimension = {}  # Track if dimension has valid (non-"명시 없음") values
+
+        for item in coverage_data:
+            dim_type = item.get("dimension_type")
+            value = item.get("value")
+
+            if dim_type and value and value != "명시 없음":
+                dimension_types_seen.add(dim_type)
+                if dim_type not in valid_values_by_dimension:
+                    valid_values_by_dimension[dim_type] = []
+                valid_values_by_dimension[dim_type].append(value)
+
+        # MIXED_DIMENSION only when:
+        # 1. compare_field is "보장한도"
+        # 2. Both LIMIT and AMOUNT dimensions exist
+        # 3. Both dimensions have valid (non-"명시 없음") values
+        has_mixed_dimension = (
+            compare_field == "보장한도" and
+            len(dimension_types_seen) > 1 and
+            "LIMIT" in valid_values_by_dimension and
+            "AMOUNT" in valid_values_by_dimension
+        )
+
         # Group insurers by value (with full card data + refs)
         for item in coverage_data:
             value = item["value"]
             insurer = item["insurer"]
             value_refs = item.get("value_refs", [])  # STEP NEXT-90: Get stored refs
+            dimension_type = item.get("dimension_type")  # STEP NEXT-91
 
             if value not in value_to_data:
                 value_to_data[value] = {
                     "insurers": [],
                     "cards": [],
-                    "value_refs_by_insurer": {}  # STEP NEXT-90: Store refs per insurer
+                    "value_refs_by_insurer": {},  # STEP NEXT-90: Store refs per insurer
+                    "dimension_type": dimension_type  # STEP NEXT-91: Track dimension per group
                 }
 
             value_to_data[value]["insurers"].append(insurer)
@@ -322,6 +357,18 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
             insurer_list = data["insurers"]
             cards = data["cards"]
             value_refs_by_insurer = data["value_refs_by_insurer"]  # STEP NEXT-90
+            group_dimension_type = data.get("dimension_type")  # STEP NEXT-91
+
+            # STEP NEXT-91: Apply value_display prefix for mixed dimension cases
+            if has_mixed_dimension and group_dimension_type:
+                if group_dimension_type == "LIMIT":
+                    value_display = f"한도: {value}"
+                elif group_dimension_type == "AMOUNT":
+                    value_display = f"보장금액: {value}"
+                else:
+                    value_display = value
+            else:
+                value_display = value
 
             # Normalize field values for this group
             value_normalized = None
@@ -335,13 +382,20 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
                 if card:
                     evidences = card.get("evidences", [])
 
-                    # STEP NEXT-90: Use stored refs instead of re-extracting
+                    # STEP NEXT-92: Use stored refs instead of re-extracting
                     # For "보장한도", we already computed refs in the first pass
                     if compare_field == "보장한도" and stored_refs:
                         # Use stored refs (from kpi_summary or proposal_facts)
                         raw_text = value
                         # Convert string refs (PD:/EV:) to dict format for InsurerDetail
                         evidence_refs = [{"ref": ref} for ref in stored_refs if ref]
+
+                        # STEP NEXT-92: Also populate value_normalized with refs
+                        if not value_normalized:
+                            value_normalized = {
+                                "raw_text": value,
+                                "evidence_refs": evidence_refs
+                            }
                     elif compare_field == "보장한도":
                         # Fallback: Normalize from evidences (should rarely happen)
                         normalized = LimitNormalizer.normalize(evidences)
@@ -377,12 +431,9 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
                             notes.append("관련 근거 발견되었으나 명시적 패턴 미검출")
                         else:
                             notes.append("근거 자료 없음")
-                    # STEP NEXT-90: Add note if using amount fallback
-                    elif compare_field == "보장한도" and stored_refs and any("PD:" in ref for ref in stored_refs if isinstance(ref, str)):
-                        # Check if this is an amount fallback (PD ref from proposal_facts)
-                        card_kpi_summary = card.get("kpi_summary", {}) or {}
-                        if not card_kpi_summary.get("limit_summary"):
-                            notes.append("보장한도 정보 없음, 보장금액 표시")
+                    # STEP NEXT-91: Add note if using amount fallback
+                    elif compare_field == "보장한도" and group_dimension_type == "AMOUNT":
+                        notes.append("보장한도 정보가 없어 보장금액 기준으로 표시되었습니다")
 
                     insurer_details.append(InsurerDetail(
                         insurer=insurer,
@@ -404,14 +455,24 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
                     f"{', '.join(insurer_list)}: 근거 문서에서 {compare_field} 패턴 미검출"
                 )
 
+            # STEP NEXT-92: Ensure value_normalized always has refs (constitutional requirement)
+            if value_normalized and not value_normalized.get("evidence_refs"):
+                # Inject minimum 1 PD ref per group
+                fallback_refs = []
+                for insurer in insurer_list:
+                    fallback_refs.append({"ref": f"PD:{insurer}:{coverage_code}"})
+                value_normalized["evidence_refs"] = fallback_refs
+
+            # STEP NEXT-91: Include dimension_type in DiffGroup
             groups.append(DiffGroup(
-                value_display=value,
+                value_display=value_display,  # STEP NEXT-91: Use prefixed value_display
                 insurers=insurer_list,
                 value_normalized=value_normalized,
-                insurer_details=insurer_details
+                insurer_details=insurer_details,
+                dimension_type=group_dimension_type  # STEP NEXT-91
             ))
 
-        # Build diff summary
+        # STEP NEXT-91: Build diff summary with mixed dimension handling
         if diff_result["status"] == "ALL_SAME":
             status = "ALL_SAME"
             diff_summary = None
@@ -421,33 +482,45 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
             if groups:
                 summary_bullets.append(f"공통 값: {groups[0].value_display}")
         else:
-            status = "DIFF"
-            diff_insurers = diff_result["diff_insurers"]
-
-            # Find minority group (different insurers)
-            if len(groups) >= 2:
-                # Sort by group size
-                sorted_groups = sorted(groups, key=lambda g: len(g.insurers))
-                minority_group = sorted_groups[0]
-
-                # Build diff summary: "A사가 다릅니다 (value)"
-                diff_insurer_names = ", ".join(minority_group.insurers)
-                diff_summary = f"{diff_insurer_names}가 다릅니다 ({minority_group.value_display})"
+            # STEP NEXT-91: Check if mixed dimension exists
+            if has_mixed_dimension:
+                status = "MIXED_DIMENSION"
+                diff_summary = None
+                summary_bullets = [
+                    "일부 보험사는 보장 '한도/횟수', 일부는 '보장금액' 기준으로 제공됩니다"
+                ]
             else:
-                diff_summary = f"{len(diff_insurers)}개 보험사의 {compare_field}가 다릅니다"
+                status = "DIFF"
+                diff_insurers = diff_result["diff_insurers"]
 
-            summary_bullets = [diff_summary]
+                # Find minority group (different insurers)
+                if len(groups) >= 2:
+                    # Sort by group size
+                    sorted_groups = sorted(groups, key=lambda g: len(g.insurers))
+                    minority_group = sorted_groups[0]
+
+                    # Build diff summary: "A사가 다릅니다 (value)"
+                    diff_insurer_names = ", ".join(minority_group.insurers)
+                    diff_summary = f"{diff_insurer_names}가 다릅니다 ({minority_group.value_display})"
+                else:
+                    diff_summary = f"{len(diff_insurers)}개 보험사의 {compare_field}가 다릅니다"
+
+                summary_bullets = [diff_summary]
 
         # STEP NEXT-89: Build title with proper view layer expression
+        # STEP NEXT-91: Use "보장 기준 차이" for mixed dimension
         safe_coverage_name = display_coverage_name(
             coverage_name=coverage_name,
             coverage_code=coverage_code
         )
         insurer_list_str = format_insurer_list(insurers)
 
-        # STEP NEXT-89: Format title based on insurer count (singular/plural)
+        # STEP NEXT-91: Format title based on mixed dimension status
         if len(insurers) >= 2:
-            title = f"{insurer_list_str}의 {safe_coverage_name} {compare_field} 차이"
+            if has_mixed_dimension:
+                title = f"{insurer_list_str}의 {safe_coverage_name} 보장 기준 차이"
+            else:
+                title = f"{insurer_list_str}의 {safe_coverage_name} {compare_field} 차이"
         else:
             title = f"{insurer_list_str}의 {safe_coverage_name} {compare_field} 확인"
 

@@ -364,7 +364,7 @@ class EX3CompareComposer:
         comparison_data: Dict[str, Any]
     ) -> str:
         """
-        Build bubble_markdown for central chat bubble (STEP NEXT-81B)
+        Build bubble_markdown for central chat bubble (STEP NEXT-82)
 
         Rules (Constitutional):
         - NO LLM usage (deterministic only)
@@ -372,12 +372,11 @@ class EX3CompareComposer:
         - NO coverage_code exposure (display_name is pre-sanitized)
         - Extract from KPI/comparison data only
 
-        Format:
-        1. 제목 (담보명, NO code)
-        2. 핵심 결론 (금액/지급유형/한도)
-        3. 주요 차이 (KPI condition)
-        4. 근거 안내
-        5. 주의사항
+        Format (LOCKED):
+        1. 핵심 요약 (선택 보험사, 비교 담보, 기준 문서)
+        2. 한눈에 보는 결론 (보장금액, 지급유형, 주요 차이)
+        3. 세부 비교 포인트 (보험사별 핵심 특징 1줄)
+        4. 유의사항 (약관 확인 안내)
 
         Args:
             insurers: List of insurer codes
@@ -388,13 +387,20 @@ class EX3CompareComposer:
         data1 = comparison_data.get(insurer1, {})
         data2 = comparison_data.get(insurer2, {})
 
-        # Section 1: Title
-        lines = [
-            f"# {insurer1} vs {insurer2} {display_name} 비교",
-            ""
-        ]
+        lines = []
 
-        # Section 2: Core conclusion (amount, payment type, limit)
+        # Section 1: 핵심 요약
+        lines.append("## 핵심 요약")
+        lines.append(f"- 선택한 보험사: {insurer1}, {insurer2}")
+        lines.append(f"- 비교 대상 담보: {display_name}")
+        lines.append("- 기준 문서: 가입설계서")
+        lines.append("")
+
+        # Section 2: 한눈에 보는 결론
+        lines.append("## 한눈에 보는 결론")
+        lines.append("")
+
+        # Extract data for comparison
         amount1 = data1.get("amount", "명시 없음")
         amount2 = data2.get("amount", "명시 없음")
         payment1 = data1.get("payment_type", "UNKNOWN")
@@ -402,77 +408,94 @@ class EX3CompareComposer:
 
         kpi1 = data1.get("kpi_summary", {}) or {}
         kpi2 = data2.get("kpi_summary", {}) or {}
-        limit1 = kpi1.get("limit_summary", "명시 없음")
-        limit2 = kpi2.get("limit_summary", "명시 없음")
+        limit1 = kpi1.get("limit_summary")
+        limit2 = kpi2.get("limit_summary")
 
-        lines.append("## 핵심 결론")
-        lines.append("")
-
-        # Amount comparison
+        # 보장금액 요약
         if amount1 == amount2:
-            lines.append(f"- **보장금액**: 동일 ({amount1})")
+            lines.append(f"- 보장금액: 공통 ({amount1})")
         else:
-            lines.append(f"- **보장금액**: 차이 있음 ({insurer1}: {amount1}, {insurer2}: {amount2})")
+            lines.append(f"- 보장금액: 상이 ({insurer1} {amount1}, {insurer2} {amount2})")
 
-        # Payment type
+        # 지급유형 요약
         payment1_display = "표현 없음" if payment1 == "UNKNOWN" else payment1
         payment2_display = "표현 없음" if payment2 == "UNKNOWN" else payment2
         if payment1 == payment2:
-            lines.append(f"- **지급유형**: 동일 ({payment1_display})")
+            lines.append(f"- 지급유형: {payment1_display}")
         else:
-            lines.append(f"- **지급유형**: 차이 있음 ({insurer1}: {payment1_display}, {insurer2}: {payment2_display})")
+            payment_summary = f"혼합 ({insurer1} {payment1_display}, {insurer2} {payment2_display})"
+            lines.append(f"- 지급유형: {payment_summary}")
 
-        # Limit summary
-        if limit1 == limit2:
-            lines.append(f"- **지급한도**: 동일 ({limit1})")
-        else:
-            lines.append(f"- **지급한도**: 차이 있음 ({insurer1}: {limit1}, {insurer2}: {limit2})")
-
-        lines.append("")
-
-        # Section 3: Major differences (KPI condition)
+        # 주요 차이 한 줄 요약
         cond1 = data1.get("kpi_condition", {}) or {}
         cond2 = data2.get("kpi_condition", {}) or {}
 
-        lines.append("## 주요 차이")
-        lines.append("")
+        diff_count = 0
+        diff_items = []
 
-        differences = []
+        # Check differences in conditions
+        if cond1.get("waiting_period") != cond2.get("waiting_period"):
+            diff_count += 1
+            diff_items.append("대기기간")
+        if cond1.get("reduction_condition") != cond2.get("reduction_condition"):
+            diff_count += 1
+            diff_items.append("감액조건")
+        if cond1.get("exclusion_condition") != cond2.get("exclusion_condition"):
+            diff_count += 1
+            diff_items.append("면책조건")
 
-        # Waiting period
-        wait1 = cond1.get("waiting_period")
-        wait2 = cond2.get("waiting_period")
-        if wait1 != wait2:
-            differences.append(f"- 대기기간: {insurer1} {wait1 or '명시 없음'}, {insurer2} {wait2 or '명시 없음'}")
-
-        # Reduction condition
-        red1 = cond1.get("reduction_condition")
-        red2 = cond2.get("reduction_condition")
-        if red1 != red2:
-            differences.append(f"- 감액조건: {insurer1} {red1 or '명시 없음'}, {insurer2} {red2 or '명시 없음'}")
-
-        # Exclusion condition
-        exc1 = cond1.get("exclusion_condition")
-        exc2 = cond2.get("exclusion_condition")
-        if exc1 != exc2:
-            differences.append(f"- 면책조건: {insurer1} {exc1 or '명시 없음'}, {insurer2} {exc2 or '명시 없음'}")
-
-        if differences:
-            lines.extend(differences)
+        if diff_count > 0:
+            diff_summary = ", ".join(diff_items[:2])  # Max 2 items for brevity
+            if diff_count > 2:
+                diff_summary += " 등"
+            lines.append(f"- 주요 차이: 있음 ({diff_summary} 차이 확인)")
         else:
-            lines.append("주요 조건 차이: 확인된 차이 없음")
+            lines.append("- 주요 차이: 없음 (동일 조건)")
 
         lines.append("")
 
-        # Section 4: Evidence guide
-        lines.append("## 근거 확인")
-        lines.append("")
-        lines.append("상세 근거는 **[보장내용 보기]** 버튼 및 **ⓘ 아이콘**에서 확인하실 수 있습니다.")
+        # Section 3: 세부 비교 포인트
+        lines.append("## 세부 비교 포인트")
         lines.append("")
 
-        # Section 5: Caution
-        lines.append("## 주의사항")
+        # Build insurer1 summary
+        features1 = []
+        if amount1 != "명시 없음":
+            features1.append(f"보장금액 {amount1}")
+        if payment1 != "UNKNOWN":
+            features1.append(payment1)
+        if limit1:
+            features1.append(limit1)
+        elif kpi1 and not limit1 and payment1 == "UNKNOWN":
+            features1.append("기본 보장")
+
+        if features1:
+            lines.append(f"- {insurer1}: {', '.join(features1[:3])}")  # Max 3 features
+        else:
+            lines.append(f"- {insurer1}: 가입설계서 기준 보장")
+
+        # Build insurer2 summary
+        features2 = []
+        if amount2 != "명시 없음":
+            features2.append(f"보장금액 {amount2}")
+        if payment2 != "UNKNOWN":
+            features2.append(payment2)
+        if limit2:
+            features2.append(limit2)
+        elif kpi2 and not limit2 and payment2 == "UNKNOWN":
+            features2.append("기본 보장")
+
+        if features2:
+            lines.append(f"- {insurer2}: {', '.join(features2[:3])}")  # Max 3 features
+        else:
+            lines.append(f"- {insurer2}: 가입설계서 기준 보장")
+
         lines.append("")
-        lines.append("본 비교는 가입설계서 및 근거 문서의 표현을 기준으로 하며, 정확한 보장 내용은 원문 확인이 필요합니다.")
+
+        # Section 4: 유의사항
+        lines.append("## 유의사항")
+        lines.append("")
+        lines.append("- 실제 지급 조건은 상품별 약관 및 가입 조건에 따라 달라질 수 있습니다.")
+        lines.append("- 아래 표에서 상세 비교 및 근거 문서를 확인하세요.")
 
         return "\n".join(lines)

@@ -36,10 +36,14 @@ class CoverageLimitComparer:
         self.templates = DeterministicTemplates()
 
     def load_coverage_cards(self, insurer: str) -> List[Dict[str, Any]]:
-        """Load coverage cards (SSOT)"""
-        cards_file = self.cards_dir / f"{insurer}_coverage_cards.jsonl"
+        """Load coverage cards (SSOT - STEP NEXT-72: slim cards)"""
+        # STEP NEXT-72: Load from slim cards (NOT full cards)
+        cards_file = self.cards_dir / f"{insurer}_coverage_cards_slim.jsonl"
         if not cards_file.exists():
-            return []
+            # Fallback to full cards (legacy)
+            cards_file = self.cards_dir / f"{insurer}_coverage_cards.jsonl"
+            if not cards_file.exists():
+                return []
 
         cards = []
         with open(cards_file, 'r', encoding='utf-8') as f:
