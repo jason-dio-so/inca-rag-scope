@@ -218,33 +218,77 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
                     )
                 evidences = card.get("evidences", [])
                 proposal_facts = card.get("proposal_facts", {}) or {}
+                kpi_summary = card.get("kpi_summary", {}) or {}
+                refs_data = card.get("refs", {}) or {}
 
-                # Extract field value based on compare_field
+                # STEP NEXT-90: Extract field value with Policy A (limit fallback to amount)
                 if compare_field == "보장한도":
-                    value = comparer.extract_limit(evidences)
+                    # Priority 1: KPI limit_summary
+                    limit_summary = kpi_summary.get("limit_summary")
+
+                    if limit_summary:
+                        value = limit_summary
+                        # Use kpi_evidence_refs, fallback to proposal_detail_ref
+                        value_refs = kpi_summary.get("kpi_evidence_refs", [])
+                        if not value_refs:
+                            pd_ref = refs_data.get("proposal_detail_ref")
+                            value_refs = [pd_ref] if pd_ref else []
+                    else:
+                        # Priority 2: Fallback to coverage_amount_text
+                        amount_text = proposal_facts.get("coverage_amount_text")
+
+                        if amount_text:
+                            value = amount_text
+                            # Use proposal_detail_ref, generate if missing
+                            pd_ref = refs_data.get("proposal_detail_ref")
+                            if not pd_ref:
+                                pd_ref = f"PD:{insurer}:{coverage_code}"
+                            value_refs = [pd_ref]
+                        else:
+                            value = None
+                            # Even for "명시 없음", provide PD ref
+                            pd_ref = refs_data.get("proposal_detail_ref")
+                            if not pd_ref:
+                                pd_ref = f"PD:{insurer}:{coverage_code}"
+                            value_refs = [pd_ref]
+
                 elif compare_field == "보장금액":
                     value = proposal_facts.get("coverage_amount_text") or comparer.extract_amount(evidences)
+                    value_refs = []
                 elif compare_field == "지급유형":
                     value = comparer.extract_payment_type(evidences)
+                    value_refs = []
                 elif compare_field == "조건":
                     value = comparer.extract_conditions(evidences)
+                    value_refs = []
                 else:
                     value = None
+                    value_refs = []
 
                 # Normalize invalid values (e.g., section numbers like "4-1", "3-2-1")
                 if value and self._is_section_number(value):
                     value = None
+                    # If value was invalid, ensure we still have refs
+                    if not value_refs:
+                        pd_ref = refs_data.get("proposal_detail_ref")
+                        if not pd_ref:
+                            pd_ref = f"PD:{insurer}:{coverage_code}"
+                        value_refs = [pd_ref]
 
+                # STEP NEXT-90: Store value + refs for evidence traceability
                 coverage_data.append({
                     "insurer": insurer,
                     "value": value or "명시 없음",
-                    "coverage_code": coverage_code
+                    "coverage_code": coverage_code,
+                    "value_refs": value_refs  # NEW: Store refs for this value
                 })
             else:
+                # STEP NEXT-90: Even for missing coverage, provide minimal ref for traceability
                 coverage_data.append({
                     "insurer": insurer,
                     "value": "담보 미존재",
-                    "coverage_code": coverage_code
+                    "coverage_code": coverage_code,
+                    "value_refs": []  # No refs for missing coverage
                 })
 
         # Run diff filter
@@ -254,19 +298,22 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
         groups = []
         value_to_data = {}
 
-        # Group insurers by value (with full card data)
+        # Group insurers by value (with full card data + refs)
         for item in coverage_data:
             value = item["value"]
             insurer = item["insurer"]
+            value_refs = item.get("value_refs", [])  # STEP NEXT-90: Get stored refs
 
             if value not in value_to_data:
                 value_to_data[value] = {
                     "insurers": [],
-                    "cards": []
+                    "cards": [],
+                    "value_refs_by_insurer": {}  # STEP NEXT-90: Store refs per insurer
                 }
 
             value_to_data[value]["insurers"].append(insurer)
             value_to_data[value]["cards"].append(insurer_cards.get(insurer))
+            value_to_data[value]["value_refs_by_insurer"][insurer] = value_refs  # STEP NEXT-90
 
         # Convert to enriched DiffGroup list
         extraction_notes = []
@@ -274,6 +321,7 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
         for value, data in value_to_data.items():
             insurer_list = data["insurers"]
             cards = data["cards"]
+            value_refs_by_insurer = data["value_refs_by_insurer"]  # STEP NEXT-90
 
             # Normalize field values for this group
             value_normalized = None
@@ -281,11 +329,21 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
 
             for idx, insurer in enumerate(insurer_list):
                 card = cards[idx]
+                # STEP NEXT-90: Get pre-computed refs for this insurer
+                stored_refs = value_refs_by_insurer.get(insurer, [])
+
                 if card:
                     evidences = card.get("evidences", [])
 
-                    # Normalize field (use normalize_fields module)
-                    if compare_field == "보장한도":
+                    # STEP NEXT-90: Use stored refs instead of re-extracting
+                    # For "보장한도", we already computed refs in the first pass
+                    if compare_field == "보장한도" and stored_refs:
+                        # Use stored refs (from kpi_summary or proposal_facts)
+                        raw_text = value
+                        # Convert string refs (PD:/EV:) to dict format for InsurerDetail
+                        evidence_refs = [{"ref": ref} for ref in stored_refs if ref]
+                    elif compare_field == "보장한도":
+                        # Fallback: Normalize from evidences (should rarely happen)
                         normalized = LimitNormalizer.normalize(evidences)
                         value_normalized = normalized.to_dict() if not value_normalized else value_normalized
                         raw_text = normalized.raw_text
@@ -319,11 +377,17 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
                             notes.append("관련 근거 발견되었으나 명시적 패턴 미검출")
                         else:
                             notes.append("근거 자료 없음")
+                    # STEP NEXT-90: Add note if using amount fallback
+                    elif compare_field == "보장한도" and stored_refs and any("PD:" in ref for ref in stored_refs if isinstance(ref, str)):
+                        # Check if this is an amount fallback (PD ref from proposal_facts)
+                        card_kpi_summary = card.get("kpi_summary", {}) or {}
+                        if not card_kpi_summary.get("limit_summary"):
+                            notes.append("보장한도 정보 없음, 보장금액 표시")
 
                     insurer_details.append(InsurerDetail(
                         insurer=insurer,
                         raw_text=raw_text or value,
-                        evidence_refs=evidence_refs,
+                        evidence_refs=evidence_refs if isinstance(evidence_refs, list) else [evidence_refs],
                         notes=notes if notes else None
                     ))
                 else:

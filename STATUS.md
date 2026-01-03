@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-03
-**현재 상태**: ✅ **EX2_DETAIL_DIFF Code Exposure Lock** (STEP NEXT-89: 0% coverage_code 노출 보장)
+**현재 상태**: ✅ **EX2_DETAIL_DIFF Refs + Limit Definition Lock** (STEP NEXT-90: Policy A + 근거 강제)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ EX2_DETAIL_DIFF Refs + Limit Definition Lock** | STEP NEXT-90 | ✅ 완료 | 2026-01-03 |
 | **✅ EX2_DETAIL_DIFF Code Exposure Lock** | STEP NEXT-89 | ✅ 완료 | 2026-01-03 |
 | **✅ EX2_LIMIT_FIND View Layer Lock** | STEP NEXT-88 | ✅ 완료 | 2026-01-03 |
 | **✅ EX2_LIMIT_FIND Content Lock** | STEP NEXT-87C | ✅ 완료 | 2026-01-03 |
@@ -78,6 +79,82 @@
 ---
 
 ## 🎯 최신 진행 항목 (2026-01-03)
+
+### STEP NEXT-90 — EX2_DETAIL_DIFF Refs Enforcement + Limit Definition Lock (Policy A) ✅ **COMPLETE**
+
+**목표**: "보장한도=명시 없음" 문제 해결 + 모든 응답에 최소 1개 refs 보장
+
+**문제 정의**:
+- Samsung A4200_1: `kpi_summary.limit_summary = "보험기간 중 1회"` → 정상 표시
+- Meritz A4200_1: `kpi_summary.limit_summary = null` → "명시 없음" (하지만 `amount = "3천만원"` 존재)
+- 사용자 기대: "보장한도"는 금액(3,000만원)을 의미하는 경우가 많음
+- Refs 부재: 일부 응답에서 `evidence_refs = []` → 검증 불가능
+
+**Policy A (User-Aligned)**: "보장한도" = limit_summary (우선) OR amount (fallback)
+
+**헌법 규칙 (Constitutional Rules)**:
+- ❌ **FORBIDDEN**: evidence_refs = [] (empty array) 금지
+- ❌ **FORBIDDEN**: 자유 텍스트 refs ("가입설계서(보장내용)") 금지
+- ✅ **REQUIRED**: ALL values MUST have minimum 1 ref (PD: or EV:)
+- ✅ **REQUIRED**: "보장한도" extraction priority:
+  1. `kpi_summary.limit_summary` (e.g., "보험기간 중 1회")
+  2. `proposal_facts.coverage_amount_text` (e.g., "3,000만원") if limit is null
+  3. "명시 없음" + PD ref if both are null
+
+**변경 사항**:
+1. **Handler (chat_handlers_deterministic.py:224-284)**:
+   - "보장한도" 추출 로직: kpi_summary → amount fallback
+   - value_refs 저장 및 전파 (coverage_data → insurer_details)
+   - "보장한도 정보 없음, 보장금액 표시" note 추가 (fallback 케이스)
+   - 섹션 번호("4-1") 같은 invalid value도 PD ref 보장
+
+2. **SSOT Doc (docs/ui/STEP_NEXT_90_EX2_LIMIT_DEFINITION_LOCK.md)** ✅ NEW:
+   - Policy A 정의 및 구현 규칙
+   - Refs 우선순위 및 보장 규칙
+   - 금지 사항 및 계약 테스트
+
+3. **Contract Test (tests/test_ex2_detail_diff_refs_and_limit_definition.py)** ✅ NEW:
+   - `test_limit_uses_kpi_summary_when_available`: Samsung uses limit_summary
+   - `test_limit_fallback_to_amount_when_no_limit_summary`: Meritz uses amount
+   - `test_samsung_vs_meritz_shows_diff`: DIFF status (limit vs amount)
+   - `test_all_groups_have_minimum_one_ref`: 모든 그룹 최소 1개 ref
+   - `test_no_coverage_code_in_view_fields`: Regression (STEP NEXT-89)
+
+**검증 결과**:
+```json
+{
+  "status": "DIFF",
+  "groups": [
+    {
+      "value_display": "보험기간 중 1회",
+      "insurers": ["samsung"],
+      "evidence_refs": [{"ref": "PD:samsung:A4200_1"}]
+    },
+    {
+      "value_display": "3천만원",
+      "insurers": ["meritz"],
+      "evidence_refs": [{"ref": "PD:meritz:A4200_1"}],
+      "notes": ["보장한도 정보 없음, 보장금액 표시"]
+    }
+  ]
+}
+```
+
+- ✅ Samsung: "보험기간 중 1회" (from limit_summary) + PD ref
+- ✅ Meritz: "3천만원" (from amount fallback) + PD ref + note
+- ✅ Status: DIFF (limit vs amount shown as different)
+- ✅ Refs: 100% coverage (no empty arrays)
+- ✅ Contract test: 5/5 PASS
+- ✅ Regression: STEP NEXT-89/88 all PASS (16/16)
+
+**DoD (Definition of Done)**:
+- ✅ "보장한도" 정의 LOCKED (SSOT 문서 + 코드 + 테스트)
+- ✅ 삼성/메리츠 암진단비: refs 최소 1개 이상 확보
+- ✅ Coverage_code UI 노출 0% (view fields only)
+- ✅ Pytest 5개 계약 테스트 PASS
+- ✅ STATUS.md + docs/ 업데이트 완료
+
+---
 
 ### STEP NEXT-89 — EX2_DETAIL_DIFF Code Exposure Lock (title/summary/sections 전면 차단) ✅ **COMPLETE**
 
