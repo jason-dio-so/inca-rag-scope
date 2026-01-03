@@ -49,7 +49,7 @@ def test_case_a_amount_first_in_kpi_summary():
     }
 
     bubble = EX2DetailComposer._build_bubble_markdown(
-        insurer="samsung",
+        insurer_display="삼성화재",  # STEP NEXT-103: Changed from insurer code to display name
         display_name="암진단비(유사암 제외)",
         card_data=card_data
     )
@@ -100,7 +100,7 @@ def test_case_b_no_amount_fallback_to_original():
     }
 
     bubble = EX2DetailComposer._build_bubble_markdown(
-        insurer="samsung",
+        insurer_display="삼성화재",  # STEP NEXT-103
         display_name="입원일당",
         card_data=card_data
     )
@@ -130,7 +130,7 @@ def test_case_b_none_amount_fallback():
     }
 
     bubble = EX2DetailComposer._build_bubble_markdown(
-        insurer="samsung",
+        insurer_display="삼성화재",  # STEP NEXT-103
         display_name="기타담보",
         card_data=card_data
     )
@@ -161,7 +161,7 @@ def test_case_c_no_coverage_code_exposure():
     }
 
     bubble = EX2DetailComposer._build_bubble_markdown(
-        insurer="samsung",
+        insurer_display="삼성화재",  # STEP NEXT-103
         display_name="암진단비",
         card_data=card_data
     )
@@ -195,7 +195,7 @@ def test_case_c_no_raw_text_in_bubble():
     }
 
     bubble = EX2DetailComposer._build_bubble_markdown(
-        insurer="meritz",
+        insurer_display="메리츠화재",  # STEP NEXT-103
         display_name="뇌출혈진단비",
         card_data=card_data
     )
@@ -224,13 +224,13 @@ def test_case_c_deterministic_only_no_llm():
 
     # Same input → same output (deterministic)
     bubble1 = EX2DetailComposer._build_bubble_markdown(
-        insurer="kb",
+        insurer_display="KB손해보험",  # STEP NEXT-103
         display_name="급성심근경색진단비",
         card_data=card_data
     )
 
     bubble2 = EX2DetailComposer._build_bubble_markdown(
-        insurer="kb",
+        insurer_display="KB손해보험",  # STEP NEXT-103
         display_name="급성심근경색진단비",
         card_data=card_data
     )
@@ -253,7 +253,7 @@ def test_case_c_payment_type_translation():
     }
 
     bubble = EX2DetailComposer._build_bubble_markdown(
-        insurer="hanwha",
+        insurer_display="한화손해보험",  # STEP NEXT-103
         display_name="상해사망급여금",
         card_data=card_data
     )
@@ -290,7 +290,7 @@ def test_full_compose_with_amount_first():
     }
 
     result = EX2DetailComposer.compose(
-        insurer="samsung",
+        insurer="samsung",  # STEP NEXT-103: compose() uses insurer code, not display name
         coverage_code="A4200_1",
         card_data=card_data,
         coverage_name="암진단비(유사암 제외)"
@@ -299,8 +299,9 @@ def test_full_compose_with_amount_first():
     # ✅ Message kind
     assert result["kind"] == "EX2_DETAIL"
 
-    # ✅ Title
-    assert "samsung" in result["title"]
+    # ✅ Title uses display name (STEP NEXT-103)
+    assert "삼성화재" in result["title"]
+    assert "samsung" not in result["title"].lower()  # NO code exposure
     assert "암진단비" in result["title"]
     assert "설명" in result["title"]
 

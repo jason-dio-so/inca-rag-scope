@@ -246,12 +246,13 @@ class EX2DetailComposer:
         lines.append("## 근거 자료\n")
         lines.append("상세 근거는 \"근거 보기\" 링크를 클릭하시면 확인하실 수 있습니다.\n")
 
-        # STEP NEXT-98: Question Continuity Hints (설명 → 탐색 연결)
-        # STEP NEXT-103: Use insurer_display instead of code
+        # STEP NEXT-98/104: Question Continuity Hints (Demo Flow LOCK)
+        # STEP NEXT-104: Fixed demo flow hints (NO dynamic text)
+        # Flow: EX2_DETAIL (설명) → 메리츠는? (전환) → LIMIT_FIND (탐색)
         lines.append("---")
         lines.append("🔎 **다음으로 이런 질문도 해볼 수 있어요**\n")
-        lines.append(f"- {insurer_display}와 다른 보험사의 **{display_name} 보장한도 차이**")
-        lines.append(f"- {display_name.split('(')[0].strip()} 관련 다른 담보 중 **보장한도가 다른 상품**")
+        lines.append("- 메리츠는?")
+        lines.append("- 암직접입원비 담보 중 보장한도가 다른 상품 찾아줘")
 
         markdown = "\n".join(lines)
 

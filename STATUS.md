@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-03
-**현재 상태**: ✅ **EX2 Insurer Switch Payload Override + Display Name Lock** (STEP NEXT-103: 메리츠는? 즉시 전환 + 표시명 고정)
+**현재 상태**: ✅ **EX2_DETAIL Followup Hints Demo Flow Lock** (STEP NEXT-104: 후속 질문 힌트 데모 플로우 고정)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ EX2_DETAIL Followup Hints Demo Flow Lock** | STEP NEXT-104 | ✅ 완료 | 2026-01-03 |
 | **✅ EX2 Insurer Switch Payload Override + Display Name Lock** | STEP NEXT-103 | ✅ 완료 | 2026-01-03 |
 | **✅ EX2 Context Continuity Lock** | STEP NEXT-102 | ✅ 완료 | 2026-01-03 |
 | **✅ EX2 Context Carryover** | STEP NEXT-101 | ✅ 완료 | 2026-01-03 |

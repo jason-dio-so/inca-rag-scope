@@ -322,6 +322,28 @@ Rules:
 - **Definition of Success**:
   > "고객 데모에서 '메리츠는?'를 입력하면 즉시 메리츠 데이터로 전환되고, 응답 타이틀에 '메리츠화재'가 표시된다. 추가 설명 없이 자연스럽다."
 
+### STEP NEXT-104: EX2_DETAIL Followup Hints Demo Flow Lock
+
+- **Modified Files**: `apps/api/response_composers/ex2_detail_composer.py` (followup hints)
+- **Root Cause**: Dynamic hints (삼성화재와 다른... / {담보명} 관련 다른...) caused inconsistent demo experience
+- **Fix**: LOCK followup hints to fixed demo flow (2 hints, always the same)
+  - Hint 1: "메리츠는?" (insurer switch demo)
+  - Hint 2: "암직접입원비 담보 중 보장한도가 다른 상품 찾아줘" (LIMIT_FIND demo)
+- **Rules**:
+  - ❌ NO dynamic text (hints are FIXED, not based on insurer/coverage_name)
+  - ❌ NO auto-execute / NO buttons (text-only hints)
+  - ❌ NO placeholders (e.g., {담보명}) — hints must be copy-paste ready
+  - ❌ NO insurer codes (samsung, meritz) in hints
+  - ✅ Exactly 2 hints (always the same)
+  - ✅ Hints guide demo flow: EX2_DETAIL (설명) → 메리츠는? (전환) → LIMIT_FIND (탐색)
+  - ✅ Deterministic only (NO LLM)
+- **Contract Tests**:
+  - `tests/test_step_next_104_ex2_detail_followup_hints.py` (8 tests, all PASS)
+  - Regression: `tests/test_ex2_bubble_contract.py` (7 tests, all PASS)
+  - Regression: `tests/test_step_next_96_customer_first_order.py` (8 tests, all PASS)
+- **Definition of Success**:
+  > "EX2_DETAIL 응답 하단 힌트가 항상 '메리츠는?' / '암직접입원비 담보 중 보장한도가 다른 상품 찾아줘' 2줄로 고정된다. 고객이 그대로 복사해서 질문하면 데모 플로우가 자연스럽게 이어진다."
+
 ❌ Do NOT assume PostgreSQL as SSOT
 ❌ DB connection errors are out-of-scope
 
