@@ -132,12 +132,16 @@ def test_limit_fallback_to_amount_when_no_limit_summary():
 
 def test_samsung_vs_meritz_shows_diff():
     """
-    STEP NEXT-90: Samsung (limit) vs Meritz (amount) should show DIFF status
+    STEP NEXT-91: Samsung (limit) vs Meritz (amount) should show MIXED_DIMENSION status
 
-    Samsung: "보험기간 중 1회" (from limit_summary)
-    Meritz: "3천만원" (from amount fallback)
+    Samsung: "보험기간 중 1회" (from limit_summary) → LIMIT dimension
+    Meritz: "3천만원" (from amount fallback) → AMOUNT dimension
 
-    Expected: status=DIFF, 2 groups
+    Expected: status=MIXED_DIMENSION, 2 groups (different dimension types)
+
+    Update: STEP NEXT-90 → STEP NEXT-91
+    - When one insurer has LIMIT and another has AMOUNT, status is MIXED_DIMENSION (not DIFF)
+    - This is correct behavior introduced in STEP NEXT-91
     """
     handler = Example2DiffHandlerDeterministic()
 
@@ -156,10 +160,10 @@ def test_samsung_vs_meritz_shows_diff():
 
     response = handler.execute(compiled_query, request)
 
-    # Check diff status
+    # Check diff status (STEP NEXT-91: MIXED_DIMENSION is correct)
     diff_section = response.sections[0]
-    assert diff_section.status == "DIFF", (
-        f"Samsung (limit) vs Meritz (amount) should be DIFF, got: {diff_section.status}"
+    assert diff_section.status == "MIXED_DIMENSION", (
+        f"Samsung (limit) vs Meritz (amount) should be MIXED_DIMENSION, got: {diff_section.status}"
     )
 
     # Should have 2 groups

@@ -167,84 +167,73 @@ class EX2DetailComposer:
         card_data: Dict[str, Any]
     ) -> str:
         """
-        Build 4-section bubble_markdown (STEP NEXT-86, STEP NEXT-103)
+        Build bubble_markdown (STEP NEXT-113: ChatGPT conversational UX)
 
-        Sections:
-        1. 핵심 요약
-        2. 보장 요약 (KPI Summary)
-        3. 조건 요약 (KPI Condition)
-        4. 근거 안내
+        STEP NEXT-113 REDESIGN:
+        - Left bubble = Conversational summary ONLY (lightweight, 2-3 sentences max)
+        - Right panel = All detailed info (tables, conditions, evidence)
+        - NO duplication between bubble and sections
+        - NO tables/lists/conditions in bubble
+        - Feels like "conversation start", NOT a document
+
+        Structure (LOCKED):
+        - Product Header (보험사 · 담보명 · 기준)
+        - Core explanation (1-2 sentences, what this coverage is)
+        - Key characteristic (1 sentence, how it works)
+        - Condition note (1 sentence, "조건이 적용됩니다" - NO specifics)
+        - Question hints (demo flow LOCK)
 
         STEP NEXT-103: insurer_display is display name (e.g., "삼성화재"), NOT code
+        STEP NEXT-110A: Product header at top (without product_name data)
 
         Returns:
             Markdown string (NO raw text, refs only)
         """
         lines = []
 
-        # Section 1: 핵심 요약
-        lines.append("## 핵심 요약\n")
-        lines.append(f"- **보험사**: {insurer_display}")
-        lines.append(f"- **담보명**: {display_name}")
-        lines.append("- **데이터 기준**: 가입설계서\n")
+        # STEP NEXT-110A: Product Header (fixed at top, marked for frontend styling)
+        lines.append("<!-- PRODUCT_HEADER -->")
+        lines.append(f"**{insurer_display}**")
+        lines.append(f"**{display_name}**")
+        lines.append("_기준: 가입설계서_\n")
+        lines.append("---")
+        lines.append("<!-- /PRODUCT_HEADER -->\n")
 
-        # Section 2: 보장 요약 (KPI Summary)
-        # STEP NEXT-96: Customer-first ordering (보장금액 최우선)
-        lines.append("## 보장 요약\n")
+        # STEP NEXT-113: Conversational summary (lightweight ONLY)
+        # Build 2-3 sentence summary based on available data
         kpi_summary = card_data.get("kpi_summary", {})
-
-        # STEP NEXT-96: Extract 보장금액 from card_data.amount (proposal_facts)
-        amount = card_data.get("amount")  # e.g., "3000만원"
-
-        limit_summary = kpi_summary.get("limit_summary") or "표현 없음"
-        payment_type_raw = kpi_summary.get("payment_type") or "표현 없음"
-        payment_type = EX2DetailComposer._translate_payment_type(payment_type_raw)
-        kpi_refs = kpi_summary.get("kpi_evidence_refs", [])
-
-        # STEP NEXT-96: 보장금액 우선 표시 (있을 경우)
-        if amount and amount != "명시 없음":
-            lines.append(f"- **보장금액**: {amount}")
-            lines.append(f"  · 지급 조건: {display_name} 해당 시")
-
-        # 보장한도 (횟수/기간 제한)
-        lines.append(f"- **보장한도**: {limit_summary}")
-
-        # 지급유형
-        lines.append(f"- **지급유형**: {payment_type}")
-
-        if kpi_refs:
-            ref_str = kpi_refs[0]  # Use first ref
-            lines.append(f"- **근거**: [근거 보기]({ref_str})\n")
-        else:
-            lines.append("- **근거**: 표현 없음\n")
-
-        # Section 3: 조건 요약 (KPI Condition)
-        lines.append("## 조건 요약\n")
         kpi_condition = card_data.get("kpi_condition", {})
 
-        reduction = kpi_condition.get("reduction_condition") or "근거 없음"
-        waiting = kpi_condition.get("waiting_period") or "근거 없음"
-        exclusion = kpi_condition.get("exclusion_condition") or "근거 없음"
-        renewal = kpi_condition.get("renewal_condition") or "근거 없음"
-        condition_refs = kpi_condition.get("condition_evidence_refs", [])
+        # Extract key info for conversational summary
+        amount = card_data.get("amount")  # e.g., "3000만원"
+        payment_type_raw = kpi_summary.get("payment_type") or "UNKNOWN"
+        payment_type_kr = EX2DetailComposer._translate_payment_type(payment_type_raw)
 
-        lines.append(f"- **감액**: {reduction}")
-        if condition_refs and len(condition_refs) > 0:
-            lines[-1] += f" ([근거 보기]({condition_refs[0]}))"
+        # Sentence 1: What this coverage is (보장 정의)
+        lines.append(f"이 담보는 {display_name}에 해당할 때 보장합니다.\n")
 
-        lines.append(f"- **대기기간**: {waiting}")
-        if condition_refs and len(condition_refs) > 1:
-            lines[-1] += f" ([근거 보기]({condition_refs[1]}))"
+        # Sentence 2: How it works (핵심 특징)
+        if amount and amount != "명시 없음":
+            lines.append(f"정액으로 {amount}을 지급하는 방식입니다.\n")
+        elif payment_type_kr != "표현 없음":
+            lines.append(f"{payment_type_kr} 방식으로 보장이 이루어집니다.\n")
+        else:
+            lines.append("보장 방식은 가입설계서를 참고하시면 됩니다.\n")
 
-        lines.append(f"- **면책**: {exclusion}")
-        if condition_refs and len(condition_refs) > 2:
-            lines[-1] += f" ([근거 보기]({condition_refs[2]}))"
+        # Sentence 3: Condition note (일반적 안내, NO specifics)
+        has_reduction = kpi_condition.get("reduction_condition") and kpi_condition.get("reduction_condition") != "근거 없음"
+        has_waiting = kpi_condition.get("waiting_period") and kpi_condition.get("waiting_period") != "근거 없음"
+        has_exclusion = kpi_condition.get("exclusion_condition") and kpi_condition.get("exclusion_condition") != "근거 없음"
 
-        lines.append(f"- **갱신**: {renewal}\n")
+        if has_reduction or has_waiting or has_exclusion:
+            lines.append("→ 감액, 대기기간 등 주요 조건이 적용됩니다.\n")
+        else:
+            lines.append("→ 상세 조건은 오른쪽 패널에서 확인하실 수 있습니다.\n")
 
-        # Section 4: 근거 안내
-        lines.append("## 근거 자료\n")
-        lines.append("상세 근거는 \"근거 보기\" 링크를 클릭하시면 확인하실 수 있습니다.\n")
+        # STEP NEXT-115: Comparison transition line (EX2 → EX3 flow)
+        # This line naturally guides users toward comparison without recommendation
+        lines.append(f"같은 {display_name}라도 보험사마다 '보장을 정의하는 기준'이 달라,")
+        lines.append("비교해 보면 구조 차이가 더 분명해집니다.\n")
 
         # STEP NEXT-98/104: Question Continuity Hints (Demo Flow LOCK)
         # STEP NEXT-104: Fixed demo flow hints (NO dynamic text)
@@ -266,6 +255,10 @@ class EX2DetailComposer:
         """
         Build KPI Summary section (보장 요약)
 
+        STEP NEXT-113: Right panel = drill-down ONLY
+        - All detailed info (amounts, limits, payment types)
+        - STEP NEXT-96: Customer-first ordering (보장금액 first)
+
         Returns:
             CommonNotesSection dict or None
         """
@@ -275,15 +268,23 @@ class EX2DetailComposer:
 
         bullets = []
 
+        # STEP NEXT-96/113: 보장금액 최우선 (customer-first)
+        amount = card_data.get("amount")  # e.g., "3000만원"
+        if amount and amount != "명시 없음":
+            bullets.append(f"보장금액: {amount}")
+
+        # 보장한도 (횟수/기간 제한)
         limit_summary = kpi_summary.get("limit_summary")
         if limit_summary:
             bullets.append(f"보장한도: {limit_summary}")
 
+        # 지급유형
         payment_type_raw = kpi_summary.get("payment_type")
         if payment_type_raw:
             payment_type = EX2DetailComposer._translate_payment_type(payment_type_raw)
             bullets.append(f"지급유형: {payment_type}")
 
+        # 근거 (for drill-down)
         kpi_refs = kpi_summary.get("kpi_evidence_refs", [])
         if kpi_refs:
             ref_str = ", ".join(kpi_refs)

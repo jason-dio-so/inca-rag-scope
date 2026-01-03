@@ -1,25 +1,22 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import { Message, Insurer, MessageKind } from "@/lib/types";
+import { useRef, useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Message, Insurer } from "@/lib/types";
 
 interface ChatPanelProps {
   messages: Message[];
   input: string;
   onInputChange: (value: string) => void;
   onSend: () => void;
-  onSendWithKind?: (
-    kind: MessageKind,
-    messageOverride?: string,
-    insurersOverride?: string[],
-    coverageNamesOverride?: string[]
-  ) => void;  // STEP NEXT-80-FE: Send with explicit kind + overrides
   isLoading: boolean;
   selectedInsurers: string[];
   availableInsurers: Insurer[];
   onInsurerToggle: (code: string) => void;
   coverageInput: string;
   onCoverageChange: (value: string) => void;
+  coverageInputDisabled?: boolean;  // STEP NEXT-106: Disable during LIMIT_FIND clarification
 }
 
 export default function ChatPanel({
@@ -27,20 +24,26 @@ export default function ChatPanel({
   input,
   onInputChange,
   onSend,
-  onSendWithKind,
   isLoading,
   selectedInsurers,
   availableInsurers,
   onInsurerToggle,
   coverageInput,
   onCoverageChange,
+  coverageInputDisabled = false,  // STEP NEXT-106: Default to enabled
 }: ChatPanelProps) {
   // STEP NEXT-97: Auto-scroll management
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // STEP NEXT-97: Conversation context lock (conversation is active after first message)
+  // STEP NEXT-97/114: Conversation context lock (conversation is active after first message)
   const conversationActive = messages.length > 0;
+
+  // STEP NEXT-114: Initial state flag (before any messages)
+  const isInitialState = messages.length === 0;
+
+  // STEP NEXT-108: Collapsible options panel (ChatGPT style)
+  const [isOptionsExpanded, setIsOptionsExpanded] = useState(false);
 
   // STEP NEXT-97: Auto-scroll to bottom when new message arrives (only if user is near bottom)
   useEffect(() => {
@@ -66,116 +69,45 @@ export default function ChatPanel({
     }
   };
 
-  // STEP NEXT-80-FE: Example button handlers with explicit kind + message + slots
-  const handleExampleClick = (
-    kind: MessageKind,
-    defaultPrompt: string,
-    insurers?: string[],
-    coverageNames?: string[]
-  ) => {
-    console.log(`[ChatPanel] Example button clicked:`, {
-      kind,
-      prompt: defaultPrompt,
-      insurers,
-      coverageNames
-    });
-    if (onSendWithKind) {
-      console.log(`[ChatPanel] Calling onSendWithKind`);
-      // CRITICAL: Pass all overrides directly to avoid React state timing issues
-      onSendWithKind(kind, defaultPrompt, insurers, coverageNames);
-    } else {
-      onInputChange(defaultPrompt);
-      onSend();
-    }
-  };
-
   return (
     <div className="flex flex-col h-full">
       {/* Messages area */}
       <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
-          <div className="text-center text-gray-500 mt-8">
-            <p className="text-lg font-medium">보험 상품 비교 도우미</p>
-            <p className="text-sm mt-2">
-              질문을 입력하세요
-            </p>
-
-            {/* STEP NEXT-80-FE: Example buttons with explicit kind + slots */}
-            <div className="mt-6 max-w-2xl mx-auto">
-              <p className="text-sm font-medium text-gray-700 mb-3">빠른 시작</p>
-              <div className="grid grid-cols-2 gap-3">
-                {/* STEP NEXT-86: EX2_DETAIL - 단일 보험사 설명 */}
-                <button
-                  onClick={() => handleExampleClick(
-                    "EX2_DETAIL",
-                    "삼성화재 암진단비 설명해주세요",
-                    ["samsung"],  // insurers (single)
-                    ["암진단비(유사암제외)"]  // coverage_names
-                  )}
-                  className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-left"
-                  disabled={isLoading}
-                >
-                  <div className="font-medium text-sm text-gray-800 mb-1">
-                    예제2: 담보 설명
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    삼성화재 암진단비 상세 안내
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => handleExampleClick(
-                    "EX3_COMPARE",
-                    "삼성화재와 메리츠화재의 암진단비를 비교해주세요",
-                    ["samsung", "meritz"],  // insurers
-                    ["암진단비(유사암제외)"]  // coverage_names
-                  )}
-                  className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-left"
-                  disabled={isLoading}
-                >
-                  <div className="font-medium text-sm text-gray-800 mb-1">
-                    예제3: 2사 비교
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    삼성화재 vs 메리츠화재 암진단비
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => handleExampleClick(
-                    "EX4_ELIGIBILITY",
-                    "제자리암 보장 가능한가요?",
-                    ["samsung", "meritz"]  // insurers (no coverage_names for EX4)
-                  )}
-                  className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-left"
-                  disabled={isLoading}
-                >
-                  <div className="font-medium text-sm text-gray-800 mb-1">
-                    예제4: 보장 여부 확인
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    제자리암 보장 가능 여부 + 종합평가
-                  </div>
-                </button>
-
-                {/* STEP NEXT-86: EX2_DETAIL - 한화손보 뇌출혈 */}
-                <button
-                  onClick={() => handleExampleClick(
-                    "EX2_DETAIL",
-                    "한화손해보험 뇌출혈진단비 설명해주세요",
-                    ["hanwha"],  // insurers (single)
-                    ["뇌출혈진단비"]  // coverage_names
-                  )}
-                  className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-left"
-                  disabled={isLoading}
-                >
-                  <div className="font-medium text-sm text-gray-800 mb-1">
-                    예제2-B: 뇌출혈 설명
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    한화손보 뇌출혈진단비 상세 안내
-                  </div>
-                </button>
+        {/* STEP NEXT-129R: First impression screen (1 line + 3 example buttons, NO auto-send) */}
+        {isInitialState ? (
+          <div className="flex justify-start mt-8">
+            <div className="max-w-[65%] rounded-lg px-4 py-3 bg-gray-100 text-gray-800">
+              <div className="text-sm leading-relaxed">
+                <p className="mb-3">궁금한 담보를 그냥 말로 물어보세요.</p>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      // STEP NEXT-129R: Fill input ONLY (NO auto-send, NO auto-context)
+                      onInputChange("암직접입원일당 담보 중 보장한도가 다른 상품 찾아줘");
+                    }}
+                    className="block w-full text-left px-3 py-2 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
+                  >
+                    예: 암직접입원일당 담보 중 보장한도가 다른 상품 찾아줘
+                  </button>
+                  <button
+                    onClick={() => {
+                      // STEP NEXT-129R: Fill input ONLY (NO auto-send, NO auto-context)
+                      onInputChange("삼성화재와 메리츠화재 암진단비 비교해줘");
+                    }}
+                    className="block w-full text-left px-3 py-2 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
+                  >
+                    예: 삼성화재와 메리츠화재 암진단비 비교해줘
+                  </button>
+                  <button
+                    onClick={() => {
+                      // STEP NEXT-129R: Fill input ONLY (NO auto-send, NO auto-context)
+                      onInputChange("제자리암, 경계성종양 보장내용에 따라 삼성화재, 메리츠화재 비교해줘");
+                    }}
+                    className="block w-full text-left px-3 py-2 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
+                  >
+                    예: 제자리암, 경계성종양 보장내용에 따라 삼성화재, 메리츠화재 비교해줘
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -194,7 +126,53 @@ export default function ChatPanel({
                     : "bg-gray-100 text-gray-800"
                 }`}
               >
-                <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
+                {/* STEP NEXT-108/110A: Render markdown for assistant messages (rich bubbles) */}
+                {msg.role === "assistant" ? (
+                  (() => {
+                    // STEP NEXT-110A: Extract and style product header separately
+                    const headerStart = msg.content.indexOf('<!-- PRODUCT_HEADER -->');
+                    const headerEnd = msg.content.indexOf('<!-- /PRODUCT_HEADER -->');
+
+                    if (headerStart !== -1 && headerEnd !== -1) {
+                      const headerContent = msg.content.slice(
+                        headerStart + '<!-- PRODUCT_HEADER -->'.length,
+                        headerEnd
+                      ).trim();
+                      const bodyContent = msg.content.slice(headerEnd + '<!-- /PRODUCT_HEADER -->'.length).trim();
+
+                      return (
+                        <div className="text-sm prose prose-sm max-w-none prose-headings:text-gray-900 prose-h2:text-base prose-h2:font-semibold prose-h2:mt-0 prose-h2:mb-2 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-table:text-xs prose-th:bg-gray-200 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-gray-300 prose-strong:text-gray-900 prose-strong:font-bold prose-hr:my-3 prose-hr:border-gray-300">
+                          {/* Product Header with special styling */}
+                          <div className="product-header mb-3">
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                strong: ({ children }) => <strong className="text-lg block">{children}</strong>,
+                              }}
+                            >
+                              {headerContent}
+                            </ReactMarkdown>
+                          </div>
+                          {/* Body content with normal styling */}
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {bodyContent}
+                          </ReactMarkdown>
+                        </div>
+                      );
+                    }
+
+                    // No header markers - render normally
+                    return (
+                      <div className="text-sm prose prose-sm max-w-none prose-headings:text-gray-900 prose-h2:text-base prose-h2:font-semibold prose-h2:mt-0 prose-h2:mb-2 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-table:text-xs prose-th:bg-gray-200 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-gray-300 prose-strong:text-gray-900 prose-strong:font-bold prose-hr:my-3 prose-hr:border-gray-300">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
+                )}
               </div>
             </div>
           ))
@@ -214,87 +192,161 @@ export default function ChatPanel({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area */}
-      <div className="border-t border-gray-200 p-4 bg-white">
-        {/* STEP NEXT-97: Conversation context indicator (when locked) */}
-        {conversationActive && selectedInsurers.length > 0 && (
-          <div className="mb-3 flex items-center justify-between bg-blue-50 border border-blue-200 rounded px-3 py-2">
-            <div className="text-xs text-blue-800">
-              <span className="font-medium">현재 대화 조건:</span>{" "}
-              {selectedInsurers.map((code) => {
-                const insurer = availableInsurers.find((i) => i.code === code);
-                return insurer?.display;
-              }).join(" · ")}
+      {/* STEP NEXT-108: Input area - ChatGPT style (collapsed by default) */}
+      <div className="border-t border-gray-200 bg-white">
+        <div className="p-4">
+          {/* STEP NEXT-108: Compact context indicator (always visible when active) */}
+          {conversationActive && selectedInsurers.length > 0 && (
+            <div className="mb-2 flex items-center justify-between text-xs text-gray-600">
+              <div>
+                <span className="font-medium">대화 중:</span>{" "}
+                {selectedInsurers.map((code) => {
+                  const insurer = availableInsurers.find((i) => i.code === code);
+                  return insurer?.display;
+                }).join(" · ")}
+              </div>
+              <button
+                onClick={() => setIsOptionsExpanded(!isOptionsExpanded)}
+                className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+              >
+                옵션 {isOptionsExpanded ? "▴" : "▾"}
+              </button>
             </div>
+          )}
+
+          {/* STEP NEXT-108: Collapsible options panel */}
+          {isOptionsExpanded && (
+            <div className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded max-h-48 overflow-y-auto">
+              {/* Insurer selector */}
+              <div className="mb-3">
+                <label className="text-xs font-medium text-gray-700 mb-1 block">
+                  보험사 선택 (복수 가능)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {availableInsurers.map((insurer) => (
+                    <button
+                      key={insurer.code}
+                      onClick={() => onInsurerToggle(insurer.code)}
+                      disabled={conversationActive}
+                      className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+                        selectedInsurers.includes(insurer.code)
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                      } ${conversationActive ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      {insurer.display}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Coverage input */}
+              <div>
+                <label className="text-xs font-medium text-gray-700 mb-1 block">
+                  담보명 (선택사항)
+                </label>
+                <input
+                  type="text"
+                  value={coverageInput}
+                  onChange={(e) => onCoverageChange(e.target.value)}
+                  disabled={coverageInputDisabled}
+                  placeholder={
+                    coverageInputDisabled
+                      ? "비교를 위해 보험사만 추가해주세요"
+                      : "예: 암진단비(유사암제외)"
+                  }
+                  className={`w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    coverageInputDisabled
+                      ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                      : ""
+                  }`}
+                />
+              </div>
+
+              {/* Reset button */}
+              <button
+                onClick={() => {
+                  if (confirm("대화를 초기화하고 조건을 변경하시겠습니까?")) {
+                    window.location.reload();
+                  }
+                }}
+                className="mt-3 text-xs text-red-600 hover:text-red-800 font-medium"
+              >
+                대화 초기화
+              </button>
+            </div>
+          )}
+
+          {/* STEP NEXT-108: Initial state - show options button */}
+          {!conversationActive && (
             <button
-              onClick={() => {
-                // Reset conversation to change context
-                if (confirm("대화를 초기화하고 조건을 변경하시겠습니까?")) {
-                  window.location.reload();
-                }
-              }}
-              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+              onClick={() => setIsOptionsExpanded(!isOptionsExpanded)}
+              className="mb-2 text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
             >
-              조건 변경
+              {isOptionsExpanded ? "옵션 숨기기 ▴" : "보험사/담보 선택 ▾"}
+            </button>
+          )}
+
+          {/* STEP NEXT-108: Initial options panel (before first message) */}
+          {!conversationActive && isOptionsExpanded && (
+            <div className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded">
+              {/* Insurer selector */}
+              <div className="mb-3">
+                <label className="text-xs font-medium text-gray-700 mb-1 block">
+                  보험사 선택 (복수 가능)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {availableInsurers.map((insurer) => (
+                    <button
+                      key={insurer.code}
+                      onClick={() => onInsurerToggle(insurer.code)}
+                      className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+                        selectedInsurers.includes(insurer.code)
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {insurer.display}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Coverage input */}
+              <div>
+                <label className="text-xs font-medium text-gray-700 mb-1 block">
+                  담보명 (선택사항)
+                </label>
+                <input
+                  type="text"
+                  value={coverageInput}
+                  onChange={(e) => onCoverageChange(e.target.value)}
+                  placeholder="예: 암진단비(유사암제외)"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* STEP NEXT-120: Message input (comparison-first placeholder) */}
+          <div className="flex gap-2">
+            <textarea
+              value={input}
+              onChange={(e) => onInputChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="예: 삼성화재와 메리츠화재 암진단비 비교해줘"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              rows={1}
+              disabled={isLoading}
+            />
+            <button
+              onClick={onSend}
+              disabled={isLoading || !input.trim()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+            >
+              전송
             </button>
           </div>
-        )}
-
-        {/* Insurer selector */}
-        <div className="mb-3">
-          <label className="text-xs font-medium text-gray-700 mb-1 block">
-            보험사 선택 (복수 가능)
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {availableInsurers.map((insurer) => (
-              <button
-                key={insurer.code}
-                onClick={() => onInsurerToggle(insurer.code)}
-                disabled={conversationActive}
-                className={`text-xs px-3 py-1.5 rounded border transition-colors ${
-                  selectedInsurers.includes(insurer.code)
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                } ${conversationActive ? "opacity-50 cursor-not-allowed" : ""}`}
-              >
-                {insurer.display}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Coverage input */}
-        <div className="mb-3">
-          <label className="text-xs font-medium text-gray-700 mb-1 block">
-            담보명 (선택사항, 쉼표로 구분)
-          </label>
-          <input
-            type="text"
-            value={coverageInput}
-            onChange={(e) => onCoverageChange(e.target.value)}
-            placeholder="예: 암진단비(유사암제외)"
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Message input */}
-        <div className="flex gap-2">
-          <textarea
-            value={input}
-            onChange={(e) => onInputChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="질문을 입력하세요..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            rows={2}
-            disabled={isLoading}
-          />
-          <button
-            onClick={onSend}
-            disabled={isLoading || !input.trim()}
-            className="px-6 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-          >
-            전송
-          </button>
         </div>
       </div>
     </div>

@@ -179,7 +179,7 @@ class IntentRouter:
         """
         Route request to MessageKind
 
-        PRIORITY (STEP NEXT-86 UPDATED):
+        PRIORITY (STEP NEXT-129R: ROLLBACK forced routing):
         1. Explicit `kind` from request → 100% priority (ABSOLUTE, NO OVERRIDE)
         2. insurers count gate → EX2_DETAIL (insurers=1) vs others (STEP NEXT-86)
         3. detect_intent() → category/FAQ/gates/patterns (ONLY if kind is None)
@@ -189,20 +189,21 @@ class IntentRouter:
         - If request.kind is provided, NEVER apply anti-confusion gates
         - Explicit kind = UI contract guarantee (e.g., Example 3 button)
         - STEP NEXT-86: insurers=1 → EX2_DETAIL (설명 전용)
+        - STEP NEXT-129R: NO forced routing based on comparison intent (ROLLBACK)
 
         Returns:
             MessageKind for handler dispatch
         """
-        # STEP NEXT-80: Priority 1 - Explicit kind (ABSOLUTE, NO OVERRIDE)
+        # Priority 1 - Explicit kind (ABSOLUTE, NO OVERRIDE)
         if request.kind is not None:
             return request.kind
 
-        # STEP NEXT-86: Priority 2 - insurers count gate (EX2_DETAIL for single insurer)
+        # Priority 2 - insurers count gate (EX2_DETAIL for single insurer)
         insurers = request.insurers or []
         if len(insurers) == 1:
             return "EX2_DETAIL"
 
-        # Priority 3-5: Detect from category/FAQ/gates/patterns (ONLY if kind is None)
+        # Priority 3 - Detect from category/FAQ/gates/patterns (ONLY if kind is None)
         kind, confidence = IntentRouter.detect_intent(request)
         return kind
 

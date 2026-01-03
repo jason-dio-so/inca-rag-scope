@@ -85,10 +85,10 @@ class TestEX2BubbleContract:
 
     def test_bubble_has_4_sections(self):
         """
-        STEP NEXT-86: bubble_markdown MUST have 4 sections
+        STEP NEXT-86/110A: bubble_markdown MUST have 4 sections
 
         Sections:
-        1. 핵심 요약
+        1. Product Header (보험사 · 담보명 · 기준) [STEP NEXT-110A]
         2. 보장 요약
         3. 조건 요약
         4. 근거 자료
@@ -120,8 +120,8 @@ class TestEX2BubbleContract:
 
         bubble_markdown = response.get("bubble_markdown", "")
 
-        # Check for section headers
-        assert "## 핵심 요약" in bubble_markdown, "Missing section: 핵심 요약"
+        # Check for section headers (STEP NEXT-110A: Product Header replaces 핵심 요약)
+        assert "<!-- PRODUCT_HEADER -->" in bubble_markdown, "Missing: Product Header marker"
         assert "## 보장 요약" in bubble_markdown, "Missing section: 보장 요약"
         assert "## 조건 요약" in bubble_markdown, "Missing section: 조건 요약"
         assert "## 근거 자료" in bubble_markdown, "Missing section: 근거 자료"

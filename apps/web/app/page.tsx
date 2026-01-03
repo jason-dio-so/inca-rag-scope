@@ -9,13 +9,11 @@ import {
   MessageKind,
 } from "@/lib/types";
 import { postChat } from "@/lib/api";
-import { extractDiseaseName } from "@/lib/diseaseName";  // STEP NEXT-86
 import {
   isInsurerSwitchUtterance,
   extractInsurerFromSwitch,
   isLimitFindPattern,
-  getInsurerDisplayName,
-} from "@/lib/contextUtils";  // STEP NEXT-102
+} from "@/lib/contextUtils";  // STEP NEXT-102 (STEP NEXT-129R: Removed unused imports)
 import SidebarCategories from "@/components/SidebarCategories";
 import ChatPanel from "@/components/ChatPanel";
 import ResultDock from "@/components/ResultDock";
@@ -45,6 +43,12 @@ export default function Home() {
     options: Record<string, string[]>;
     draftRequest: any;
   } | null>(null);
+
+  // STEP NEXT-106: Track if clarification is for LIMIT_FIND (disable coverage input)
+  const [isLimitFindClarification, setIsLimitFindClarification] = useState(false);
+
+  // STEP NEXT-106: Track selected insurers for multi-select clarification
+  const [clarificationSelectedInsurers, setClarificationSelectedInsurers] = useState<string[]>([]);
 
   // STEP NEXT-101: Conversation context carryover
   const [conversationContext, setConversationContext] = useState<ConversationContext>({
@@ -114,145 +118,19 @@ export default function Home() {
     };
   };
 
-  // STEP NEXT-80-FE: Send with explicit kind (accepts overrides for example buttons)
-  const handleSendWithKind = async (
-    kind: MessageKind,
-    messageOverride?: string,
-    insurersOverride?: string[],
-    coverageNamesOverride?: string[]
-  ) => {
-    const messageToSend = messageOverride || input;
-    if (!messageToSend.trim() || !config) return;
-
-    setError(null);
-
-    // STEP NEXT-101: Sync UI state when example button clicked
-    if (insurersOverride) {
-      setSelectedInsurers(insurersOverride);
-    }
-    if (coverageNamesOverride && coverageNamesOverride.length > 0) {
-      setCoverageInput(coverageNamesOverride.join(", "));
-    }
-
-    const userMessage: Message = {
-      role: "user",
-      content: messageToSend,
-    };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
-
-    try {
-      // STEP NEXT-86: Auto-fill disease_name for EX4_ELIGIBILITY from message
-      let diseaseNameToSend: string | undefined = undefined;
-      if (kind === "EX4_ELIGIBILITY") {
-        diseaseNameToSend = extractDiseaseName(messageToSend) || undefined;
-      }
-
-      // STEP NEXT-101: Use buildChatPayload SSOT
-      const requestPayload = buildChatPayload(
-        messageToSend,
-        kind,
-        insurersOverride,
-        coverageNamesOverride,
-        diseaseNameToSend
-      );
-
-      console.log("[page.tsx handleSendWithKind] Request payload:", requestPayload);
-
-      const response = await postChat(requestPayload);
-
-      console.log("[page.tsx] Chat response:", response);
-
-      // Validate response structure
-      if (!response || typeof response !== "object") {
-        throw new Error("Invalid response from server");
-      }
-
-      // STEP NEXT-80: Handle need_more_info (NOT an error)
-      if (response.need_more_info === true) {
-        // Clarification needed - show slot selection UI
-        setClarification({
-          missing_slots: response.missing_slots || [],
-          options: response.clarification_options || {},
-          draftRequest: requestPayload,
-        });
-        return; // Don't show as error
-      }
-
-      // Check for error response (from frontend wrapper)
-      if (response.ok === false || response.error) {
-        setError(
-          response.error?.message || "알 수 없는 오류가 발생했습니다."
-        );
-        const errorMsg: Message = {
-          role: "assistant",
-          content: `오류: ${response.error?.message}\n\n${response.error?.detail || ""}`,
-        };
-        setMessages((prev) => [...prev, errorMsg]);
-      } else if (!response.message) {
-        // No message field AND not a clarification request = truly empty
-        setError("서버로부터 응답을 받지 못했습니다.");
-        const errorMsg: Message = {
-          role: "assistant",
-          content: "오류: 서버 응답이 비어있습니다.",
-        };
-        setMessages((prev) => [...prev, errorMsg]);
-      } else {
-        // Success - response.message is AssistantMessageVM
-        const vm = response.message;
-        setLatestResponse(vm);
-
-        // STEP NEXT-101: Lock conversation context on first successful response
-        if (!conversationContext.isLocked && requestPayload.insurers) {
-          setConversationContext({
-            lockedInsurers: Array.isArray(requestPayload.insurers) ? requestPayload.insurers : [requestPayload.insurers],
-            lockedCoverageNames: requestPayload.coverage_names ?
-              (Array.isArray(requestPayload.coverage_names) ? requestPayload.coverage_names : [requestPayload.coverage_names]) : null,
-            isLocked: true,
-          });
-          console.log("[page.tsx handleSendWithKind] Locked conversation context:", {
-            insurers: requestPayload.insurers,
-            coverage_names: requestPayload.coverage_names,
-          });
-        }
-
-        // STEP NEXT-81B: Use bubble_markdown if available, otherwise build from title+bullets
-        let summaryText: string;
-        if (vm?.bubble_markdown) {
-          summaryText = vm.bubble_markdown;
-        } else {
-          // Fallback to legacy summary (backward compatibility)
-          const title = vm?.title ?? "결과";
-          const bullets = Array.isArray(vm?.summary_bullets) ? vm.summary_bullets : [];
-          const summaryParts = [title, ...bullets].filter(Boolean);
-          summaryText = summaryParts.join("\n\n");
-        }
-
-        const assistantMsg: Message = {
-          role: "assistant",
-          content: summaryText,
-          vm: vm,
-        };
-        setMessages((prev) => [...prev, assistantMsg]);
-      }
-    } catch (err) {
-      console.error("Chat error:", err);
-      setError("요청 중 오류가 발생했습니다.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleSend = async () => {
     if (!input.trim() || !config) return;
 
     setError(null);
 
-    // STEP NEXT-101: Capture message before clearing input
+    // STEP NEXT-129R: Capture message before clearing input (kept for logging)
     const messageToSend = input;
 
-    // STEP NEXT-103: Detect insurer switch BEFORE payload generation
+    // STEP NEXT-129R: REMOVED silent payload correction (ROLLBACK)
+    // STEP NEXT-129R: REMOVED comparison intent hard-lock (ROLLBACK)
+    // STEP NEXT-129R: REMOVED need_more_info bypass (ROLLBACK)
+
+    // STEP NEXT-103: Detect insurer switch BEFORE payload generation (KEPT)
     // Capture effective values for THIS request (override state)
     let effectiveInsurers: string[] | undefined = undefined;
     let effectiveCoverageNames: string[] | undefined = undefined;
@@ -276,7 +154,7 @@ export default function Home() {
       }
     }
 
-    // STEP NEXT-102: Detect LIMIT_FIND pattern and validate multi-insurer requirement
+    // STEP NEXT-102: Detect LIMIT_FIND pattern and validate multi-insurer requirement (KEPT)
     if (isLimitFindPattern(messageToSend)) {
       const currentInsurers = effectiveInsurers ||
         (selectedInsurers.length > 0 ? selectedInsurers : conversationContext.lockedInsurers || []);
@@ -292,6 +170,9 @@ export default function Home() {
         };
         setMessages((prev) => [...prev, userMessage]);
         setInput("");
+
+        // STEP NEXT-106: Mark this as LIMIT_FIND clarification (disable coverage input)
+        setIsLimitFindClarification(true);
 
         // Show clarification with insurers selection
         setClarification({
@@ -318,7 +199,7 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      // STEP NEXT-103: Use buildChatPayload with effective overrides (insurer switch)
+      // STEP NEXT-129R: Use buildChatPayload with effective overrides (insurer switch only, NO silent correction)
       const requestPayload = buildChatPayload(
         messageToSend,
         effectiveKind,
@@ -337,7 +218,7 @@ export default function Home() {
         throw new Error("Invalid response from server");
       }
 
-      // STEP NEXT-101: Handle need_more_info (show clarification UI)
+      // STEP NEXT-129R: Handle need_more_info (NO bypass, ALWAYS show clarification UI)
       if (response.need_more_info === true) {
         setClarification({
           missing_slots: response.missing_slots || [],
@@ -384,9 +265,10 @@ export default function Home() {
           });
         }
 
-        // STEP NEXT-81B: Use bubble_markdown if available, otherwise build from title+bullets
+        // STEP NEXT-129R: Use backend bubble_markdown as SSOT (NO frontend override)
         let summaryText: string;
         if (vm?.bubble_markdown) {
+          // Use bubble_markdown from backend (SSOT)
           summaryText = vm.bubble_markdown;
         } else {
           // Fallback to legacy summary (backward compatibility)
@@ -417,6 +299,8 @@ export default function Home() {
     );
   };
 
+  // STEP NEXT-129R: Removed handleExampleClick (no auto-context setup)
+
   // STEP NEXT-80: Handle clarification selection and auto-resend
   const handleClarificationSelect = async (slotName: string, value: string | string[]) => {
     if (!clarification) return;
@@ -440,8 +324,10 @@ export default function Home() {
       setSelectedInsurers(mergedInsurers);
     }
 
-    // Clear clarification state
+    // STEP NEXT-106: Clear clarification state (restore coverage input)
     setClarification(null);
+    setIsLimitFindClarification(false);
+    setClarificationSelectedInsurers([]);
     setIsLoading(true);
 
     try {
@@ -484,10 +370,18 @@ export default function Home() {
           });
         }
 
-        const title = vm?.title ?? "결과";
-        const bullets = Array.isArray(vm?.summary_bullets) ? vm.summary_bullets : [];
-        const summaryParts = [title, ...bullets].filter(Boolean);
-        const summaryText = summaryParts.join("\n\n");
+        // STEP NEXT-129R: Use backend bubble_markdown as SSOT (NO frontend override)
+        let summaryText: string;
+        if (vm?.bubble_markdown) {
+          // Use bubble_markdown from backend (SSOT)
+          summaryText = vm.bubble_markdown;
+        } else {
+          // Fallback to legacy summary (backward compatibility)
+          const title = vm?.title ?? "결과";
+          const bullets = Array.isArray(vm?.summary_bullets) ? vm.summary_bullets : [];
+          const summaryParts = [title, ...bullets].filter(Boolean);
+          summaryText = summaryParts.join("\n\n");
+        }
 
         const assistantMsg: Message = {
           role: "assistant",
@@ -540,18 +434,18 @@ export default function Home() {
               input={input}
               onInputChange={setInput}
               onSend={handleSend}
-              onSendWithKind={handleSendWithKind}
               isLoading={isLoading}
               selectedInsurers={selectedInsurers}
               availableInsurers={config.available_insurers}
               onInsurerToggle={handleInsurerToggle}
               coverageInput={coverageInput}
               onCoverageChange={setCoverageInput}
+              coverageInputDisabled={isLimitFindClarification}
             />
           </div>
 
-          {/* Result dock */}
-          {latestResponse && (
+          {/* STEP NEXT-114: Result dock hidden in initial state */}
+          {latestResponse && messages.length > 0 && (
             <div className="w-1/2 border-l border-gray-200 overflow-y-auto p-4 bg-gray-50">
               <ResultDock response={latestResponse} />
             </div>
@@ -582,18 +476,65 @@ export default function Home() {
             )}
             {clarification.missing_slots.includes("insurers") && clarification.options.insurers && (
               <div>
-                <div className="text-blue-800 text-xs mb-2">보험사를 선택하세요:</div>
-                <div className="flex flex-wrap gap-2">
-                  {clarification.options.insurers.map((insurer: string) => (
+                {/* STEP NEXT-106: Multi-select for LIMIT_FIND clarification */}
+                {isLimitFindClarification ? (
+                  <>
+                    <div className="text-blue-800 text-xs mb-2">
+                      비교를 위해 보험사를 선택하세요 (1개 이상):
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {clarification.options.insurers.map((insurerCode: string) => {
+                        const insurer = config.available_insurers.find(i => i.code === insurerCode);
+                        const isSelected = clarificationSelectedInsurers.includes(insurerCode);
+                        return (
+                          <button
+                            key={insurerCode}
+                            onClick={() => {
+                              setClarificationSelectedInsurers(prev =>
+                                prev.includes(insurerCode)
+                                  ? prev.filter(c => c !== insurerCode)
+                                  : [...prev, insurerCode]
+                              );
+                            }}
+                            className={`px-3 py-1.5 text-sm border rounded transition-colors ${
+                              isSelected
+                                ? "bg-blue-600 text-white border-blue-600"
+                                : "bg-white text-gray-700 border-blue-300 hover:bg-blue-100"
+                            }`}
+                          >
+                            {insurer?.display || insurerCode}
+                          </button>
+                        );
+                      })}
+                    </div>
                     <button
-                      key={insurer}
-                      onClick={() => handleClarificationSelect("insurers", [insurer])}
-                      className="px-3 py-1.5 text-sm bg-white border border-blue-300 rounded hover:bg-blue-100 transition-colors"
+                      onClick={() => {
+                        if (clarificationSelectedInsurers.length > 0) {
+                          handleClarificationSelect("insurers", clarificationSelectedInsurers);
+                        }
+                      }}
+                      disabled={clarificationSelectedInsurers.length === 0}
+                      className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                     >
-                      {insurer}
+                      확인 ({clarificationSelectedInsurers.length}개 선택됨)
                     </button>
-                  ))}
-                </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-blue-800 text-xs mb-2">보험사를 선택하세요:</div>
+                    <div className="flex flex-wrap gap-2">
+                      {clarification.options.insurers.map((insurer: string) => (
+                        <button
+                          key={insurer}
+                          onClick={() => handleClarificationSelect("insurers", [insurer])}
+                          className="px-3 py-1.5 text-sm bg-white border border-blue-300 rounded hover:bg-blue-100 transition-colors"
+                        >
+                          {insurer}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
