@@ -1,8 +1,8 @@
 # inca-rag-scope - 작업 현황 보고서
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
-**최종 업데이트**: 2026-01-02
-**현재 상태**: ✅ **Intent Router Lock + EX2_LIMIT_FIND** (STEP NEXT-78: EX2/EX4 Anti-Confusion Gates)
+**최종 업데이트**: 2026-01-03
+**현재 상태**: ✅ **EX2_DETAIL_DIFF Code Exposure Lock** (STEP NEXT-89: 0% coverage_code 노출 보장)
 
 ---
 
@@ -10,6 +10,10 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ EX2_DETAIL_DIFF Code Exposure Lock** | STEP NEXT-89 | ✅ 완료 | 2026-01-03 |
+| **✅ EX2_LIMIT_FIND View Layer Lock** | STEP NEXT-88 | ✅ 완료 | 2026-01-03 |
+| **✅ EX2_LIMIT_FIND Content Lock** | STEP NEXT-87C | ✅ 완료 | 2026-01-03 |
+| **✅ EX2 Detail Lock** | STEP NEXT-86 | ✅ 완료 | 2026-01-03 |
 | **✅ Intent Router Lock** | STEP NEXT-78 | ✅ 완료 | 2026-01-02 |
 | **✅ EX3_COMPARE Schema Lock** | STEP NEXT-77 | ✅ 완료 | 2026-01-02 |
 | **✅ KPI Condition Display** | STEP NEXT-76 | ✅ 완료 | 2026-01-02 |
@@ -73,7 +77,54 @@
 
 ---
 
-## 🎯 최신 진행 항목 (2026-01-01)
+## 🎯 최신 진행 항목 (2026-01-03)
+
+### STEP NEXT-89 — EX2_DETAIL_DIFF Code Exposure Lock (title/summary/sections 전면 차단) ✅ **COMPLETE**
+
+**목표**: EX2_DETAIL_DIFF 응답의 **모든 view 필드**에서 coverage_code (A4200_1) 노출을 0%로 강제
+
+**문제 정의**:
+- EX2_LIMIT_FIND (STEP NEXT-88) 수정만으로 부족 → EX2_DETAIL_DIFF 핸들러가 독립적으로 title/summary/section.title 생성
+- 현재 `A4200_1 보장한도 차이` 같은 표현이 UI에 노출됨
+- coverage_code는 내부 키/refs(PD:/EV:)에서만 허용, view 필드에서는 절대 불가
+
+**헌법 규칙 (Constitutional Rules)**:
+- ❌ **FORBIDDEN**: title/summary_bullets/sections[*].title에 `[A-Z]\d{4}_\d+` 패턴 0건
+- ❌ **FORBIDDEN**: 품질 게이트 완화, 임시 치환 금지
+- ✅ **REQUIRED**: Deterministic only (NO LLM)
+- ✅ **REQUIRED**: coverage_name 우선순위: request.coverage_names > card.coverage_name_canonical > "해당 담보"
+
+**변경 사항**:
+1. **Handler (chat_handlers_deterministic.py:189-408)**:
+   - `coverage_name` 추출 우선순위 구현:
+     1. `compiled_query.coverage_names[0]` (request 기준)
+     2. `card.coverage_name_canonical > coverage_name_raw > customer_view.coverage_name`
+     3. fallback: None (display_coverage_name이 "해당 담보"로 변환)
+   - title/summary/section.title에 `sanitize_no_coverage_code()` 적용
+   - insurer 복수형 처리: 2개 이상 "...들의 ...", 1개 "...의 ..."
+
+2. **Contract Test (tests/test_ex2_detail_diff_no_code_exposure.py)** ✅ NEW:
+   - `test_ex2_detail_diff_no_coverage_code_in_title`: title 0% 노출 검증
+   - `test_ex2_detail_diff_no_coverage_code_in_summary_bullets`: summary 0% 노출 검증
+   - `test_ex2_detail_diff_no_coverage_code_in_section_titles`: sections.title 0% 노출 검증
+   - `test_ex2_detail_diff_coverage_name_fallback_when_missing`: fallback 동작 검증
+   - `test_ex2_detail_diff_all_view_fields_zero_exposure`: 전체 view 필드 종합 검증
+
+**검증 결과**:
+- ✅ Runtime curl: `✅ NO LEAK` (title/summary/sections.title 모두 코드 노출 0%)
+- ✅ Contract test: 6/6 PASS (0% exposure 보장)
+- ✅ Regression test: STEP NEXT-88/86/81B 모두 PASS
+
+**DoD (Definition of Done)**:
+- ✅ EX2_DETAIL_DIFF 응답의 title/summary_bullets/sections[*].title에서 coverage_code 0% (정규식 `[A-Z]\d{4}_\d+` 검출 없음)
+- ✅ coverage_code는 PD:/EV: ref 필드에서만 존재
+- ✅ Runtime curl 검증: `curl .../chat | jq ... | grep -E "[A-Z][0-9]{4}_[0-9]+" → ✅ NO LEAK`
+- ✅ UI 동일 시나리오 재현 시 코드 노출 0%
+- ✅ 신규 계약 테스트 `test_ex2_detail_diff_no_code_exposure.py` 추가 및 전체 관련 테스트 PASS
+
+---
+
+## 🎯 이전 진행 항목 (2026-01-01)
 
 ### STEP NEXT-61 — Evidence-Based Comparison Pipeline (Step3–7 Constitutional Compliance) ✅ **COMPLETE**
 

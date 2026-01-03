@@ -52,6 +52,11 @@ from apps.api.chat_vm import (
     OverallEvaluation,
     OverallEvaluationReason
 )
+from apps.api.response_composers.utils import (
+    display_coverage_name,
+    format_insurer_list,
+    sanitize_no_coverage_code
+)
 # from apps.api.policy.forbidden_language import ForbiddenLanguageValidator
 
 # Simple mock validator for STEP NEXT-UI-02
@@ -186,6 +191,13 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
         coverage_code = compiled_query.get("coverage_code", "A4200_1")
         compare_field = compiled_query.get("compare_field", "보장한도")
 
+        # STEP NEXT-89: Extract coverage_name with priority
+        # Priority: request.coverage_names > compiled_query.coverage_names > card fallback
+        coverage_name = None
+        coverage_names = compiled_query.get("coverage_names", [])
+        if coverage_names and len(coverage_names) > 0:
+            coverage_name = coverage_names[0]  # Use first coverage_name from request
+
         # Get coverage data from all insurers (with cards for evidence extraction)
         coverage_data = []
         insurer_cards = {}  # Store cards for later evidence extraction
@@ -196,6 +208,14 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
 
             if card:
                 insurer_cards[insurer] = card
+                # STEP NEXT-89: Fallback to card if coverage_name not from request
+                if coverage_name is None:
+                    # Priority: coverage_name_canonical > coverage_name_raw > customer_view.coverage_name
+                    coverage_name = (
+                        card.get("coverage_name_canonical") or
+                        card.get("coverage_name_raw") or
+                        (card.get("customer_view", {}) or {}).get("coverage_name")
+                    )
                 evidences = card.get("evidences", [])
                 proposal_facts = card.get("proposal_facts", {}) or {}
 
@@ -354,9 +374,32 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
 
             summary_bullets = [diff_summary]
 
+        # STEP NEXT-89: Build title with proper view layer expression
+        safe_coverage_name = display_coverage_name(
+            coverage_name=coverage_name,
+            coverage_code=coverage_code
+        )
+        insurer_list_str = format_insurer_list(insurers)
+
+        # STEP NEXT-89: Format title based on insurer count (singular/plural)
+        if len(insurers) >= 2:
+            title = f"{insurer_list_str}의 {safe_coverage_name} {compare_field} 차이"
+        else:
+            title = f"{insurer_list_str}의 {safe_coverage_name} {compare_field} 확인"
+
+        # STEP NEXT-89: Sanitize title (remove any bare coverage codes)
+        title = sanitize_no_coverage_code(title)
+
+        # STEP NEXT-89: Sanitize summary_bullets (remove any bare coverage codes)
+        summary_bullets = [sanitize_no_coverage_code(bullet) for bullet in summary_bullets]
+
         # Build CoverageDiffResultSection (ENRICHED with insurer_details)
+        section_title = f"{compare_field} 비교 결과"
+        # STEP NEXT-89: Sanitize section title
+        section_title = sanitize_no_coverage_code(section_title)
+
         diff_section = CoverageDiffResultSection(
-            title=f"{compare_field} 비교 결과",
+            title=section_title,
             field_label=compare_field,
             status=status,
             groups=groups,
@@ -367,7 +410,7 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
         vm = AssistantMessageVM(
             request_id=request.request_id,
             kind="EX2_DETAIL_DIFF",
-            title=f"{coverage_code} {compare_field} 차이 분석",
+            title=title,
             summary_bullets=summary_bullets,
             sections=[diff_section],
             lineage={
@@ -624,6 +667,166 @@ class Example4HandlerDeterministic(BaseDeterministicHandler):
 
 
 # ============================================================================
+# Example 2-Detail Handler: Single Insurer Coverage Explanation
+# ============================================================================
+
+class Example2DetailHandlerDeterministic(BaseDeterministicHandler):
+    """
+    Single insurer coverage explanation (STEP NEXT-86)
+
+    EX2_DETAIL = 설명 전용 모드
+    - NO comparison
+    - NO recommendation
+    - NO judgment
+    - Deterministic only
+    """
+
+    def execute(self, compiled_query: Dict[str, Any], request: ChatRequest) -> AssistantMessageVM:
+        """
+        Execute single insurer coverage explanation (LLM OFF)
+
+        Args:
+            compiled_query: {
+                "insurers": ["samsung"],
+                "coverage_names": ["암진단비(유사암 제외)"],
+                "coverage_code": "A4200_1"
+            }
+            request: ChatRequest
+
+        Returns:
+            AssistantMessageVM with 4-section bubble_markdown
+        """
+        from apps.api.response_composers.ex2_detail_composer import EX2DetailComposer
+
+        # Extract query params
+        insurers = compiled_query.get("insurers", [])
+        coverage_code = compiled_query.get("coverage_code", "A4200_1")
+        coverage_names = compiled_query.get("coverage_names", [])
+
+        # Validation: Must have exactly 1 insurer (STEP NEXT-86 gate)
+        if len(insurers) != 1:
+            raise ValueError(f"EX2_DETAIL requires exactly 1 insurer, got {len(insurers)}")
+
+        insurer = insurers[0]
+        coverage_name = coverage_names[0] if coverage_names else None
+
+        # Load coverage card for this insurer
+        comparer = CoverageLimitComparer()
+        cards = comparer.load_coverage_cards(insurer)
+        card = comparer.find_coverage(cards, coverage_code)
+
+        if not card:
+            # Coverage not found
+            return AssistantMessageVM(
+                request_id=request.request_id,  # STEP NEXT-86: Required field
+                kind="EX2_DETAIL",
+                title=f"{insurer} 담보 정보 없음",
+                summary_bullets=[
+                    f"{insurer}에서 해당 담보를 찾을 수 없습니다",
+                    "다른 보험사를 선택하거나 담보명을 확인해주세요"
+                ],
+                sections=[],
+                lineage={
+                    "handler": "Example2DetailHandlerDeterministic",
+                    "llm_used": False,
+                    "deterministic": True
+                }
+            )
+
+        # Extract card data
+        proposal_facts = card.get("proposal_facts", {}) or {}
+        evidences = card.get("evidences", [])
+
+        # Build card_data dict for composer
+        card_data = {
+            "amount": proposal_facts.get("coverage_amount_text") or "표현 없음",
+            "premium": "표현 없음",  # Premium not shown in EX2_DETAIL
+            "period": "표현 없음",
+            "payment_type": "표현 없음",
+            "proposal_detail_ref": f"PD:{insurer}:{coverage_code}",
+            "evidence_refs": [
+                f"EV:{insurer}:{coverage_code}:{str(idx+1).zfill(2)}"
+                for idx in range(min(len(evidences), 3))
+            ],
+            "kpi_summary": {},
+            "kpi_condition": {}
+        }
+
+        # Extract KPI Summary (STEP NEXT-75)
+        kpi_summary_meta = card.get("kpi_summary")
+        if kpi_summary_meta:
+            card_data["kpi_summary"] = {
+                "limit_summary": kpi_summary_meta.get("limit_summary") or "표현 없음",
+                "payment_type": kpi_summary_meta.get("payment_type") or "표현 없음",
+                "kpi_evidence_refs": kpi_summary_meta.get("kpi_evidence_refs", [])
+            }
+        else:
+            # Fallback: Extract from evidences
+            limit_normalized = LimitNormalizer.normalize(evidences)
+            payment_normalized = PaymentTypeNormalizer.normalize(evidences)
+
+            # Build kpi_evidence_refs from evidence_refs (use first 2)
+            kpi_refs = []
+            for idx, ref in enumerate(limit_normalized.evidence_refs[:2]):
+                kpi_refs.append(f"EV:{insurer}:{coverage_code}:{str(idx+1).zfill(2)}")
+
+            card_data["kpi_summary"] = {
+                "limit_summary": limit_normalized.to_display_text() or "표현 없음",
+                "payment_type": payment_normalized.to_display_text() or "표현 없음",
+                "kpi_evidence_refs": kpi_refs
+            }
+
+        # Extract KPI Condition (STEP NEXT-76)
+        kpi_condition_meta = card.get("kpi_condition")
+        if kpi_condition_meta:
+            card_data["kpi_condition"] = {
+                "reduction_condition": kpi_condition_meta.get("reduction_condition") or "근거 없음",
+                "waiting_period": kpi_condition_meta.get("waiting_period") or "근거 없음",
+                "exclusion_condition": kpi_condition_meta.get("exclusion_condition") or "근거 없음",
+                "renewal_condition": kpi_condition_meta.get("renewal_condition") or "근거 없음",
+                "condition_evidence_refs": kpi_condition_meta.get("condition_evidence_refs", [])
+            }
+        else:
+            # Fallback: Extract from evidences
+            conditions_normalized = ConditionsNormalizer.normalize(evidences)
+
+            # Build condition_evidence_refs from evidence_refs (use first 3)
+            condition_refs = []
+            for idx, ref in enumerate(conditions_normalized.evidence_refs[:3]):
+                condition_refs.append(f"EV:{insurer}:{coverage_code}:{str(idx+1).zfill(2)}")
+
+            card_data["kpi_condition"] = {
+                "reduction_condition": conditions_normalized.reduction or "근거 없음",
+                "waiting_period": conditions_normalized.waiting_period or "근거 없음",
+                "exclusion_condition": conditions_normalized.exclusion or "근거 없음",
+                "renewal_condition": "근거 없음",  # Not extracted yet
+                "condition_evidence_refs": condition_refs
+            }
+
+        # Compose response using EX2DetailComposer
+        message_dict = EX2DetailComposer.compose(
+            insurer=insurer,
+            coverage_code=coverage_code,
+            card_data=card_data,
+            coverage_name=coverage_name
+        )
+
+        # Build AssistantMessageVM
+        vm = AssistantMessageVM(
+            request_id=request.request_id,  # STEP NEXT-86: Required field
+            kind="EX2_DETAIL",
+            title=message_dict["title"],
+            summary_bullets=message_dict["summary_bullets"],
+            bubble_markdown=message_dict.get("bubble_markdown"),
+            sections=message_dict["sections"],
+            lineage=message_dict.get("lineage")
+        )
+
+        self._validate_forbidden_phrases(vm)
+        return vm
+
+
+# ============================================================================
 # Handler Registry (Deterministic)
 # ============================================================================
 
@@ -633,6 +836,7 @@ class HandlerRegistryDeterministic:
     _HANDLERS: Dict[MessageKind, BaseDeterministicHandler] = {
         "PREMIUM_COMPARE": Example1HandlerDeterministic(),
         "EX1_PREMIUM_DISABLED": Example1HandlerDeterministic(),
+        "EX2_DETAIL": Example2DetailHandlerDeterministic(),     # STEP NEXT-86: 설명 전용
         "EX2_DETAIL_DIFF": Example2DiffHandlerDeterministic(),  # LEGACY
         "EX2_LIMIT_FIND": Example2DiffHandlerDeterministic(),   # STEP NEXT-78: Reuse EX2Diff
         "EX3_INTEGRATED": Example3HandlerDeterministic(),
