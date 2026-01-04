@@ -453,6 +453,7 @@ class ChatRequest(BaseModel):
     coverage_names: Optional[List[str]] = None
     insurers: Optional[List[str]] = None
     disease_name: Optional[str] = None
+    disease_names: Optional[List[str]] = None  # STEP NEXT-132: Multi-disease support
     compare_field: Optional[str] = None  # STEP NEXT-COMPARE-FILTER-01: "보장한도", "보장금액", etc.
 
     # STEP NEXT-UI-01: LLM mode toggle

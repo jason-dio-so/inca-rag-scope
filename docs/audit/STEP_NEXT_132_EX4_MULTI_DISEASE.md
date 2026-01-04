@@ -91,5 +91,5 @@ feat(ex4): support multi-disease queries (step-next-132)
 - [x] Multi-disease bubble/notes text
 - [x] Handler extracts `disease_names` list
 - [x] 8/8 tests PASS
-- [ ] Manual test with "제자리암, 경계성종양" query
-- [ ] CLAUDE.md updated
+- [x] Manual test with "제자리암, 경계성종양" query (screenshot verified)
+- [x] CLAUDE.md updated

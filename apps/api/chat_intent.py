@@ -382,6 +382,7 @@ class QueryCompiler:
     def _extract_disease_name_from_message(message: str) -> str | None:
         """
         STEP NEXT-86: Extract disease_name from message (deterministic)
+        DEPRECATED by STEP NEXT-132: Use _extract_disease_names_from_message instead
 
         Rules:
         - NO LLM
@@ -414,6 +415,45 @@ class QueryCompiler:
                 return keyword
 
         return None
+
+    @staticmethod
+    def _extract_disease_names_from_message(message: str) -> List[str]:
+        """
+        STEP NEXT-132: Extract ALL disease names from message (deterministic)
+
+        Rules:
+        - NO LLM
+        - Extract ALL disease keywords found (not just first)
+        - Preserve order of appearance in keywords list
+        - Return empty list if none found
+
+        Args:
+            message: User input message
+
+        Returns:
+            List of extracted disease names (may be empty)
+        """
+        if not message:
+            return []
+
+        # STEP NEXT-132: Use same keywords as IntentRouter.DISEASE_SUBTYPES
+        disease_keywords = [
+            "제자리암",
+            "경계성종양",
+            "유사암",
+            "기타피부암",
+            "갑상선암",
+            "대장점막내암"
+        ]
+
+        message_lower = message.lower()
+        found_diseases = []
+
+        for keyword in disease_keywords:
+            if keyword in message_lower:
+                found_diseases.append(keyword)
+
+        return found_diseases
 
     @staticmethod
     def compile_insurer_codes(raw_insurers: List[str]) -> List[str]:
@@ -484,8 +524,18 @@ class QueryCompiler:
                     query["coverage_code"] = QueryCompiler.map_coverage_name_to_code(coverage_name)
 
         elif kind == "EX4_ELIGIBILITY":
-            # STEP NEXT-86: disease_name should already be auto-filled by IntentDispatcher
+            # STEP NEXT-132: Prefer disease_names (list) over disease_name (single)
+            if request.disease_names:
+                query["disease_names"] = request.disease_names
+            elif request.disease_name:
+                query["disease_names"] = [request.disease_name]
+            else:
+                # No disease provided - leave empty for validation
+                query["disease_names"] = []
+
+            # Legacy field (for backward compatibility)
             query["disease_name"] = request.disease_name
+
             query["insurers"] = QueryCompiler.compile_insurer_codes(
                 request.insurers or []
             )
@@ -523,11 +573,11 @@ class IntentDispatcher:
         # Step 1: Route intent
         kind = IntentRouter.route(request)
 
-        # STEP NEXT-86: Auto-fill disease_name for EX4_ELIGIBILITY BEFORE validation
-        if kind == "EX4_ELIGIBILITY" and not request.disease_name:
-            auto_filled = QueryCompiler._extract_disease_name_from_message(request.message)
+        # STEP NEXT-132: Auto-fill disease_names for EX4_ELIGIBILITY BEFORE validation
+        if kind == "EX4_ELIGIBILITY" and not request.disease_names:
+            auto_filled = QueryCompiler._extract_disease_names_from_message(request.message)
             if auto_filled:
-                # Create updated request with auto-filled disease_name
+                # Create updated request with auto-filled disease_names
                 request = ChatRequest(
                     request_id=request.request_id,
                     message=request.message,
@@ -535,7 +585,8 @@ class IntentDispatcher:
                     selected_category=request.selected_category,
                     insurers=request.insurers,
                     coverage_names=request.coverage_names,
-                    disease_name=auto_filled,  # STEP NEXT-86: Auto-filled
+                    disease_names=auto_filled,  # STEP NEXT-132: Auto-filled multi-disease
+                    disease_name=auto_filled[0] if auto_filled else None,  # Legacy field
                     llm_mode=request.llm_mode
                 )
 
