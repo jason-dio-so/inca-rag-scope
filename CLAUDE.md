@@ -63,14 +63,20 @@ The system evolved toward "demo auto-complete" where frontend/backend bypassed u
 - 표적항암: `["표적", "표적항암", "표적치료"]`
 - 다빈치수술: `["다빈치", "로봇", "로봇수술"]`
 
-**O/X Logic**:
-- **O**: `category_keyword IN coverage_name_raw` AND `subtype_keyword IN evidence_snippet`
-- **X**: Otherwise (NO LLM fallback, NO △/Unknown allowed)
+**O/X Logic** (STEP NEXT-131 Update):
+- **O**: `category_keyword IN coverage_name_raw` ONLY (담보 존재 여부)
+- **X**: Coverage not found (NO LLM fallback, NO △/Unknown allowed)
+- **Subtype conditions**: Guided in Notes section (NOT in O/X logic)
+
+**Rationale** (STEP NEXT-131):
+- STEP NEXT-130: Too strict (category AND subtype) → All X
+- STEP NEXT-131: Relaxed (category ONLY) → Mix O/X, useful overview
+- Disease subtype guidance → Notes: "세부 조건은 약관 확인"
 
 **Implementation**:
 - **Composer**: `apps/api/response_composers/ex4_eligibility_composer.py` (REPLACED)
 - **Tests**: `tests/test_step_next_130_ex4_ox_table.py` (8/8 PASS)
-- **SSOT**: `docs/audit/STEP_NEXT_130_EX4_OX_TABLE_LOCK.md`
+- **SSOT**: `docs/audit/STEP_NEXT_130_EX4_OX_TABLE_LOCK.md` + `STEP_NEXT_131_EX4_RELAXED_LOGIC.md`
 
 **Constitutional Basis**: STEP NEXT-129R (Customer Self-Test Flow)
 

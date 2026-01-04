@@ -227,17 +227,17 @@ class EX4EligibilityComposer:
         coverage_cards: List[Dict[str, Any]]
     ) -> tuple[str, List[str]]:
         """
-        Determine O/X status for a specific insurer + category + subtype
+        Determine O/X status for a specific insurer + category
 
-        Rules:
-        - O: Found 1+ coverage card matching category keywords + subtype_keyword
-        - X: No matching coverage card
-        - NO △/Unknown allowed (simplification for self-test)
+        STEP NEXT-131: Relaxed logic - coverage existence based
+        - O: Coverage exists (category keyword match)
+        - X: Coverage not found
+        - Disease subtype conditions → Notes only (not in O/X logic)
 
         Args:
             insurer: Insurer code (e.g., "samsung")
             category: Category name (e.g., "진단비")
-            subtype_keyword: Disease subtype (e.g., "제자리암")
+            subtype_keyword: Disease subtype (e.g., "제자리암") - NOT used in O/X decision
             coverage_cards: List of coverage card dicts
 
         Returns:
@@ -245,7 +245,8 @@ class EX4EligibilityComposer:
         """
         category_keywords = EX4EligibilityComposer.CATEGORY_KEYWORDS.get(category, [])
 
-        # Filter cards: match insurer + category keywords
+        # STEP NEXT-131: Match by category only (NOT subtype)
+        # Rationale: Customer test flow needs to show coverage existence first
         matching_cards = []
         for card in coverage_cards:
             if card.get("insurer") != insurer:
@@ -257,33 +258,8 @@ class EX4EligibilityComposer:
 
             # Match category keywords
             category_match = any(kw in coverage_name_raw for kw in category_keywords)
-            if not category_match:
-                continue
-
-            # Check if subtype_keyword appears in evidences
-            # (simplified: check proposal_facts or evidences)
-            evidences = card.get("evidences", [])
-            proposal_facts = card.get("proposal_facts", {})
-
-            subtype_match = False
-
-            # Check proposal_facts evidence
-            proposal_evidences = proposal_facts.get("evidences", [])
-            for ev in proposal_evidences:
-                snippet = ev.get("snippet", "")
-                if subtype_keyword in snippet:
-                    subtype_match = True
-                    break
-
-            # Check main evidences
-            if not subtype_match:
-                for ev in evidences:
-                    snippet = ev.get("snippet", "")
-                    if subtype_keyword in snippet:
-                        subtype_match = True
-                        break
-
-            if category_match and subtype_match:
+            if category_match:
+                # STEP NEXT-131: Category match = O (subtype not checked)
                 matching_cards.append(card)
 
         # Determine status
@@ -305,16 +281,21 @@ class EX4EligibilityComposer:
         """
         Build notes section (guidance-only)
 
+        STEP NEXT-131: Add disease subtype guidance
+        - O/X: Coverage existence (NOT subtype-specific)
+        - Subtype conditions: Check detailed terms
+
         Rules:
         - NO recommendation
         - NO judgment
-        - Simple clarification bullets (2-3)
+        - Simple clarification bullets (3-4)
         """
         return {
             "kind": "common_notes",
             "title": "유의사항",
             "bullets": [
-                "O: 보장 가능, X: 보장 제외",
+                "O: 해당 담보 존재, X: 담보 없음",
+                f"'{subtype_keyword}' 세부 보장 조건은 각 상품 약관을 확인하세요",
                 "가입설계서 및 약관 기준입니다",
                 "실제 보장 여부는 약관을 직접 확인하시기 바랍니다"
             ],
