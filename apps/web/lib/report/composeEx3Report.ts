@@ -58,7 +58,7 @@ function findRowByCategory(
     const cellText = firstCell.text || '';
 
     if (cellText.includes(categoryLabel)) {
-      return row;
+      return { cells: row.cells };
     }
   }
 

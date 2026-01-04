@@ -62,6 +62,11 @@ export default function Home() {
   // STEP NEXT-132: Report view mode toggle
   const [viewMode, setViewMode] = useState<"comparison" | "report">("comparison");
 
+  // STEP NEXT-133: EX3 Gate state (front-trigger selection panel, NO backend need_more_info)
+  const [pendingKind, setPendingKind] = useState<"EX3_COMPARE" | null>(null);
+  const [ex3GateOpen, setEx3GateOpen] = useState(false);
+  const [ex3GateMessageId, setEx3GateMessageId] = useState<string | null>(null);
+
   // Load UI config
   useEffect(() => {
     fetch("/ui_config.json")
@@ -130,6 +135,62 @@ export default function Home() {
 
     // STEP NEXT-129R: Capture message before clearing input (kept for logging)
     const messageToSend = input;
+
+    // STEP NEXT-133: Detect EX3 intent FIRST (before any backend call)
+    // Trigger EX3 Gate if user requests comparison
+    const isEX3Intent =
+      messageToSend.includes("비교") ||
+      messageToSend.includes("차이") ||
+      messageToSend.includes("VS") ||
+      messageToSend.includes("vs");
+
+    if (isEX3Intent && !ex3GateOpen) {
+      // Check if requirements are met
+      const currentInsurers = selectedInsurers.length > 0
+        ? selectedInsurers
+        : conversationContext.lockedInsurers || [];
+
+      const coverageNamesFromInput = coverageInput
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
+      const currentCoverageNames = coverageNamesFromInput.length > 0
+        ? coverageNamesFromInput
+        : conversationContext.lockedCoverageNames || [];
+
+      // EX3 requires 2 insurers + 1 coverage
+      if (currentInsurers.length < 2 || currentCoverageNames.length === 0) {
+        console.log("[page.tsx STEP NEXT-133] EX3_GATE_OPEN: insufficient context", {
+          insurers: currentInsurers.length,
+          coverages: currentCoverageNames.length
+        });
+
+        // Add user message first
+        const userMessage: Message = {
+          role: "user",
+          content: messageToSend,
+        };
+        setMessages((prev) => [...prev, userMessage]);
+        setInput("");
+
+        // Generate unique message ID for gate message (avoid duplicates)
+        const gateMessageId = `ex3-gate-${Date.now()}`;
+
+        // Add EX3 gate assistant message
+        const gateMessage: Message = {
+          role: "assistant",
+          content: "비교를 위해 담보와 보험사를 먼저 선택해 주세요.\n아래에서 보험사 2개와 담보명 1개를 고르면 바로 비교표를 보여드릴게요.",
+        };
+        setMessages((prev) => [...prev, gateMessage]);
+
+        // Open EX3 gate panel
+        setPendingKind("EX3_COMPARE");
+        setEx3GateOpen(true);
+        setEx3GateMessageId(gateMessageId);
+        return;
+      }
+    }
 
     // STEP NEXT-129R: REMOVED silent payload correction (ROLLBACK)
     // STEP NEXT-129R: REMOVED comparison intent hard-lock (ROLLBACK)
@@ -485,8 +546,8 @@ export default function Home() {
                   <EX3ReportView
                     report={composeEx3Report(
                       messages
-                        .filter((m) => m.role === "assistant")
-                        .map((m) => m.content) as AssistantMessageVM[]
+                        .filter((m) => m.role === "assistant" && m.vm)
+                        .map((m) => m.vm!)
                     )}
                   />
                 )}
@@ -494,6 +555,154 @@ export default function Home() {
             </div>
           )}
         </div>
+
+        {/* STEP NEXT-133: EX3 Gate UI (front-trigger selection, NO backend need_more_info) */}
+        {ex3GateOpen && (
+          <div className="bg-blue-50 border-t border-blue-200 px-4 py-4">
+            <div className="text-blue-900 text-sm font-medium mb-2">
+              비교를 위한 정보 선택
+            </div>
+
+            {/* Insurer selection (2 required) */}
+            <div className="mb-3">
+              <div className="text-blue-800 text-xs mb-2">
+                비교할 보험사 (2개 선택)
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {config.available_insurers.map((insurer) => {
+                  const isSelected = selectedInsurers.includes(insurer.code);
+                  return (
+                    <button
+                      key={insurer.code}
+                      onClick={() => {
+                        setSelectedInsurers((prev) =>
+                          prev.includes(insurer.code)
+                            ? prev.filter((c) => c !== insurer.code)
+                            : [...prev, insurer.code]
+                        );
+                      }}
+                      className={`px-3 py-1.5 text-sm border rounded transition-colors ${
+                        isSelected
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-700 border-blue-300 hover:bg-blue-100"
+                      }`}
+                    >
+                      {insurer.display}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Coverage input (1 required) */}
+            <div className="mb-3">
+              <div className="text-blue-800 text-xs mb-2">
+                비교할 담보 (1개)
+              </div>
+              <input
+                type="text"
+                value={coverageInput}
+                onChange={(e) => setCoverageInput(e.target.value)}
+                placeholder="예: 암진단비"
+                className="w-full px-3 py-2 text-sm border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Submit button */}
+            <button
+              onClick={async () => {
+                // Validate requirements
+                if (selectedInsurers.length < 2) {
+                  alert("보험사를 2개 선택해 주세요.");
+                  return;
+                }
+
+                const coverageNamesFromInput = coverageInput
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter((s) => s.length > 0);
+
+                if (coverageNamesFromInput.length === 0) {
+                  alert("담보명을 입력해 주세요.");
+                  return;
+                }
+
+                console.log("[page.tsx STEP NEXT-133] EX3_GATE_SUBMIT", {
+                  insurers: selectedInsurers,
+                  coverages: coverageNamesFromInput
+                });
+
+                // Close gate
+                setEx3GateOpen(false);
+                setIsLoading(true);
+
+                try {
+                  // Build EX3_COMPARE request
+                  const requestPayload = {
+                    message: "비교 요청",  // Generic message (user already sent their question)
+                    kind: "EX3_COMPARE" as MessageKind,
+                    insurers: selectedInsurers,
+                    coverage_names: coverageNamesFromInput,
+                    llm_mode: llmMode,
+                  };
+
+                  console.log("[page.tsx STEP NEXT-133] EX3_CHAT_REQUEST_SENT", requestPayload);
+
+                  const response = await postChat(requestPayload);
+                  console.log("EX3 gate response:", response);
+
+                  if (!response || typeof response !== "object") {
+                    throw new Error("Invalid response from server");
+                  }
+
+                  if (response.ok === false || response.error) {
+                    setError(response.error?.message || "알 수 없는 오류가 발생했습니다.");
+                  } else if (!response.message) {
+                    setError("서버로부터 응답을 받지 못했습니다.");
+                  } else {
+                    const vm = response.message;
+                    setLatestResponse(vm);
+
+                    // Lock conversation context
+                    setConversationContext({
+                      lockedInsurers: selectedInsurers,
+                      lockedCoverageNames: coverageNamesFromInput,
+                      isLocked: true,
+                    });
+
+                    // Use backend bubble_markdown as SSOT
+                    let summaryText: string;
+                    if (vm?.bubble_markdown) {
+                      summaryText = vm.bubble_markdown;
+                    } else {
+                      const title = vm?.title ?? "결과";
+                      const bullets = Array.isArray(vm?.summary_bullets) ? vm.summary_bullets : [];
+                      const summaryParts = [title, ...bullets].filter(Boolean);
+                      summaryText = summaryParts.join("\n\n");
+                    }
+
+                    const assistantMsg: Message = {
+                      role: "assistant",
+                      content: summaryText,
+                      vm: vm,
+                    };
+                    setMessages((prev) => [...prev, assistantMsg]);
+                  }
+                } catch (err) {
+                  console.error("EX3 gate error:", err);
+                  setError("요청 중 오류가 발생했습니다.");
+                } finally {
+                  setIsLoading(false);
+                  setPendingKind(null);
+                }
+              }}
+              disabled={selectedInsurers.length < 2 || !coverageInput.trim()}
+              className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              비교 시작 ({selectedInsurers.length}/2개 보험사, {coverageInput.trim() ? "담보 입력됨" : "담보 없음"})
+            </button>
+          </div>
+        )}
 
         {/* STEP NEXT-80: Clarification UI */}
         {clarification && (

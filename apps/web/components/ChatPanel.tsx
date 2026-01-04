@@ -91,7 +91,7 @@ export default function ChatPanel({
                   </button>
                   <button
                     onClick={() => {
-                      // STEP NEXT-129R: Fill input ONLY (NO auto-send, NO auto-context)
+                      // STEP NEXT-133: Fill input ONLY (NO auto-send, NO auto-context)
                       onInputChange("삼성화재와 메리츠화재 암진단비 비교해줘");
                     }}
                     className="block w-full text-left px-3 py-2 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
@@ -100,12 +100,12 @@ export default function ChatPanel({
                   </button>
                   <button
                     onClick={() => {
-                      // STEP NEXT-129R: Fill input ONLY (NO auto-send, NO auto-context)
-                      onInputChange("제자리암, 경계성종양 보장내용에 따라 삼성화재, 메리츠화재 비교해줘");
+                      // STEP NEXT-133: Fill input ONLY (NO auto-send, NO auto-context)
+                      onInputChange("제자리암, 경계성종양 보장여부 비교해줘");
                     }}
                     className="block w-full text-left px-3 py-2 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
                   >
-                    예: 제자리암, 경계성종양 보장내용에 따라 삼성화재, 메리츠화재 비교해줘
+                    예: 제자리암, 경계성종양 보장여부 비교해줘
                   </button>
                 </div>
               </div>
