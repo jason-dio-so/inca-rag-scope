@@ -18,6 +18,8 @@ import SidebarCategories from "@/components/SidebarCategories";
 import ChatPanel from "@/components/ChatPanel";
 import ResultDock from "@/components/ResultDock";
 import LlmModeToggle from "@/components/LlmModeToggle";
+import { EX3ReportView } from "@/components/report/EX3ReportView";
+import { composeEx3Report } from "@/lib/report/composeEx3Report";
 
 // STEP NEXT-101: Conversation context type
 interface ConversationContext {
@@ -56,6 +58,9 @@ export default function Home() {
     lockedCoverageNames: null,
     isLocked: false,
   });
+
+  // STEP NEXT-132: Report view mode toggle
+  const [viewMode, setViewMode] = useState<"comparison" | "report">("comparison");
 
   // Load UI config
   useEffect(() => {
@@ -445,9 +450,47 @@ export default function Home() {
           </div>
 
           {/* STEP NEXT-114: Result dock hidden in initial state */}
+          {/* STEP NEXT-132: Report view toggle */}
           {latestResponse && messages.length > 0 && (
-            <div className="w-1/2 border-l border-gray-200 overflow-y-auto p-4 bg-gray-50">
-              <ResultDock response={latestResponse} />
+            <div className="w-1/2 border-l border-gray-200 flex flex-col bg-gray-50">
+              {/* Toggle header */}
+              <div className="border-b border-gray-300 bg-white px-4 py-2 flex gap-2">
+                <button
+                  onClick={() => setViewMode("comparison")}
+                  className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                    viewMode === "comparison"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  비교 보기
+                </button>
+                <button
+                  onClick={() => setViewMode("report")}
+                  className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                    viewMode === "report"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  보고서 보기
+                </button>
+              </div>
+
+              {/* Content area */}
+              <div className="flex-1 overflow-y-auto p-4">
+                {viewMode === "comparison" ? (
+                  <ResultDock response={latestResponse} />
+                ) : (
+                  <EX3ReportView
+                    report={composeEx3Report(
+                      messages
+                        .filter((m) => m.role === "assistant")
+                        .map((m) => m.content) as AssistantMessageVM[]
+                    )}
+                  />
+                )}
+              </div>
             </div>
           )}
         </div>
