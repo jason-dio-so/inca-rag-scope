@@ -90,9 +90,65 @@ The system evolved toward "demo auto-complete" where frontend/backend bypassed u
 
 ---
 
-## 0.2 STEP NEXT-133: EX3 Front-Trigger Selection Gate — **2026-01-04**
+## 0.2 STEP NEXT-A: Unified Exam Entry UX (EX1 → EX2/EX3/EX4) — **2026-01-04**
+
+**Purpose**: Unify entry UX for all exam types when starting from EX1 (first impression screen)
+
+**Core Problem**:
+- EX1 → EX2/EX3/EX4 buttons had inconsistent UX
+- Some immediately showed results (bypassing selection)
+- Some showed clarification panels with different messages
+- Customer testing requires predictable, uniform entry flow
+
+**Solution**:
+- **ALL exam types show same "추가 정보가 필요합니다" message** when starting from EX1
+- User must select coverage/insurers and click send BEFORE any composer is called
+- Entry difference occurs ONLY after selection complete (in result display)
+
+**Core Rules (ABSOLUTE)**:
+1. ✅ **Unified entry message**: ALL exams use same "추가 정보가 필요합니다. 비교할 담보와 보험사를 선택해주세요."
+2. ✅ **NO immediate results**: EX1 buttons NEVER trigger composer calls directly
+3. ✅ **Selection required**: User must choose insurers + coverage explicitly
+4. ✅ **NO auto-send**: Buttons fill input ONLY (129R compliant)
+5. ✅ **NO auto-routing**: Frontend gates entry BEFORE backend decides intent
+6. ✅ **Exam differences appear in results**: EX2/EX3/EX4 diverge AFTER selection, NOT before
+7. ❌ **NO different entry messages** for EX2 vs EX3 vs EX4
+8. ❌ **NO immediate composer calls** from EX1 buttons
+
+**Detection Logic** (deterministic):
+```typescript
+const isInitialEntry = messages.length === 0;
+
+const isEX2Intent = messageToSend.includes("담보 중") || messageToSend.includes("보장한도가 다른");
+const isEX3Intent = messageToSend.includes("비교") || messageToSend.includes("차이");
+const isEX4Intent = messageToSend.includes("보장여부") || messageToSend.includes("보장내용에 따라");
+
+if (isInitialEntry && (isEX2Intent || isEX3Intent || isEX4Intent)) {
+  // Show unified entry gate
+}
+```
+
+**Requirements per Exam**:
+- **EX3**: 2 insurers + 1 coverage
+- **EX2/EX4**: 1+ insurers + 1 coverage (or disease name for EX4)
+
+**Implementation**:
+- **Modified Files**: `apps/web/app/page.tsx` (unified exam entry gate logic)
+- **Backend Changes**: ❌ FORBIDDEN (NO apps/api/** changes)
+- **SSOT**: `docs/audit/STEP_NEXT_A_UNIFIED_EXAM_ENTRY_LOCK.md`
+
+**Constitutional Basis**: STEP NEXT-129R (Customer Self-Test Flow)
+
+**Definition of Success**:
+> "EX1 → EX2/EX3/EX4 모두 동일한 '추가 정보가 필요합니다' 메시지 표시. 백엔드 호출 0회 (선택 완료 전까지). Entry UX = 100% 동일."
+
+---
+
+## 0.3 STEP NEXT-133: EX3 Front-Trigger Selection Gate — **2026-01-04** (Superseded by STEP NEXT-A)
 
 **Purpose**: Customer self-test UX — EX3-specific front-end gate (NO backend need_more_info)
+
+**Note**: This STEP introduced EX3 gate mechanics. STEP NEXT-A extends pattern to ALL exam types and unifies entry message.
 
 **Core Problem**:
 - EX1 → EX3 button → unpredictable screens (보고서/빈 화면/추가정보 엉킴)

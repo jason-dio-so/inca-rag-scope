@@ -136,59 +136,74 @@ export default function Home() {
     // STEP NEXT-129R: Capture message before clearing input (kept for logging)
     const messageToSend = input;
 
-    // STEP NEXT-133: Detect EX3 intent FIRST (before any backend call)
-    // Trigger EX3 Gate if user requests comparison
-    const isEX3Intent =
-      messageToSend.includes("비교") ||
-      messageToSend.includes("차이") ||
-      messageToSend.includes("VS") ||
-      messageToSend.includes("vs");
+    // STEP NEXT-A: Unified exam entry gate (EX1 → EX2/EX3/EX4)
+    // Check if this is the first message from EX1 (initial state)
+    const isInitialEntry = messages.length === 0;
 
-    if (isEX3Intent && !ex3GateOpen) {
-      // Check if requirements are met
-      const currentInsurers = selectedInsurers.length > 0
-        ? selectedInsurers
-        : conversationContext.lockedInsurers || [];
+    if (isInitialEntry) {
+      // Detect exam intent from EX1 buttons
+      const isEX2Intent = messageToSend.includes("담보 중") || messageToSend.includes("보장한도가 다른");
+      const isEX3Intent = messageToSend.includes("비교") || messageToSend.includes("차이") || messageToSend.includes("VS") || messageToSend.includes("vs");
+      const isEX4Intent = messageToSend.includes("보장여부") || messageToSend.includes("보장내용에 따라");
 
-      const coverageNamesFromInput = coverageInput
-        .split(",")
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0);
+      if (isEX2Intent || isEX3Intent || isEX4Intent) {
+        // Check if requirements are met
+        const currentInsurers = selectedInsurers.length > 0
+          ? selectedInsurers
+          : conversationContext.lockedInsurers || [];
 
-      const currentCoverageNames = coverageNamesFromInput.length > 0
-        ? coverageNamesFromInput
-        : conversationContext.lockedCoverageNames || [];
+        const coverageNamesFromInput = coverageInput
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0);
 
-      // EX3 requires 2 insurers + 1 coverage
-      if (currentInsurers.length < 2 || currentCoverageNames.length === 0) {
-        console.log("[page.tsx STEP NEXT-133] EX3_GATE_OPEN: insufficient context", {
-          insurers: currentInsurers.length,
-          coverages: currentCoverageNames.length
-        });
+        const currentCoverageNames = coverageNamesFromInput.length > 0
+          ? coverageNamesFromInput
+          : conversationContext.lockedCoverageNames || [];
 
-        // Add user message first
-        const userMessage: Message = {
-          role: "user",
-          content: messageToSend,
-        };
-        setMessages((prev) => [...prev, userMessage]);
-        setInput("");
+        // Determine requirements based on exam type
+        let requirementsMet = false;
+        if (isEX3Intent) {
+          // EX3 requires 2 insurers + 1 coverage
+          requirementsMet = currentInsurers.length >= 2 && currentCoverageNames.length > 0;
+        } else if (isEX2Intent || isEX4Intent) {
+          // EX2/EX4 require at least 1 insurer + 1 coverage (or disease name for EX4)
+          requirementsMet = currentInsurers.length > 0 && (currentCoverageNames.length > 0 || isEX4Intent);
+        }
 
-        // Generate unique message ID for gate message (avoid duplicates)
-        const gateMessageId = `ex3-gate-${Date.now()}`;
+        if (!requirementsMet) {
+          console.log("[page.tsx STEP NEXT-A] EXAM_ENTRY_GATE_OPEN: insufficient context", {
+            examType: isEX2Intent ? "EX2" : isEX3Intent ? "EX3" : "EX4",
+            insurers: currentInsurers.length,
+            coverages: currentCoverageNames.length
+          });
 
-        // Add EX3 gate assistant message
-        const gateMessage: Message = {
-          role: "assistant",
-          content: "비교를 위해 담보와 보험사를 먼저 선택해 주세요.\n아래에서 보험사 2개와 담보명 1개를 고르면 바로 비교표를 보여드릴게요.",
-        };
-        setMessages((prev) => [...prev, gateMessage]);
+          // Add user message first
+          const userMessage: Message = {
+            role: "user",
+            content: messageToSend,
+          };
+          setMessages((prev) => [...prev, userMessage]);
+          setInput("");
 
-        // Open EX3 gate panel
-        setPendingKind("EX3_COMPARE");
-        setEx3GateOpen(true);
-        setEx3GateMessageId(gateMessageId);
-        return;
+          // Generate unique message ID for gate message (avoid duplicates)
+          const gateMessageId = `exam-entry-gate-${Date.now()}`;
+
+          // STEP NEXT-A: Unified entry message (same for all exam types)
+          const gateMessage: Message = {
+            role: "assistant",
+            content: "추가 정보가 필요합니다.\n비교할 담보와 보험사를 선택해주세요.",
+          };
+          setMessages((prev) => [...prev, gateMessage]);
+
+          // Open exam entry gate panel
+          if (isEX3Intent) {
+            setPendingKind("EX3_COMPARE");
+          }
+          setEx3GateOpen(true);
+          setEx3GateMessageId(gateMessageId);
+          return;
+        }
       }
     }
 
@@ -556,17 +571,17 @@ export default function Home() {
           )}
         </div>
 
-        {/* STEP NEXT-133: EX3 Gate UI (front-trigger selection, NO backend need_more_info) */}
+        {/* STEP NEXT-A: Unified Exam Entry Gate UI (EX2/EX3/EX4) */}
         {ex3GateOpen && (
           <div className="bg-blue-50 border-t border-blue-200 px-4 py-4">
             <div className="text-blue-900 text-sm font-medium mb-2">
-              비교를 위한 정보 선택
+              추가 정보 선택
             </div>
 
-            {/* Insurer selection (2 required) */}
+            {/* Insurer selection (adaptive: 2 for EX3, 1+ for EX2/EX4) */}
             <div className="mb-3">
               <div className="text-blue-800 text-xs mb-2">
-                비교할 보험사 (2개 선택)
+                {pendingKind === "EX3_COMPARE" ? "비교할 보험사 (2개 선택)" : "보험사 선택 (1개 이상)"}
               </div>
               <div className="flex flex-wrap gap-2">
                 {config.available_insurers.map((insurer) => {
@@ -597,7 +612,7 @@ export default function Home() {
             {/* Coverage input (1 required) */}
             <div className="mb-3">
               <div className="text-blue-800 text-xs mb-2">
-                비교할 담보 (1개)
+                담보명 (1개)
               </div>
               <input
                 type="text"
@@ -611,9 +626,13 @@ export default function Home() {
             {/* Submit button */}
             <button
               onClick={async () => {
-                // Validate requirements
-                if (selectedInsurers.length < 2) {
-                  alert("보험사를 2개 선택해 주세요.");
+                // STEP NEXT-A: Adaptive validation based on exam type
+                const minInsurersRequired = pendingKind === "EX3_COMPARE" ? 2 : 1;
+
+                if (selectedInsurers.length < minInsurersRequired) {
+                  alert(pendingKind === "EX3_COMPARE"
+                    ? "보험사를 2개 선택해 주세요."
+                    : "보험사를 1개 이상 선택해 주세요.");
                   return;
                 }
 
@@ -627,7 +646,8 @@ export default function Home() {
                   return;
                 }
 
-                console.log("[page.tsx STEP NEXT-133] EX3_GATE_SUBMIT", {
+                console.log("[page.tsx STEP NEXT-A] EXAM_ENTRY_GATE_SUBMIT", {
+                  examType: pendingKind || "AUTO",
                   insurers: selectedInsurers,
                   coverages: coverageNamesFromInput
                 });
@@ -637,16 +657,23 @@ export default function Home() {
                 setIsLoading(true);
 
                 try {
-                  // Build EX3_COMPARE request
-                  const requestPayload = {
-                    message: "비교 요청",  // Generic message (user already sent their question)
-                    kind: "EX3_COMPARE" as MessageKind,
-                    insurers: selectedInsurers,
-                    coverage_names: coverageNamesFromInput,
-                    llm_mode: llmMode,
-                  };
+                  // STEP NEXT-A: Build request with kind if specified (EX3), else let backend route
+                  const requestPayload = pendingKind
+                    ? {
+                        message: "요청",  // Generic message (user already sent their question)
+                        kind: pendingKind,
+                        insurers: selectedInsurers,
+                        coverage_names: coverageNamesFromInput,
+                        llm_mode: llmMode,
+                      }
+                    : {
+                        message: "요청",  // Generic message
+                        insurers: selectedInsurers,
+                        coverage_names: coverageNamesFromInput,
+                        llm_mode: llmMode,
+                      };
 
-                  console.log("[page.tsx STEP NEXT-133] EX3_CHAT_REQUEST_SENT", requestPayload);
+                  console.log("[page.tsx STEP NEXT-A] EXAM_ENTRY_REQUEST_SENT", requestPayload);
 
                   const response = await postChat(requestPayload);
                   console.log("EX3 gate response:", response);
@@ -696,10 +723,16 @@ export default function Home() {
                   setPendingKind(null);
                 }
               }}
-              disabled={selectedInsurers.length < 2 || !coverageInput.trim()}
+              disabled={
+                (pendingKind === "EX3_COMPARE" && selectedInsurers.length < 2) ||
+                (!pendingKind && selectedInsurers.length < 1) ||
+                !coverageInput.trim()
+              }
               className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
-              비교 시작 ({selectedInsurers.length}/2개 보험사, {coverageInput.trim() ? "담보 입력됨" : "담보 없음"})
+              {pendingKind === "EX3_COMPARE"
+                ? `비교 시작 (${selectedInsurers.length}/2개 보험사, ${coverageInput.trim() ? "담보 입력됨" : "담보 없음"})`
+                : `확인 (${selectedInsurers.length}개 보험사, ${coverageInput.trim() ? "담보 입력됨" : "담보 없음"})`}
             </button>
           </div>
         )}
