@@ -7,6 +7,78 @@ Any output that contradicts this baseline is considered a **bug or hallucination
 
 ---
 
+## 0. STEP NEXT-129R: Customer Self-Test Flow (SSOT Rollback) — **2026-01-04**
+
+**New Constitutional Principle**:
+> "고객이 스스로 테스트 가능한 흐름 (Customer Self-Test Flow)"
+
+**Supersedes and ROLLBACK**:
+- ~~STEP NEXT-121: Comparison Intent Hard-Lock~~ (ROLLED BACK)
+- ~~STEP NEXT-125: Forced EX3 Routing~~ (ROLLED BACK)
+- ~~STEP NEXT-126: EX3 Fixed Bubble Template Override~~ (ROLLED BACK)
+- ~~STEP NEXT-128: Bubble/Table Consistency with Template Override~~ (ROLLED BACK)
+
+**Core Rules (ABSOLUTE)**:
+1. ❌ **NO forced routing** based on data structure (insurers≥2 does NOT force EX3)
+2. ❌ **NO silent payload correction** (NO extraction from message to inject into payload)
+3. ❌ **NO need_more_info bypass** (ALWAYS show clarification UI when backend requests it)
+4. ❌ **NO frontend override** of backend bubble_markdown (Backend is SSOT)
+5. ❌ **NO auto-send** on example button clicks (Fill input ONLY)
+6. ✅ **Backend bubble_markdown is SSOT** for all message content
+7. ✅ **User action required** for all transitions (button clicks, not auto-routing)
+8. ✅ **Predictable UX** (same input → same behavior, reproducible)
+
+**Implementation Status**:
+- Backend: IntentRouter.route() simplified (removed forced EX3 routing)
+- Frontend: Removed silent payload correction, need_more_info bypass, EX3 template override
+- EX1 Landing: 1 line + 3 example buttons (fill input ONLY, NO auto-send)
+- EX4: O/X eligibility table (COMPLETE - STEP NEXT-130)
+
+**SSOT Document**: `docs/audit/STEP_NEXT_129R_CUSTOMER_SELF_TEST_SSOT.md`
+
+**Rationale**:
+The system evolved toward "demo auto-complete" where frontend/backend bypassed user choices to complete flows automatically. This created unpredictable UX where users could not understand why certain screens appeared. STEP NEXT-129R restores customer self-test capability.
+
+---
+
+## 0.1 STEP NEXT-130: EX4 O/X Eligibility Table — **2026-01-04**
+
+**Purpose**: Customer self-test for disease subtype eligibility (제자리암/경계성종양)
+
+**Core Rules (ABSOLUTE)**:
+1. ✅ **Fixed 5 rows**: 진단비, 수술비, 항암약물, 표적항암, 다빈치수술 (order LOCKED)
+2. ✅ **O/X only**: Binary eligibility (NO △/Unknown/조건부)
+3. ✅ **Fixed 2 insurers**: samsung, meritz (demo mode)
+4. ✅ **Deterministic keyword matching**: NO LLM, NO inference
+5. ✅ **Display names ONLY**: 삼성화재, 메리츠화재 (NO code exposure)
+6. ✅ **Left bubble: 2-4 sentences**: Short guidance only
+7. ✅ **Evidence refs attached**: PD:{insurer}:{coverage_code} format
+8. ❌ **NO recommendation/judgment**: "유리", "불리", "추천" 금지
+9. ❌ **NO pipeline/data changes**: View layer ONLY
+
+**Category Keywords (Deterministic)**:
+- 진단비: `["진단", "진단비"]`
+- 수술비: `["수술", "수술비"]`
+- 항암약물: `["항암", "약물", "항암약물", "화학", "화학요법"]`
+- 표적항암: `["표적", "표적항암", "표적치료"]`
+- 다빈치수술: `["다빈치", "로봇", "로봇수술"]`
+
+**O/X Logic**:
+- **O**: `category_keyword IN coverage_name_raw` AND `subtype_keyword IN evidence_snippet`
+- **X**: Otherwise (NO LLM fallback, NO △/Unknown allowed)
+
+**Implementation**:
+- **Composer**: `apps/api/response_composers/ex4_eligibility_composer.py` (REPLACED)
+- **Tests**: `tests/test_step_next_130_ex4_ox_table.py` (8/8 PASS)
+- **SSOT**: `docs/audit/STEP_NEXT_130_EX4_OX_TABLE_LOCK.md`
+
+**Constitutional Basis**: STEP NEXT-129R (Customer Self-Test Flow)
+
+**Definition of Success**:
+> "고객이 표를 10초 안에 읽고 'O는 지원, X는 미지원'을 즉시 이해하면 성공"
+
+---
+
 ## 1. Active Architecture (as of STEP NEXT-79)
 
 ### Primary Data
