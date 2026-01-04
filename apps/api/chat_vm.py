@@ -54,7 +54,8 @@ _LEGACY_SECTION_KINDS = {
 TableKind = Literal[
     "COVERAGE_DETAIL",      # 예시2: 담보 상세 비교 (보장개시/면책/감액 등)
     "INTEGRATED_COMPARE",   # 예시3: 통합 비교표
-    "ELIGIBILITY_MATRIX"    # 예시4: 보장 가능 여부 매트릭스
+    "ELIGIBILITY_MATRIX",   # 예시4: 보장 가능 여부 매트릭스 (legacy)
+    "ELIGIBILITY_OX_TABLE"  # STEP NEXT-130: O/X 고정 5행 테이블
 ]
 
 
