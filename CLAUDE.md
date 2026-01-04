@@ -73,10 +73,15 @@ The system evolved toward "demo auto-complete" where frontend/backend bypassed u
 - STEP NEXT-131: Relaxed (category ONLY) → Mix O/X, useful overview
 - Disease subtype guidance → Notes: "세부 조건은 약관 확인"
 
+**Multi-Disease Support** (STEP NEXT-132):
+- **Input**: `subtype_keywords: List[str]` (e.g., `["제자리암", "경계성종양"]`)
+- **Output**: One O/X table section per disease (NO single-disease reduction)
+- **Example**: "제자리암, 경계성종양 비교해줘" → 2 tables (NO EX2 fallback)
+
 **Implementation**:
 - **Composer**: `apps/api/response_composers/ex4_eligibility_composer.py` (REPLACED)
 - **Tests**: `tests/test_step_next_130_ex4_ox_table.py` (8/8 PASS)
-- **SSOT**: `docs/audit/STEP_NEXT_130_EX4_OX_TABLE_LOCK.md` + `STEP_NEXT_131_EX4_RELAXED_LOGIC.md`
+- **SSOT**: `docs/audit/STEP_NEXT_130_EX4_OX_TABLE_LOCK.md` + `STEP_NEXT_131_EX4_RELAXED_LOGIC.md` + `STEP_NEXT_132_EX4_MULTI_DISEASE.md`
 
 **Constitutional Basis**: STEP NEXT-129R (Customer Self-Test Flow)
 

@@ -66,7 +66,7 @@ class EX4EligibilityComposer:
     @staticmethod
     def compose(
         insurers: List[str],
-        subtype_keyword: str,
+        subtype_keywords: List[str],  # STEP NEXT-132: Changed to List
         coverage_cards: List[Dict[str, Any]],
         query_focus_terms: Optional[List[str]] = None,
         coverage_name: Optional[str] = None,
@@ -75,9 +75,13 @@ class EX4EligibilityComposer:
         """
         Compose EX4_ELIGIBILITY response with O/X table
 
+        STEP NEXT-132: Support multi-disease queries
+        - subtype_keywords can be 1+ diseases
+        - Each disease gets its own table section
+
         Args:
             insurers: List of insurer codes (e.g., ["samsung", "meritz"])
-            subtype_keyword: Disease subtype (e.g., "제자리암", "경계성종양")
+            subtype_keywords: List of disease subtypes (e.g., ["제자리암", "경계성종양"])
             coverage_cards: List of coverage card dicts (from coverage_cards.jsonl)
             query_focus_terms: Optional list of focus terms from user query
             coverage_name: Optional coverage name for context
@@ -93,37 +97,51 @@ class EX4EligibilityComposer:
         else:
             insurers = insurers[:2]
 
+        # STEP NEXT-132: Ensure subtype_keywords is a list
+        if isinstance(subtype_keywords, str):
+            subtype_keywords = [subtype_keywords]
+
         # Get display-safe coverage name (NO code exposure)
         display_name = display_coverage_name(
             coverage_name=coverage_name,
             coverage_code=coverage_code
         ) if (coverage_name or coverage_code) else None
 
-        # Build title
-        title = f"{subtype_keyword} 보장 가능 여부"
+        # STEP NEXT-132: Build title for multi-disease case
+        if len(subtype_keywords) > 1:
+            title = f"{', '.join(subtype_keywords)} 보장 가능 여부"
+        else:
+            title = f"{subtype_keywords[0]} 보장 가능 여부"
 
         # Build summary bullets
-        summary_bullets = [
-            f"{subtype_keyword}에 대한 보장 가능 여부를 확인했습니다",
-            "표에서 O/X로 확인하세요"
-        ]
+        if len(subtype_keywords) > 1:
+            summary_bullets = [
+                f"{', '.join(subtype_keywords)}에 대한 보장 가능 여부를 각각 확인했습니다",
+                "표에서 O/X로 확인하세요"
+            ]
+        else:
+            summary_bullets = [
+                f"{subtype_keywords[0]}에 대한 보장 가능 여부를 확인했습니다",
+                "표에서 O/X로 확인하세요"
+            ]
 
-        # Build sections
+        # STEP NEXT-132: Build sections (one table per disease)
         sections = []
 
-        # Section 1: O/X Eligibility Table (required)
-        table_section = EX4EligibilityComposer._build_ox_table_section(
-            insurers, subtype_keyword, coverage_cards
-        )
-        sections.append(table_section)
+        for subtype_keyword in subtype_keywords:
+            # Section: O/X Eligibility Table (one per disease)
+            table_section = EX4EligibilityComposer._build_ox_table_section(
+                insurers, subtype_keyword, coverage_cards
+            )
+            sections.append(table_section)
 
-        # Section 2: Notes (guidance-only)
-        notes_section = EX4EligibilityComposer._build_notes_section(subtype_keyword)
+        # Section: Notes (once at the end, covering all diseases)
+        notes_section = EX4EligibilityComposer._build_notes_section(subtype_keywords)
         sections.append(notes_section)
 
         # Build bubble markdown (2-4 sentences)
         bubble_markdown = EX4EligibilityComposer._build_bubble_markdown(
-            subtype_keyword, display_name
+            subtype_keywords, display_name
         )
 
         # Build response
@@ -277,11 +295,11 @@ class EX4EligibilityComposer:
             return ("X", [])
 
     @staticmethod
-    def _build_notes_section(subtype_keyword: str) -> Dict[str, Any]:
+    def _build_notes_section(subtype_keywords: List[str]) -> Dict[str, Any]:
         """
         Build notes section (guidance-only)
 
-        STEP NEXT-131: Add disease subtype guidance
+        STEP NEXT-131/132: Add disease subtype guidance (multi-disease support)
         - O/X: Coverage existence (NOT subtype-specific)
         - Subtype conditions: Check detailed terms
 
@@ -290,12 +308,21 @@ class EX4EligibilityComposer:
         - NO judgment
         - Simple clarification bullets (3-4)
         """
+        # STEP NEXT-132: Handle both single and multi-disease
+        if isinstance(subtype_keywords, str):
+            subtype_keywords = [subtype_keywords]
+
+        if len(subtype_keywords) > 1:
+            disease_text = f"'{', '.join(subtype_keywords)}' 각각의"
+        else:
+            disease_text = f"'{subtype_keywords[0]}'"
+
         return {
             "kind": "common_notes",
             "title": "유의사항",
             "bullets": [
                 "O: 해당 담보 존재, X: 담보 없음",
-                f"'{subtype_keyword}' 세부 보장 조건은 각 상품 약관을 확인하세요",
+                f"{disease_text} 세부 보장 조건은 각 상품 약관을 확인하세요",
                 "가입설계서 및 약관 기준입니다",
                 "실제 보장 여부는 약관을 직접 확인하시기 바랍니다"
             ],
@@ -304,11 +331,13 @@ class EX4EligibilityComposer:
 
     @staticmethod
     def _build_bubble_markdown(
-        subtype_keyword: str,
+        subtype_keywords: List[str],
         coverage_display_name: Optional[str] = None
     ) -> str:
         """
         Build bubble_markdown for central chat bubble (2-4 sentences)
+
+        STEP NEXT-132: Support multi-disease queries
 
         Rules (Constitutional):
         - NO LLM usage (deterministic only)
@@ -320,19 +349,29 @@ class EX4EligibilityComposer:
         Format (LOCKED):
         1. Query intent (1 sentence)
         2. Guidance to check table (1 sentence)
-        3. Optional: clarification (1 sentence)
 
         Args:
-            subtype_keyword: Disease subtype (e.g., "제자리암")
+            subtype_keywords: List of disease subtypes (e.g., ["제자리암", "경계성종양"])
             coverage_display_name: Optional coverage name for context (NO code exposure)
         """
+        # STEP NEXT-132: Handle both single and multi-disease
+        if isinstance(subtype_keywords, str):
+            subtype_keywords = [subtype_keywords]
+
         lines = []
 
         # Sentence 1: Query intent
-        if coverage_display_name:
-            lines.append(f"{coverage_display_name} 중 **{subtype_keyword}** 보장 가능 여부를 확인했습니다.")
+        if len(subtype_keywords) > 1:
+            diseases_text = ", ".join([f"**{kw}**" for kw in subtype_keywords])
+            if coverage_display_name:
+                lines.append(f"{coverage_display_name} 중 {diseases_text} 보장 가능 여부를 각각 확인했습니다.")
+            else:
+                lines.append(f"{diseases_text} 보장 가능 여부를 각각 확인했습니다.")
         else:
-            lines.append(f"**{subtype_keyword}** 보장 가능 여부를 확인했습니다.")
+            if coverage_display_name:
+                lines.append(f"{coverage_display_name} 중 **{subtype_keywords[0]}** 보장 가능 여부를 확인했습니다.")
+            else:
+                lines.append(f"**{subtype_keywords[0]}** 보장 가능 여부를 확인했습니다.")
 
         lines.append("")
 
