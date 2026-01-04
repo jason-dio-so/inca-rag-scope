@@ -744,7 +744,17 @@ class Example4HandlerDeterministic(BaseDeterministicHandler):
         from apps.api.response_composers.ex4_eligibility_composer import EX4EligibilityComposer
 
         insurers = compiled_query.get("insurers", [])
-        subtype = compiled_query.get("disease_name", "제자리암")
+
+        # STEP NEXT-132: Support multi-disease queries
+        # Extract disease names from compiled_query
+        # Priorityorder: disease_names (list) > disease_name (single) > default
+        disease_names = compiled_query.get("disease_names")
+        if disease_names and isinstance(disease_names, list):
+            subtypes = disease_names
+        else:
+            # Fallback to single disease_name
+            subtype = compiled_query.get("disease_name", "제자리암")
+            subtypes = [subtype]
 
         # Load coverage cards for all insurers
         comparer = CoverageLimitComparer()
@@ -753,13 +763,13 @@ class Example4HandlerDeterministic(BaseDeterministicHandler):
             cards = comparer.load_coverage_cards(insurer)
             all_coverage_cards.extend(cards)
 
-        # STEP NEXT-130: Use EX4EligibilityComposer to build O/X table response
-        query_focus_terms = [subtype]
+        # STEP NEXT-132: Use EX4EligibilityComposer to build O/X table response (multi-disease support)
+        query_focus_terms = subtypes
 
         # Compose EX4_ELIGIBILITY response
         response_dict = EX4EligibilityComposer.compose(
             insurers=insurers,
-            subtype_keyword=subtype,
+            subtype_keywords=subtypes,  # STEP NEXT-132: Changed to list
             coverage_cards=all_coverage_cards,
             query_focus_terms=query_focus_terms
         )

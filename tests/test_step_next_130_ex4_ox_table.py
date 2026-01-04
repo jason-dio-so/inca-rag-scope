@@ -124,7 +124,7 @@ class TestEX4OXTableStructure:
         """Test 1: Table has exactly 5 fixed rows"""
         response = EX4EligibilityComposer.compose(
             insurers=["samsung", "meritz"],
-            subtype_keyword="제자리암",
+            subtype_keywords=["제자리암"],
             coverage_cards=MOCK_COVERAGE_CARDS
         )
 
@@ -147,7 +147,7 @@ class TestEX4OXTableStructure:
         """Test 2: All cells contain O or X only (NO △/Unknown)"""
         response = EX4EligibilityComposer.compose(
             insurers=["samsung", "meritz"],
-            subtype_keyword="제자리암",
+            subtype_keywords=["제자리암"],
             coverage_cards=MOCK_COVERAGE_CARDS
         )
 
@@ -168,7 +168,7 @@ class TestEX4OXTableStructure:
         """Test 3: Column headers use display names (NO insurer code)"""
         response = EX4EligibilityComposer.compose(
             insurers=["samsung", "meritz"],
-            subtype_keyword="제자리암",
+            subtype_keywords=["제자리암"],
             coverage_cards=MOCK_COVERAGE_CARDS
         )
 
@@ -189,7 +189,7 @@ class TestEX4OXTableStructure:
         """Test 4: Bubble markdown is 2-4 sentences (short guidance)"""
         response = EX4EligibilityComposer.compose(
             insurers=["samsung", "meritz"],
-            subtype_keyword="제자리암",
+            subtype_keywords=["제자리암"],
             coverage_cards=MOCK_COVERAGE_CARDS
         )
 
@@ -207,7 +207,7 @@ class TestEX4OXTableStructure:
         """Test 5: Bubble has NO recommendation/judgment keywords"""
         response = EX4EligibilityComposer.compose(
             insurers=["samsung", "meritz"],
-            subtype_keyword="제자리암",
+            subtype_keywords=["제자리암"],
             coverage_cards=MOCK_COVERAGE_CARDS
         )
 
@@ -226,7 +226,7 @@ class TestEX4OXTableStructure:
         """Test 6: NO coverage_code exposure anywhere in response"""
         response = EX4EligibilityComposer.compose(
             insurers=["samsung", "meritz"],
-            subtype_keyword="제자리암",
+            subtype_keywords=["제자리암"],
             coverage_cards=MOCK_COVERAGE_CARDS,
             coverage_code="A4200"
         )
@@ -257,7 +257,7 @@ class TestEX4OXTableStructure:
         """Test 7: Evidence refs attached to rows with O status"""
         response = EX4EligibilityComposer.compose(
             insurers=["samsung", "meritz"],
-            subtype_keyword="제자리암",
+            subtype_keywords=["제자리암"],
             coverage_cards=MOCK_COVERAGE_CARDS
         )
 
@@ -293,7 +293,7 @@ class TestEX4OXTableStructure:
         # Test case 1: Samsung has 진단비 + 제자리암 → O
         response = EX4EligibilityComposer.compose(
             insurers=["samsung", "meritz"],
-            subtype_keyword="제자리암",
+            subtype_keywords=["제자리암"],
             coverage_cards=MOCK_COVERAGE_CARDS
         )
 
