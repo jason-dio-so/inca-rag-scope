@@ -739,25 +739,28 @@ class Example4HandlerDeterministic(BaseDeterministicHandler):
         """
         Execute subtype eligibility check (LLM OFF)
 
-        STEP NEXT-79: Use EX4EligibilityComposer for locked schema response with overall evaluation
+        STEP NEXT-130: Use EX4EligibilityComposer with O/X table (fixed 5 rows)
         """
         from apps.api.response_composers.ex4_eligibility_composer import EX4EligibilityComposer
-
-        checker = SubtypeEligibilityChecker()
 
         insurers = compiled_query.get("insurers", [])
         subtype = compiled_query.get("disease_name", "제자리암")
 
-        result = checker.check_subtype_eligibility(insurers, subtype)
+        # Load coverage cards for all insurers
+        comparer = CoverageLimitComparer()
+        all_coverage_cards = []
+        for insurer in insurers:
+            cards = comparer.load_coverage_cards(insurer)
+            all_coverage_cards.extend(cards)
 
-        # STEP NEXT-79: Use EX4EligibilityComposer to build response
+        # STEP NEXT-130: Use EX4EligibilityComposer to build O/X table response
         query_focus_terms = [subtype]
 
         # Compose EX4_ELIGIBILITY response
         response_dict = EX4EligibilityComposer.compose(
             insurers=insurers,
             subtype_keyword=subtype,
-            eligibility_data=result["rows"],
+            coverage_cards=all_coverage_cards,
             query_focus_terms=query_focus_terms
         )
 
