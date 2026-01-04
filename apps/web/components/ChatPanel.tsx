@@ -91,12 +91,12 @@ export default function ChatPanel({
                   </button>
                   <button
                     onClick={() => {
-                      // STEP NEXT-133: Fill input ONLY (NO auto-send, NO auto-context)
-                      onInputChange("삼성화재와 메리츠화재 암진단비 비교해줘");
+                      // STEP NEXT-A-α: Simplified example (NO insurer names in EX1)
+                      onInputChange("암진단비 비교해줘");
                     }}
                     className="block w-full text-left px-3 py-2 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
                   >
-                    예: 삼성화재와 메리츠화재 암진단비 비교해줘
+                    예: 암진단비 비교해줘
                   </button>
                   <button
                     onClick={() => {
@@ -328,13 +328,13 @@ export default function ChatPanel({
             </div>
           )}
 
-          {/* STEP NEXT-120: Message input (comparison-first placeholder) */}
+          {/* STEP NEXT-A-α: Simplified placeholder (NO insurer names) */}
           <div className="flex gap-2">
             <textarea
               value={input}
               onChange={(e) => onInputChange(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="예: 삼성화재와 메리츠화재 암진단비 비교해줘"
+              placeholder="예: 암진단비 비교해줘"
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               rows={1}
               disabled={isLoading}
