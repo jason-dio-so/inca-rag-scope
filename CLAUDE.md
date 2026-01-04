@@ -90,6 +90,69 @@ The system evolved toward "demo auto-complete" where frontend/backend bypassed u
 
 ---
 
+## 0.2 STEP NEXT-133: EX3 Front-Trigger Selection Gate — **2026-01-04**
+
+**Purpose**: Customer self-test UX — EX3-specific front-end gate (NO backend need_more_info)
+
+**Core Problem**:
+- EX1 → EX3 button → unpredictable screens (보고서/빈 화면/추가정보 엉킴)
+- EX3 routed to EX2_DETAIL_DIFF unexpectedly
+- Customer testing requires predictable, reproducible UX
+
+**Solution**:
+- Frontend triggers EX3 selection panel BEFORE backend call
+- NO reliance on backend need_more_info for EX3 flow
+- User-driven: "보험사/담보 선택 → 비교" (always predictable)
+
+**Core Rules (ABSOLUTE)**:
+1. ✅ **User-driven ONLY**: Buttons fill input, NO auto-send/auto-select/auto-retry
+2. ✅ **EX3 entry = same UX**: Always "비교를 하려면 보험사/담보를 먼저 선택"
+3. ✅ **Backend need_more_info = NOT used for EX3**: Frontend controls gate
+4. ✅ **No business logic change**: Server routing/intent/data/extraction UNCHANGED
+5. ✅ **No LLM** (always OFF), **No silent payload correction**, **No force routing** (129R preserved)
+6. ❌ **NO backend need_more_info** intentionally triggered for EX3
+7. ❌ **NO auto-send** on button click
+8. ❌ **NO silent payload correction** / auto-extraction / auto-injection
+9. ❌ **NO force routing** (121/125류 부활 금지)
+
+**State Model** (page.tsx):
+- `pendingKind`: "EX3_COMPARE" | null (intent temporarily stored)
+- `ex3GateOpen`: boolean (gate panel visibility)
+- `ex3GateMessageId`: string | null (unique gate message ID)
+
+**Detection Logic** (deterministic):
+```typescript
+const isEX3Intent =
+  messageToSend.includes("비교") ||
+  messageToSend.includes("차이") ||
+  messageToSend.includes("VS") ||
+  messageToSend.includes("vs");
+
+// EX3 requires 2 insurers + 1 coverage
+if (currentInsurers.length < 2 || currentCoverageNames.length === 0) {
+  // Open EX3 gate (NO backend call)
+}
+```
+
+**UI Text** (LOCKED):
+- Assistant message: "비교를 위해 담보와 보험사를 먼저 선택해 주세요.\n아래에서 보험사 2개와 담보명 1개를 고르면 바로 비교표를 보여드릴게요."
+- Panel header: "비교를 위한 정보 선택"
+- Insurer section: "비교할 보험사 (2개 선택)"
+- Coverage section: "비교할 담보 (1개)"
+- Submit button: "비교 시작 (N/2개 보험사, 담보 입력됨/담보 없음)"
+
+**Implementation**:
+- **Modified Files**: `apps/web/app/page.tsx`, `apps/web/components/ChatPanel.tsx`
+- **Backend Changes**: ❌ FORBIDDEN (NO apps/api/** changes)
+- **SSOT**: `docs/audit/STEP_NEXT_133_EX3_GATE_FRONT_TRIGGER_LOCK.md`
+
+**Constitutional Basis**: STEP NEXT-129R (Customer Self-Test Flow)
+
+**Definition of Success**:
+> "EX1 → EX3 항상 선택 패널 먼저 표시 (백엔드 호출 0회). 선택 완료 후에만 EX3_COMPARE 호출. '왜 이 화면이 나왔지?' 혼란 제거."
+
+---
+
 ## 1. Active Architecture (as of STEP NEXT-79)
 
 ### Primary Data
