@@ -144,6 +144,39 @@ if (isInitialEntry && (isEX2Intent || isEX3Intent || isEX4Intent)) {
 
 ---
 
+## 0.2.1 STEP NEXT-A-α: EX1 Simplified Example Text — **2026-01-04**
+
+**Purpose**: Remove insurer names from EX1 to avoid premature decision-making
+
+**Core Change**:
+- **Before**: "삼성화재와 메리츠화재 암진단비 비교해줘"
+- **After**: "암진단비 비교해줘"
+
+**Rationale**:
+1. EX1 = "WHAT" to compare (coverage) ← User focuses here
+2. Entry Gate = "WHO" to compare (insurers) ← User decides in next step
+3. Expansion-ready: Not bound to 2 specific insurers
+4. Clear flow: Question → Selection → Results
+
+**Core Rules (ABSOLUTE)**:
+1. ✅ **NO insurer names in EX1** (example buttons, placeholder)
+2. ✅ **EX1 asks WHAT**: User specifies coverage
+3. ✅ **Gate asks WHO**: User selects insurers explicitly
+4. ❌ **NO "삼성/메리츠 기준 예시"** language
+5. ❌ **NO premature insurer commitment** in first screen
+
+**Implementation**:
+- **Modified Files**: `apps/web/components/ChatPanel.tsx` (2 text changes)
+- **Backend Changes**: ❌ NONE (text-only)
+- **SSOT**: `docs/audit/STEP_NEXT_A_ALPHA_EX1_SIMPLIFIED_TEXT_LOCK.md`
+
+**Constitutional Basis**: STEP NEXT-A (Unified Exam Entry UX)
+
+**Definition of Success**:
+> "EX1 화면에 보험사명 0개. '암진단비 비교해줘' 클릭 → 추가 정보 요청 → 보험사 선택. 자연스러운 단계별 진행."
+
+---
+
 ## 0.3 STEP NEXT-133: EX3 Front-Trigger Selection Gate — **2026-01-04** (Superseded by STEP NEXT-A)
 
 **Purpose**: Customer self-test UX — EX3-specific front-end gate (NO backend need_more_info)
