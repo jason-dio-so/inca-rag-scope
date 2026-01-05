@@ -5,6 +5,10 @@
  * to eliminate [object Object] rendering in React tables.
  *
  * Constitutional: NO LLM, NO OCR, NO Embedding - pure deterministic string conversion
+ *
+ * STEP NEXT-139A/B: View-layer formatting for EXAM3
+ * - 139A: LIMIT + AMOUNT → "{한도 설명} (일당 {금액})"
+ * - 139B: 일당형 amount → "일당 {금액}" (한글만), 정액형 → "{금액}" (한글만)
  */
 
 export function renderCellValue(cell: unknown): string {
@@ -118,3 +122,13 @@ function formatWonMaybe(n: number): string {
 export function renderInlineValue(cell: unknown): string {
   return renderCellValue(cell);
 }
+
+/**
+ * STEP NEXT-139A/B: EXAM3 View-Layer Formatting
+ *
+ * NOTE: Formatting has been moved to `apps/web/lib/normalize/table.ts`
+ * where it's applied DURING normalization (before renderCellValue is called).
+ * This preserves access to meta.kpi_summary which is needed for formatting.
+ *
+ * See: `applyEX3FormattingDuringNormalization()` in table.ts
+ */

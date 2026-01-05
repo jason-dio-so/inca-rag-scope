@@ -16,6 +16,9 @@ export type MessageKind =
   | "EX4_ELIGIBILITY"
   | "KNOWLEDGE_BASE";
 
+// EXAM ISOLATION: Explicit exam type for cross-contamination prevention
+export type ExamType = "EXAM1" | "EXAM2" | "EXAM3" | "EXAM4";
+
 export interface ChatRequest {
   message: string;
   kind?: MessageKind;  // STEP NEXT-79-FE: Explicit kind (Priority 1)
@@ -144,6 +147,7 @@ export interface Lineage {
 
 export interface AssistantMessageVM {
   kind: MessageKind;
+  exam_type: ExamType;  // EXAM ISOLATION: Explicit exam type (MANDATORY)
   title?: string;
   summary_bullets?: string[];
   sections?: Section[];

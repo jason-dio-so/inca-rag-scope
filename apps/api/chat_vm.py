@@ -55,7 +55,8 @@ TableKind = Literal[
     "COVERAGE_DETAIL",      # 예시2: 담보 상세 비교 (보장개시/면책/감액 등)
     "INTEGRATED_COMPARE",   # 예시3: 통합 비교표
     "ELIGIBILITY_MATRIX",   # 예시4: 보장 가능 여부 매트릭스 (legacy)
-    "ELIGIBILITY_OX_TABLE"  # STEP NEXT-130: O/X 고정 5행 테이블
+    "ELIGIBILITY_OX_TABLE", # STEP NEXT-130: O/X 고정 5행 테이블
+    "LIMIT_INFO"            # STEP NEXT-138-γ: 보장 한도 정보 (EXAM3 AMOUNT/LIMIT 분리)
 ]
 
 
@@ -366,6 +367,41 @@ MessageKind = Literal[
     "PREMIUM_COMPARE"       # 예시1: 보험료 비교 (활성)
 ]
 
+# EXAM ISOLATION: Explicit exam type for cross-contamination prevention
+ExamType = Literal[
+    "EXAM1",  # Entry/routing only
+    "EXAM2",  # Exploration (EX2_DETAIL, EX2_LIMIT_FIND, EX2_DETAIL_DIFF)
+    "EXAM3",  # Report (EX3_COMPARE, EX3_INTEGRATED)
+    "EXAM4"   # O/X judgment (EX4_ELIGIBILITY)
+]
+
+
+def get_exam_type_from_kind(kind: MessageKind) -> ExamType:
+    """
+    EXAM ISOLATION: Map MessageKind to ExamType
+
+    RULES:
+    - NO guessing/inference (explicit mapping only)
+    - Each kind maps to exactly ONE exam type
+    - Cross-exam mixing is FORBIDDEN
+
+    MAPPING:
+    - EXAM1: EX1_PREMIUM_DISABLED, PREMIUM_COMPARE (entry/routing)
+    - EXAM2: EX2_DETAIL, EX2_DETAIL_DIFF, EX2_LIMIT_FIND (exploration)
+    - EXAM3: EX3_INTEGRATED, EX3_COMPARE (report)
+    - EXAM4: EX4_ELIGIBILITY (O/X judgment)
+    """
+    if kind in ("EX1_PREMIUM_DISABLED", "PREMIUM_COMPARE"):
+        return "EXAM1"
+    elif kind in ("EX2_DETAIL", "EX2_DETAIL_DIFF", "EX2_LIMIT_FIND"):
+        return "EXAM2"
+    elif kind in ("EX3_INTEGRATED", "EX3_COMPARE"):
+        return "EXAM3"
+    elif kind == "EX4_ELIGIBILITY":
+        return "EXAM4"
+    else:
+        raise ValueError(f"Unknown MessageKind: {kind}")
+
 
 class AssistantMessageVM(BaseModel):
     """
@@ -377,6 +413,7 @@ class AssistantMessageVM(BaseModel):
     3. Sections are typed (union discriminator)
     4. Lineage metadata is REQUIRED
     5. NO LLM-generated text (compiler output only)
+    6. EXAM ISOLATION: exam_type MUST match kind (NO cross-exam mixing)
 
     PRESENTATION:
     - ChatGPT-style card layout
@@ -387,6 +424,7 @@ class AssistantMessageVM(BaseModel):
     message_id: uuid.UUID = Field(default_factory=uuid.uuid4)
     request_id: uuid.UUID  # From /chat request
     kind: MessageKind
+    exam_type: ExamType  # EXAM ISOLATION: Explicit exam type (MANDATORY)
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
     title: str  # Short header (e.g., "암진단비 비교 결과")

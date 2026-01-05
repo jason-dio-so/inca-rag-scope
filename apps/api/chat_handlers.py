@@ -36,7 +36,8 @@ from apps.api.chat_vm import (
     BulletGroup,  # NEW (STEP NEXT-14-β)
     EvidenceAccordionSection,  # RENAMED from EvidenceSection
     EvidenceItem,
-    ChatRequest
+    ChatRequest,
+    get_exam_type_from_kind
 )
 from apps.api.dto import AmountAuditDTO, AmountDTO
 from apps.api.presentation_utils import (
@@ -206,6 +207,7 @@ class Example2Handler(BaseHandler):
         return AssistantMessageVM(
             request_id=uuid.UUID(compiled_query["request_id"]),
             kind=self.kind,
+            exam_type=get_exam_type_from_kind(self.kind),
             title=title,
             summary_bullets=summary_bullets,
             sections=[
@@ -409,6 +411,7 @@ class Example3Handler(BaseHandler):
         return AssistantMessageVM(
             request_id=uuid.UUID(compiled_query["request_id"]),
             kind=self.kind,
+            exam_type=get_exam_type_from_kind(self.kind),
             title=title,
             summary_bullets=summary_bullets,
             sections=[
@@ -620,6 +623,7 @@ class Example4Handler(BaseHandler):
         return AssistantMessageVM(
             request_id=uuid.UUID(compiled_query["request_id"]),
             kind=self.kind,
+            exam_type=get_exam_type_from_kind(self.kind),
             title=title,
             summary_bullets=summary_bullets,
             sections=[
@@ -769,6 +773,7 @@ class Example1DisabledHandler(BaseHandler):
         return AssistantMessageVM(
             request_id=uuid.UUID(compiled_query["request_id"]),
             kind=self.kind,
+            exam_type=get_exam_type_from_kind(self.kind),
             title=title,
             summary_bullets=summary_bullets,
             sections=[disabled_notice],

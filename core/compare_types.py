@@ -343,6 +343,8 @@ class CoverageCardSlim:
     coverage_name_canonical: Optional[str]
     coverage_name_raw: str
     mapping_status: str  # "matched" | "unmatched"
+    product_name: str  # STEP NEXT-PRODUCT-1: product_name_display from products.yml
+    variant_key: Optional[str] = None  # STEP NEXT-PRODUCT-1: variant_key (LOTTE_MALE/FEMALE, DB_AGE_U40/O40, or null)
     proposal_facts: Optional[dict] = None
     customer_view: Optional[CustomerView] = None
     refs: dict = field(default_factory=dict)  # {proposal_detail_ref, evidence_refs}
@@ -356,6 +358,8 @@ class CoverageCardSlim:
             'coverage_name_canonical': self.coverage_name_canonical,
             'coverage_name_raw': self.coverage_name_raw,
             'mapping_status': self.mapping_status,
+            'product_name': self.product_name,
+            'variant_key': self.variant_key,
             'proposal_facts': self.proposal_facts,
             'refs': self.refs
         }
@@ -387,6 +391,8 @@ class CoverageCardSlim:
             coverage_name_canonical=data.get('coverage_name_canonical'),
             coverage_name_raw=data['coverage_name_raw'],
             mapping_status=data['mapping_status'],
+            product_name=data['product_name'],
+            variant_key=data.get('variant_key'),
             proposal_facts=data.get('proposal_facts'),
             customer_view=customer_view,
             refs=data.get('refs', {}),

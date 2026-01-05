@@ -128,6 +128,7 @@ function normalizeRows(
     // Pattern 1: row.cells exists (EX2_DETAIL pattern)
     // First cell is label, rest are values
     if (Array.isArray(rowObj.cells)) {
+      // STEP NEXT-139C: Backend now handles formatting, frontend just renders
       const allCells = rowObj.cells.map((cell: unknown) => renderCellValue(cell));
       label = allCells[0] || `Row ${rowIdx + 1}`;
       values = allCells.slice(1);
@@ -191,6 +192,12 @@ function normalizeRows(
     };
   });
 }
+
+/**
+ * STEP NEXT-139C: Formatting moved to backend (ex3_compare_composer.py)
+ * Frontend now just renders pre-formatted strings from backend.
+ * See: `format_payment_type()`, `format_amount_display()`, `format_limit_display()`
+ */
 
 /**
  * Debug helper: Deep log table structure for troubleshooting

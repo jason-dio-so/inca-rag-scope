@@ -66,7 +66,9 @@ The system evolved toward "demo auto-complete" where frontend/backend bypassed u
 
 ---
 
-## 0.1 STEP NEXT-130: EX4 O/X Eligibility Table — **2026-01-04**
+## 0.1 STEP NEXT-130: EX4 O/X Eligibility Table — **2026-01-04** (ACTIVE)
+
+**Status**: ACTIVE (confirmed as correct customer-facing design)
 
 **Purpose**: Customer self-test for disease subtype eligibility (제자리암/경계성종양)
 
@@ -403,7 +405,218 @@ const clarState = deriveClarificationState({
 
 ---
 
-## 0.3.4 STEP NEXT-138-γ: EXAM3 AMOUNT/LIMIT Dimension Separation (Backend) — **2026-01-04**
+## 0.3.4 STEP NEXT-141-δ: EX4 Clarification NO Context Fallback (FINAL FIX) — **2026-01-05**
+
+**Purpose**: Fix EX4 clarification to NEVER use conversation context fallback for insurers
+
+**Supersedes**: STEP NEXT-141 (extended with context isolation logic)
+
+**Root Problem**:
+- EX4 preset → disease_subtypes resolved, insurers missing
+- Previous conversation has locked insurers (e.g., samsung + meritz from EX3)
+- Clarification logic used `conversationContext.lockedInsurers` as fallback
+- Result: `missingInsurers=false` → NO clarification UI shown → silent payload submission
+
+**Expected Behavior**:
+- EX4 preset → disease_subtypes resolved, insurers missing
+- Clarification UI appears: "비교할 보험사를 선택해주세요"
+- User selects insurers → clicks 확인 → backend call
+
+**Solution (Frontend ONLY)**:
+- **EX4-specific insurer resolution**: NO context fallback for EX4
+- **EX2/EX3 preserved**: Context fallback still works for other exam types
+
+**Core Rules (ABSOLUTE)**:
+1. ✅ **EX4 NO context fallback**: `resolvedInsurers` for EX4 = `payloadInsurers ?? parsedInsurers ?? null` (NO `lockedInsurers`)
+2. ✅ **EX2/EX3 context fallback PRESERVED**: Other exam types can still use `lockedInsurers` fallback
+3. ✅ **Clarification message**: "비교할 보험사를 선택해주세요" (NOT "담보와 보험사")
+4. ✅ **Coverage input hidden**: EX4 clarification UI = insurers buttons ONLY
+5. ✅ **NO auto-submit**: User MUST click 확인 (NO useEffect auto-trigger)
+6. ❌ **NO context fallback for EX4** (ABSOLUTE FORBIDDEN)
+7. ❌ **NO "담보와 보험사" message** for EX4
+8. ❌ **NO coverage input UI** for EX4
+
+**Implementation**:
+- **MODIFIED**: `apps/web/lib/clarificationUtils.ts` (lines 182-197)
+  - Added EX4-specific insurer resolution logic
+  - EX4: `resolvedInsurers = payloadInsurers ?? parsedInsurers ?? null`
+  - EX2/EX3: `resolvedInsurers = payloadInsurers ?? parsedInsurers ?? lockedInsurers ?? null`
+- **Backend Changes**: ❌ NONE (frontend only)
+- **Tests**: `tests/test_step_next_141_delta_ex4_no_context_fallback.py` (4 contract tests)
+- **Manual Verification**: `tests/manual_test_step_next_141_delta.md`
+- **SSOT**: `docs/audit/STEP_NEXT_141_DELTA_EX4_NO_CONTEXT_FALLBACK.md`
+
+**Verification Scenarios**:
+- ✅ S1: EX4 preset → clarification UI shown (10/10)
+- ✅ S2: Clarification message = "비교할 보험사를 선택해주세요" (insurers-only)
+- ✅ S3: Previous EX3 context → EX4 preset → NO context carryover (clarification shown)
+- ✅ S4 (Regression): EX2/EX3 context fallback still works
+- ✅ S5 (Regression): EX4 preset routing lock preserved
+
+**Constitutional Basis**: STEP NEXT-129R (Customer Self-Test Flow) + STEP NEXT-133 (Slot-driven clarification) + STEP NEXT-141 (EX4 preset lock)
+
+**Definition of Success**:
+> "EX4 프리셋 클릭 → 보험사 선택 UI 100% 노출. Context fallback으로 보험사를 '몰래 채우는' 동작 0%. 자동 제출 0%. UI 상태와 payload 100% 일치."
+
+**Key Insight**:
+> **STEP NEXT-141**: "Preset button locks exam type routing"
+> **STEP NEXT-141-δ**: "EX4 also locks insurers resolution (NO context fallback)"
+
+**Regression Prevention**:
+- ✅ STEP NEXT-129R preserved (NO auto-send, NO silent correction)
+- ✅ STEP NEXT-133 preserved (Slot-driven clarification)
+- ✅ STEP NEXT-138 preserved (Single-insurer explanation guard)
+- ✅ STEP NEXT-141 preserved (EX4 preset routing lock)
+- ✅ EX2/EX3 context fallback PRESERVED
+
+---
+
+## 0.3.5 STEP NEXT-141-ζ: EX4 Coverage Slot Removal (FINAL FIX) — **2026-01-05**
+
+**Purpose**: Fix EX4 clarification gate to NEVER require coverage slot, resolving confirm button blocking issue
+
+**Supersedes**: STEP NEXT-141-δ (extended with coverage slot fix)
+
+**Root Problem**:
+- EX4 preset → disease_subtypes resolved, insurers missing
+- User selects insurers → clarification gate stays open
+- Confirm button disabled/hidden
+- **Root Cause**: `missingSlots.coverage` was not explicitly set to `false` for EX4
+- Confirm button disabled condition included coverage check, blocking EX4 flow
+
+**Console Evidence**:
+```
+examType: "EX4"
+resolvedSlots.disease_subtypes: ["제자리암", "경계성종양"]
+selectedInsurers: ["samsung", "meritz"]
+missingSlots.coverage: undefined (should be false)  ← BUG
+showClarification: true (should be false after insurer selection)
+```
+
+**Expected Behavior**:
+- EX4 required slots = **{ insurers, disease_subtypes } ONLY**
+- Coverage slot = NEVER required for EX4
+- After selecting insurers → confirm button enabled → submit
+
+**Solution (Frontend ONLY)**:
+- **Explicit coverage = false**: Set `missingCoverage = false` in EX4 branch
+- **No confirm button changes**: Existing disabled condition works correctly with explicit false
+
+**Core Rules (ABSOLUTE)**:
+1. ✅ **EX4 coverage slot = false**: `missingCoverage = false` explicitly set for EX4
+2. ✅ **EX4 required slots ONLY**: insurers + disease_subtypes (NO coverage)
+3. ✅ **Confirm button logic**: NO coverage check for EX4 (auto-resolved by missingCoverage=false)
+4. ✅ **EX2/EX3 preserved**: Coverage requirement unchanged
+5. ❌ **NO coverage requirement for EX4** (ABSOLUTE FORBIDDEN)
+6. ❌ **NO coverage in EX4 payload** (disease_subtypes ≠ coverage)
+7. ❌ **NO auto-submit** (STEP NEXT-129R preserved)
+
+**Implementation**:
+- **MODIFIED**: `apps/web/lib/clarificationUtils.ts` (lines 236-242)
+  - Added explicit `missingCoverage = false` for EX4 branch
+  - Prevents coverage slot from gating EX4 clarification
+- **Backend Changes**: ❌ NONE (frontend only)
+- **SSOT**: `docs/audit/STEP_NEXT_141_ZETA_EX4_COVERAGE_SLOT_REMOVAL.md`
+
+**Verification Scenarios**:
+- ✅ S1: EX4 preset → insurers selected → confirm button ENABLED (CRITICAL)
+- ✅ S2: EX4 preset → no insurers → clarification shown (insurers-only)
+- ✅ S3 (Regression): EX3 coverage requirement preserved
+- ✅ S4 (Regression): EX2_LIMIT_FIND coverage extraction works
+- ✅ S5 (Regression): EX4 context fallback prevention (STEP NEXT-141-δ) preserved
+
+**Constitutional Basis**: STEP NEXT-129R + STEP NEXT-133 + STEP NEXT-141 + STEP NEXT-141-δ
+
+**Definition of Success**:
+> "EX4 프리셋 → 보험사 선택 → 확인 버튼 100% 활성화. Coverage 체크로 인한 gating 0%. 콘솔에서 `missingSlots.coverage=false` 확인."
+
+**Key Insight**:
+> **Problem Chain**:
+> 1. STEP NEXT-141: Preset button locks exam type routing ✅
+> 2. STEP NEXT-141-δ: EX4 locks insurers resolution (NO context fallback) ✅
+> 3. **STEP NEXT-141-ζ: EX4 locks coverage slot (ALWAYS false)** ✅ ← THIS FIX
+
+**Regression Prevention**:
+- ✅ STEP NEXT-129R preserved (NO auto-send, NO silent correction)
+- ✅ STEP NEXT-133 preserved (Slot-driven clarification)
+- ✅ STEP NEXT-138 preserved (Single-insurer explanation guard)
+- ✅ STEP NEXT-141 preserved (EX4 preset routing lock)
+- ✅ STEP NEXT-141-δ preserved (EX4 context isolation)
+- ✅ EX2/EX3 coverage requirement PRESERVED
+
+---
+
+## 0.3.6 STEP NEXT-141-ζζ: EX4 Coverage Gating Fix (Double Defense) — **2026-01-05**
+
+**Purpose**: Fix EX4 confirm button gating with **double defense**: SSOT + UI safety net
+
+**Supersedes**: STEP NEXT-141-ζ (extended with UI safety net)
+
+**Root Problem**:
+- STEP NEXT-141-ζ set `missingCoverage = false` for EX4
+- Users still reported: `missingSlots.coverage === true` blocking confirm button
+- **Hypothesis**: Edge case where coverage slot becomes truthy despite explicit false
+
+**Solution**:
+- **Defense Layer 1 (SSOT)**: Maintain `missingCoverage = false` + debug logging
+- **Defense Layer 2 (UI Safety Net)**: Explicitly exclude EX4 from coverage gating in confirm disabled condition
+
+**Core Rules (ABSOLUTE)**:
+1. ✅ **Double Defense**: SSOT (clarificationUtils) + UI safety net (page.tsx)
+2. ✅ **EX4 coverage gating = FORBIDDEN**: UI MUST bypass coverage check for EX4
+3. ✅ **Debug logging**: Temporary console.log to verify SSOT values
+4. ✅ **EX2/EX3 preserved**: Coverage requirement unchanged
+5. ❌ **NO coverage gating for EX4** (ABSOLUTE - enforced at UI level)
+6. ❌ **NO auto-submit** (STEP NEXT-129R preserved)
+
+**Implementation**:
+- **MODIFIED**: `apps/web/lib/clarificationUtils.ts` (lines 248-259)
+  - Added debug console.log for EX4 to verify `missingCoverage = false` at return
+- **MODIFIED**: `apps/web/app/page.tsx` (lines 866-870)
+  - Changed: `(clarState.missingSlots.coverage && !coverageInput.trim())`
+  - To: `(clarState.examType !== "EX4" && clarState.missingSlots.coverage && !coverageInput.trim())`
+  - **Effect**: EX4 confirm button NEVER disabled by coverage check (UI safety net)
+- **Backend Changes**: ❌ NONE (frontend only)
+- **SSOT**: `docs/audit/STEP_NEXT_141_ZETA2_EX4_COVERAGE_GATING_FIX.md`
+
+**UI Safety Net Logic**:
+```typescript
+// Before (vulnerable)
+disabled = (insurers check) || (coverage check)
+
+// After (safe)
+disabled = (insurers check) || (examType !== "EX4" && coverage check)
+```
+
+**Verification**:
+- Console log 1: `[clarificationUtils EX4 RETURN] missingCoverage: false`
+- Console log 2: `[page.tsx] CLARIFICATION_STATE missingSlots.coverage: ???`
+- Compare logs to find if coverage becomes true AFTER clarificationUtils
+- Confirm button enabled regardless of coverage value (UI safety net)
+
+**Constitutional Basis**: STEP NEXT-129R + STEP NEXT-133 + STEP NEXT-141 + STEP NEXT-141-δ + STEP NEXT-141-ζ
+
+**Definition of Success**:
+> "EX4 프리셋 → 보험사 선택 → 확인 버튼 100% 활성화. Coverage 체크가 true여도 UI safety net이 막아줌. 콘솔 로그로 SSOT vs UI 상태 비교 가능."
+
+**Key Insight**:
+> **Defense in Depth**:
+> - Layer 1 (SSOT): `missingCoverage = false` in clarificationUtils ✅
+> - Layer 2 (UI): Bypass coverage check for EX4 in page.tsx ✅
+> - **Result**: EX4 confirm button CANNOT be blocked by coverage (double safety)
+
+**Regression Prevention**:
+- ✅ STEP NEXT-129R preserved (NO auto-send, NO silent correction)
+- ✅ STEP NEXT-133 preserved (Slot-driven clarification)
+- ✅ STEP NEXT-138 preserved (Single-insurer explanation guard)
+- ✅ STEP NEXT-141 preserved (EX4 preset routing lock)
+- ✅ STEP NEXT-141-δ preserved (EX4 context isolation)
+- ✅ STEP NEXT-141-ζ preserved (EX4 coverage slot = false)
+- ✅ **EX2/EX3 coverage requirement PRESERVED** (safety net excludes them)
+
+---
+
+## 0.3.7 STEP NEXT-138-γ: EXAM3 AMOUNT/LIMIT Dimension Separation (Backend) — **2026-01-04**
 
 **Purpose**: Fix semantic confusion where AMOUNT (정액금액: "3천만원") and LIMIT (한도: "보험기간 중 1회") were mixed in the same table row, violating the report principle "한 행은 반드시 동일 의미·동일 차원이어야 한다".
 

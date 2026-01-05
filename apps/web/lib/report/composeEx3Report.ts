@@ -112,12 +112,21 @@ function buildSummaryLineFromRow(
  */
 export function composeEx3Report(messages: AssistantMessageVM[]): EX3ReportDoc | null {
   // Step 1: Find latest EX3_COMPARE message
+  // EXAM ISOLATION: Only use messages with exam_type="EXAM3"
   let latestEX3: AssistantMessageVM | null = null;
 
   for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i].kind === 'EX3_COMPARE') {
-      latestEX3 = messages[i];
+    const msg = messages[i];
+
+    // EXAM ISOLATION GUARD: Verify both kind AND exam_type
+    if (msg.kind === 'EX3_COMPARE' && msg.exam_type === 'EXAM3') {
+      latestEX3 = msg;
       break;
+    }
+
+    // WARNING: If kind=EX3_COMPARE but exam_type != EXAM3, skip (contamination)
+    if (msg.kind === 'EX3_COMPARE' && msg.exam_type !== 'EXAM3') {
+      console.warn('[EXAM ISOLATION VIOLATION] Found EX3_COMPARE with non-EXAM3 type:', msg.exam_type);
     }
   }
 

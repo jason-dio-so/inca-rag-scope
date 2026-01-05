@@ -50,12 +50,27 @@ from apps.api.chat_vm import (
     InsurerDetail,
     OverallEvaluationSection,
     OverallEvaluation,
-    OverallEvaluationReason
+    OverallEvaluationReason,
+    get_exam_type_from_kind
 )
 from apps.api.response_composers.utils import (
     display_coverage_name,
     format_insurer_list,
     sanitize_no_coverage_code
+)
+# STEP NEXT-136-γ: Samsung A6200 limit patch
+from apps.api.utils.limit_patch_samsung_a6200 import (
+    patch_limit_summary_samsung_A6200,
+    should_apply_samsung_a6200_patch
+)
+# STEP NEXT-137: Coverage limit normalization schema
+from apps.api.utils.limit_normalizer import (
+    normalize_limit_text,
+    normalize_amount_text,
+    compare_limits,
+    compare_amounts,
+    decide_overall_status,
+    CoverageLimitNormalized
 )
 # from apps.api.policy.forbidden_language import ForbiddenLanguageValidator
 
@@ -117,6 +132,7 @@ class Example1HandlerDeterministic(BaseDeterministicHandler):
             # Return disabled message
             return AssistantMessageVM(
                 kind="EX1_PREMIUM_DISABLED",
+                exam_type=get_exam_type_from_kind("EX1_PREMIUM_DISABLED"),
                 title="보험료 비교 기능 안내",
                 summary_bullets=[
                     "현재 보험료 비교 기능은 준비 중입니다",
@@ -150,6 +166,7 @@ class Example1HandlerDeterministic(BaseDeterministicHandler):
 
         vm = AssistantMessageVM(
             kind="PREMIUM_COMPARE",
+            exam_type=get_exam_type_from_kind("PREMIUM_COMPARE"),
             title="보험료 Top 4 비교",
             summary_bullets=[
                 "보험료가 낮은 순서로 4개 보험사를 비교했습니다",
@@ -188,7 +205,15 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
         comparer = CoverageLimitComparer()
 
         insurers = compiled_query.get("insurers", [])
-        coverage_code = compiled_query.get("coverage_code", "A4200_1")
+        # STEP NEXT-135-β: NO fallback for coverage_code (ABSOLUTE FORBIDDEN)
+        # A4200_1 default contamination is the #1 bug source in EXAM2
+        coverage_code = compiled_query.get("coverage_code")
+        if not coverage_code:
+            raise ValueError(
+                "EX2_DIFF: coverage_code missing from compiled_query. "
+                "This indicates QueryCompiler failed to add coverage_code for this kind. "
+                "NO A4200_1 fallback allowed (STEP NEXT-135-β LOCK)."
+            )
         compare_field = compiled_query.get("compare_field", "보장한도")
 
         # STEP NEXT-89: Extract coverage_name with priority
@@ -223,39 +248,72 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
 
                 # STEP NEXT-90: Extract field value with Policy A (limit fallback to amount)
                 # STEP NEXT-91: Track dimension_type for mixed dimension detection
+                # STEP NEXT-136: Extract BOTH limit and amount when both exist
+                # STEP NEXT-136-γ: Samsung A6200 limit patch
+                # STEP NEXT-137: Normalize limit/amount into structured schema
                 dimension_type = None
+                normalized_limit = None
+                normalized_amount = None
+
                 if compare_field == "보장한도":
                     # Priority 1: KPI limit_summary
                     limit_summary = kpi_summary.get("limit_summary")
+                    amount_text = proposal_facts.get("coverage_amount_text")
+                    payment_type = kpi_summary.get("payment_type")
 
+                    # STEP NEXT-136-γ: Patch Samsung A6200 missing limit_summary
+                    if (
+                        not limit_summary and
+                        should_apply_samsung_a6200_patch(
+                            insurer=insurer,
+                            coverage_code=coverage_code,
+                            compare_field=compare_field,
+                            kind=compiled_query.get("kind", "")
+                        )
+                    ):
+                        # Load proposal detail text for regex extraction
+                        from apps.api.store_loader import get_proposal_detail
+                        pd_ref = refs_data.get("proposal_detail_ref") or f"PD:{insurer}:{coverage_code}"
+                        detail_record = get_proposal_detail(pd_ref)
+
+                        if detail_record:
+                            benefit_text = detail_record.get("benefit_description_text")
+                            patched_limit = patch_limit_summary_samsung_A6200(benefit_text)
+
+                            if patched_limit:
+                                limit_summary = patched_limit  # Apply patch
+
+                    # STEP NEXT-137: Normalize limit and amount
                     if limit_summary:
-                        value = limit_summary
-                        dimension_type = "LIMIT"  # STEP NEXT-91
-                        # Use kpi_evidence_refs, fallback to proposal_detail_ref
-                        value_refs = kpi_summary.get("kpi_evidence_refs", [])
-                        if not value_refs:
+                        normalized_limit = normalize_limit_text(limit_summary)
+                        normalized_limit.evidence_refs = kpi_summary.get("kpi_evidence_refs", [])
+                        if not normalized_limit.evidence_refs:
                             pd_ref = refs_data.get("proposal_detail_ref")
-                            value_refs = [pd_ref] if pd_ref else []
-                    else:
-                        # Priority 2: Fallback to coverage_amount_text
-                        amount_text = proposal_facts.get("coverage_amount_text")
+                            normalized_limit.evidence_refs = [pd_ref] if pd_ref else []
 
-                        if amount_text:
-                            value = amount_text
-                            dimension_type = "AMOUNT"  # STEP NEXT-91
-                            # Use proposal_detail_ref, generate if missing
-                            pd_ref = refs_data.get("proposal_detail_ref")
-                            if not pd_ref:
-                                pd_ref = f"PD:{insurer}:{coverage_code}"
-                            value_refs = [pd_ref]
-                        else:
-                            value = None
-                            dimension_type = None  # STEP NEXT-91
-                            # Even for "명시 없음", provide PD ref
-                            pd_ref = refs_data.get("proposal_detail_ref")
-                            if not pd_ref:
-                                pd_ref = f"PD:{insurer}:{coverage_code}"
-                            value_refs = [pd_ref]
+                    if amount_text:
+                        normalized_amount = normalize_amount_text(amount_text, payment_type=payment_type)
+                        pd_ref = refs_data.get("proposal_detail_ref") or f"PD:{insurer}:{coverage_code}"
+                        normalized_amount.evidence_refs = [pd_ref]
+
+                    # Build display value (for backward compatibility)
+                    if limit_summary and amount_text:
+                        value = f"{limit_summary} (일당 {amount_text})"
+                        dimension_type = "LIMIT"
+                        value_refs = normalized_limit.evidence_refs if normalized_limit else []
+                    elif limit_summary:
+                        value = limit_summary
+                        dimension_type = "LIMIT"
+                        value_refs = normalized_limit.evidence_refs if normalized_limit else []
+                    elif amount_text:
+                        value = amount_text
+                        dimension_type = "AMOUNT"
+                        value_refs = normalized_amount.evidence_refs if normalized_amount else []
+                    else:
+                        value = None
+                        dimension_type = None
+                        pd_ref = refs_data.get("proposal_detail_ref") or f"PD:{insurer}:{coverage_code}"
+                        value_refs = [pd_ref]
 
                 elif compare_field == "보장금액":
                     value = proposal_facts.get("coverage_amount_text") or comparer.extract_amount(evidences)
@@ -282,12 +340,15 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
 
                 # STEP NEXT-90: Store value + refs for evidence traceability
                 # STEP NEXT-91: Store dimension_type for mixed dimension detection
+                # STEP NEXT-137: Store normalized limit/amount for schema-based comparison
                 coverage_data.append({
                     "insurer": insurer,
                     "value": value or "명시 없음",
                     "coverage_code": coverage_code,
                     "value_refs": value_refs,  # Store refs for this value
-                    "dimension_type": dimension_type  # STEP NEXT-91
+                    "dimension_type": dimension_type,  # STEP NEXT-91
+                    "normalized_limit": normalized_limit,  # STEP NEXT-137
+                    "normalized_amount": normalized_amount  # STEP NEXT-137
                 })
             else:
                 # STEP NEXT-90: Even for missing coverage, provide minimal ref for traceability
@@ -473,7 +534,31 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
             ))
 
         # STEP NEXT-91: Build diff summary with mixed dimension handling
-        if diff_result["status"] == "ALL_SAME":
+        # STEP NEXT-137: For "보장한도", use schema-based status decision
+        if compare_field == "보장한도" and len(coverage_data) == 2:
+            # STEP NEXT-137: Schema-based comparison for 2-insurer case
+            data1 = coverage_data[0]
+            data2 = coverage_data[1]
+
+            limit_cmp = compare_limits(data1.get("normalized_limit"), data2.get("normalized_limit"))
+            amount_cmp = compare_amounts(data1.get("normalized_amount"), data2.get("normalized_amount"))
+            status = decide_overall_status(limit_cmp, amount_cmp)
+
+            # Build summary based on normalized comparison
+            # Note: VM schema only accepts "ALL_SAME", "DIFF", "MIXED_DIMENSION"
+            # Map PARTIAL/UNKNOWN → DIFF for VM compatibility
+            if status == "ALL_SAME":
+                diff_summary = None
+                summary_bullets = [f"선택한 보험사의 {compare_field}는 모두 동일합니다"]
+                if groups:
+                    summary_bullets.append(f"공통 값: {groups[0].value_display}")
+            elif status in ["DIFF", "PARTIAL", "UNKNOWN"]:
+                # Map PARTIAL/UNKNOWN → DIFF (VM constraint)
+                status = "DIFF"
+                diff_summary = f"보험사별 {compare_field}가 다릅니다"
+                summary_bullets = [diff_summary]
+        elif diff_result["status"] == "ALL_SAME":
+            # Legacy logic for other compare_fields
             status = "ALL_SAME"
             diff_summary = None
             summary_bullets = [
@@ -564,9 +649,13 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
             extraction_notes=extraction_notes if extraction_notes else None
         )
 
+        # STEP NEXT-134: Use kind from compiled_query (EX2_LIMIT_FIND or EX2_DETAIL_DIFF)
+        message_kind = compiled_query.get("kind", "EX2_DETAIL_DIFF")
+
         vm = AssistantMessageVM(
             request_id=request.request_id,
-            kind="EX2_DETAIL_DIFF",
+            kind=message_kind,  # STEP NEXT-134: Use dynamic kind
+            exam_type=get_exam_type_from_kind(message_kind),
             title=title,
             summary_bullets=summary_bullets,
             sections=[diff_section],
@@ -574,7 +663,8 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
                 "handler": "Example2DiffHandlerDeterministic",
                 "llm_used": False,
                 "deterministic": True,
-                "diff_status": status
+                "diff_status": status,
+                "intent": message_kind  # STEP NEXT-134: Track intent in lineage
             }
         )
 
@@ -618,7 +708,14 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
             raise ValueError("2개 이상의 보험사가 필요합니다")
 
         insurer1, insurer2 = insurers[0], insurers[1]
-        coverage_code = compiled_query.get("coverage_code", "A4200_1")
+        # STEP NEXT-135-β: NO fallback for coverage_code (ABSOLUTE FORBIDDEN)
+        coverage_code = compiled_query.get("coverage_code")
+        if not coverage_code:
+            raise ValueError(
+                "EX3_COMPARE: coverage_code missing from compiled_query. "
+                "This indicates QueryCompiler failed to add coverage_code for EX3_COMPARE. "
+                "NO A4200_1 fallback allowed (STEP NEXT-135-β LOCK)."
+            )
 
         result = comparer.compare_two_insurers(insurer1, insurer2, coverage_code)
 
@@ -627,6 +724,7 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
             return AssistantMessageVM(
                 request_id=request.request_id,
                 kind="EX3_COMPARE",  # STEP NEXT-80: Always use EX3_COMPARE (not EX3_INTEGRATED)
+                exam_type=get_exam_type_from_kind("EX3_COMPARE"),
                 title="비교 불가",
                 summary_bullets=[
                     f"비교 실패: {result['reason']}"
@@ -717,6 +815,7 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
         vm = AssistantMessageVM(
             request_id=request.request_id,
             kind="EX3_COMPARE",  # STEP NEXT-77: New kind
+            exam_type=get_exam_type_from_kind("EX3_COMPARE"),
             title=response_dict["title"],
             summary_bullets=response_dict["summary_bullets"],
             sections=sections,
@@ -825,6 +924,7 @@ class Example4HandlerDeterministic(BaseDeterministicHandler):
         vm = AssistantMessageVM(
             request_id=request.request_id,
             kind="EX4_ELIGIBILITY",
+            exam_type=get_exam_type_from_kind("EX4_ELIGIBILITY"),
             title=response_dict["title"],
             summary_bullets=response_dict["summary_bullets"],
             sections=sections,
@@ -870,7 +970,14 @@ class Example2DetailHandlerDeterministic(BaseDeterministicHandler):
 
         # Extract query params
         insurers = compiled_query.get("insurers", [])
-        coverage_code = compiled_query.get("coverage_code", "A4200_1")
+        # STEP NEXT-135-β: NO fallback for coverage_code (ABSOLUTE FORBIDDEN)
+        coverage_code = compiled_query.get("coverage_code")
+        if not coverage_code:
+            raise ValueError(
+                "EX2_DETAIL: coverage_code missing from compiled_query. "
+                "This indicates QueryCompiler failed to add coverage_code for EX2_DETAIL. "
+                "NO A4200_1 fallback allowed (STEP NEXT-135-β LOCK)."
+            )
         coverage_names = compiled_query.get("coverage_names", [])
 
         # Validation: Must have exactly 1 insurer (STEP NEXT-86 gate)
@@ -890,6 +997,7 @@ class Example2DetailHandlerDeterministic(BaseDeterministicHandler):
             return AssistantMessageVM(
                 request_id=request.request_id,  # STEP NEXT-86: Required field
                 kind="EX2_DETAIL",
+                exam_type=get_exam_type_from_kind("EX2_DETAIL"),
                 title=f"{insurer} 담보 정보 없음",
                 summary_bullets=[
                     f"{insurer}에서 해당 담보를 찾을 수 없습니다",
@@ -985,6 +1093,7 @@ class Example2DetailHandlerDeterministic(BaseDeterministicHandler):
         vm = AssistantMessageVM(
             request_id=request.request_id,  # STEP NEXT-86: Required field
             kind="EX2_DETAIL",
+            exam_type=get_exam_type_from_kind("EX2_DETAIL"),
             title=message_dict["title"],
             summary_bullets=message_dict["summary_bullets"],
             bubble_markdown=message_dict.get("bubble_markdown"),

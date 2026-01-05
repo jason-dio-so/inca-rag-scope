@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-05
-**현재 상태**: ✅ **EX4 Preset Routing Lock** (STEP NEXT-141: 프리셋 버튼 명시적 라우팅 잠금, EX4 clarification UI 고정)
+**현재 상태**: ✅ **Product Name + Variant Injection** (STEP NEXT-PRODUCT-1: 상품명/variant_key SSOT 주입, 8개 보험사 slim 카드 완비)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ Product Name + Variant Injection** | STEP NEXT-PRODUCT-1 | ✅ 완료 | 2026-01-05 |
 | **✅ EX4 Preset Routing Lock** | STEP NEXT-141 | ✅ 완료 | 2026-01-05 |
 | **✅ Slot-Driven Clarification UI** | STEP NEXT-133 | ✅ 완료 | 2026-01-04 |
 | **✅ EX2_DETAIL Followup Hints Demo Flow Lock** | STEP NEXT-104 | ✅ 완료 | 2026-01-03 |
@@ -95,6 +96,55 @@
 ---
 
 ## 🎯 최신 진행 항목 (2026-01-05)
+
+### STEP NEXT-PRODUCT-1 — Product Name + Variant Injection ✅ **COMPLETE**
+
+**목표**: `product_name` + `variant_key`를 coverage_cards_slim.jsonl에 주입하여 상품 메타데이터 SSOT 확립
+
+**변경 사항**:
+1. **Schema 확장** (core/compare_types.py):
+   - CoverageCardSlim에 `product_name: str` (required) 추가
+   - CoverageCardSlim에 `variant_key: Optional[str]` 추가
+
+2. **Pipeline 수정** (pipeline/step5_build_cards/build_cards_slim.py):
+   - `_load_products_metadata()` 함수 추가 (products.yml 로더)
+   - `_resolve_variant_key()` 함수 추가 (LOTTE/DB 특수 처리)
+   - `build_coverage_cards_slim()` 수정: product_name + variant_key 주입
+
+3. **SSOT 확립** (data/metadata/products.yml):
+   - 8개 보험사 product_name_display 정의
+   - LOTTE: LOTTE_MALE/FEMALE variants
+   - DB: DB_AGE_U40/O40 variants
+
+**실행 결과**:
+- **8×3 = 24 files** 생성 완료 ✅
+  - Slim cards: 8개
+  - Proposal detail stores: 8개
+  - Evidence stores: 8개
+
+**검증 결과**:
+- Samsung: product_name="삼성생명 건강보험", variant_key=null ✅
+- Meritz: product_name="메리츠화재 건강보험", variant_key=null ✅
+- Hanwha: product_name="한화생명 건강보험", variant_key=null ✅
+- KB: product_name="KB손해보험 건강보험", variant_key=null ✅
+- Hyundai: product_name="현대해상 건강보험", variant_key=null ✅
+- Heungkuk: product_name="흥국생명 건강보험", variant_key=null ✅
+- LOTTE: product_name="롯데손해보험 건강보험", variant_key="LOTTE_MALE" ✅
+- DB: product_name="DB손해보험 건강보험", variant_key="DB_AGE_U40" ✅
+
+**Known Limitation (Phase 1)**:
+- LOTTE/DB variant handling: 기본값으로 첫 번째 variant 사용 (LOTTE_MALE, DB_AGE_U40)
+- CLI `--variant` 플래그 미지원 (Phase 2에서 추가 예정)
+
+**문서**:
+- SSOT: `docs/audit/STEP_NEXT_PRODUCT_1_PRODUCTNAME_VARIANT_INJECTION.md`
+
+**다음 단계** (Phase 2):
+- Runtime loading 검증 (apps/api/store_loader.py)
+- EX2/EX3/EX4 responses에 product_name 표시 (minimal wiring)
+- 고객 테스트 시나리오 4개 실행
+
+---
 
 ### STEP NEXT-141 — EX4 Preset Routing Lock + Clarification UI Fix ✅ **COMPLETE**
 
