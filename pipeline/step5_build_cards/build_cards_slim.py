@@ -17,6 +17,7 @@ import json
 import hashlib
 from pathlib import Path
 import sys
+import yaml
 from typing import List, Dict, Optional
 
 # 프로젝트 루트를 path에 추가
@@ -35,6 +36,89 @@ from core.compare_types import (
 from core.customer_view_builder import build_customer_view
 from core.kpi_extractor import extract_kpi_from_text, PaymentType
 from core.kpi_condition_extractor import KPIConditionExtractor
+
+
+def _load_products_metadata(products_yml_path: str) -> dict:
+    """
+    STEP NEXT-PRODUCT-1: Load products.yml metadata
+
+    Returns:
+        dict: {
+            'products_by_insurer': {insurer_key: product_dict},
+            'variants_by_product': {product_key: [variant_dict, ...]},
+            'documents': [document_dict, ...]
+        }
+    """
+    with open(products_yml_path, 'r', encoding='utf-8') as f:
+        data = yaml.safe_load(f)
+
+    products_by_insurer = {}
+    for product in data.get('products', []):
+        insurer_key = product['insurer_key']
+        products_by_insurer[insurer_key] = product
+
+    variants_by_product = {}
+    for variant in data.get('variants', []):
+        product_key = variant['product_key']
+        if product_key not in variants_by_product:
+            variants_by_product[product_key] = []
+        variants_by_product[product_key].append(variant)
+
+    return {
+        'products_by_insurer': products_by_insurer,
+        'variants_by_product': variants_by_product,
+        'documents': data.get('documents', [])
+    }
+
+
+def _resolve_variant_key(insurer: str, products_metadata: dict) -> Optional[str]:
+    """
+    STEP NEXT-PRODUCT-1: Resolve variant_key for insurer
+
+    Rules:
+    - LOTTE: Must determine LOTTE_MALE or LOTTE_FEMALE (CANNOT be null)
+    - DB: Must determine DB_AGE_U40 or DB_AGE_O40 (CANNOT be null)
+    - Others: Return null
+
+    For demo/test: Default to first variant if exists
+
+    Returns:
+        Optional[str]: variant_key or None
+
+    Raises:
+        RuntimeError: If variant required but cannot be determined
+    """
+    product = products_metadata['products_by_insurer'].get(insurer)
+    if not product:
+        raise RuntimeError(f"[STEP NEXT-PRODUCT-1] Product not found for insurer: {insurer}")
+
+    product_key = product['product_key']
+    variants = products_metadata['variants_by_product'].get(product_key, [])
+
+    if not variants:
+        # No variants for this product (samsung, meritz, etc.)
+        return None
+
+    # LOTTE: Must have variant
+    if insurer == 'lotte':
+        # For demo: default to LOTTE_MALE (could be enhanced with file path detection)
+        male_variant = next((v for v in variants if v['variant_key'] == 'LOTTE_MALE'), None)
+        if male_variant:
+            return male_variant['variant_key']
+        else:
+            raise RuntimeError(f"[STEP NEXT-PRODUCT-1] LOTTE_MALE variant not found for {insurer}")
+
+    # DB: Must have variant
+    if insurer == 'db':
+        # For demo: default to DB_AGE_U40 (could be enhanced with file path detection)
+        u40_variant = next((v for v in variants if v['variant_key'] == 'DB_AGE_U40'), None)
+        if u40_variant:
+            return u40_variant['variant_key']
+        else:
+            raise RuntimeError(f"[STEP NEXT-PRODUCT-1] DB_AGE_U40 variant not found for {insurer}")
+
+    # Should not reach here if products.yml is correct
+    return None
 
 
 def _calculate_hash(text: str) -> str:
@@ -142,10 +226,12 @@ def build_coverage_cards_slim(
     insurer: str,
     output_cards_slim_jsonl: str,
     output_proposal_detail_store_jsonl: str,
-    output_evidence_store_jsonl: str
+    output_evidence_store_jsonl: str,
+    products_yml_path: str
 ) -> CompareStats:
     """
     STEP NEXT-72: 경량 Coverage Cards + 분리 저장소 생성
+    STEP NEXT-PRODUCT-1: product_name + variant_key injection
 
     Args:
         scope_canonical_jsonl: Step2-b canonical scope JSONL
@@ -154,10 +240,28 @@ def build_coverage_cards_slim(
         output_cards_slim_jsonl: 경량 카드 출력 경로
         output_proposal_detail_store_jsonl: DETAIL 저장소 출력 경로
         output_evidence_store_jsonl: 근거 저장소 출력 경로
+        products_yml_path: products.yml 경로 (SSOT)
 
     Returns:
         CompareStats: 통계
     """
+    # 0. STEP NEXT-PRODUCT-1: Load products metadata
+    products_metadata = _load_products_metadata(products_yml_path)
+
+    # Resolve product_name
+    product = products_metadata['products_by_insurer'].get(insurer)
+    if not product:
+        raise RuntimeError(f"[STEP NEXT-PRODUCT-1] Product not found for insurer: {insurer}")
+
+    product_name = product['product_name_display']
+
+    # Resolve variant_key
+    variant_key = _resolve_variant_key(insurer, products_metadata)
+
+    print(f"\n[STEP NEXT-PRODUCT-1] Product metadata resolved:")
+    print(f"  - product_name: {product_name}")
+    print(f"  - variant_key: {variant_key}")
+
     # 1. Scope canonical JSONL 읽기 (proposal_facts, proposal_detail_facts 포함)
     scope_data = {}
     proposal_facts_map = {}
@@ -436,6 +540,8 @@ def build_coverage_cards_slim(
             coverage_name_canonical=coverage_name_canonical if coverage_name_canonical else None,
             coverage_name_raw=coverage_name_raw,
             mapping_status=mapping_status,
+            product_name=product_name,  # STEP NEXT-PRODUCT-1
+            variant_key=variant_key,    # STEP NEXT-PRODUCT-1
             proposal_facts=proposal_facts_map.get(coverage_name_raw),
             customer_view=customer_view,
             refs=refs,
@@ -486,6 +592,12 @@ def main():
     insurer = args.insurer
     base_dir = Path(__file__).parent.parent.parent
 
+    # STEP NEXT-PRODUCT-1: products.yml SSOT
+    products_yml_path = base_dir / "data" / "metadata" / "products.yml"
+    if not products_yml_path.exists():
+        print(f"[ERROR] Products metadata SSOT not found: {products_yml_path}")
+        sys.exit(1)
+
     # 입력 파일
     scope_canonical_jsonl = base_dir / "data" / "scope_v3" / f"{insurer}_step2_canonical_scope_v1.jsonl"
     evidence_pack_jsonl = base_dir / "data" / "evidence_pack" / f"{insurer}_evidence_pack.jsonl"
@@ -519,7 +631,8 @@ def main():
         insurer,
         str(output_cards_slim_jsonl),
         str(output_proposal_detail_store_jsonl),
-        str(output_evidence_store_jsonl)
+        str(output_evidence_store_jsonl),
+        str(products_yml_path)  # STEP NEXT-PRODUCT-1
     )
 
     print(f"\n[STEP NEXT-72] 통계:")

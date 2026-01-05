@@ -145,7 +145,23 @@ class IntentRouter:
             if subtype in message_lower:
                 return ("EX4_ELIGIBILITY", 1.0)
 
-        # Gate 2: Limit/condition comparison → EX2_LIMIT_FIND
+        # STEP NEXT-134: Gate 2 - "찾아줘" (discovery/search) patterns → EX2_LIMIT_FIND
+        # ABSOLUTE: "찾아줘/발굴/다른 상품" = search intent (NOT comparison)
+        search_patterns = [
+            r"찾아줘",
+            r"찾아주세요",
+            r"찾아주",
+            r"다른\s*상품",
+            r"있는\s*상품",
+            r"발굴",
+            r"보장한도가?\s*다른",
+            r"차이가?\s*나는\s*상품"
+        ]
+        for pattern in search_patterns:
+            if re.search(pattern, message_lower):
+                return ("EX2_LIMIT_FIND", 1.0)
+
+        # Gate 3: Limit/condition comparison → EX2_LIMIT_FIND
         limit_patterns = [r"보장한도.*다른", r"한도.*다른", r"한도.*차이", r"조건.*다른", r"면책.*다른", r"감액.*다른"]
         for pattern in limit_patterns:
             if re.search(pattern, message_lower):
@@ -345,6 +361,46 @@ class QueryCompiler:
 
         return "보장한도"  # Default
 
+    @staticmethod
+    def extract_coverage_name_from_message(message: str) -> str | None:
+        """
+        STEP NEXT-134: Extract coverage name from message (deterministic)
+
+        Rules:
+        - NO LLM
+        - Extract common coverage keywords from message
+        - Priority order (first match wins)
+
+        Args:
+            message: User input message
+
+        Returns:
+            Extracted coverage name or None
+        """
+        if not message:
+            return None
+
+        # Common coverage keywords (priority order)
+        coverage_keywords = [
+            "암진단비",
+            "암직접입원비",
+            "암직접입원일당",
+            "뇌출혈진단비",
+            "급성심근경색진단비",
+            "상해사망",
+            "질병사망",
+            "수술비",
+            "입원비",
+            "통원비"
+        ]
+
+        message_lower = message.lower()
+        for keyword in coverage_keywords:
+            if keyword in message_lower:
+                return keyword
+
+        return None
+
     # Coverage name → code mapping (STEP NEXT-80: Fixed to actual coverage codes)
     COVERAGE_NAME_TO_CODE = {
         "암진단비(유사암제외)": "A4200_1",
@@ -353,6 +409,10 @@ class QueryCompiler:
         "급성심근경색진단비": "A4400_1",
         "상해사망": "A1100_1",
         "질병사망": "A1200_1",
+        # STEP NEXT-134: Add 입원 related coverage mappings
+        "암직접입원일당": "A6200",
+        "암직접입원비": "A6200",  # Map to same code (입원일당)
+        "입원일당": "A6100_1",
     }
 
     @staticmethod
@@ -516,9 +576,11 @@ class QueryCompiler:
                     query["compare_field"] = QueryCompiler.extract_compare_field(request.message)
                 else:
                     query["compare_field"] = request.compare_field
-            # Add coverage_code for EX3_COMPARE and EX2_DETAIL (STEP NEXT-86)
-            if kind in ["EX3_COMPARE", "EX2_DETAIL"]:
-                # Map coverage name to code (STEP NEXT-80)
+            # Add coverage_code for ALL EXAM2/EXAM3 kinds (STEP NEXT-135-β)
+            # CRITICAL: Must include ALL EX2 kinds (EX2_DETAIL, EX2_DETAIL_DIFF, EX2_LIMIT_FIND)
+            # to prevent A4200_1 fallback contamination
+            if kind in ["EX3_COMPARE", "EX2_DETAIL", "EX2_DETAIL_DIFF", "EX2_LIMIT_FIND"]:
+                # Map coverage name to code (STEP NEXT-80/135/135-β)
                 if query["coverage_names"]:
                     coverage_name = query["coverage_names"][0]
                     query["coverage_code"] = QueryCompiler.map_coverage_name_to_code(coverage_name)
@@ -591,7 +653,52 @@ class IntentDispatcher:
                 )
 
         # Step 2: Validate slots
-        is_valid, missing_slots = SlotValidator.validate(request, kind)
+        # STEP NEXT-133: EXAM2 (EX2_LIMIT_FIND) NEVER requires additional info
+        # EXAM2 is self-contained: auto-expand insurers, use coverage from message
+        if kind == "EX2_LIMIT_FIND":
+            # ABSOLUTE: Skip slot validation for EXAM2
+            # EXAM2 proceeds with whatever data is available (auto-expand mode)
+
+            # Auto-fill missing insurers (expand to all available)
+            if not request.insurers or len(request.insurers) == 0:
+                # Auto-expand to all insurers
+                all_insurers = ["samsung", "meritz", "hanwha", "lotte", "kb", "hyundai", "heungkuk", "db"]
+                request = ChatRequest(
+                    request_id=request.request_id,
+                    message=request.message,
+                    kind=request.kind,
+                    selected_category=request.selected_category,
+                    insurers=all_insurers,  # STEP NEXT-133: Auto-expand
+                    coverage_names=request.coverage_names,
+                    disease_names=request.disease_names,
+                    disease_name=request.disease_name,
+                    llm_mode=request.llm_mode,
+                    compare_field=request.compare_field
+                )
+
+            # Auto-extract coverage from message if missing
+            # STEP NEXT-134: Use proper coverage name extraction (NOT compare_field)
+            if not request.coverage_names or len(request.coverage_names) == 0:
+                # Extract coverage name from message (e.g., "암직접입원일당")
+                coverage_from_message = QueryCompiler.extract_coverage_name_from_message(request.message)
+                if coverage_from_message:
+                    request = ChatRequest(
+                        request_id=request.request_id,
+                        message=request.message,
+                        kind=request.kind,
+                        selected_category=request.selected_category,
+                        insurers=request.insurers,
+                        coverage_names=[coverage_from_message],  # STEP NEXT-134: Extract coverage name (NOT field)
+                        disease_names=request.disease_names,
+                        disease_name=request.disease_name,
+                        llm_mode=request.llm_mode,
+                        compare_field=request.compare_field
+                    )
+
+            is_valid = True
+            missing_slots = []
+        else:
+            is_valid, missing_slots = SlotValidator.validate(request, kind)
 
         if not is_valid:
             # Return need_more_info response

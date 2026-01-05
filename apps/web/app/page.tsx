@@ -65,7 +65,8 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<"comparison" | "report">("comparison");
 
   // STEP NEXT-133: EX3 Gate state (front-trigger selection panel, NO backend need_more_info)
-  const [pendingKind, setPendingKind] = useState<"EX3_COMPARE" | null>(null);
+  // STEP NEXT-141-ζζ: Extended to support EX4_ELIGIBILITY
+  const [pendingKind, setPendingKind] = useState<"EX3_COMPARE" | "EX4_ELIGIBILITY" | null>(null);
   const [ex3GateOpen, setEx3GateOpen] = useState(false);
   const [ex3GateMessageId, setEx3GateMessageId] = useState<string | null>(null);
 
@@ -175,6 +176,12 @@ export default function Home() {
       }
 
       console.log("[page.tsx STEP NEXT-133] Clarification state:", clarState);
+      console.log("[page.tsx STEP NEXT-141 DEBUG]", {
+        selectedInsurers,
+        conversationContext,
+        draftPayload,
+        messageToSend
+      });
 
       // STEP NEXT-138: Intent routing guard (CRITICAL REGRESSION FIX)
       // RULE 1: Single insurer + explanation → FORCE EX2_DETAIL (block EX3_COMPARE)
@@ -244,6 +251,9 @@ export default function Home() {
         // Open clarification gate
         if (clarState.examType === "EX3") {
           setPendingKind("EX3_COMPARE");
+        } else if (clarState.examType === "EX4") {
+          // STEP NEXT-141-ζζ: Set explicit kind for EX4
+          setPendingKind("EX4_ELIGIBILITY");
         }
         setEx3GateOpen(true);
         setEx3GateMessageId(`exam-entry-gate-${Date.now()}`);
@@ -420,8 +430,17 @@ export default function Home() {
         }
 
         // STEP NEXT-129R: Use backend bubble_markdown as SSOT (NO frontend override)
+        // STEP NEXT-EX4-LEFT-FREEZE: EX4 결과 → 고정 요약 메시지
         let summaryText: string;
-        if (vm?.bubble_markdown) {
+
+        if (vm?.kind === "EX4_ELIGIBILITY") {
+          // EX4 Left Panel = Result Summary ONLY (NO Clarification)
+          const comparisonTableSection = vm?.sections?.find(s => s.kind === "comparison_table") as any;
+          const diseaseSubtypes = comparisonTableSection?.columns?.slice(1) || ["제자리암", "경계성종양"];
+          const diseaseText = diseaseSubtypes.join("·");
+
+          summaryText = `${diseaseText}에 대해\n보험사별 보장 가능 여부를 비교했습니다.\n\n표에서 O/X로 확인하세요.`;
+        } else if (vm?.bubble_markdown) {
           // Use bubble_markdown from backend (SSOT)
           summaryText = vm.bubble_markdown;
         } else {
@@ -527,8 +546,17 @@ export default function Home() {
         }
 
         // STEP NEXT-129R: Use backend bubble_markdown as SSOT (NO frontend override)
+        // STEP NEXT-EX4-LEFT-FREEZE: EX4 결과 → 고정 요약 메시지
         let summaryText: string;
-        if (vm?.bubble_markdown) {
+
+        if (vm?.kind === "EX4_ELIGIBILITY") {
+          // EX4 Left Panel = Result Summary ONLY (NO Clarification)
+          const comparisonTableSection = vm?.sections?.find(s => s.kind === "comparison_table") as any;
+          const diseaseSubtypes = comparisonTableSection?.columns?.slice(1) || ["제자리암", "경계성종양"];
+          const diseaseText = diseaseSubtypes.join("·");
+
+          summaryText = `${diseaseText}에 대해\n보험사별 보장 가능 여부를 비교했습니다.\n\n표에서 O/X로 확인하세요.`;
+        } else if (vm?.bubble_markdown) {
           // Use bubble_markdown from backend (SSOT)
           summaryText = vm.bubble_markdown;
         } else {
@@ -691,6 +719,17 @@ export default function Home() {
 
           const minInsurersRequired = pendingKind === "EX3_COMPARE" ? 2 : 1;
 
+          // STEP NEXT-141-δ DEBUG
+          console.log("[page.tsx STEP NEXT-141-δ] CLARIFICATION_STATE", {
+            examType: clarState.examType,
+            missingSlots: clarState.missingSlots,
+            resolvedSlots: clarState.resolvedSlots,
+            selectedInsurers,
+            minInsurersRequired,
+            draftExamType,
+            conversationContext: conversationContext.lockedInsurers,
+          });
+
           return (
             <div className="bg-blue-50 border-t border-blue-200 px-4 py-4">
               <div className="text-blue-900 text-sm font-medium mb-2">
@@ -767,7 +806,8 @@ export default function Home() {
                     ? clarState.resolvedSlots.coverage
                     : coverageNamesFromInput;
 
-                  if (clarState.missingSlots.coverage && finalCoverageNames.length === 0) {
+                  // STEP NEXT-141-ζζ: EX4 does NOT require coverage (validation skip)
+                  if (clarState.examType !== "EX4" && clarState.missingSlots.coverage && finalCoverageNames.length === 0) {
                     alert("담보명을 입력해 주세요.");
                     return;
                   }
@@ -784,20 +824,26 @@ export default function Home() {
                   setIsLoading(true);
 
                   try {
-                    const requestPayload = pendingKind
-                      ? {
-                          message: "요청",
-                          kind: pendingKind,
-                          insurers: selectedInsurers,
-                          coverage_names: finalCoverageNames,
-                          llm_mode: llmMode,
-                        }
-                      : {
-                          message: "요청",
-                          insurers: selectedInsurers,
-                          coverage_names: finalCoverageNames,
-                          llm_mode: llmMode,
-                        };
+                    // STEP NEXT-141-ζζ: Build payload with EX4 support
+                    let requestPayload: any = {
+                      message: "요청",
+                      insurers: selectedInsurers,
+                      llm_mode: llmMode,
+                    };
+
+                    if (pendingKind) {
+                      requestPayload.kind = pendingKind;
+                    }
+
+                    // EX4 uses disease_subtypes instead of coverage_names
+                    if (pendingKind === "EX4_ELIGIBILITY" && clarState.resolvedSlots.disease_subtypes) {
+                      requestPayload.disease_subtypes = clarState.resolvedSlots.disease_subtypes;
+                      // STEP NEXT-141-ζζ: EX4 also requires disease_name (parent disease)
+                      // For now, hardcode "암" as it's the only disease with subtypes in current system
+                      requestPayload.disease_name = "암";
+                    } else if (finalCoverageNames.length > 0) {
+                      requestPayload.coverage_names = finalCoverageNames;
+                    }
 
                     console.log("[page.tsx STEP NEXT-133] REQUEST_SENT", requestPayload);
 
@@ -822,7 +868,17 @@ export default function Home() {
                       });
 
                       let summaryText: string;
-                      if (vm?.bubble_markdown) {
+
+                      // STEP NEXT-EX4-LEFT-FREEZE: EX4 결과 → 고정 요약 메시지 (Clarification 문구 교체)
+                      if (vm?.kind === "EX4_ELIGIBILITY") {
+                        // EX4 Left Panel = Result Summary ONLY (NO Clarification)
+                        // Extract disease_subtypes from comparison_table section (if exists)
+                        const comparisonTableSection = vm?.sections?.find(s => s.kind === "comparison_table") as any;
+                        const diseaseSubtypes = comparisonTableSection?.columns?.slice(1) || ["제자리암", "경계성종양"];
+                        const diseaseText = diseaseSubtypes.join("·");
+
+                        summaryText = `${diseaseText}에 대해\n보험사별 보장 가능 여부를 비교했습니다.\n\n표에서 O/X로 확인하세요.`;
+                      } else if (vm?.bubble_markdown) {
                         summaryText = vm.bubble_markdown;
                       } else {
                         const title = vm?.title ?? "결과";
@@ -848,7 +904,8 @@ export default function Home() {
                 }}
                 disabled={
                   (clarState.missingSlots.insurers && selectedInsurers.length < minInsurersRequired) ||
-                  (clarState.missingSlots.coverage && !coverageInput.trim())
+                  // STEP NEXT-141-ζζ: EX4 NEVER gates on coverage (UI safety net)
+                  (clarState.examType !== "EX4" && clarState.missingSlots.coverage && !coverageInput.trim())
                 }
                 className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
               >
