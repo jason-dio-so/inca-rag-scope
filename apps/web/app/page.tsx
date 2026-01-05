@@ -13,7 +13,9 @@ import {
   isInsurerSwitchUtterance,
   extractInsurerFromSwitch,
   isLimitFindPattern,
+  extractInsurersFromMessage,  // STEP NEXT-138
 } from "@/lib/contextUtils";  // STEP NEXT-102 (STEP NEXT-129R: Removed unused imports)
+import { deriveClarificationState } from "@/lib/clarificationUtils";  // STEP NEXT-133
 import SidebarCategories from "@/components/SidebarCategories";
 import ChatPanel from "@/components/ChatPanel";
 import ResultDock from "@/components/ResultDock";
@@ -66,6 +68,9 @@ export default function Home() {
   const [pendingKind, setPendingKind] = useState<"EX3_COMPARE" | null>(null);
   const [ex3GateOpen, setEx3GateOpen] = useState(false);
   const [ex3GateMessageId, setEx3GateMessageId] = useState<string | null>(null);
+
+  // STEP NEXT-141: Preset exam type lock (preset buttons → force exam type, bypass detectExamType)
+  const [draftExamType, setDraftExamType] = useState<"EX1_DETAIL" | "EX2" | "EX3" | "EX4" | null>(null);
 
   // Load UI config
   useEffect(() => {
@@ -136,74 +141,107 @@ export default function Home() {
     // STEP NEXT-129R: Capture message before clearing input (kept for logging)
     const messageToSend = input;
 
-    // STEP NEXT-A: Unified exam entry gate (EX1 → EX2/EX3/EX4)
-    // Check if this is the first message from EX1 (initial state)
+    // STEP NEXT-133: Slot-driven clarification (EX1 → EX2/EX3/EX4)
     const isInitialEntry = messages.length === 0;
 
+    // STEP NEXT-141: Priority 1 - draftExamType overrides detectExamType (preset button lock)
+    const forcedExamType = draftExamType;
+
     if (isInitialEntry) {
-      // Detect exam intent from EX1 buttons
-      const isEX2Intent = messageToSend.includes("담보 중") || messageToSend.includes("보장한도가 다른");
-      const isEX3Intent = messageToSend.includes("비교") || messageToSend.includes("차이") || messageToSend.includes("VS") || messageToSend.includes("vs");
-      const isEX4Intent = messageToSend.includes("보장여부") || messageToSend.includes("보장내용에 따라");
+      // Build draft payload to check what's available
+      const coverageNamesFromInput = coverageInput
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
 
-      if (isEX2Intent || isEX3Intent || isEX4Intent) {
-        // Check if requirements are met
-        const currentInsurers = selectedInsurers.length > 0
-          ? selectedInsurers
-          : conversationContext.lockedInsurers || [];
+      const draftPayload = {
+        message: messageToSend,
+        insurers: selectedInsurers.length > 0 ? selectedInsurers : undefined,
+        coverage_names: coverageNamesFromInput.length > 0 ? coverageNamesFromInput : undefined,
+      };
 
-        const coverageNamesFromInput = coverageInput
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s.length > 0);
+      // Derive clarification state
+      const clarState = deriveClarificationState({
+        requestPayload: draftPayload,
+        lastResponseVm: null,
+        lastUserText: messageToSend,
+        conversationContext,
+      });
 
-        const currentCoverageNames = coverageNamesFromInput.length > 0
-          ? coverageNamesFromInput
-          : conversationContext.lockedCoverageNames || [];
+      // STEP NEXT-141: Override examType if preset button was used
+      if (forcedExamType) {
+        console.log("[page.tsx STEP NEXT-141] Forced exam type from preset:", forcedExamType);
+        clarState.examType = forcedExamType;
+      }
 
-        // Determine requirements based on exam type
-        let requirementsMet = false;
-        if (isEX3Intent) {
-          // EX3 requires 2 insurers + 1 coverage
-          requirementsMet = currentInsurers.length >= 2 && currentCoverageNames.length > 0;
-        } else if (isEX2Intent || isEX4Intent) {
-          // EX2/EX4 require at least 1 insurer + 1 coverage (or disease name for EX4)
-          requirementsMet = currentInsurers.length > 0 && (currentCoverageNames.length > 0 || isEX4Intent);
-        }
+      console.log("[page.tsx STEP NEXT-133] Clarification state:", clarState);
 
-        if (!requirementsMet) {
-          console.log("[page.tsx STEP NEXT-A] EXAM_ENTRY_GATE_OPEN: insufficient context", {
-            examType: isEX2Intent ? "EX2" : isEX3Intent ? "EX3" : "EX4",
-            insurers: currentInsurers.length,
-            coverages: currentCoverageNames.length
-          });
+      // STEP NEXT-138: Intent routing guard (CRITICAL REGRESSION FIX)
+      // RULE 1: Single insurer + explanation → FORCE EX2_DETAIL (block EX3_COMPARE)
+      // RULE 2: 2+ insurers + comparison → allow EX3_COMPARE
+      // RULE 3: When new query explicitly mentions insurers → CLEAR previous context
+      if (clarState.examType === "EX1_DETAIL" && clarState.resolvedSlots.insurers && clarState.resolvedSlots.insurers.length === 1) {
+        console.log("[page.tsx STEP NEXT-138] Single-insurer explanation detected, forcing EX2_DETAIL");
+        // Clear any previous multi-insurer context
+        setSelectedInsurers(clarState.resolvedSlots.insurers);
+        setConversationContext({
+          lockedInsurers: clarState.resolvedSlots.insurers,
+          lockedCoverageNames: clarState.resolvedSlots.coverage,
+          isLocked: false,  // Not locked yet (will lock after first response)
+        });
+      }
 
-          // Add user message first
-          const userMessage: Message = {
-            role: "user",
-            content: messageToSend,
-          };
-          setMessages((prev) => [...prev, userMessage]);
-          setInput("");
+      // If any slots are missing, show clarification
+      if (clarState.showClarification && clarState.examType) {
+        // Add user message first
+        const userMessage: Message = {
+          role: "user",
+          content: messageToSend,
+        };
+        setMessages((prev) => [...prev, userMessage]);
+        setInput("");
 
-          // Generate unique message ID for gate message (avoid duplicates)
-          const gateMessageId = `exam-entry-gate-${Date.now()}`;
+        // CRITICAL FIX: EXAM4 slot guard (coverage_topic vs coverage_code distinction)
+        // EXAM4 uses coverage_topic (disease subtypes), NOT coverage_code
+        // When disease_subtypes resolved + insurers missing → "비교할 보험사를 선택해주세요" (NO coverage re-ask)
+        // STEP NEXT-141: EX4 preset resolves disease_subtypes → only insurers needed
+        let clarificationMessage = "추가 정보가 필요합니다.";
 
-          // STEP NEXT-A: Unified entry message (same for all exam types)
-          const gateMessage: Message = {
-            role: "assistant",
-            content: "추가 정보가 필요합니다.\n비교할 담보와 보험사를 선택해주세요.",
-          };
-          setMessages((prev) => [...prev, gateMessage]);
-
-          // Open exam entry gate panel
-          if (isEX3Intent) {
-            setPendingKind("EX3_COMPARE");
+        if (clarState.examType === "EX4") {
+          // EXAM4 ONLY: coverage_topic-based (disease subtypes)
+          // STEP NEXT-141: Preset button resolves disease_subtypes → most common path is insurers-only
+          if (clarState.missingSlots.disease_subtypes && clarState.missingSlots.insurers) {
+            clarificationMessage = "추가 정보가 필요합니다.\n질병 종류와 보험사를 선택해주세요.";
+          } else if (clarState.missingSlots.disease_subtypes) {
+            clarificationMessage = "추가 정보가 필요합니다.\n비교할 질병 종류를 선택해주세요.";
+          } else if (clarState.missingSlots.insurers) {
+            // STEP NEXT-141: CRITICAL - disease_subtypes already resolved (from preset), only insurers missing
+            clarificationMessage = "비교할 보험사를 선택해주세요.";
           }
-          setEx3GateOpen(true);
-          setEx3GateMessageId(gateMessageId);
-          return;
+        } else {
+          // EX2/EX3: coverage_code-based
+          if (clarState.missingSlots.coverage && clarState.missingSlots.insurers) {
+            clarificationMessage = "추가 정보가 필요합니다.\n비교할 담보와 보험사를 선택해주세요.";
+          } else if (clarState.missingSlots.coverage) {
+            clarificationMessage = "추가 정보가 필요합니다.\n비교할 담보를 입력해주세요.";
+          } else if (clarState.missingSlots.insurers) {
+            clarificationMessage = "추가 정보가 필요합니다.\n비교할 보험사를 선택해주세요.";
+          }
         }
+
+        const gateMessage: Message = {
+          role: "assistant",
+          content: clarificationMessage,
+        };
+        setMessages((prev) => [...prev, gateMessage]);
+
+        // Open clarification gate
+        if (clarState.examType === "EX3") {
+          setPendingKind("EX3_COMPARE");
+        }
+        setEx3GateOpen(true);
+        setEx3GateMessageId(`exam-entry-gate-${Date.now()}`);
+        return;
       }
     }
 
@@ -231,6 +269,35 @@ export default function Home() {
         setConversationContext({
           ...conversationContext,
           lockedInsurers: [newInsurer],
+        });
+      }
+    }
+
+    // STEP NEXT-138: Detect single-insurer explanation (ONGOING conversation guard)
+    // This runs OUTSIDE isInitialEntry to catch follow-up queries like:
+    // Previous: "삼성화재와 메리츠화재 비교해줘" (2 insurers locked)
+    // Current: "삼성화재 암진단비 설명해줘" (should RESET to single insurer)
+    const isExplanation = messageToSend.includes("설명해") || messageToSend.includes("설명") ||
+      messageToSend.includes("알려줘") || messageToSend.includes("알려주세요");
+    const isComparison = messageToSend.includes("비교") || messageToSend.includes("차이") ||
+      messageToSend.includes("VS") || messageToSend.includes("vs");
+
+    if (isExplanation && !isComparison && !effectiveInsurers) {
+      // Parse insurers from message (context reset if explicitly mentioned)
+      const parsedInsurers = extractInsurersFromMessage(messageToSend);
+
+      if (parsedInsurers.length === 1) {
+        console.log("[page.tsx STEP NEXT-138] Single-insurer explanation detected (ongoing):", parsedInsurers[0]);
+        // FORCE single insurer (override any multi-insurer context)
+        effectiveInsurers = parsedInsurers;
+        effectiveKind = "EX2_DETAIL" as MessageKind;
+
+        // Update state for future requests
+        setSelectedInsurers(parsedInsurers);
+        setConversationContext({
+          lockedInsurers: parsedInsurers,
+          lockedCoverageNames: conversationContext.lockedCoverageNames,
+          isLocked: false,  // Not locked yet (will lock after response)
         });
       }
     }
@@ -371,6 +438,8 @@ export default function Home() {
       setError("요청 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
+      // STEP NEXT-141: Reset draftExamType after send (prevent contamination)
+      setDraftExamType(null);
     }
   };
 
@@ -503,7 +572,23 @@ export default function Home() {
           <h1 className="text-lg font-semibold text-gray-800">
             보험 상품 비교 도우미
           </h1>
-          <LlmModeToggle mode={llmMode} onChange={setLlmMode} />
+          <div className="flex items-center gap-3">
+            {/* EXAM ISOLATION: Reset to EXAM1 button (always visible in EXAM2/3/4) */}
+            {messages.length > 0 && (
+              <button
+                onClick={() => {
+                  if (confirm('대화를 초기화하고 처음으로 돌아가시겠습니까?')) {
+                    window.location.reload();
+                  }
+                }}
+                className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 border border-gray-300 rounded hover:bg-gray-200 transition-colors"
+                title="EXAM1으로 돌아가기"
+              >
+                ← 처음으로
+              </button>
+            )}
+            <LlmModeToggle mode={llmMode} onChange={setLlmMode} />
+          </div>
         </div>
 
         {/* Content */}
@@ -522,6 +607,7 @@ export default function Home() {
               coverageInput={coverageInput}
               onCoverageChange={setCoverageInput}
               coverageInputDisabled={isLimitFindClarification}
+              onPresetClick={setDraftExamType}
             />
           </div>
 
@@ -571,171 +657,200 @@ export default function Home() {
           )}
         </div>
 
-        {/* STEP NEXT-A: Unified Exam Entry Gate UI (EX2/EX3/EX4) */}
-        {ex3GateOpen && (
-          <div className="bg-blue-50 border-t border-blue-200 px-4 py-4">
-            <div className="text-blue-900 text-sm font-medium mb-2">
-              추가 정보 선택
-            </div>
+        {/* STEP NEXT-133: Slot-Driven Clarification Gate UI */}
+        {ex3GateOpen && (() => {
+          // Derive current clarification state
+          const coverageNamesFromInput = coverageInput
+            .split(",")
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0);
 
-            {/* Insurer selection (adaptive: 2 for EX3, 1+ for EX2/EX4) */}
-            <div className="mb-3">
-              <div className="text-blue-800 text-xs mb-2">
-                {pendingKind === "EX3_COMPARE" ? "비교할 보험사 (2개 선택)" : "보험사 선택 (1개 이상)"}
+          const draftPayload = {
+            message: input || "요청",
+            insurers: selectedInsurers.length > 0 ? selectedInsurers : undefined,
+            coverage_names: coverageNamesFromInput.length > 0 ? coverageNamesFromInput : undefined,
+          };
+
+          const clarState = deriveClarificationState({
+            requestPayload: draftPayload,
+            lastResponseVm: null,
+            lastUserText: messages[messages.length - 2]?.content || "",
+            conversationContext,
+          });
+
+          // STEP NEXT-141: Override examType if preset button was used
+          if (draftExamType) {
+            clarState.examType = draftExamType;
+          }
+
+          const minInsurersRequired = pendingKind === "EX3_COMPARE" ? 2 : 1;
+
+          return (
+            <div className="bg-blue-50 border-t border-blue-200 px-4 py-4">
+              <div className="text-blue-900 text-sm font-medium mb-2">
+                추가 정보 선택
               </div>
-              <div className="flex flex-wrap gap-2">
-                {config.available_insurers.map((insurer) => {
-                  const isSelected = selectedInsurers.includes(insurer.code);
-                  return (
-                    <button
-                      key={insurer.code}
-                      onClick={() => {
-                        setSelectedInsurers((prev) =>
-                          prev.includes(insurer.code)
-                            ? prev.filter((c) => c !== insurer.code)
-                            : [...prev, insurer.code]
-                        );
-                      }}
-                      className={`px-3 py-1.5 text-sm border rounded transition-colors ${
-                        isSelected
-                          ? "bg-blue-600 text-white border-blue-600"
-                          : "bg-white text-gray-700 border-blue-300 hover:bg-blue-100"
-                      }`}
-                    >
-                      {insurer.display}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
-            {/* Coverage input (1 required) */}
-            <div className="mb-3">
-              <div className="text-blue-800 text-xs mb-2">
-                담보명 (1개)
-              </div>
-              <input
-                type="text"
-                value={coverageInput}
-                onChange={(e) => setCoverageInput(e.target.value)}
-                placeholder="예: 암진단비"
-                className="w-full px-3 py-2 text-sm border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+              {/* STEP NEXT-133: Only show insurer selection if missing */}
+              {clarState.missingSlots.insurers && (
+                <div className="mb-3">
+                  <div className="text-blue-800 text-xs mb-2">
+                    보험사 선택
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {config.available_insurers.map((insurer) => {
+                      const isSelected = selectedInsurers.includes(insurer.code);
+                      return (
+                        <button
+                          key={insurer.code}
+                          onClick={() => {
+                            setSelectedInsurers((prev) =>
+                              prev.includes(insurer.code)
+                                ? prev.filter((c) => c !== insurer.code)
+                                : [...prev, insurer.code]
+                            );
+                          }}
+                          className={`px-3 py-1.5 text-sm border rounded transition-colors ${
+                            isSelected
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-white text-gray-700 border-blue-300 hover:bg-blue-100"
+                          }`}
+                        >
+                          {insurer.display}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
-            {/* Submit button */}
-            <button
-              onClick={async () => {
-                // STEP NEXT-A: Adaptive validation based on exam type
-                const minInsurersRequired = pendingKind === "EX3_COMPARE" ? 2 : 1;
+              {/* STEP NEXT-133/141: Only show coverage input if missing AND NOT EX4 */}
+              {/* STEP NEXT-141: EX4 uses disease_subtypes (already resolved from preset), NOT coverage */}
+              {clarState.missingSlots.coverage && clarState.examType !== "EX4" && (
+                <div className="mb-3">
+                  <div className="text-blue-800 text-xs mb-2">
+                    담보명
+                  </div>
+                  <input
+                    type="text"
+                    value={coverageInput}
+                    onChange={(e) => setCoverageInput(e.target.value)}
+                    placeholder="예: 암진단비"
+                    className="w-full px-3 py-2 text-sm border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              )}
 
-                if (selectedInsurers.length < minInsurersRequired) {
-                  alert(pendingKind === "EX3_COMPARE"
-                    ? "보험사를 2개 선택해 주세요."
-                    : "보험사를 1개 이상 선택해 주세요.");
-                  return;
-                }
-
-                const coverageNamesFromInput = coverageInput
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter((s) => s.length > 0);
-
-                if (coverageNamesFromInput.length === 0) {
-                  alert("담보명을 입력해 주세요.");
-                  return;
-                }
-
-                console.log("[page.tsx STEP NEXT-A] EXAM_ENTRY_GATE_SUBMIT", {
-                  examType: pendingKind || "AUTO",
-                  insurers: selectedInsurers,
-                  coverages: coverageNamesFromInput
-                });
-
-                // Close gate
-                setEx3GateOpen(false);
-                setIsLoading(true);
-
-                try {
-                  // STEP NEXT-A: Build request with kind if specified (EX3), else let backend route
-                  const requestPayload = pendingKind
-                    ? {
-                        message: "요청",  // Generic message (user already sent their question)
-                        kind: pendingKind,
-                        insurers: selectedInsurers,
-                        coverage_names: coverageNamesFromInput,
-                        llm_mode: llmMode,
-                      }
-                    : {
-                        message: "요청",  // Generic message
-                        insurers: selectedInsurers,
-                        coverage_names: coverageNamesFromInput,
-                        llm_mode: llmMode,
-                      };
-
-                  console.log("[page.tsx STEP NEXT-A] EXAM_ENTRY_REQUEST_SENT", requestPayload);
-
-                  const response = await postChat(requestPayload);
-                  console.log("EX3 gate response:", response);
-
-                  if (!response || typeof response !== "object") {
-                    throw new Error("Invalid response from server");
+              {/* Submit button */}
+              <button
+                onClick={async () => {
+                  // Validation
+                  if (selectedInsurers.length < minInsurersRequired) {
+                    alert(`보험사를 ${minInsurersRequired}개 이상 선택해 주세요.`);
+                    return;
                   }
 
-                  if (response.ok === false || response.error) {
-                    setError(response.error?.message || "알 수 없는 오류가 발생했습니다.");
-                  } else if (!response.message) {
-                    setError("서버로부터 응답을 받지 못했습니다.");
-                  } else {
-                    const vm = response.message;
-                    setLatestResponse(vm);
+                  // STEP NEXT-133: Use resolved coverage if available, else read from input
+                  const coverageNamesFromInput = coverageInput
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter((s) => s.length > 0);
 
-                    // Lock conversation context
-                    setConversationContext({
-                      lockedInsurers: selectedInsurers,
-                      lockedCoverageNames: coverageNamesFromInput,
-                      isLocked: true,
-                    });
+                  // Priority: resolved slots → input state
+                  const finalCoverageNames = clarState.resolvedSlots.coverage && clarState.resolvedSlots.coverage.length > 0
+                    ? clarState.resolvedSlots.coverage
+                    : coverageNamesFromInput;
 
-                    // Use backend bubble_markdown as SSOT
-                    let summaryText: string;
-                    if (vm?.bubble_markdown) {
-                      summaryText = vm.bubble_markdown;
-                    } else {
-                      const title = vm?.title ?? "결과";
-                      const bullets = Array.isArray(vm?.summary_bullets) ? vm.summary_bullets : [];
-                      const summaryParts = [title, ...bullets].filter(Boolean);
-                      summaryText = summaryParts.join("\n\n");
+                  if (clarState.missingSlots.coverage && finalCoverageNames.length === 0) {
+                    alert("담보명을 입력해 주세요.");
+                    return;
+                  }
+
+                  console.log("[page.tsx STEP NEXT-133] SLOT_DRIVEN_GATE_SUBMIT", {
+                    examType: pendingKind || "AUTO",
+                    insurers: selectedInsurers,
+                    coverages: finalCoverageNames,
+                    resolvedFromMessage: clarState.resolvedSlots.coverage
+                  });
+
+                  // Close gate
+                  setEx3GateOpen(false);
+                  setIsLoading(true);
+
+                  try {
+                    const requestPayload = pendingKind
+                      ? {
+                          message: "요청",
+                          kind: pendingKind,
+                          insurers: selectedInsurers,
+                          coverage_names: finalCoverageNames,
+                          llm_mode: llmMode,
+                        }
+                      : {
+                          message: "요청",
+                          insurers: selectedInsurers,
+                          coverage_names: finalCoverageNames,
+                          llm_mode: llmMode,
+                        };
+
+                    console.log("[page.tsx STEP NEXT-133] REQUEST_SENT", requestPayload);
+
+                    const response = await postChat(requestPayload);
+
+                    if (!response || typeof response !== "object") {
+                      throw new Error("Invalid response from server");
                     }
 
-                    const assistantMsg: Message = {
-                      role: "assistant",
-                      content: summaryText,
-                      vm: vm,
-                    };
-                    setMessages((prev) => [...prev, assistantMsg]);
+                    if (response.ok === false || response.error) {
+                      setError(response.error?.message || "알 수 없는 오류가 발생했습니다.");
+                    } else if (!response.message) {
+                      setError("서버로부터 응답을 받지 못했습니다.");
+                    } else {
+                      const vm = response.message;
+                      setLatestResponse(vm);
+
+                      setConversationContext({
+                        lockedInsurers: selectedInsurers,
+                        lockedCoverageNames: coverageNamesFromInput,
+                        isLocked: true,
+                      });
+
+                      let summaryText: string;
+                      if (vm?.bubble_markdown) {
+                        summaryText = vm.bubble_markdown;
+                      } else {
+                        const title = vm?.title ?? "결과";
+                        const bullets = Array.isArray(vm?.summary_bullets) ? vm.summary_bullets : [];
+                        const summaryParts = [title, ...bullets].filter(Boolean);
+                        summaryText = summaryParts.join("\n\n");
+                      }
+
+                      const assistantMsg: Message = {
+                        role: "assistant",
+                        content: summaryText,
+                        vm: vm,
+                      };
+                      setMessages((prev) => [...prev, assistantMsg]);
+                    }
+                  } catch (err) {
+                    console.error("Gate error:", err);
+                    setError("요청 중 오류가 발생했습니다.");
+                  } finally {
+                    setIsLoading(false);
+                    setPendingKind(null);
                   }
-                } catch (err) {
-                  console.error("EX3 gate error:", err);
-                  setError("요청 중 오류가 발생했습니다.");
-                } finally {
-                  setIsLoading(false);
-                  setPendingKind(null);
+                }}
+                disabled={
+                  (clarState.missingSlots.insurers && selectedInsurers.length < minInsurersRequired) ||
+                  (clarState.missingSlots.coverage && !coverageInput.trim())
                 }
-              }}
-              disabled={
-                (pendingKind === "EX3_COMPARE" && selectedInsurers.length < 2) ||
-                (!pendingKind && selectedInsurers.length < 1) ||
-                !coverageInput.trim()
-              }
-              className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-            >
-              {pendingKind === "EX3_COMPARE"
-                ? `비교 시작 (${selectedInsurers.length}/2개 보험사, ${coverageInput.trim() ? "담보 입력됨" : "담보 없음"})`
-                : `확인 (${selectedInsurers.length}개 보험사, ${coverageInput.trim() ? "담보 입력됨" : "담보 없음"})`}
-            </button>
-          </div>
-        )}
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              >
+                확인
+              </button>
+            </div>
+          );
+        })()}
 
         {/* STEP NEXT-80: Clarification UI */}
         {clarification && (

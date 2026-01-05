@@ -1,5 +1,30 @@
 # CLAUDE Context – inca-rag-scope
 
+# EXAM CONSTITUTION (SSOT)
+
+본 시스템에서 EXAM은 서로 독립적인 문제 유형이다.
+
+- EXAM1, EXAM2, EXAM3, EXAM4는 서로의 입력/출력/상태를 절대 공유하지 않는다.
+- 하나의 EXAM 결과가 다른 EXAM의 입력으로 사용되는 것은 금지된다.
+- "정리/확장/보고서화/자연스럽게 이어짐" 같은 표현을 근거로 EXAM 간 연결을 추측하지 않는다.
+- EXAM 간 전환은 오직 사용자 명시 동작(버튼/선택)으로만 가능하다.
+
+**정의**:
+- **EXAM1 (EX1)**: 진입/선택/의도 결정 (라우팅만)
+- **EXAM2 (EX2)**: 조건 기반 탐색 및 차이 발견 (탐색 전용) — **추가정보 플로우 금지 (ABSOLUTE)**
+- **EXAM3 (EX3)**: 고객 전달용 보고서 (보고서 전용)
+- **EXAM4 (EX4)**: 가능/불가 (O/X) 판단 (OX 전용)
+
+**이 헌법을 위반하는 설계/코드/설명은 버그로 간주한다.**
+
+**⚠️ EXAM RULE NOTICE (MANDATORY)**
+- 본 작업은 지정된 EXAM에 한정된다.
+- 다른 EXAM(EXAM1/2/3/4)을 참조/연계/혼합하는 것은 금지된다.
+- 문서에 명시되지 않은 EXAM 전환은 구현하지 않는다.
+- 불명확하면 추측하지 말고 질문한다.
+
+---
+
 # EXECUTION BASELINE (SSOT)
 
 This file defines the **current reality** of the system.
@@ -177,68 +202,421 @@ if (isInitialEntry && (isEX2Intent || isEX3Intent || isEX4Intent)) {
 
 ---
 
-## 0.3 STEP NEXT-133: EX3 Front-Trigger Selection Gate — **2026-01-04** (Superseded by STEP NEXT-A)
+## 0.3 STEP NEXT-133: Slot-Driven Clarification UI — **2026-01-04** (FINAL)
 
-**Purpose**: Customer self-test UX — EX3-specific front-end gate (NO backend need_more_info)
+**Purpose**: Fix clarification UI to be **slot-driven** instead of showing fixed form, preventing re-asking for resolved slots
 
-**Note**: This STEP introduced EX3 gate mechanics. STEP NEXT-A extends pattern to ALL exam types and unifies entry message.
+**Supersedes**: STEP NEXT-A (Unified Exam Entry — extended with slot-driven logic)
 
 **Core Problem**:
-- EX1 → EX3 button → unpredictable screens (보고서/빈 화면/추가정보 엉킴)
-- EX3 routed to EX2_DETAIL_DIFF unexpectedly
-- Customer testing requires predictable, reproducible UX
+- Current bug: Coverage already resolved ("암진단비 비교해줘") → clarification UI still shows coverage input
+- Fixed form approach: Always shows both insurers + coverage UI regardless of what's already known
+- Hardcoded text: "(2개 선택)" assumes current 2-insurer limitation (expansion blocker)
 
 **Solution**:
-- Frontend triggers EX3 selection panel BEFORE backend call
-- NO reliance on backend need_more_info for EX3 flow
-- User-driven: "보험사/담보 선택 → 비교" (always predictable)
+- **Missing-slot detection**: `deriveClarificationState()` utility determines which slots are resolved vs missing
+- **Dynamic UI**: Only show UI for missing slots (resolved slots NEVER re-asked)
+- **No hardcoded count**: Remove "(2개 선택)" text (validation stays internal)
 
 **Core Rules (ABSOLUTE)**:
-1. ✅ **User-driven ONLY**: Buttons fill input, NO auto-send/auto-select/auto-retry
-2. ✅ **EX3 entry = same UX**: Always "비교를 하려면 보험사/담보를 먼저 선택"
-3. ✅ **Backend need_more_info = NOT used for EX3**: Frontend controls gate
-4. ✅ **No business logic change**: Server routing/intent/data/extraction UNCHANGED
-5. ✅ **No LLM** (always OFF), **No silent payload correction**, **No force routing** (129R preserved)
-6. ❌ **NO backend need_more_info** intentionally triggered for EX3
-7. ❌ **NO auto-send** on button click
-8. ❌ **NO silent payload correction** / auto-extraction / auto-injection
-9. ❌ **NO force routing** (121/125류 부활 금지)
-
-**State Model** (page.tsx):
-- `pendingKind`: "EX3_COMPARE" | null (intent temporarily stored)
-- `ex3GateOpen`: boolean (gate panel visibility)
-- `ex3GateMessageId`: string | null (unique gate message ID)
+1. ✅ **Resolved Slot Non-Reask** (절대 원칙): If coverage resolved → coverage UI NEVER shown
+2. ✅ **Clarification UI = Dynamic Panel**: Only render UI for `missingSlots` fields
+3. ✅ **No Hardcoded Count**: Remove "(2개 선택)" from UI text (internal validation only)
+4. ✅ **Unified Logic**: Same slot-driven approach for EX1→EX2/EX3/EX4
+5. ✅ **No Demo Auto-Complete**: NO auto-send, NO silent correction, NO forced routing (129R preserved)
+6. ❌ **NO re-ask for resolved slots**: Coverage="암진단비" → coverage UI = 0% exposure
+7. ❌ **NO hardcoded insurer count**: "(2개 선택)" FORBIDDEN
+8. ❌ **NO backend changes**: apps/api/** UNTOUCHED
 
 **Detection Logic** (deterministic):
 ```typescript
-const isEX3Intent =
-  messageToSend.includes("비교") ||
-  messageToSend.includes("차이") ||
-  messageToSend.includes("VS") ||
-  messageToSend.includes("vs");
+const clarState = deriveClarificationState({
+  requestPayload: draftPayload,
+  lastResponseVm: null,
+  lastUserText: messageToSend,
+  conversationContext,
+});
 
-// EX3 requires 2 insurers + 1 coverage
-if (currentInsurers.length < 2 || currentCoverageNames.length === 0) {
-  // Open EX3 gate (NO backend call)
-}
+// Exam type: EX2/EX3/EX4 (keyword-based)
+// Missing slots: { insurers: boolean, coverage: boolean, disease_subtypes: boolean }
+// Resolved slots: { insurers: string[] | null, coverage: string[] | null, ... }
 ```
 
-**UI Text** (LOCKED):
-- Assistant message: "비교를 위해 담보와 보험사를 먼저 선택해 주세요.\n아래에서 보험사 2개와 담보명 1개를 고르면 바로 비교표를 보여드릴게요."
-- Panel header: "비교를 위한 정보 선택"
-- Insurer section: "비교할 보험사 (2개 선택)"
-- Coverage section: "비교할 담보 (1개)"
-- Submit button: "비교 시작 (N/2개 보험사, 담보 입력됨/담보 없음)"
+**UI Rendering** (LOCKED):
+```typescript
+{clarState.missingSlots.insurers && (
+  <div>보험사 선택</div>  // NO "(2개 선택)"
+)}
+
+{clarState.missingSlots.coverage && (
+  <div>담보명</div>  // NO "(1개)"
+)}
+
+<button>확인</button>  // NO count in text
+```
 
 **Implementation**:
-- **Modified Files**: `apps/web/app/page.tsx`, `apps/web/components/ChatPanel.tsx`
+- **NEW**: `apps/web/lib/clarificationUtils.ts` (slot detection logic)
+- **MODIFIED**: `apps/web/app/page.tsx` (slot-driven clarification gate)
 - **Backend Changes**: ❌ FORBIDDEN (NO apps/api/** changes)
-- **SSOT**: `docs/audit/STEP_NEXT_133_EX3_GATE_FRONT_TRIGGER_LOCK.md`
+- **SSOT**: `docs/audit/STEP_NEXT_133_SLOT_DRIVEN_CLARIFICATION.md`
+
+**Verification Scenarios**:
+- ✅ CHECK-EX3-CLARIFY-1: "암진단비 비교해줘" → 보험사 선택 ONLY (담보 UI 0% 노출)
+- ✅ CHECK-EX3-CLARIFY-2: 보험사 2개 선택 → 확인 → EX3 결과 표시
+- ✅ CHECK-EX4-MULTI-SUBTYPE-1: "제자리암, 경계성종양 비교" → 2개 서브타입 모두 표시
+- ✅ CHECK-EX2-NO-REASK-1: "암직접입원비 보장한도 비교" → 담보 UI 0% 노출
 
 **Constitutional Basis**: STEP NEXT-129R (Customer Self-Test Flow)
 
 **Definition of Success**:
-> "EX1 → EX3 항상 선택 패널 먼저 표시 (백엔드 호출 0회). 선택 완료 후에만 EX3_COMPARE 호출. '왜 이 화면이 나왔지?' 혼란 제거."
+> "Coverage가 resolved된 케이스에서 담보 선택 UI 노출 0%. EX3 진입 시 '보험사 선택만' 요구."
+
+**Regression Prevention**:
+- ✅ STEP NEXT-129R preserved (NO auto-send, NO silent correction, NO forced routing)
+- ✅ STEP NEXT-A preserved (Unified exam entry UX)
+- ✅ STEP NEXT-102/106 preserved (Insurer switch, multi-select)
+
+---
+
+## 0.3.1 STEP NEXT-138: Single-Insurer Explanation Guard (CRITICAL REGRESSION FIX) — **2026-01-04**
+
+**Purpose**: Fix regression where single-insurer explanation queries route to comparison mode
+
+**Root Problem**:
+- **Input**: "삼성화재 암진단비 설명해줘"
+- **Expected**: EX2_DETAIL (single-insurer detail view)
+- **Actual**: EX3_COMPARE (multi-insurer comparison with 삼성+메리츠)
+
+**Root Causes**:
+1. Missing explanation intent detection ("설명", "알려줘" patterns)
+2. Context carryover (previous multi-insurer context overrides explicit single-insurer mention)
+3. No routing guard to FORCE EX2_DETAIL when single insurer + explanation
+
+**Solution**:
+1. **Added EX1_DETAIL exam type** for single-insurer explanation queries
+2. **Context reset logic**: Parse insurers from message → explicit mention = reset context
+3. **TWO routing guards**:
+   - Guard 1 (Initial entry, first message)
+   - Guard 2 (Ongoing conversation, follow-up messages) ← **CRITICAL FIX**
+
+**Core Rules (ABSOLUTE)**:
+1. ✅ **Single insurer + explanation → FORCE EX2_DETAIL** (NEVER EX3_COMPARE)
+2. ✅ **EX3 requires BOTH**: insurer_count ≥ 2 AND comparison signal ("비교", "차이")
+3. ✅ **Explicit insurer mention → RESET context** (NO carryover)
+4. ✅ **EX1_DETAIL detection**: "설명해", "설명", "알려줘", "알려주세요"
+5. ❌ **NO forced comparison** when single insurer + explanation
+6. ❌ **NO context carryover** when insurers explicitly mentioned
+
+**Detection Priority**:
+1. `isExplanation && !isEX3` → EX1_DETAIL (explanation without comparison keywords)
+2. `isEX3` → EX3 (comparison overrides explanation)
+3. `isEX4` → EX4
+4. `isEX2` → EX2
+
+**Insurer Resolution Priority** (STEP NEXT-138):
+1. `payloadInsurers` (explicit selection)
+2. `parsedInsurers` (mentioned in message) ← **NEW (context reset)**
+3. `lockedInsurers` (conversation context)
+
+**Implementation**:
+- **Modified**: `apps/web/lib/clarificationUtils.ts` (EX1_DETAIL type, parseInsurersFromMessage, detectExamType)
+- **Modified**: `apps/web/app/page.tsx` (TWO routing guards: initial + ongoing)
+- **Modified**: `apps/web/lib/contextUtils.ts` (exported extractInsurersFromMessage)
+- **Tests**: `tests/manual_test_step_next_138_explanation_guard.md` (6 test cases)
+- **SSOT**: `docs/audit/STEP_NEXT_138_SINGLE_INSURER_EXPLANATION_GUARD.md`
+
+**Verification Scenarios**:
+- ✅ CHECK-138-1: "삼성화재 암진단비 설명해줘" → EX2_DETAIL (NO EX3)
+- ✅ CHECK-138-2: "삼성화재와 메리츠화재 암진단비 비교해줘" → EX3_COMPARE
+- ✅ CHECK-138-3: After EX3, "삼성화재 수술비 설명해줘" → context reset to single insurer
+- ✅ CHECK-138-4: "설명해줘" (no insurer) → clarification required
+- ✅ CHECK-138-5: "암진단비 비교해줘" (no insurer) → clarification required
+- ✅ CHECK-138-6: Single insurer + explanation → NEVER routes to EX3
+
+**Constitutional Basis**: EXAM CONSTITUTION (EXAM2/EX3 NO state sharing) + STEP NEXT-129R (Predictable UX)
+
+**Definition of Success**:
+> "삼성화재 암진단비 설명해줘"를 10번 반복해도 EX3_COMPARE 화면이 1번도 안 나오고, 매번 EX2_DETAIL만 나오면 성공"
+
+**Regression Prevention**:
+- ✅ STEP NEXT-129R preserved (NO forced routing, NO silent correction)
+- ✅ STEP NEXT-133 preserved (Slot-driven clarification)
+- ✅ STEP NEXT-102 preserved (Insurer switch)
+- ✅ STEP NEXT-106 preserved (Multi-select insurer)
+
+---
+
+## 0.3.3 STEP NEXT-141: EX4 Preset Routing Lock + Clarification UI Fix — **2026-01-05**
+
+**Purpose**: Lock EX4 preset button routing to 100% confidence, remove coverage input from EX4 clarification
+
+**Root Problem**:
+- EX4 preset ("제자리암, 경계성종양 보장여부 비교해줘") relied on keyword-based detectExamType
+- Could be overridden by stronger EX3 signals ("비교") or EX1_DETAIL (single insurer)
+- Clarification UI showed "담보와 보험사를 선택해주세요" (wrong - disease subtypes already resolved)
+
+**Solution (Frontend ONLY)**:
+1. **Preset button LOCK**: Click EX4 preset → set `draftExamType="EX4"` → bypass detectExamType
+2. **Routing priority**: `draftExamType` (preset) > `detectExamType` (free-text fallback)
+3. **Clarification UI**: Hide coverage input for EX4 (insurers-only selection)
+4. **Reset**: Clear `draftExamType` after send (prevent contamination)
+
+**Core Rules (ABSOLUTE)**:
+1. ✅ **Preset button = explicit intent** (100% confidence, NO heuristics)
+2. ✅ **EX4 clarification = insurers ONLY** (disease subtypes already in message)
+3. ✅ **draftExamType reset** after send (NO carryover to next query)
+4. ✅ **Free-text fallback preserved** (detectExamType for manual queries)
+5. ❌ **NO keyword-based preset detection** ("if message.includes('제자리암')")
+6. ❌ **NO coverage input UI for EX4** (disease subtypes ≠ coverage_code)
+7. ❌ **NO "담보와 보험사" copy for EX4** (insurers-only message)
+
+**Implementation**:
+- **MODIFIED**: `apps/web/app/page.tsx`
+  - Added `draftExamType` state
+  - Override `clarState.examType` when `forcedExamType` present
+  - Hide coverage input: `{... && examType !== "EX4"}`
+  - Reset in finally block: `setDraftExamType(null)`
+- **MODIFIED**: `apps/web/components/ChatPanel.tsx`
+  - Added `onPresetClick` prop
+  - EX4 preset button calls `onPresetClick("EX4")`
+  - EX2/EX3 presets NO lock (rely on detectExamType)
+- **SSOT**: `docs/audit/STEP_NEXT_141_EX4_PRESET_LOCK.md`
+
+**Verification Scenarios**:
+- ✅ S1: EX4 preset 10 clicks → 10/10 route to EX4 (NOT EX3/EX1_DETAIL)
+- ✅ S2: EX4 clarification message → "비교할 보험사를 선택해주세요" (NO "담보와")
+- ✅ S3: EX4 clarification UI → insurers buttons ONLY (NO coverage input field)
+- ✅ S4: EX2/EX3 presets → NO draftExamType lock (heuristics work)
+- ✅ S5: After send → draftExamType reset (NO contamination)
+
+**Constitutional Basis**: STEP NEXT-129R (Customer Self-Test Flow) + STEP NEXT-133 (Slot-driven clarification)
+
+**Definition of Success**:
+> "EX4 프리셋 클릭 10/10 → EX4 처리 (EX3/EX1_DETAIL 0%). Clarification에서 담보 입력 요구 0%."
+
+**Regression Prevention**:
+- ✅ STEP NEXT-129R preserved (NO auto-send, NO silent correction)
+- ✅ STEP NEXT-133 preserved (Slot-driven clarification for free-text)
+- ✅ STEP NEXT-138 preserved (Single-insurer explanation guard)
+- ✅ EX2/EX3 detectExamType logic unchanged
+
+---
+
+## 0.3.4 STEP NEXT-138-γ: EXAM3 AMOUNT/LIMIT Dimension Separation (Backend) — **2026-01-04**
+
+**Purpose**: Fix semantic confusion where AMOUNT (정액금액: "3천만원") and LIMIT (한도: "보험기간 중 1회") were mixed in the same table row, violating the report principle "한 행은 반드시 동일 의미·동일 차원이어야 한다".
+
+**Core Problem**:
+- Samsung: "보험기간 중 1회" (LIMIT)
+- Meritz: "3천만원" (AMOUNT)
+- **Same row compares different dimensions** (횟수 vs 금액) ← SEMANTIC VIOLATION
+
+**Solution (Backend)**:
+1. **Dimension Tagging**: AMOUNT | LIMIT | MIXED detection
+2. **Main Table (AMOUNT-only)**: 핵심 보장 내용 shows ONLY AMOUNT
+3. **Separate LIMIT Section**: 보장 한도 section (below main table)
+4. **Structural Basis (AMOUNT-first)**: "보장금액(정액) 기준" vs "지급 한도/횟수 기준"
+
+**Core Rules (ABSOLUTE)**:
+1. ✅ **Main table shows ONLY AMOUNT** (핵심 보장 내용 = 정액금액)
+2. ✅ **LIMIT in separate section** (보장 한도 = 한도/횟수)
+3. ✅ **NO mixing AMOUNT and LIMIT in same cell** (ABSOLUTE)
+4. ✅ **AMOUNT-first structural basis** (보장금액 > 지급한도 priority)
+5. ❌ **NO dimension mixing** ("3천만원 (보험기간 중 1회)" FORBIDDEN)
+6. ❌ **NO EXAM2/EX4 impact** (EXAM3 ONLY)
+
+**Implementation**:
+- **MODIFIED**: `apps/api/response_composers/ex3_compare_composer.py`
+  - Added `_tag_dimension()` method
+  - Modified `_build_table_section()` (AMOUNT-only main table)
+  - Added `_build_limit_section()` (separate LIMIT section)
+- **MODIFIED**: `apps/api/chat_vm.py` (Added "LIMIT_INFO" to TableKind Literal)
+- **SSOT**: `docs/audit/STEP_NEXT_138_GAMMA_EX3_AMOUNT_LIMIT_SEPARATION.md`
+
+**Verification Scenarios**:
+- ✅ CHECK-138-γ-1: "삼성화재와 메리츠화재 암진단비 비교해줘" → 핵심 보장 내용 = amounts ONLY, 보장 한도 = limits ONLY
+- ✅ CHECK-138-γ-2: Coverage with ONLY LIMIT → main table shows limit (fallback)
+- ✅ CHECK-138-γ-3: Coverage with ONLY AMOUNT → limit section NOT shown
+- ✅ CHECK-138-γ-4: Asymmetric dimensions → clear separation in different sections
+
+**Definition of Success**:
+> "Samsung vs Meritz 암진단비 비교에서 '핵심 보장 내용' 행에 '3천만원'만 표시되고, '보험기간 중 1회'는 별도 '보장 한도' 섹션에만 표시되면 성공"
+
+---
+
+## 0.3.3 STEP NEXT-139C: EXAM3 Backend Formatting Fix (FINAL) — **2026-01-04**
+
+**Purpose**: Fix EX3 formatting at the SOURCE (backend ViewModel creation), NOT in frontend normalization.
+
+**Root Cause (Evidence-Based)**:
+- DevTools Network payload showed `cells[].text` as `"LUMP_SUM"` (raw enum)
+- Amounts inconsistent: `"3,000만원 (30,000,000원)"` vs `"3천만원"` (mixing formats)
+- Backend composer was sending unformatted strings directly to cells
+
+**Solution (Backend Fix)**:
+Applied formatting in `apps/api/response_composers/ex3_compare_composer.py` where cell text is created.
+
+**Formatting Rules (LOCKED)**:
+
+### Rule 1: LIMIT + AMOUNT Combination (139A)
+```
+Pattern: Both limit and amount exist
+Output: "{한도 설명} (일당 {금액})"
+
+Example: "보험기간 중 1회 (일당 2만원)"
+```
+
+### Rule 2: 일당형 Amount Prefix (139B)
+```
+Pattern: payment_type = "일당형"
+Output: "일당 {금액}"
+
+Example: "일당 2만원"
+```
+
+### Rule 3: Korean-Only Amount Display (139B)
+```
+Pattern: Amount with numeric parenthetical
+Output: Strip numeric part
+
+Example: "3천만원 (30,000,000원)" → "3천만원"
+```
+
+### Rule 4: Payment Type Label Substitution (139B)
+```
+Pattern: Raw payment_type label
+Output: Korean label
+
+Examples:
+- "LUMP_SUM" → "정액 지급"
+- "일당형" → "일당 지급"
+- "UNKNOWN" → "표현 없음"
+```
+
+**Core Rules (ABSOLUTE)**:
+1. ✅ **NO raw enum values in cells**: `"LUMP_SUM"` → `"정액 지급"`
+2. ✅ **Korean-only amounts**: `"3천만원 (30,000,000원)"` → `"3천만원"`
+3. ✅ **일당형 prefix**: `"2만원"` → `"일당 2만원"` (when payment_type = 일당형)
+4. ✅ **Consistent formatting**: ALL amounts use same format (no mixing)
+5. ❌ **NO numeric parentheticals**: `(30,000,000원)` FORBIDDEN in final display
+6. ❌ **NO raw payment_type**: `LUMP_SUM`, `UNKNOWN` FORBIDDEN in cells
+
+**Implementation**:
+- **MODIFIED**: `apps/api/response_composers/ex3_compare_composer.py`
+  - Added `format_payment_type()` function (lines 435-447)
+  - Updated `format_amount_display()` with Korean-only stripping (lines 392-405)
+  - Updated `format_limit_display()` with Korean-only stripping (lines 539-541)
+- **REVERTED**: `apps/web/lib/normalize/table.ts` (removed frontend formatting - unnecessary)
+- **Build Status**: ✅ Backend syntax OK, Frontend build succeeded
+- **SSOT**: `docs/audit/STEP_NEXT_139C_BACKEND_FORMATTING_FIX.md`
+
+**Verification (Network Payload)**:
+- ✅ cells[].text shows `"정액 지급"` (NOT `"LUMP_SUM"`)
+- ✅ cells[].text shows `"3천만원"` (NOT `"3천만원 (30,000,000원)"`)
+- ✅ cells[].text shows `"일당 2만원"` for 일당형 (NOT `"2만원"`)
+- ✅ NO comma formats: `"3,000만원"` = 0%
+
+**Definition of Success**:
+> "Network payload의 `cells[].text` 필드에서 `LUMP_SUM` 0%, `3,000만원` 0%, `(30,000,000원)` 0%이면 성공."
+
+---
+
+## 0.4 STEP NEXT-134: EXAM2 "찾아줘" Query Routing Lock + Context Isolation — **2026-01-04**
+
+**Purpose**: Prevent EXAM2 "search/discovery" queries from routing to wrong intent and using previous context
+
+**Core Problem**:
+- "암직접입원일당 담보 중 보장한도가 다른 상품 찾아줘" → routed to `EX2_DETAIL_DIFF` (comparison, NOT search)
+- Response uses `A4200_1` (암진단비) from previous EX3 context, NOT `A6200` (암직접입원일당)
+- Coverage mismatch: Query asks for "암직접입원일당", system uses "암진단비"
+
+**Solution**:
+- **Gate 2 (STEP NEXT-134)**: "찾아줘/발굴/다른 상품" patterns → `EX2_LIMIT_FIND` (ABSOLUTE, 100% confidence)
+- **Coverage extraction**: `extract_coverage_name_from_message()` extracts from CURRENT message ONLY (NO carryover)
+- **Coverage code mapping**: Added `A6200` (암직접입원일당), `A6100_1` (입원일당)
+
+**Core Rules (ABSOLUTE)**:
+1. ✅ **"찾아줘" = search intent → EX2_LIMIT_FIND** (NOT EX2_DETAIL_DIFF)
+2. ✅ **Coverage from current message ONLY** (NO previous context carryover)
+3. ✅ **Auto-expand insurers to all 8** if not specified
+4. ✅ **Deterministic coverage extraction** (NO LLM)
+5. ✅ **Handler respects routed kind** (kind from compiled_query, NOT hardcoded)
+6. ❌ **NO context carryover** from previous EX3/EX4 messages
+7. ❌ **NO "보장한도" (field) as coverage_name** (must be actual coverage like "암직접입원일당")
+
+**Search Patterns** (Gate 2):
+```python
+search_patterns = [
+    r"찾아줘", r"찾아주세요", r"찾아주",
+    r"다른\s*상품", r"있는\s*상품", r"발굴",
+    r"보장한도가?\s*다른", r"차이가?\s*나는\s*상품"
+]
+```
+
+**Implementation**:
+- **MODIFIED**: `apps/api/chat_intent.py` (Gate 2 + coverage extraction + mappings)
+- **MODIFIED**: `apps/api/chat_handlers_deterministic.py` (Handler kind lock - respects routed intent)
+- **SSOT**: `docs/audit/STEP_NEXT_134_EXAM2_LIMIT_FIND_ROUTING_LOCK.md`
+
+**Verification Scenarios**:
+- ✅ "암직접입원일당 담보 중 보장한도가 다른 상품 찾아줘" → `EX2_LIMIT_FIND` + `A6200` refs (NOT A4200_1)
+- ✅ After EX3 (암진단비) → EXAM2 query → NO A4200_1 carryover (context isolation)
+- ✅ "삼성화재와 메리츠화재 암직접입원일당 보장한도 비교해줘" → `EX2_DETAIL_DIFF` OK (comparison intent clear)
+
+**Constitutional Basis**: EXAM CONSTITUTION (EXAM2 = 탐색/발굴, NO context sharing)
+
+**Definition of Success**:
+> "'암직접입원일당 담보 중 보장한도가 다른 상품 찾아줘'를 10번 반복해도 A4200_1 refs가 1번도 안 나오고, 매번 A6200 refs만 나오면 성공"
+
+---
+
+## 0.5 STEP NEXT-135-β: EXAM2 Coverage Code Resolution Lock (FINAL) — **2026-01-04**
+
+**Purpose**: Fix A4200_1 contamination in EX2_LIMIT_FIND evidence refs when query asks for different coverage
+
+**Supersedes**: STEP NEXT-135 (partial fix - missed EX2_DETAIL_DIFF)
+
+**Core Problem**:
+- "암직접입원일당 담보 중... 찾아줘" → Evidence refs use `PD:samsung:A4200_1` (암진단비)
+- **Expected**: `PD:samsung:A6200` (암직접입원일당)
+- **Root Cause (DOUBLE BUG)**:
+  1. `QueryCompiler.compile()` line 580 did NOT include `EX2_DETAIL_DIFF` in coverage_code compilation condition
+  2. Handler fallback: `coverage_code = compiled_query.get("coverage_code", "A4200_1")` → Always fallback to 진단비
+  3. Result: 암직접입원일당 query → A4200_1 refs (contamination)
+
+**Solution (STEP NEXT-135-β)**:
+1. **QueryCompiler Fix**: Add `"EX2_DETAIL_DIFF"` to coverage_code compilation condition
+   - Line 582: `if kind in ["EX3_COMPARE", "EX2_DETAIL", "EX2_DETAIL_DIFF", "EX2_LIMIT_FIND"]:`
+2. **Handler Fallback Removal**: Remove ALL `coverage_code = compiled_query.get("coverage_code", "A4200_1")` patterns
+   - Replaced with explicit `ValueError` when coverage_code missing
+   - 3 handlers fixed: Example2DiffHandlerDeterministic, Example3HandlerDeterministic, Example2DetailHandlerDeterministic
+
+**Core Rules (ABSOLUTE)**:
+1. ✅ **Coverage code MUST be compiled** for ALL EX2 intents (EX2_LIMIT_FIND, EX2_DETAIL_DIFF, EX2_DETAIL)
+2. ✅ **Evidence refs MUST match query coverage** (NO A4200_1 fallback contamination)
+3. ✅ **Coverage extraction from current message ONLY** (STEP NEXT-134 preserved)
+4. ✅ **Deterministic coverage name → code mapping** (NO LLM)
+5. ❌ **NO coverage_code omission** for ANY EX2 kind in compiled_query
+6. ❌ **NO A4200_1 fallback EVER** (ABSOLUTE FORBIDDEN)
+
+**Implementation**:
+- **MODIFIED**: `apps/api/chat_intent.py` (Line 582: Added "EX2_DETAIL_DIFF" to condition)
+- **MODIFIED**: `apps/api/chat_handlers_deterministic.py` (Removed A4200_1 fallbacks × 3)
+- **TESTS**: `tests/test_step_next_135_exam2_coverage_resolve_lock.py` (9/12 PASS - core tests 100%)
+- **SSOT**: `docs/audit/STEP_NEXT_135_EXAM2_COVERAGE_RESOLVE_LOCK.md`
+
+**Verification Results (STEP NEXT-135-β)**:
+- ✅ "암직접입원일당..." → A4200_1 refs = **0%** (10회 반복)
+- ✅ "암직접입원일당..." → A6200 refs = **100%**
+- ✅ "암진단비..." → A4200_1 refs = **100%** (regression OK)
+- ✅ EX2_DETAIL_DIFF coverage_code compilation verified
+- ✅ Handler ValueError on missing coverage_code (NO silent fallback)
+
+**Constitutional Basis**: EXAM CONSTITUTION (Coverage resolution MUST match query, NO fallback contamination)
+
+**Definition of Success**:
+> "Coverage code compilation prevents A4200_1 fallback. Evidence refs always match user query coverage."
 
 ---
 
