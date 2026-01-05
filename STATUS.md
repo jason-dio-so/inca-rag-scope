@@ -1,8 +1,8 @@
 # inca-rag-scope - 작업 현황 보고서
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
-**최종 업데이트**: 2026-01-03
-**현재 상태**: ✅ **EX2_DETAIL Followup Hints Demo Flow Lock** (STEP NEXT-104: 후속 질문 힌트 데모 플로우 고정)
+**최종 업데이트**: 2026-01-05
+**현재 상태**: ✅ **EX4 Preset Routing Lock** (STEP NEXT-141: 프리셋 버튼 명시적 라우팅 잠금, EX4 clarification UI 고정)
 
 ---
 
@@ -10,6 +10,8 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ EX4 Preset Routing Lock** | STEP NEXT-141 | ✅ 완료 | 2026-01-05 |
+| **✅ Slot-Driven Clarification UI** | STEP NEXT-133 | ✅ 완료 | 2026-01-04 |
 | **✅ EX2_DETAIL Followup Hints Demo Flow Lock** | STEP NEXT-104 | ✅ 완료 | 2026-01-03 |
 | **✅ EX2 Insurer Switch Payload Override + Display Name Lock** | STEP NEXT-103 | ✅ 완료 | 2026-01-03 |
 | **✅ EX2 Context Continuity Lock** | STEP NEXT-102 | ✅ 완료 | 2026-01-03 |
@@ -92,9 +94,98 @@
 
 ---
 
-## 🎯 최신 진행 항목 (2026-01-03)
+## 🎯 최신 진행 항목 (2026-01-05)
 
-### STEP NEXT-90 — EX2_DETAIL_DIFF Refs Enforcement + Limit Definition Lock (Policy A) ✅ **COMPLETE**
+### STEP NEXT-141 — EX4 Preset Routing Lock + Clarification UI Fix ✅ **COMPLETE**
+
+**목표**: EX4 프리셋 버튼 라우팅 100% 고정, clarification UI에서 담보 입력 제거
+
+**Problem**:
+- EX4 프리셋("제자리암, 경계성종양 보장여부 비교해줘")이 키워드 기반 detectExamType에 의존
+- "비교" 키워드로 인해 EX3로 오라우팅 가능성
+- Clarification UI가 "담보와 보험사를 선택해주세요" 표시 (EX4는 disease subtypes가 이미 resolved)
+
+**Solution**:
+- **Preset button LOCK**: 프리셋 클릭 → `draftExamType="EX4"` 설정 → detectExamType 우회
+- **Priority**: `draftExamType` (preset) > `detectExamType` (free-text fallback)
+- **EX4 clarification UI**: 보험사 선택만 노출 (담보 입력 숨김, disease subtypes는 메시지에서 파싱)
+- **Reset**: 전송 후 `draftExamType=null` (오염 방지)
+
+**Key Changes**:
+1. **STATE**: `apps/web/app/page.tsx` - `draftExamType` state 추가
+2. **PRESET CLICK**: `apps/web/components/ChatPanel.tsx` - EX4 버튼 → `onPresetClick("EX4")`
+3. **ROUTING OVERRIDE**: `apps/web/app/page.tsx` - clarState.examType 강제 덮어쓰기
+4. **UI FIX**: `apps/web/app/page.tsx` - `{... && examType !== "EX4"}` 조건으로 담보 입력 숨김
+
+**Verification Scenarios**:
+- ✅ S1: EX4 프리셋 10회 클릭 → 10/10 EX4 처리 (EX3/EX1_DETAIL 0%)
+- ✅ S2: EX4 clarification → "비교할 보험사를 선택해주세요" (NO "담보와")
+- ✅ S3: EX4 clarification UI → 보험사 버튼만 표시 (담보 입력 필드 0%)
+- ✅ S4: EX2/EX3 프리셋 → NO draftExamType lock (detectExamType 정상 동작)
+- ✅ S5: draftExamType reset → 두 번째 쿼리에 오염 0%
+
+**Definition of Success**:
+> "EX4 프리셋 클릭 10/10 → EX4 처리 (EX3/EX1_DETAIL 0%). Clarification에서 담보 입력 요구 0%."
+
+**Files Modified**:
+- `apps/web/app/page.tsx`: draftExamType state + routing override + clarification UI fix
+- `apps/web/components/ChatPanel.tsx`: onPresetClick prop + EX4 preset button
+- SSOT: `docs/audit/STEP_NEXT_141_EX4_PRESET_LOCK.md`
+
+**Regression Prevention**:
+- ✅ STEP NEXT-129R preserved (NO auto-send, NO silent correction)
+- ✅ STEP NEXT-133 preserved (Slot-driven clarification for free-text)
+- ✅ STEP NEXT-138 preserved (Single-insurer explanation guard)
+- ✅ EX2/EX3 detectExamType logic unchanged
+
+---
+
+### STEP NEXT-133 — Slot-Driven Clarification UI ✅ **COMPLETE** (2026-01-04)
+
+**목표**: Clarification UI를 slot-driven으로 전환, resolved된 슬롯 재질문 제거
+
+**Problem**:
+- 현재 버그: Coverage가 "암진단비 비교해줘"로 파싱됐는데도 추가 정보 패널에서 담보 입력 UI가 다시 나옴
+- 고정 폼: 항상 보험사 + 담보 UI를 모두 표시 (필요 없는데도 노출)
+- 하드코딩 문구: "(2개 선택)" → 확장 불가
+
+**Solution**:
+- **Missing-slot detection**: `deriveClarificationState()` 유틸로 resolved vs missing slots 판별
+- **Dynamic UI**: Missing slots만 렌더링 (resolved slots는 절대 재질문 안 함)
+- **No hardcoded count**: "(2개 선택)" 제거 → "보험사 선택" (내부 validation만)
+
+**Key Changes**:
+1. **NEW**: `apps/web/lib/clarificationUtils.ts` (slot detection logic)
+   - Exam type detection (EX2/EX3/EX4)
+   - Coverage parsing (simple keyword matching)
+   - Resolution priority: payload → context → parsed
+2. **MODIFIED**: `apps/web/app/page.tsx`
+   - Replace EX1 entry gate with slot-driven logic
+   - Conditional UI: `{missingSlots.coverage && <CoverageInput />}`
+   - Remove "(2개 선택)" text
+
+**Verification Scenarios**:
+- ✅ CHECK-EX3-CLARIFY-1: "암진단비 비교해줘" → 보험사 선택 ONLY (담보 UI 0% 노출)
+- ✅ CHECK-EX3-CLARIFY-2: 보험사 2개 선택 → 확인 → EX3 결과 표시
+- ✅ CHECK-EX4-MULTI-SUBTYPE-1: "제자리암, 경계성종양 비교" → 2개 서브타입 모두 표시
+- ✅ CHECK-EX2-NO-REASK-1: "암직접입원비 보장한도 비교" → 담보 UI 0% 노출
+
+**Definition of Success**:
+> "Coverage가 resolved된 케이스에서 담보 선택 UI 노출 0%"
+
+**Files Modified**:
+- NEW: `apps/web/lib/clarificationUtils.ts`
+- MODIFIED: `apps/web/app/page.tsx`
+- SSOT: `docs/audit/STEP_NEXT_133_SLOT_DRIVEN_CLARIFICATION.md`
+
+**Regression Prevention**:
+- ✅ STEP NEXT-129R preserved (NO auto-send, NO silent correction, NO forced routing)
+- ✅ STEP NEXT-A preserved (Unified exam entry UX)
+- ✅ STEP NEXT-102/106 preserved (Insurer switch, multi-select)
+
+---
+
+### STEP NEXT-90 — EX2_DETAIL_DIFF Refs Enforcement + Limit Definition Lock (Policy A) ✅ **COMPLETE** (2026-01-03)
 
 **목표**: "보장한도=명시 없음" 문제 해결 + 모든 응답에 최소 1개 refs 보장
 

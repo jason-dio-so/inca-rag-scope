@@ -17,6 +17,7 @@ interface ChatPanelProps {
   coverageInput: string;
   onCoverageChange: (value: string) => void;
   coverageInputDisabled?: boolean;  // STEP NEXT-106: Disable during LIMIT_FIND clarification
+  onPresetClick?: (examType: "EX1_DETAIL" | "EX2" | "EX3" | "EX4") => void;  // STEP NEXT-141: Preset routing lock
 }
 
 export default function ChatPanel({
@@ -31,6 +32,7 @@ export default function ChatPanel({
   coverageInput,
   onCoverageChange,
   coverageInputDisabled = false,  // STEP NEXT-106: Default to enabled
+  onPresetClick,  // STEP NEXT-141: Preset routing lock
 }: ChatPanelProps) {
   // STEP NEXT-97: Auto-scroll management
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -84,6 +86,7 @@ export default function ChatPanel({
                     onClick={() => {
                       // STEP NEXT-129R: Fill input ONLY (NO auto-send, NO auto-context)
                       onInputChange("암직접입원일당 담보 중 보장한도가 다른 상품 찾아줘");
+                      // STEP NEXT-141: NO preset lock for EX2 (relies on detectExamType)
                     }}
                     className="block w-full text-left px-3 py-2 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
                   >
@@ -93,6 +96,7 @@ export default function ChatPanel({
                     onClick={() => {
                       // STEP NEXT-A-α: Simplified example (NO insurer names in EX1)
                       onInputChange("암진단비 비교해줘");
+                      // STEP NEXT-141: NO preset lock for EX3 (relies on detectExamType)
                     }}
                     className="block w-full text-left px-3 py-2 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
                   >
@@ -100,8 +104,9 @@ export default function ChatPanel({
                   </button>
                   <button
                     onClick={() => {
-                      // STEP NEXT-133: Fill input ONLY (NO auto-send, NO auto-context)
+                      // STEP NEXT-141: EX4 preset → LOCK exam type to EX4
                       onInputChange("제자리암, 경계성종양 보장여부 비교해줘");
+                      onPresetClick?.("EX4");
                     }}
                     className="block w-full text-left px-3 py-2 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
                   >
