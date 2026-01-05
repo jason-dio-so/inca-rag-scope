@@ -191,8 +191,14 @@ export default function Home() {
         });
       }
 
+      // STEP NEXT-141: If forced exam type and NO missing slots → skip clarification, proceed to send
+      // This handles the case where preset button already provides all info (e.g., EX4 with insurers pre-selected)
+      if (!clarState.showClarification && forcedExamType) {
+        console.log("[page.tsx STEP NEXT-141] All slots resolved, skipping clarification gate");
+        // Fall through to normal send flow below
+      }
       // If any slots are missing, show clarification
-      if (clarState.showClarification && clarState.examType) {
+      else if (clarState.showClarification && clarState.examType) {
         // Add user message first
         const userMessage: Message = {
           role: "user",
