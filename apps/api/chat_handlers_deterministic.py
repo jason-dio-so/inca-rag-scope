@@ -24,7 +24,7 @@ import uuid
 # Add pipeline to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "pipeline" / "step8_render_deterministic"))
 
-from example1_premium_compare import PremiumComparer
+# NOTE: PremiumComparer import removed (STEP C+1: premium comparison disabled)
 from example2_coverage_limit import CoverageLimitComparer
 from example3_two_insurer_compare import TwoInsurerComparer
 from example4_subtype_eligibility import SubtypeEligibilityChecker
@@ -118,70 +118,26 @@ class Example1HandlerDeterministic(BaseDeterministicHandler):
         Execute premium comparison (LLM OFF)
 
         Returns:
-        - If gate pass: Top-4 premium table
-        - If gate fail: NotAvailable message
+        - Always returns disabled message (premium comparison feature disabled)
         """
-        comparer = PremiumComparer()
-
-        # All insurers for Top-4
-        insurers = ["samsung", "meritz", "hanwha", "lotte", "kb", "hyundai", "heungkuk", "db"]
-
-        result = comparer.compare_top4(insurers)
-
-        if result["status"] == "not_available":
-            # Return disabled message
-            return AssistantMessageVM(
-                kind="EX1_PREMIUM_DISABLED",
-                exam_type=get_exam_type_from_kind("EX1_PREMIUM_DISABLED"),
-                title="보험료 비교 기능 안내",
-                summary_bullets=[
-                    "현재 보험료 비교 기능은 준비 중입니다",
-                    result["reason"]
-                ],
-                sections=[],
-                lineage={
-                    "handler": "Example1HandlerDeterministic",
-                    "llm_used": False,
-                    "deterministic": True
-                }
-            )
-
-        # Build ViewModel from Step8 output
-        rows = []
-        for row in result["rows"]:
-            rows.append(TableRow(
-                cells=[
-                    TableCell(text=row["insurer"]),
-                    TableCell(text=row["monthly_premium"], meta=CellMeta(doc_ref=row["monthly_evidence"])),
-                    TableCell(text=row["total_premium"], meta=CellMeta(doc_ref=row["total_evidence"]))
-                ]
-            ))
-
-        table = ComparisonTableSection(
-            table_kind="COVERAGE_DETAIL",
-            title="보험료 비교 (Top 4)",
-            columns=["보험사", "월납 보험료", "총납 보험료"],
-            rows=rows
-        )
-
-        vm = AssistantMessageVM(
-            kind="PREMIUM_COMPARE",
-            exam_type=get_exam_type_from_kind("PREMIUM_COMPARE"),
-            title="보험료 Top 4 비교",
+        # STEP C+1: Premium comparison permanently disabled
+        # Return simple disabled message without calling PremiumComparer
+        return AssistantMessageVM(
+            request_id=request.request_id,
+            kind="EX1_PREMIUM_DISABLED",
+            exam_type=get_exam_type_from_kind("EX1_PREMIUM_DISABLED"),
+            title="보험료 비교 기능 안내",
             summary_bullets=[
-                "보험료가 낮은 순서로 4개 보험사를 비교했습니다",
-                "가입설계서 기준 금액입니다"
+                "보험료 비교 기능은 현재 비활성화 상태입니다",
+                "가입설계서 기반 보험료 데이터 연동 전입니다"
             ],
-            sections=[table],
+            sections=[],
             lineage={
                 "handler": "Example1HandlerDeterministic",
                 "llm_used": False,
                 "deterministic": True
             }
         )
-
-        self._validate_forbidden_phrases(vm)
-        return vm
 
 
 # ============================================================================
@@ -1127,3 +1083,7 @@ class HandlerRegistryDeterministic:
     def get_handler(cls, kind: MessageKind) -> Optional[BaseDeterministicHandler]:
         """Get handler for MessageKind"""
         return cls._HANDLERS.get(kind)
+    
+
+# Backward-compat alias for tests (UI01)
+Example2HandlerDeterministic = Example2DiffHandlerDeterministic
