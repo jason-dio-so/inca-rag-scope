@@ -35,14 +35,14 @@ curl -s -X POST "$BASE_URL/chat" \
 
 echo ""
 echo "=== SMOKE TEST 3: EX4_ELIGIBILITY ==="
-echo "Query: 경계성 종양 보장돼?"
-echo "Expected: kind=EX4_ELIGIBILITY"
+echo "Query: 경계성종양 보장돼?"
+echo "Expected: kind=EX4_ELIGIBILITY, need_more_info=false"
 echo ""
 
 curl -s -X POST "$BASE_URL/chat" \
   -H "Content-Type: application/json" \
   -d '{
-    "message": "경계성 종양 보장돼?",
+    "message": "경계성종양 보장돼?",
     "insurers": ["samsung", "meritz"],
     "coverage_names": []
   }' | python3 -m json.tool | head -60
