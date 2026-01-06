@@ -42,3 +42,6 @@ data/**/*_backup_*
 # Tracked: data/scope/*.csv, data/compare/*.jsonl, docs/audit/*.md, STATUS.md
 logs/
 test_*.py
+
+# Ad-hoc scratch files (STEP B-2)
+tools/scratch/
