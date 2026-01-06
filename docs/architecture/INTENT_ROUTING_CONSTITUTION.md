@@ -389,9 +389,11 @@ request.coverage_names = ["암진단비"]  # Single coverage only
 ## 7. 검증 (실행 로그)
 
 ### 7.1 테스트 실행
+
+#### A. Contract Tests (STEP NEXT-OPS-CYCLE-03B/C)
 ```bash
-# Intent routing contract tests (STEP NEXT-OPS-CYCLE-03B/C)
-PYTHONPATH=/Users/cheollee/inca-rag-scope pytest tests/test_intent_routing_lock.py -v
+# Intent routing contract tests
+PYTHONPATH=. pytest -q tests/test_intent_routing_lock.py
 
 # Result: 10/10 PASS
 # - test_ex3_compare_routing ✅
@@ -404,6 +406,17 @@ PYTHONPATH=/Users/cheollee/inca-rag-scope pytest tests/test_intent_routing_lock.
 # - test_ex4_eligibility_missing_insurers ✅
 # - test_ex3_routing_not_dead ✅
 # - test_ex2_no_auto_expand_insurers ✅
+```
+
+#### B. Smoke Tests (STEP B-3)
+```bash
+# Routing smoke test (requires server running on localhost:8000)
+bash tools/smoke/smoke_chat.sh
+
+# 3 test cases:
+# 1. EX3_COMPARE (multi-insurer comparison)
+# 2. EX2_LIMIT_FIND (missing insurers → need_more_info)
+# 3. EX4_ELIGIBILITY (disease subtype routing)
 ```
 
 ### 7.2 수동 검증 (curl)
