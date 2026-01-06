@@ -660,8 +660,26 @@ class IntentDispatcher:
                 )
 
         # Step 2: Validate slots
-        # STEP NEXT-OPS-CYCLE-03B: Removed EX2_LIMIT_FIND auto-expand logic
-        # EX2_LIMIT_FIND now requires insurers selection like other intents
+        # STEP NEXT-OPS-CYCLE-03C: EX2_LIMIT_FIND coverage auto-extract (NO insurers auto-expand)
+        if kind == "EX2_LIMIT_FIND":
+            # Auto-extract coverage from message if missing
+            # CRITICAL: insurers auto-expand/auto-fill FORBIDDEN (ABSOLUTE)
+            if not request.coverage_names or len(request.coverage_names) == 0:
+                coverage_from_message = QueryCompiler.extract_coverage_name_from_message(request.message)
+                if coverage_from_message:
+                    request = ChatRequest(
+                        request_id=request.request_id,
+                        message=request.message,
+                        kind=request.kind,
+                        selected_category=request.selected_category,
+                        insurers=request.insurers,  # ABSOLUTE: NO auto-expand (preserve as-is)
+                        coverage_names=[coverage_from_message],
+                        disease_names=request.disease_names,
+                        disease_name=request.disease_name,
+                        llm_mode=request.llm_mode,
+                        compare_field=request.compare_field
+                    )
+
         is_valid, missing_slots = SlotValidator.validate(request, kind)
 
         if not is_valid:
