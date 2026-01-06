@@ -23,7 +23,7 @@ ALLOWED PHRASES:
 """
 
 import re
-from typing import List, Set
+from typing import List, Set, Dict, Any
 
 
 # ============================================================================
@@ -200,6 +200,51 @@ validate_text_list(["문장1", "문장2"])  # OK or raise ValueError
 NOTE: This module is the SINGLE source for all forbidden language validation.
 All validators in chat_vm.py, explanation_dto.py, etc. MUST delegate to this module.
 """
+
+
+# ============================================================================
+# Validator Class (UI01 Contract)
+# ============================================================================
+
+class ForbiddenLanguageValidator:
+    """
+    Validator class for forbidden language policy
+
+    TEST CONTRACT (UI01):
+    - Must be importable from apps.api.policy.forbidden_language
+    - Must have check_text(text: str) → List[Dict[str, Any]] method
+    - Returns empty list if no violations, list of violations otherwise
+    """
+
+    def check_text(self, text: str) -> List[Dict[str, Any]]:
+        """
+        Check text for forbidden language violations
+
+        Args:
+            text: Text to validate
+
+        Returns:
+            List of violations (empty if valid)
+            Each violation: {"pattern": str, "match": str, "message": str}
+        """
+        violations = []
+
+        # Create sanitized version with allowlist phrases removed
+        sanitized_text = text
+        for allowed_phrase in ALLOWLIST_PHRASES:
+            sanitized_text = sanitized_text.replace(allowed_phrase, "___ALLOWED___")
+
+        # Check forbidden patterns
+        for pattern in EVALUATIVE_FORBIDDEN_PATTERNS:
+            match = re.search(pattern, sanitized_text)
+            if match:
+                violations.append({
+                    "pattern": pattern,
+                    "match": match.group(),
+                    "message": f"Forbidden phrase detected: '{match.group()}'"
+                })
+
+        return violations
 
 
 # ============================================================================

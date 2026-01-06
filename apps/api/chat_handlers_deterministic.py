@@ -72,13 +72,7 @@ from apps.api.utils.limit_normalizer import (
     decide_overall_status,
     CoverageLimitNormalized
 )
-# from apps.api.policy.forbidden_language import ForbiddenLanguageValidator
-
-# Simple mock validator for STEP NEXT-UI-02
-class ForbiddenLanguageValidator:
-    def check_text(self, text):
-        """Mock validator - returns empty list (no violations)"""
-        return []
+from apps.api.policy.forbidden_language import ForbiddenLanguageValidator
 
 
 # ============================================================================
@@ -123,7 +117,7 @@ class Example1HandlerDeterministic(BaseDeterministicHandler):
         # STEP C+1: Premium comparison permanently disabled
         # Return simple disabled message without calling PremiumComparer
         return AssistantMessageVM(
-            request_id=request.request_id,
+            request_id=str(request.request_id),  # UI01 fix: convert UUID to string
             kind="EX1_PREMIUM_DISABLED",
             exam_type=get_exam_type_from_kind("EX1_PREMIUM_DISABLED"),
             title="보험료 비교 기능 안내",
@@ -609,7 +603,7 @@ class Example2DiffHandlerDeterministic(BaseDeterministicHandler):
         message_kind = compiled_query.get("kind", "EX2_DETAIL_DIFF")
 
         vm = AssistantMessageVM(
-            request_id=request.request_id,
+            request_id=str(request.request_id),  # UI01 fix: convert UUID to string
             kind=message_kind,  # STEP NEXT-134: Use dynamic kind
             exam_type=get_exam_type_from_kind(message_kind),
             title=title,
@@ -675,12 +669,15 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
 
         result = comparer.compare_two_insurers(insurer1, insurer2, coverage_code)
 
+        # UI01 fix: Detect requested kind from compiled_query
+        requested_kind = compiled_query.get("kind", "EX3_COMPARE")
+
         if result["status"] == "FAIL":
-            # Gate failed - use EX3_COMPARE (STEP NEXT-80: explicit kind lock)
+            # Gate failed - use requested kind
             return AssistantMessageVM(
-                request_id=request.request_id,
-                kind="EX3_COMPARE",  # STEP NEXT-80: Always use EX3_COMPARE (not EX3_INTEGRATED)
-                exam_type=get_exam_type_from_kind("EX3_COMPARE"),
+                request_id=str(request.request_id),  # UI01 fix: convert UUID to string
+                kind=requested_kind,  # UI01 fix: Use kind from compiled_query
+                exam_type=get_exam_type_from_kind(requested_kind),
                 title="비교 불가",
                 summary_bullets=[
                     f"비교 실패: {result['reason']}"
@@ -689,6 +686,7 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
                 lineage={
                     "handler": "Example3HandlerDeterministic",
                     "llm_used": False,
+                    "deterministic": True,
                     "gate_failed": True
                 }
             )
@@ -769,14 +767,18 @@ class Example3HandlerDeterministic(BaseDeterministicHandler):
                 sections.append(common_notes)
 
         vm = AssistantMessageVM(
-            request_id=request.request_id,
-            kind="EX3_COMPARE",  # STEP NEXT-77: New kind
-            exam_type=get_exam_type_from_kind("EX3_COMPARE"),
+            request_id=str(request.request_id),  # UI01 fix: convert UUID to string
+            kind=requested_kind,  # UI01 fix: Use kind from compiled_query (EX3_INTEGRATED or EX3_COMPARE)
+            exam_type=get_exam_type_from_kind(requested_kind),
             title=response_dict["title"],
             summary_bullets=response_dict["summary_bullets"],
             sections=sections,
             bubble_markdown=response_dict.get("bubble_markdown"),  # STEP NEXT-81B
-            lineage=response_dict["lineage"]
+            lineage={
+                "handler": "Example3HandlerDeterministic",
+                "llm_used": False,
+                "deterministic": True
+            }
         )
 
         self._validate_forbidden_phrases(vm)
@@ -878,14 +880,18 @@ class Example4HandlerDeterministic(BaseDeterministicHandler):
                 sections.append(common_notes)
 
         vm = AssistantMessageVM(
-            request_id=request.request_id,
+            request_id=str(request.request_id),  # UI01 fix: convert UUID to string
             kind="EX4_ELIGIBILITY",
             exam_type=get_exam_type_from_kind("EX4_ELIGIBILITY"),
             title=response_dict["title"],
             summary_bullets=response_dict["summary_bullets"],
             sections=sections,
             bubble_markdown=response_dict.get("bubble_markdown"),  # STEP NEXT-81B
-            lineage=response_dict["lineage"]
+            lineage={
+                "handler": "Example4HandlerDeterministic",
+                "llm_used": False,
+                "deterministic": True
+            }
         )
 
         self._validate_forbidden_phrases(vm)
@@ -951,7 +957,7 @@ class Example2DetailHandlerDeterministic(BaseDeterministicHandler):
         if not card:
             # Coverage not found
             return AssistantMessageVM(
-                request_id=request.request_id,  # STEP NEXT-86: Required field
+                request_id=str(request.request_id),  # UI01 fix: convert UUID to string
                 kind="EX2_DETAIL",
                 exam_type=get_exam_type_from_kind("EX2_DETAIL"),
                 title=f"{insurer} 담보 정보 없음",
@@ -1047,14 +1053,18 @@ class Example2DetailHandlerDeterministic(BaseDeterministicHandler):
 
         # Build AssistantMessageVM
         vm = AssistantMessageVM(
-            request_id=request.request_id,  # STEP NEXT-86: Required field
+            request_id=str(request.request_id),  # UI01 fix: convert UUID to string
             kind="EX2_DETAIL",
             exam_type=get_exam_type_from_kind("EX2_DETAIL"),
             title=message_dict["title"],
             summary_bullets=message_dict["summary_bullets"],
             bubble_markdown=message_dict.get("bubble_markdown"),
             sections=message_dict["sections"],
-            lineage=message_dict.get("lineage")
+            lineage={
+                "handler": "Example2DetailHandlerDeterministic",
+                "llm_used": False,
+                "deterministic": True
+            }
         )
 
         self._validate_forbidden_phrases(vm)
@@ -1085,5 +1095,41 @@ class HandlerRegistryDeterministic:
         return cls._HANDLERS.get(kind)
     
 
-# Backward-compat alias for tests (UI01)
-Example2HandlerDeterministic = Example2DiffHandlerDeterministic
+# ============================================================================
+# Example 2 Handler Wrapper (UI01 Contract)
+# ============================================================================
+
+class Example2HandlerDeterministic(BaseDeterministicHandler):
+    """
+    Example2 handler wrapper (UI01 contract)
+
+    Routes to appropriate handler based on compiled_query kind:
+    - EX2_DETAIL, EX2_LIMIT_FIND → Example2DetailHandlerDeterministic
+    - EX2_DETAIL_DIFF → Example2DiffHandlerDeterministic
+    """
+
+    def execute(self, compiled_query: Dict[str, Any], request: ChatRequest) -> AssistantMessageVM:
+        """
+        Route to appropriate handler based on kind + insurer count
+
+        Args:
+            compiled_query: Must have "kind" field (EX2_DETAIL, EX2_DETAIL_DIFF, EX2_LIMIT_FIND)
+            request: ChatRequest
+
+        Returns:
+            AssistantMessageVM from delegated handler
+        """
+        kind = compiled_query.get("kind", "EX2_DETAIL")
+        insurers = compiled_query.get("insurers", [])
+
+        # UI01 fix: Route based on insurer count (single vs multi)
+        # If 1 insurer → EX2_DETAIL (explanation)
+        # If 2+ insurers → EX2_DETAIL_DIFF (comparison/limit finding)
+        if len(insurers) == 1:
+            # Single insurer → detail/explanation handler
+            detail_handler = Example2DetailHandlerDeterministic()
+            return detail_handler.execute(compiled_query, request)
+        else:
+            # Multi-insurer → diff/comparison handler
+            diff_handler = Example2DiffHandlerDeterministic()
+            return diff_handler.execute(compiled_query, request)

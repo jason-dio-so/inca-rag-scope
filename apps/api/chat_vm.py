@@ -17,7 +17,7 @@ MESSAGE KINDS:
 - EX1_PREMIUM_DISABLED: Premium comparison disabled (보험료 데이터 소스 미연동)
 """
 
-from typing import List, Optional, Literal, Dict, Any
+from typing import List, Optional, Literal, Dict, Any, Union
 from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 import uuid
@@ -435,7 +435,8 @@ class AssistantMessageVM(BaseModel):
     # STEP NEXT-81B: Bubble markdown (deterministic summary for central chat bubble)
     bubble_markdown: Optional[str] = None  # Markdown summary (NO raw text, refs only)
 
-    lineage: Optional[AmountAuditDTO] = None  # Audit metadata (collapsible)
+    # UI01 fix: lineage accepts both dict (for deterministic handlers) and AmountAuditDTO (for amount audit)
+    lineage: Optional[Union[Dict[str, Any], AmountAuditDTO]] = None  # Audit metadata (collapsible)
 
     class Config:
         frozen = True
