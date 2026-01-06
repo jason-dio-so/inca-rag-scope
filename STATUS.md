@@ -1,8 +1,8 @@
 # inca-rag-scope - 작업 현황 보고서
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
-**최종 업데이트**: 2026-01-05
-**현재 상태**: ✅ **Product Name + Variant Injection** (STEP NEXT-PRODUCT-1: 상품명/variant_key SSOT 주입, 8개 보험사 slim 카드 완비)
+**최종 업데이트**: 2026-01-06
+**현재 상태**: ✅ **EX3 Routing + EX2 Insurer Selection Restored** (STEP NEXT-OPS-CYCLE-03B: EX3 comparison routing 복구 + EX2 auto-expand 제거)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ EX3 Routing + EX2 Insurer Selection Restored** | STEP NEXT-OPS-CYCLE-03B | ✅ 완료 | 2026-01-06 |
 | **✅ Product Name + Variant Injection** | STEP NEXT-PRODUCT-1 | ✅ 완료 | 2026-01-05 |
 | **✅ EX4 Preset Routing Lock** | STEP NEXT-141 | ✅ 완료 | 2026-01-05 |
 | **✅ Slot-Driven Clarification UI** | STEP NEXT-133 | ✅ 완료 | 2026-01-04 |
@@ -95,9 +96,61 @@
 
 ---
 
-## 🎯 최신 진행 항목 (2026-01-05)
+## 🎯 최신 진행 항목 (2026-01-06)
 
-### STEP NEXT-PRODUCT-1 — Product Name + Variant Injection ✅ **COMPLETE**
+### STEP NEXT-OPS-CYCLE-03B — EX3 Routing + EX2 Insurer Selection Restored ✅ **COMPLETE**
+
+**목표**: EX3 comparison routing 복구 + EX2_LIMIT_FIND 보험사 자동확장 제거
+
+**Root Causes**:
+1. **EX3 routing dead (0% routing to EX3_COMPARE)**:
+   - Evidence: `grep -n 'return "EX3' apps/api/chat_intent.py` → 결과 없음
+   - `PATTERNS` dict에 `EX3_INTEGRATED`만 존재, `EX3_COMPARE` 패턴 부재
+   - Flow: `insurers >= 2` + "비교해줘" → EX2_LIMIT_FIND (default fallback)
+
+2. **EX2_LIMIT_FIND auto-expands insurers (0% selection required)**:
+   - Location: `IntentDispatcher.dispatch()` lines 656-697
+   - Logic: `if kind == "EX2_LIMIT_FIND"` → skip validation → auto-expand to all 8 insurers
+   - Comment: "STEP NEXT-133: EXAM2 NEVER requires additional info"
+
+**변경 사항**:
+1. **EX3 Comparison Gate 추가** (apps/api/chat_intent.py:222-227):
+   - Priority 2.5: `insurers >= 2` + comparison keywords → `EX3_COMPARE`
+   - Keywords: ["비교", "vs", "차이", "대조", "비교해줘", "compare"]
+   - Constitutional basis: Deterministic keyword matching, NO LLM
+
+2. **EX2 Auto-Expand 제거** (apps/api/chat_intent.py:662-665):
+   - Deleted: `if kind == "EX2_LIMIT_FIND":` block (42 lines)
+   - Result: EX2_LIMIT_FIND falls through to normal SlotValidator.validate()
+   - Effect: insurers required (NO auto-expansion to 8 insurers)
+
+**검증 결과**:
+- ✅ **S3-EX3 (Comparison routing)**:
+  - Input: `{"message":"삼성화재와 메리츠화재 암진단비 비교해줘","insurers":["samsung","meritz"],"coverage_names":["암진단비"]}`
+  - Result: `kind == "EX3_COMPARE"`, `need_more_info == false`, HTTP 200
+  - Table: 2-insurer comparison table generated
+
+- ✅ **S3-EX2 (Insurer selection required)**:
+  - Input: `{"message":"암직접입원일당 담보 중 보장한도가 다른 상품 찾아줘","insurers":[],"coverage_names":[]}`
+  - Result: `kind == "EX2_LIMIT_FIND"`, `need_more_info == true`, `missing_slots == ["insurers"]`, HTTP 200
+  - Effect: NO auto-expansion (8개 보험사 자동확장 0%)
+
+**Constitutional Enforcement**:
+- LLM usage: 0% (deterministic only)
+- A4200_1 fallback: FORBIDDEN
+- EX1 single entry structure: PRESERVED
+- UI/Composer data structure: UNCHANGED (routing/validation only)
+- 500 errors: 0% (need_more_info pattern only)
+
+**파일 변경**:
+- `apps/api/chat_intent.py` (2 changes: +6 lines EX3 gate, -42 lines EX2 auto-expand)
+
+**문서**:
+- SSOT: `docs/audit/STEP_NEXT_OPS_CYCLE_03B_ROUTING_EX2_LOCK.md` (예정)
+
+---
+
+### STEP NEXT-PRODUCT-1 — Product Name + Variant Injection ✅ **COMPLETE** (2026-01-05)
 
 **목표**: `product_name` + `variant_key`를 coverage_cards_slim.jsonl에 주입하여 상품 메타데이터 SSOT 확립
 
