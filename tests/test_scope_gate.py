@@ -12,11 +12,11 @@ import sys
 # 프로젝트 루트를 path에 추가
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.scope_gate import ScopeGate, load_scope_gate
+from core.scope_gate import ScopeGate, load_scope_gate, resolve_scope_csv
 
 
-# 테스트용 scope CSV 경로
-SCOPE_CSV = Path(__file__).parent.parent / "data" / "scope" / "samsung_scope.csv"
+# 테스트용 보험사
+INSURER = "samsung"
 
 
 class TestScopeGate:
@@ -24,7 +24,8 @@ class TestScopeGate:
 
     def setup_method(self):
         """각 테스트 전에 ScopeGate 초기화"""
-        self.scope_gate = ScopeGate(str(SCOPE_CSV))
+        scope_csv = resolve_scope_csv(INSURER)
+        self.scope_gate = ScopeGate(str(scope_csv))
 
     def test_scope_gate_initialization(self):
         """ScopeGate 초기화 테스트"""
@@ -44,9 +45,9 @@ class TestScopeGate:
         coverages_in_scope = [
             "암 진단비(유사암 제외)",
             "뇌출혈 진단비",
-            "상해 사망",
-            "질병 사망",
-            "상해 입원일당(1일이상)"
+            "상해 입원일당(1일이상)",
+            "질병 입원일당(1일이상)",
+            "유사암 진단비(갑상선암)(1년50%)"
         ]
 
         for coverage in coverages_in_scope:
@@ -89,7 +90,7 @@ class TestScopeGate:
             "존재하지않는담보",  # out of scope
             "뇌출혈 진단비",  # in scope
             "가짜담보",  # out of scope
-            "상해 사망"  # in scope
+            "상해 입원일당(1일이상)"  # in scope
         ]
 
         filtered = self.scope_gate.filter_in_scope(mixed_coverages)
@@ -97,7 +98,7 @@ class TestScopeGate:
         assert len(filtered) == 3
         assert "암 진단비(유사암 제외)" in filtered
         assert "뇌출혈 진단비" in filtered
-        assert "상해 사망" in filtered
+        assert "상해 입원일당(1일이상)" in filtered
         assert "존재하지않는담보" not in filtered
         assert "가짜담보" not in filtered
 
@@ -110,7 +111,9 @@ class TestScopeGate:
         assert "source" in info
         assert info["total_count"] > 0
         assert isinstance(info["coverages"], set)
-        assert "samsung_scope.csv" in info["source"]
+        # Source should contain samsung and be a CSV file (don't hardcode exact filename)
+        assert "samsung" in info["source"]
+        assert info["source"].endswith(".csv")
 
     def test_whitespace_handling(self):
         """공백 처리 테스트"""
@@ -132,7 +135,9 @@ class TestLoadScopeGate:
 
     def test_load_scope_gate_custom_dir(self):
         """커스텀 디렉토리에서 로드"""
-        scope_dir = Path(__file__).parent.parent / "data" / "scope"
+        # Use resolve_scope_csv to get the correct directory
+        scope_csv = resolve_scope_csv("samsung")
+        scope_dir = scope_csv.parent
         scope_gate = load_scope_gate("samsung", str(scope_dir))
 
         assert scope_gate is not None
