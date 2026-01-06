@@ -219,6 +219,13 @@ class IntentRouter:
         if len(insurers) == 1:
             return "EX2_DETAIL"
 
+        # Priority 2.5 - EX3 comparison gate (insurers >= 2 + comparison intent)
+        # STEP NEXT-OPS-CYCLE-03B: Restore EX3 routing
+        if len(insurers) >= 2:
+            comparison_keywords = ["비교", "vs", "차이", "대조", "비교해줘", "compare"]
+            if any(kw in request.message.lower() for kw in comparison_keywords):
+                return "EX3_COMPARE"
+
         # Priority 3 - Detect from category/FAQ/gates/patterns (ONLY if kind is None)
         kind, confidence = IntentRouter.detect_intent(request)
         return kind
@@ -653,52 +660,9 @@ class IntentDispatcher:
                 )
 
         # Step 2: Validate slots
-        # STEP NEXT-133: EXAM2 (EX2_LIMIT_FIND) NEVER requires additional info
-        # EXAM2 is self-contained: auto-expand insurers, use coverage from message
-        if kind == "EX2_LIMIT_FIND":
-            # ABSOLUTE: Skip slot validation for EXAM2
-            # EXAM2 proceeds with whatever data is available (auto-expand mode)
-
-            # Auto-fill missing insurers (expand to all available)
-            if not request.insurers or len(request.insurers) == 0:
-                # Auto-expand to all insurers
-                all_insurers = ["samsung", "meritz", "hanwha", "lotte", "kb", "hyundai", "heungkuk", "db"]
-                request = ChatRequest(
-                    request_id=request.request_id,
-                    message=request.message,
-                    kind=request.kind,
-                    selected_category=request.selected_category,
-                    insurers=all_insurers,  # STEP NEXT-133: Auto-expand
-                    coverage_names=request.coverage_names,
-                    disease_names=request.disease_names,
-                    disease_name=request.disease_name,
-                    llm_mode=request.llm_mode,
-                    compare_field=request.compare_field
-                )
-
-            # Auto-extract coverage from message if missing
-            # STEP NEXT-134: Use proper coverage name extraction (NOT compare_field)
-            if not request.coverage_names or len(request.coverage_names) == 0:
-                # Extract coverage name from message (e.g., "암직접입원일당")
-                coverage_from_message = QueryCompiler.extract_coverage_name_from_message(request.message)
-                if coverage_from_message:
-                    request = ChatRequest(
-                        request_id=request.request_id,
-                        message=request.message,
-                        kind=request.kind,
-                        selected_category=request.selected_category,
-                        insurers=request.insurers,
-                        coverage_names=[coverage_from_message],  # STEP NEXT-134: Extract coverage name (NOT field)
-                        disease_names=request.disease_names,
-                        disease_name=request.disease_name,
-                        llm_mode=request.llm_mode,
-                        compare_field=request.compare_field
-                    )
-
-            is_valid = True
-            missing_slots = []
-        else:
-            is_valid, missing_slots = SlotValidator.validate(request, kind)
+        # STEP NEXT-OPS-CYCLE-03B: Removed EX2_LIMIT_FIND auto-expand logic
+        # EX2_LIMIT_FIND now requires insurers selection like other intents
+        is_valid, missing_slots = SlotValidator.validate(request, kind)
 
         if not is_valid:
             # Return need_more_info response
