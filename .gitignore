@@ -40,3 +40,5 @@ data/**/*.tmp
 data/**/*_backup_*
 
 # Tracked: data/scope/*.csv, data/compare/*.jsonl, docs/audit/*.md, STATUS.md
+logs/
+test_*.py
