@@ -132,7 +132,11 @@ class TestEvidencePackSchema:
             with open(EVIDENCE_PACK_FILE, 'r', encoding='utf-8') as f:
                 for line in f:
                     if line.strip():
-                        self.evidence_pack.append(json.loads(line))
+                        row = json.loads(line)
+                        # Skip metadata row (STEP NEXT-61 schema has metadata header)
+                        if row.get('record_type') == 'meta':
+                            continue
+                        self.evidence_pack.append(row)
 
     def test_evidence_pack_exists(self):
         """Evidence pack 파일이 존재하는지 확인"""
@@ -195,9 +199,10 @@ class TestEvidencePackSchema:
 
     def test_coverage_count(self):
         """생성된 evidence pack의 담보 수 확인"""
-        # samsung_scope.csv에 41개 담보가 있으므로 41개여야 함
-        assert len(self.evidence_pack) == 41, \
-            f"Expected 41 coverages, got {len(self.evidence_pack)}"
+        # samsung_scope_mapped.sanitized.csv has 31 coverages (32 lines including header)
+        # STEP NEXT-18X-B: Updated from legacy count (41) to current SSOT count (31)
+        assert len(self.evidence_pack) == 31, \
+            f"Expected 31 coverages, got {len(self.evidence_pack)}"
 
 
 if __name__ == "__main__":
