@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from core.scope_gate import load_scope_gate, resolve_scope_csv
 from core.compare_types import CoverageCard, Evidence, CompareStats, CustomerView
 from core.customer_view_builder import build_customer_view
+from core.amount_extractor import determine_amount
 
 
 def _select_diverse_evidences(evidences: List[Evidence], max_count: int = 3) -> List[Evidence]:
@@ -388,6 +389,16 @@ def build_coverage_cards(
             )
             customer_view = CustomerView.from_dict(customer_view_dict)
 
+        # SSOT vNext: Determine amount
+        evidences_dicts_for_amount = [ev.to_dict() for ev in selected_evidences]
+        amount = determine_amount(
+            coverage_name_raw=coverage_name_raw,
+            proposal_facts=proposal_facts,
+            evidences=evidences_dicts_for_amount,
+            insurer=insurer,
+            coverage_code=coverage_code
+        )
+
         # Card 생성 (STEP NEXT-68H: Add proposal_detail_facts)
         card = CoverageCard(
             insurer=insurer,
@@ -401,7 +412,8 @@ def build_coverage_cards(
             flags=flags,
             proposal_facts=proposal_facts,
             proposal_detail_facts=proposal_detail_facts,  # STEP NEXT-68H
-            customer_view=customer_view
+            customer_view=customer_view,
+            amount=amount  # SSOT vNext
         )
         cards.append(card)
 

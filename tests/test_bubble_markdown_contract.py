@@ -247,113 +247,169 @@ class TestEX3BubbleMarkdownContract:
         )
 
         bubble = response["bubble_markdown"]
-        # Required sections
-        assert "# samsung vs meritz" in bubble, "MUST have title section"
-        assert "## 핵심 결론" in bubble, "MUST have core conclusion section"
-        assert "## 주요 차이" in bubble, "MUST have differences section"
-        assert "## 근거 확인" in bubble, "MUST have evidence guide section"
-        assert "## 주의사항" in bubble, "MUST have caution section"
+        # STEP NEXT-113: Bubble is conversational (2-3 sentences, NO sections/tables/lists)
+        assert isinstance(bubble, str), "bubble_markdown MUST be string"
+        assert len(bubble) > 0, "bubble_markdown MUST NOT be empty"
+        # Bubble should NOT have markdown sections (ChatGPT UX)
+        assert bubble.count("#") == 0, "Bubble MUST NOT have markdown sections (STEP NEXT-113)"
+        # Bubble should be conversational (mentions comparison or structure)
+        assert "보험사" in bubble or "구조" in bubble or "방식" in bubble, "Bubble MUST be conversational comparison summary"
 
 
 class TestEX4BubbleMarkdownContract:
     """Contract tests for EX4_ELIGIBILITY bubble_markdown"""
 
     def test_ex4_bubble_markdown_exists(self):
-        """bubble_markdown field MUST exist in EX4 response"""
-        eligibility_data = [
+        """bubble_markdown field MUST exist in EX4 response (STEP NEXT-130 contract)"""
+        # Mock coverage_cards (SSOT input, not eligibility_data)
+        coverage_cards = [
             {
                 "insurer": "samsung",
-                "status": "O",
-                "evidence_type": "정의",
-                "evidence_snippet": "제자리암: 보장함",
-                "evidence_ref": "EV:samsung:A4200_1:01"
+                "coverage_code": "A4200_1",
+                "coverage_name_raw": "암진단비(제자리암포함)",
+                "customer_view": {},
+                "evidences": [
+                    {
+                        "evidence_ref": "EV:samsung:A4200_1:01",
+                        "evidence_snippet": "제자리암: 보장함"
+                    }
+                ]
             },
             {
                 "insurer": "meritz",
-                "status": "X",
-                "evidence_type": "면책",
-                "evidence_snippet": "제자리암: 면책",
-                "evidence_ref": "EV:meritz:A4200_1:01"
+                "coverage_code": "A4200_1",
+                "coverage_name_raw": "암진단비",
+                "customer_view": {},
+                "evidences": [
+                    {
+                        "evidence_ref": "EV:meritz:A4200_1:01",
+                        "evidence_snippet": "제자리암: 면책"
+                    }
+                ]
             }
         ]
 
+        # STEP NEXT-130: Use coverage_cards + subtype_keywords (list)
         response = EX4EligibilityComposer.compose(
             insurers=["samsung", "meritz"],
-            subtype_keyword="제자리암",
-            eligibility_data=eligibility_data
+            subtype_keywords=["제자리암"],  # List, not singular
+            coverage_cards=coverage_cards
         )
 
         assert "bubble_markdown" in response, "EX4 response MUST have bubble_markdown"
         assert response["bubble_markdown"], "bubble_markdown MUST NOT be empty"
         assert isinstance(response["bubble_markdown"], str), "bubble_markdown MUST be string"
 
-    def test_ex4_bubble_has_expected_sections(self):
-        """bubble_markdown MUST have required sections"""
-        eligibility_data = [
+    def test_ex4_bubble_has_expected_content(self):
+        """bubble_markdown MUST be simple 2-4 sentences (STEP NEXT-130)"""
+        # Mock coverage_cards (SSOT input)
+        coverage_cards = [
             {
                 "insurer": "samsung",
-                "status": "O",
-                "evidence_type": "정의",
-                "evidence_snippet": "제자리암: 보장함",
-                "evidence_ref": "EV:samsung:A4200_1:01"
+                "coverage_code": "A4200_1",
+                "coverage_name_raw": "암진단비(제자리암포함)",
+                "customer_view": {},
+                "evidences": [
+                    {
+                        "evidence_ref": "EV:samsung:A4200_1:01",
+                        "evidence_snippet": "제자리암: 보장함"
+                    }
+                ]
             },
             {
                 "insurer": "meritz",
-                "status": "X",
-                "evidence_type": "면책",
-                "evidence_snippet": "제자리암: 면책",
-                "evidence_ref": "EV:meritz:A4200_1:01"
+                "coverage_code": "A4200_1",
+                "coverage_name_raw": "암진단비",
+                "customer_view": {},
+                "evidences": [
+                    {
+                        "evidence_ref": "EV:meritz:A4200_1:01",
+                        "evidence_snippet": "제자리암: 면책"
+                    }
+                ]
             }
         ]
 
+        # STEP NEXT-130: Use coverage_cards + subtype_keywords (list)
         response = EX4EligibilityComposer.compose(
             insurers=["samsung", "meritz"],
-            subtype_keyword="제자리암",
-            eligibility_data=eligibility_data
+            subtype_keywords=["제자리암"],
+            coverage_cards=coverage_cards
         )
 
         bubble = response["bubble_markdown"]
-        # Required sections
-        assert "# 제자리암 보장 가능 여부 요약" in bubble, "MUST have title section"
-        assert "## 종합 평가" in bubble, "MUST have evaluation section"
-        assert "## 보험사별 분포" in bubble, "MUST have distribution section"
-        assert "## 근거 확인" in bubble, "MUST have evidence guide section"
-        assert "## 유의사항" in bubble, "MUST have caution section"
+        # STEP NEXT-130: Bubble is simple guidance (2-4 sentences, NO sections)
+        assert "제자리암" in bubble, "MUST mention disease subtype"
+        assert "보장 가능 여부" in bubble, "MUST mention eligibility purpose"
+        # Bubble should NOT have markdown sections (that's in right panel)
+        assert bubble.count("#") == 0, "Bubble MUST NOT have markdown sections (simple text only)"
 
-    def test_ex4_bubble_has_ox_distribution(self):
-        """bubble_markdown MUST show O/X/△ distribution"""
-        eligibility_data = [
-            {"insurer": "samsung", "status": "O", "evidence_type": "정의", "evidence_snippet": "...", "evidence_ref": "EV:samsung:A:01"},
-            {"insurer": "meritz", "status": "X", "evidence_type": "면책", "evidence_snippet": "...", "evidence_ref": "EV:meritz:A:01"},
-            {"insurer": "db", "status": "△", "evidence_type": "감액", "evidence_snippet": "...", "evidence_ref": "EV:db:A:01"}
+    def test_ex4_response_has_ox_table_section(self):
+        """sections MUST contain O/X table (STEP NEXT-130: table in right panel, NOT bubble)"""
+        # Mock coverage_cards (SSOT input)
+        coverage_cards = [
+            {
+                "insurer": "samsung",
+                "coverage_code": "A4200_1",
+                "coverage_name_raw": "암진단비(제자리암포함)",
+                "customer_view": {},
+                "evidences": [
+                    {
+                        "evidence_ref": "EV:samsung:A4200_1:01",
+                        "evidence_snippet": "제자리암: 보장함"
+                    }
+                ]
+            },
+            {
+                "insurer": "meritz",
+                "coverage_code": "A4200_1",
+                "coverage_name_raw": "암진단비",
+                "customer_view": {},
+                "evidences": [
+                    {
+                        "evidence_ref": "EV:meritz:A4200_1:01",
+                        "evidence_snippet": "제자리암: 면책"
+                    }
+                ]
+            }
         ]
 
+        # STEP NEXT-130: Use coverage_cards + subtype_keywords (list)
         response = EX4EligibilityComposer.compose(
-            insurers=["samsung", "meritz", "db"],
-            subtype_keyword="제자리암",
-            eligibility_data=eligibility_data
+            insurers=["samsung", "meritz"],
+            subtype_keywords=["제자리암"],
+            coverage_cards=coverage_cards
         )
 
-        bubble = response["bubble_markdown"]
-        # Check distribution counts (use emoji markers for cross-platform compatibility)
-        assert "1개 보험사" in bubble, "MUST show insurer counts"
-        assert "✅" in bubble or "보장 가능" in bubble, "MUST show O status"
-        assert "❌" in bubble or "면책" in bubble, "MUST show X status"
-        assert "⚠️" in bubble or "감액" in bubble, "MUST show △ status"
+        # STEP NEXT-130: O/X table is in sections (right panel), NOT bubble
+        assert "sections" in response, "Response MUST have sections"
+        assert len(response["sections"]) > 0, "sections MUST NOT be empty"
+
+        # Find O/X table section
+        ox_table_section = None
+        for section in response["sections"]:
+            if section.get("kind") == "comparison_table" and section.get("table_kind") == "ELIGIBILITY_OX_TABLE":
+                ox_table_section = section
+                break
+
+        assert ox_table_section is not None, "sections MUST contain ELIGIBILITY_OX_TABLE"
+        assert "제자리암" in ox_table_section["title"], "Table title MUST mention disease subtype"
+        assert len(ox_table_section["rows"]) == 5, "Table MUST have 5 fixed rows (STEP NEXT-130)"
 
 
 class TestCoverageCodeUtilities:
     """STEP NEXT-81B: Test coverage code prevention utilities"""
 
     def test_display_coverage_name_normal(self):
-        """display_coverage_name returns coverage_name when valid"""
+        """display_coverage_name returns normalized coverage_name (STEP NEXT-93)"""
         from apps.api.response_composers.utils import display_coverage_name
 
         result = display_coverage_name(
             coverage_name="암진단비(유사암 제외)",
             coverage_code="A4200_1"
         )
-        assert result == "암진단비(유사암 제외)"
+        # STEP NEXT-93: Normalization removes internal spaces
+        assert result == "암진단비(유사암제외)", "STEP NEXT-93: Internal spaces MUST be removed"
 
     def test_display_coverage_name_none(self):
         """display_coverage_name returns fallback when coverage_name is None"""

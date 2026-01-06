@@ -40,6 +40,29 @@ class Evidence:
 
 
 @dataclass
+class Amount:
+    """SSOT vNext: Amount field (MANDATORY in all coverage cards)"""
+    status: str  # "CONFIRMED" | "UNCONFIRMED" | "NOT_AVAILABLE"
+    value_text: Optional[str] = None  # e.g., "3,000만원" | "명시 없음" | null
+    evidence_refs: List[str] = field(default_factory=list)  # e.g., ["PD:samsung:A4200_1"]
+
+    def to_dict(self) -> dict:
+        return {
+            'status': self.status,
+            'value_text': self.value_text,
+            'evidence_refs': self.evidence_refs
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'Amount':
+        return cls(
+            status=data['status'],
+            value_text=data.get('value_text'),
+            evidence_refs=data.get('evidence_refs', [])
+        )
+
+
+@dataclass
 class CustomerView:
     """STEP NEXT-65R: Customer-facing benefit explanation"""
     benefit_description: str
@@ -86,6 +109,7 @@ class CoverageCard:
     proposal_facts: Optional[dict] = None  # STEP NEXT-UI-FIX-04: Step1 가입설계서 금액/보험료/기간
     proposal_detail_facts: Optional[dict] = None  # STEP NEXT-68H: Step1 가입설계서 DETAIL 보장내용
     customer_view: Optional[CustomerView] = None  # STEP NEXT-65R: Customer-facing explanation
+    amount: Optional['Amount'] = None  # SSOT vNext: Amount field (MANDATORY)
 
     def to_dict(self) -> dict:
         """딕셔너리로 변환 (JSONL 출력용)"""
@@ -104,6 +128,8 @@ class CoverageCard:
         }
         if self.customer_view:
             result['customer_view'] = self.customer_view.to_dict()
+        if self.amount:
+            result['amount'] = self.amount.to_dict()
         return result
 
     @classmethod
@@ -113,6 +139,9 @@ class CoverageCard:
         customer_view = None
         if 'customer_view' in data and data['customer_view']:
             customer_view = CustomerView.from_dict(data['customer_view'])
+        amount = None
+        if 'amount' in data and data['amount']:
+            amount = Amount.from_dict(data['amount'])
         return cls(
             insurer=data['insurer'],
             coverage_name_raw=data['coverage_name_raw'],
@@ -125,7 +154,8 @@ class CoverageCard:
             flags=data.get('flags', []),
             proposal_facts=data.get('proposal_facts'),
             proposal_detail_facts=data.get('proposal_detail_facts'),  # STEP NEXT-68H
-            customer_view=customer_view
+            customer_view=customer_view,
+            amount=amount
         )
 
     def get_top_evidence_ref(self) -> str:

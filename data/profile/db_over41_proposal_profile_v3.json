@@ -1,7 +1,7 @@
 {
   "profile_version": "v3",
   "builder_version": "step-next-45d",
-  "generated_at": "2026-01-01T13:04:24.610135+09:00",
+  "generated_at": "2026-01-06T17:46:43.753534+09:00",
   "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "db",
   "variant": "over41",
@@ -615,36 +615,8 @@
     ]
   },
   "detail_table": {
-    "exists": true,
-    "priority": 2,
-    "pages": [
-      7,
-      8,
-      9
-    ],
-    "table_name_candidates": [
-      "가입담보[만기/납기]"
-    ],
-    "columns": {
-      "coverage_name_and_desc": [
-        "가입담보[만기/납기]"
-      ],
-      "coverage_amount": [
-        "가입금액(만원)"
-      ],
-      "premium": [
-        "보험료(원)"
-      ],
-      "description": [
-        "보장(보상)내용"
-      ]
-    },
-    "structure": {
-      "row_count": "19-24 rows per page",
-      "col_count": "4 columns",
-      "header_pattern": "가입담보[만기/납기] | 가입금액(만원) | 보험료(원) | 보장(보상)내용"
-    },
-    "notes": "상세 테이블은 페이지 7-9에 존재. 보장내용 설명문 포함. 요약 테이블 우선 사용."
+    "exists": false,
+    "pages": []
   },
   "known_anomalies": [],
   "evidences": [

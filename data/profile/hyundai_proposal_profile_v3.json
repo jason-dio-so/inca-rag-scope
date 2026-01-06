@@ -1,7 +1,7 @@
 {
   "profile_version": "v3",
   "builder_version": "step-next-45d",
-  "generated_at": "2026-01-01T13:04:37.541604+09:00",
+  "generated_at": "2026-01-06T17:46:56.434594+09:00",
   "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "hyundai",
   "variant": "default",
@@ -405,14 +405,8 @@
     ]
   },
   "detail_table": {
-    "exists": true,
-    "priority": 1,
-    "pages": [5, 6, 7],
-    "structure": {
-      "type": "text_based_layout",
-      "description": "Hyundai: Coverage name + description in text layout. Pattern: Line1='number. 담보명', Line2='납기/만기 금액 보험료', Line3+=보장설명 텍스트 until next coverage."
-    },
-    "notes": "Text-based extraction from '위험보장 및 보험금 지급내용' section. Description follows payment info line."
+    "exists": false,
+    "pages": []
   },
   "known_anomalies": [],
   "evidences": [

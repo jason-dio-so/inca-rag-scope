@@ -1,7 +1,7 @@
 {
   "profile_version": "v3",
   "builder_version": "step-next-45d",
-  "generated_at": "2026-01-01T13:04:40.779633+09:00",
+  "generated_at": "2026-01-06T17:46:59.597675+09:00",
   "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "kb",
   "variant": "default",
@@ -498,18 +498,8 @@
     ]
   },
   "detail_table": {
-    "exists": true,
-    "type": "summary_embedded_detail",
-    "source": "summary_table",
-    "pages": [5, 6],
-    "columns": {
-      "coverage_name_and_desc": ["보장명 및 보장내용", "보장명및보장내용"]
-    },
-    "extraction_strategy": {
-      "mode": "multiline_split",
-      "coverage_name_pattern": "^(\\d+\\s+)?[가-힣A-Za-z0-9\\[\\]\\(\\)]+",
-      "description_starts_after_first_line": true
-    }
+    "exists": false,
+    "pages": []
   },
   "known_anomalies": [
     "KB: Row-number column detected at index 0 (coverage name in column 1, not 0)"

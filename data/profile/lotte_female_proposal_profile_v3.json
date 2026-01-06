@@ -1,7 +1,7 @@
 {
   "profile_version": "v3",
   "builder_version": "step-next-45d",
-  "generated_at": "2026-01-01T13:04:06.201295+09:00",
+  "generated_at": "2026-01-06T17:47:03.859774+09:00",
   "source_manifest": "data/manifests/proposal_pdfs_v1.json",
   "insurer": "lotte",
   "variant": "female",
@@ -136,20 +136,8 @@
     "variant_signatures": []
   },
   "detail_table": {
-    "exists": true,
-    "type": "summary_embedded_detail_split",
-    "source": "detail_pages",
-    "pages": [4, 5, 6, 7, 8],
-    "columns": {
-      "coverage_name": ["담보명"],
-      "benefit_description": ["보장내용"]
-    },
-    "structure": {
-      "type": "alternating_rows",
-      "coverage_row_pattern": "담보명 + 금액/기간/보험료",
-      "description_row_pattern": "보장내용 텍스트 (담보명 컬럼에 위치)",
-      "column_index": 1
-    }
+    "exists": false,
+    "pages": []
   },
   "known_anomalies": [],
   "evidences": [
