@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-07
-**현재 상태**: ✅ **STEP NEXT-59: Premium Waiver Tagging** (납입면제 항목 보존)
+**현재 상태**: ✅ **STEP NEXT-59-FIX: SSOT Line-Based Report Counts** (set() 중복제거 왜곡 제거)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ SSOT Line-Based Report Counts** | STEP NEXT-59-FIX | ✅ 완료 | 2026-01-07 |
 | **✅ Premium Waiver Tagging** | STEP NEXT-59 | ✅ 완료 | 2026-01-07 |
 | **✅ Unmapped Status SSOT Separation** | STEP NEXT-59 (Phase 1) | ✅ 완료 | 2026-01-07 |
 | **✅ Candidate Mapping LEVEL 1.5** | STEP NEXT-58-E | ✅ 완료 | 2026-01-07 |
@@ -142,6 +143,41 @@
 **HYUNDAI Analysis**: Normalization working (clean `candidate_input_text`), but no rate improvement due to Excel coverage gaps (심혈관질환 variants missing).
 
 **Tracking Fields**: `applied_rules`, `candidate_input_text`
+
+---
+
+### STEP NEXT-59-FIX — SSOT Line-Based Report Counts ✅ **COMPLETE** (2026-01-07)
+
+**목표**: Unmapped/Dropped count가 SSOT 라인 수와 항상 일치하도록 수정 (set() 중복제거 왜곡 제거)
+
+**Problem**:
+- `load_group_b_unmapped()`: `sorted(set(...))` → unique count (SSOT line count와 다름)
+- `load_group_a_dropped()`: `sorted(set(...))` → unique count (SSOT line count와 다름)
+- 레포트 count가 SSOT와 맞지 않아 "틀린 자료"처럼 보이는 착시 발생
+- KB 예: unmapped=12 (SSOT), dropped=20 (SSOT) but report showed unique counts
+
+**Solution** (Report Script 수정):
+1. ✅ **load_group_b_unmapped() returns Dict**: `{raw_items, unique_items, raw_count, unique_count}`
+2. ✅ **load_group_a_dropped() returns Dict**: `{raw_items, unique_items, raw_count, unique_count}`
+3. ✅ **SSOT Gates added**:
+   - Gate 1: `group_b['raw_count'] == summary['unmapped']` (exit 1 on fail)
+   - Gate 2: `group_a['raw_count'] == dropped file line count` (exit 1 on fail)
+4. ✅ **Report output updated**:
+   - Overview: Uses `raw_count` (SSOT line count)
+   - Detailed sections: Shows "Count (SSOT lines)" + "Unique Items" separately
+   - Display list uses `unique_items` (가독성)
+
+**Verification** (ALL PASS):
+- ✅ KB: unmapped=12 (SSOT lines), unique=12, dropped=20 (SSOT lines), unique=20
+- ✅ HYUNDAI: unmapped=11, dropped=10
+- ✅ All 10 companies: SSOT gates passed (exit 0)
+- ✅ Report regenerated with correct SSOT counts
+
+**Constitutional Compliance**:
+- ✅ NO Step2-a/Step2-b logic change (report only)
+- ✅ NO LLM usage
+- ✅ Count = SSOT line count (NOT unique deduplicated)
+- ✅ Reproducible
 
 ---
 
