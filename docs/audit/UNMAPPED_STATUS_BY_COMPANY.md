@@ -6,13 +6,13 @@
 
 | Company | Total | Mapped | Unmapped | Rate | Dropped (Step2-a) |
 |---------|-------|--------|----------|------|-------------------|
-| SAMSUNG | 31 | 27 | 4 | 87.1% | 1 |
-| db_over41 | 30 | 29 | 1 | 96.7% | 1 |
-| db_under40 | 30 | 29 | 1 | 96.7% | 1 |
-| hanwha | 32 | 28 | 4 | 87.5% | 1 |
-| heungkuk | 35 | 32 | 3 | 91.4% | 1 |
-| hyundai | 36 | 25 | 11 | 69.4% | 11 |
-| kb | 42 | 30 | 12 | 71.4% | 21 |
+| SAMSUNG | 31 | 27 | 4 | 87.1% | 0 |
+| db_over41 | 30 | 29 | 1 | 96.7% | 0 |
+| db_under40 | 30 | 29 | 1 | 96.7% | 0 |
+| hanwha | 32 | 28 | 4 | 87.5% | 0 |
+| heungkuk | 35 | 32 | 3 | 91.4% | 0 |
+| hyundai | 36 | 25 | 11 | 69.4% | 10 |
+| kb | 42 | 30 | 12 | 71.4% | 20 |
 | lotte_female | 30 | 25 | 5 | 83.3% | 0 |
 | lotte_male | 30 | 25 | 5 | 83.3% | 0 |
 | meritz | 37 | 28 | 9 | 75.7% | 0 |
@@ -28,31 +28,20 @@
 **Total Coverage Items**: 31
 **Mapped**: 27 (87.1%)
 **Unmapped**: 4
-**Dropped (Step2-a)**: 1
+**Dropped (Step2-a)**: 0
 
 ### Group B: Step2-b Unmapped (Legitimate Unmapped)
 
-**Count**: 4
+**Count (SSOT lines)**: 4
+**Unique Items**: 4
 
 **Description**: Items that passed Step2-a sanitization but failed canonical mapping in Step2-b.
 
-**All Items**:
+**All Unique Items**:
 - `간병/사망`
 - `골절 진단비(치아파절(깨짐, 부러짐) 제외)`
 - `수술`
 - `장해/장애`
-
-### Group A: Step2-a Dropped (Fragments/Noise)
-
-**Count**: 1
-
-**Description**: Items removed by Step2-a sanitization (deterministic pattern matching).
-
-**Drop Reasons**:
-- `PREMIUM_WAIVER_TARGET`: 1
-
-**All Items**:
-- `보험료 납입면제대상Ⅱ`
 
 ---
 
@@ -61,28 +50,17 @@
 **Total Coverage Items**: 30
 **Mapped**: 29 (96.7%)
 **Unmapped**: 1
-**Dropped (Step2-a)**: 1
+**Dropped (Step2-a)**: 0
 
 ### Group B: Step2-b Unmapped (Legitimate Unmapped)
 
-**Count**: 1
+**Count (SSOT lines)**: 1
+**Unique Items**: 1
 
 **Description**: Items that passed Step2-a sanitization but failed canonical mapping in Step2-b.
 
-**All Items**:
+**All Unique Items**:
 - `1. 상해사망·후유장해(20-100%)`
-
-### Group A: Step2-a Dropped (Fragments/Noise)
-
-**Count**: 1
-
-**Description**: Items removed by Step2-a sanitization (deterministic pattern matching).
-
-**Drop Reasons**:
-- `PREMIUM_WAIVER_TARGET`: 1
-
-**All Items**:
-- `2. 보험료납입면제대상보장(10대사유)`
 
 ---
 
@@ -91,28 +69,17 @@
 **Total Coverage Items**: 30
 **Mapped**: 29 (96.7%)
 **Unmapped**: 1
-**Dropped (Step2-a)**: 1
+**Dropped (Step2-a)**: 0
 
 ### Group B: Step2-b Unmapped (Legitimate Unmapped)
 
-**Count**: 1
+**Count (SSOT lines)**: 1
+**Unique Items**: 1
 
 **Description**: Items that passed Step2-a sanitization but failed canonical mapping in Step2-b.
 
-**All Items**:
+**All Unique Items**:
 - `1. 상해사망·후유장해(20-100%)`
-
-### Group A: Step2-a Dropped (Fragments/Noise)
-
-**Count**: 1
-
-**Description**: Items removed by Step2-a sanitization (deterministic pattern matching).
-
-**Drop Reasons**:
-- `PREMIUM_WAIVER_TARGET`: 1
-
-**All Items**:
-- `2. 보험료납입면제대상보장(11대사유)`
 
 ---
 
@@ -121,31 +88,20 @@
 **Total Coverage Items**: 32
 **Mapped**: 28 (87.5%)
 **Unmapped**: 4
-**Dropped (Step2-a)**: 1
+**Dropped (Step2-a)**: 0
 
 ### Group B: Step2-b Unmapped (Legitimate Unmapped)
 
-**Count**: 4
+**Count (SSOT lines)**: 4
+**Unique Items**: 4
 
 **Description**: Items that passed Step2-a sanitization but failed canonical mapping in Step2-b.
 
-**All Items**:
+**All Unique Items**:
 - `10. 질병사망 1,`
 - `4대유사암진단비`
 - `상해후유장해(3-100%)`
 - `암(갑상선암및전립선암제외)다빈치로봇수술비(1회한)(갱신형)`
-
-### Group A: Step2-a Dropped (Fragments/Noise)
-
-**Count**: 1
-
-**Description**: Items removed by Step2-a sanitization (deterministic pattern matching).
-
-**Drop Reasons**:
-- `PREMIUM_WAIVER_TARGET`: 1
-
-**All Items**:
-- `보험료납입면제대상보장(8대사유)`
 
 ---
 
@@ -154,30 +110,19 @@
 **Total Coverage Items**: 35
 **Mapped**: 32 (91.4%)
 **Unmapped**: 3
-**Dropped (Step2-a)**: 1
+**Dropped (Step2-a)**: 0
 
 ### Group B: Step2-b Unmapped (Legitimate Unmapped)
 
-**Count**: 3
+**Count (SSOT lines)**: 3
+**Unique Items**: 3
 
 **Description**: Items that passed Step2-a sanitization but failed canonical mapping in Step2-b.
 
-**All Items**:
+**All Unique Items**:
 - `[갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년)`
 - `일반상해후유장해(80%이상)`
 - `질병후유장해(80%이상)(감액없음)`
-
-### Group A: Step2-a Dropped (Fragments/Noise)
-
-**Count**: 1
-
-**Description**: Items removed by Step2-a sanitization (deterministic pattern matching).
-
-**Drop Reasons**:
-- `PREMIUM_WAIVER_TARGET`: 1
-
-**All Items**:
-- `보험료 납입면제대상보장(6대질병진단 및 상해·질병후유장해(80%이상))`
 
 ---
 
@@ -186,15 +131,16 @@
 **Total Coverage Items**: 36
 **Mapped**: 25 (69.4%)
 **Unmapped**: 11
-**Dropped (Step2-a)**: 11
+**Dropped (Step2-a)**: 10
 
 ### Group B: Step2-b Unmapped (Legitimate Unmapped)
 
-**Count**: 11
+**Count (SSOT lines)**: 11
+**Unique Items**: 11
 
 **Description**: Items that passed Step2-a sanitization but failed canonical mapping in Step2-b.
 
-**All Items**:
+**All Unique Items**:
 - `10. 유사암진단Ⅱ담보`
 - `17. 심혈관질환(특정Ⅰ,I49제외)진단담보`
 - `18. 심혈관질환(I49)진단담보`
@@ -211,14 +157,14 @@
 
 ### Group A: Step2-a Dropped (Fragments/Noise)
 
-**Count**: 11
+**Count (SSOT lines)**: 10
+**Unique Items**: 10
 
 **Description**: Items removed by Step2-a sanitization (deterministic pattern matching).
 
 **Drop Reasons**:
 - `FRAGMENTED_HANGUL`: 2
 - `DUPLICATE_VARIANT`: 2
-- `PREMIUM_WAIVER_TARGET`: 1
 - `BROKEN_RENEWAL_담보`: 1
 - `BROKEN_SUFFIX`: 1
 - `ADMIN_FIELD_갱신차수`: 1
@@ -226,10 +172,9 @@
 - `PARENTHESES_ONLY`: 1
 - `STANDALONE_NUMBER`: 1
 
-**All Items**:
+**All Unique Items**:
 - `(갱신형)담보`
 - `(기준: 100세만기 20년납, 40세, 상해1급)`
-- `3. 보험료납입면제대상담보`
 - `91.5`
 - `갱신차수`
 - `남 자`
@@ -246,15 +191,16 @@
 **Total Coverage Items**: 42
 **Mapped**: 30 (71.4%)
 **Unmapped**: 12
-**Dropped (Step2-a)**: 21
+**Dropped (Step2-a)**: 20
 
 ### Group B: Step2-b Unmapped (Legitimate Unmapped)
 
-**Count**: 12
+**Count (SSOT lines)**: 12
+**Unique Items**: 12
 
 **Description**: Items that passed Step2-a sanitization but failed canonical mapping in Step2-b.
 
-**All Items**:
+**All Unique Items**:
 - `105. 부정맥질환(Ⅰ49)진단비`
 - `2. 일반상해후유장해(20~100%)(기본)`
 - `206. 다빈치로봇 암수술비(갑상선암 및 전립선암 제외)(최초1회한)(갱신형)`
@@ -270,16 +216,15 @@
 
 ### Group A: Step2-a Dropped (Fragments/Noise)
 
-**Count**: 21
+**Count (SSOT lines)**: 20
+**Unique Items**: 20
 
 **Description**: Items removed by Step2-a sanitization (deterministic pattern matching).
 
 **Drop Reasons**:
 - `DUPLICATE_VARIANT`: 20
-- `PREMIUM_WAIVER_TARGET`: 1
 
-**All Items**:
-- `3. 보험료납입면제대상보장(8대기본)`
+**All Unique Items**:
 - `골절진단비Ⅱ(치아파절제외)`
 - `뇌졸중진단비`
 - `뇌출혈진단비`
@@ -312,11 +257,12 @@
 
 ### Group B: Step2-b Unmapped (Legitimate Unmapped)
 
-**Count**: 5
+**Count (SSOT lines)**: 5
+**Unique Items**: 5
 
 **Description**: Items that passed Step2-a sanitization but failed canonical mapping in Step2-b.
 
-**All Items**:
+**All Unique Items**:
 - `급성심근경색증(I21) 혈전용해치료비`
 - `뇌경색증(I63) 혈전용해치료비`
 - `암직접입원비(요양병원제외)(1일-120일)`
@@ -334,11 +280,12 @@
 
 ### Group B: Step2-b Unmapped (Legitimate Unmapped)
 
-**Count**: 5
+**Count (SSOT lines)**: 5
+**Unique Items**: 5
 
 **Description**: Items that passed Step2-a sanitization but failed canonical mapping in Step2-b.
 
-**All Items**:
+**All Unique Items**:
 - `급성심근경색증(I21) 혈전용해치료비`
 - `뇌경색증(I63) 혈전용해치료비`
 - `암직접입원비(요양병원제외)(1일-120일)`
@@ -356,11 +303,12 @@
 
 ### Group B: Step2-b Unmapped (Legitimate Unmapped)
 
-**Count**: 9
+**Count (SSOT lines)**: 9
+**Unique Items**: 9
 
 **Description**: Items that passed Step2-a sanitization but failed canonical mapping in Step2-b.
 
-**All Items**:
+**All Unique Items**:
 - `대표계약 기준 : 남자40세,20년납,100세만기,월납,일반상해80%이상후유장해[기본계약] 5,000만원, 일반상해사망 5,000만원, 질병사망 5,000만원`
 - `보험료 비교(예시)`
 - `신화상치료비(중증화상및부식진단비)`
@@ -378,16 +326,19 @@
 - **Total Coverage Items (Step2-b)**: 333
 - **Mapped**: 278 (83.5%)
 - **Unmapped (Group B)**: 55
-- **Dropped (Group A, Step2-a)**: 37
+- **Dropped (Group A, Step2-a)**: 30
 
-## Constitutional Rules (STEP NEXT-59)
+## Constitutional Rules (STEP NEXT-59-FIX)
 
 1. ✅ **SSOT Separation**: Group A (Step2-a dropped) ≠ Group B (Step2-b unmapped)
-2. ✅ **No Fragment Logic on Step2-b**: Step2-b unmapped items are NOT re-classified as fragments
-3. ✅ **Field Priority**: `coverage_name_normalized` > `coverage_name_raw` > `coverage_name`
-4. ✅ **Overview = Step2-b SSOT**: Total/Mapped/Unmapped from mapping_report.jsonl only
-5. ❌ **No LLM**: Deterministic only
-6. ❌ **No Logic Change**: Step2-a/Step2-b unchanged
+2. ✅ **SSOT Line-Based Counts**: Count = raw line count (NOT unique deduplicated)
+3. ✅ **SSOT Gates Enforced**: summary['unmapped'] == group_b['raw_count'], dropped lines == group_a['raw_count']
+4. ✅ **Unique Items for Display**: Show unique_count separately, but count = SSOT lines
+5. ✅ **No Fragment Logic on Step2-b**: Step2-b unmapped items are NOT re-classified as fragments
+6. ✅ **Field Priority**: `coverage_name_normalized` > `coverage_name_raw` > `coverage_name`
+7. ✅ **Overview = Step2-b SSOT**: Total/Mapped/Unmapped from mapping_report.jsonl only
+8. ❌ **No LLM**: Deterministic only
+9. ❌ **No Logic Change**: Step2-a/Step2-b unchanged
 
 ## Action Items
 
