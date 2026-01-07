@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-STEP NEXT-46: Step2 Sanitization Logic
-========================================
+STEP NEXT-59: Step2 Sanitization Logic (Premium Waiver Tagging)
+================================================================
 
 Deterministic pattern-based sanitization of raw Step1 extraction.
 
 Rules (ANY match → DROP):
     1. Fragment patterns (parentheses-only, trailing markers)
     2. Sentence-like noise (conditions, explanations)
-    3. Administrative non-coverage (premium waiver targets)
-    4. Duplicate variants (keep first occurrence only)
+    3. Duplicate variants (keep first occurrence only)
+
+STEP NEXT-59: Premium Waiver items are KEPT + TAGGED (NOT dropped)
+    - KEEP: 납입면제 items are core comparison axis
+    - TAG: coverage_kind="premium_waiver", coverage_axis=["waiver"]
 
 Constitutional enforcement:
     - NO LLM / NO inference
@@ -52,8 +55,9 @@ DROP_PATTERNS = [
     (r'경우$', 'SENTENCE_ENDING'),
 
     # Category 3: Administrative Non-Coverage
-    (r'납입면제.*대상', 'PREMIUM_WAIVER_TARGET'),
-    (r'대상\s*(담보|보장)', 'META_ENTRY'),
+    # STEP NEXT-59: REMOVED PREMIUM_WAIVER_TARGET (now tagged, not dropped)
+    # (r'납입면제.*대상', 'PREMIUM_WAIVER_TARGET'),  # DISABLED - premium waiver is core coverage
+    # (r'대상\s*(담보|보장)', 'META_ENTRY'),  # DISABLED - too broad, affects premium waiver
 ]
 
 # NORMALIZATION patterns (STEP NEXT-52: Transform but don't drop)
@@ -94,6 +98,40 @@ COVERAGE_KEYWORDS = [
     '사망', '후유장해', '골절', '화상', '암',
     '뇌', '심장', '간', '신장', '폐'
 ]
+
+
+def detect_premium_waiver(coverage_name_raw: str, coverage_name_normalized: str) -> Tuple[bool, List[str]]:
+    """
+    Detect premium waiver coverage items (STEP NEXT-59).
+
+    Premium waiver items are CORE coverage (NOT administrative noise).
+    Detection is deterministic keyword matching (NO LLM).
+
+    Args:
+        coverage_name_raw: Raw coverage name
+        coverage_name_normalized: Normalized coverage name
+
+    Returns:
+        (is_premium_waiver, matched_rules)
+    """
+    # Detection keywords (OR logic)
+    WAIVER_KEYWORDS = [
+        '납입면제',
+        '보험료납입면제',
+        '보험료 납입면제',
+    ]
+
+    matched_rules = []
+
+    # Check both raw and normalized names
+    for text in [coverage_name_raw, coverage_name_normalized]:
+        for keyword in WAIVER_KEYWORDS:
+            if keyword in text:
+                matched_rules.append(f"WAIVER_KEYWORD_{keyword}")
+                break
+
+    is_waiver = len(matched_rules) > 0
+    return is_waiver, matched_rules
 
 
 def normalize_coverage_name(coverage_name_raw: str) -> Tuple[str, List[str]]:
@@ -224,9 +262,20 @@ def sanitize_step1_output(
     entries = []
     with open(input_jsonl, 'r', encoding='utf-8') as f:
         for line in f:
-            if line.strip():
-                entries.append(json.loads(line))
+            if not line.strip():
+                continue
 
+            o = json.loads(line)
+
+            # --- STEP NEXT-XX: Step1 raw compatibility fix ---
+            # Some Step1 raw outputs (e.g. SAMSUNG) do not provide `coverage_name`
+            # Step2 sanitize assumes `coverage_name` is the primary key
+            if not o.get("coverage_name"):
+                raw = (o.get("coverage_name_raw") or "").strip()
+                o["coverage_name"] = raw if raw else None
+            # ------------------------------------------------
+
+            entries.append(o)
     # Sanitize
     kept_entries = []
     dropped_entries = []
@@ -238,8 +287,19 @@ def sanitize_step1_output(
     for entry in entries:
         coverage_name_raw = entry.get('coverage_name_raw', '')
 
+        # Apply normalization FIRST (needed for waiver detection)
+        normalized_name, transformations = normalize_coverage_name(coverage_name_raw)
+
+        # STEP NEXT-59: Detect premium waiver items (BEFORE drop check)
+        is_premium_waiver, waiver_rules = detect_premium_waiver(coverage_name_raw, normalized_name)
+
         # Check if should drop (fragments, noise, etc.)
         should_drop, drop_reason = should_drop_entry(coverage_name_raw)
+
+        # STEP NEXT-59: Premium waiver items NEVER dropped (override drop decision)
+        if is_premium_waiver:
+            should_drop = False
+            drop_reason = None
 
         if should_drop:
             dropped_entries.append({
@@ -248,9 +308,6 @@ def sanitize_step1_output(
                 'drop_reason': drop_reason
             })
         else:
-            # Apply normalization (STEP NEXT-52)
-            normalized_name, transformations = normalize_coverage_name(coverage_name_raw)
-
             # STEP NEXT-59C: Track normalization execution
             if transformations:
                 normalization_stats['applied_count'] += 1
@@ -267,14 +324,23 @@ def sanitize_step1_output(
                 })
                 continue
 
-            # Keep entry with normalization metadata
-            kept_entries.append({
+            # Build kept entry with normalization metadata
+            kept_entry = {
                 **entry,
                 'coverage_name_normalized': normalized_name,
                 'normalization_applied': transformations,
                 'sanitized': True,
                 'drop_reason': None
-            })
+            }
+
+            # STEP NEXT-59: Add premium waiver tags if detected
+            if is_premium_waiver:
+                kept_entry['coverage_kind'] = 'premium_waiver'
+                kept_entry['coverage_axis'] = ['waiver']
+                kept_entry['waiver_detected'] = True
+                kept_entry['waiver_rule_hits'] = waiver_rules
+
+            kept_entries.append(kept_entry)
 
     # Deduplicate variants
     kept_entries, variant_duplicates = deduplicate_variants(kept_entries)
