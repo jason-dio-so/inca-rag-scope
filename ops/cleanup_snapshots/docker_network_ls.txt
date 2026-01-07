@@ -1,0 +1,7 @@
+NETWORK ID     NAME                            DRIVER    SCOPE
+40e1c7c017ab   bridge                          bridge    local
+9621110550f6   host                            host      local
+611280c42080   inca-rag-final_default          bridge    local
+620b09cb10df   inca-rag-final_inca_network     bridge    local
+1a6db5552da3   insurance-ontology-v2_default   bridge    local
+58c81e4253ef   none                            null      local

@@ -3,8 +3,99 @@
 ## 프로젝트 정보
 
 - **디렉토리**: `inca-rag-scope/`
-- **작업일**: 2025-12-27
-- **목표**: 전체 보험사 파이프라인 실행 + A4200_1 전체 비교
+- **작업일**: 2025-12-27 ~ 2025-12-28
+- **목표**: 전체 보험사 파이프라인 실행 + A4200_1 전체 비교 + UI 개발 직전 합의
+
+---
+
+## STEP NEXT-4 완료 (2025-12-28)
+
+**목표**: UI Mock (텍스트 와이어프레임) 완성
+
+**산출물**:
+- `docs/ui/STEP_NEXT_1_RESPONSE_VIEW_MODEL.md` - Response View Model 명세서 (초안)
+- `docs/ui/STEP_NEXT_2_RESPONSE_VIEW_MODEL_AND_UX.md` - Response View Model 및 UX 최종 명세서
+- `docs/ui/STEP_NEXT_3_UI_SKELETON.md` - UI Skeleton 및 View Model 매핑
+- `docs/ui/STEP_NEXT_4_UI_MOCK.md` - UI Mock (텍스트 와이어프레임)
+
+**완료 내용**:
+- 예제 1~4 모두 UI 렌더링 완료 (텍스트 와이어프레임)
+- 예제 3번 (9개 담보 종합 비교) 최우선 반영
+- ChatGPT 스타일 단일 패널 레이아웃 채택
+- 회사명 + 상품명 노출 위치 고정 (Query Summary)
+- Premium notice 강제 표시 UI 정의
+- Evidence 기반 값 표시 일관성 확보
+- 추천/추론 표현 0건 검증 완료
+
+---
+
+## STEP NEXT-5 완료 (2025-12-28)
+
+**목표**: UI 프로토타입 (Fixture 기반 실렌더링) 구현
+
+**산출물**:
+- `apps/web-prototype/index.html` - ChatGPT 스타일 UI 프로토타입 (HTML+CSS+JS)
+- `apps/web-prototype/fixtures/example1_premium.json` - 보험료 비교 예제
+- `apps/web-prototype/fixtures/example2_coverage_compare.json` - 담보 조건 비교 예제
+- `apps/web-prototype/fixtures/example3_product_summary.json` - 상품 종합 비교 예제 (9개 담보)
+- `apps/web-prototype/fixtures/example4_ox.json` - 보장 여부 O/X 예제
+- `docs/ui/STEP_NEXT_5_UI_PROTOTYPE_RUNBOOK.md` - 실행 가이드
+
+**완료 내용**:
+- Response View Model (JSON) → ChatGPT 스타일 화면 렌더링 완료
+- 예제 1~4 버튼 클릭으로 즉시 전환 가능
+- 예제 3에서 9개 담보 + Evidence 모달 + Notes 7개 항목 모두 동작 확인
+- Premium notice 강제 표시 (예제 1)
+- Evidence Viewer 모달 구현 (placeholder snippet)
+- 확인 불가 처리 일관성 (회색 표시)
+- 추천/추론 표현 0건
+- 로컬 브라우저에서 직접 실행 가능 (No Server Required)
+
+**실행 방법**:
+```bash
+cd apps/web-prototype
+open index.html  # 브라우저에서 직접 열기
+```
+
+**검증 완료**:
+- ✅ 예제 1~4 모두 화면 깨짐 없이 렌더링
+- ✅ 예제 3 (종합 비교): 9개 담보 테이블 + 7개 상세 Notes
+- ✅ Evidence 클릭 → 모달 팝업
+- ✅ 회사명 + 상품명 항상 표시
+- ✅ Premium notice 조건부 강제 표시
+- ✅ 금지 표현 (추천/추론) 0건
+
+**다음 단계**: 고객 검토 (예제 3 중심 데모) 또는 실제 API 연동
+
+---
+
+## STEP NEXT-6 완료 (2025-12-28)
+
+**목표**: 고객 데모 패키지 + 피드백 체크리스트 + 결정 사항 Lock
+
+**산출물**:
+- `docs/customer/DEMO_SCRIPT.md` - 3~5분 데모 진행 스크립트 (예제 3 중심)
+- `docs/customer/FEEDBACK_CHECKLIST.md` - 15개 항목 피드백 체크리스트 (10분 작성)
+- `docs/customer/DECISIONS_TO_LOCK.md` - 6개 필수 결정 사항 (우선순위별)
+
+**완료 내용**:
+- 데모 스크립트: 시간별 진행 순서 + 고객 확인 사항 명시
+- 피드백 체크리스트: 체크 방식 (15개 항목, 10분 이내)
+- 결정 사항: 6개 항목 (9개 담보, 보험료, PDF 원문, Notes, 회사명, 모바일)
+- 각 결정 항목마다 선택지 2~3개 + 디폴트 추천안 제시
+- 고객 미팅 30분 구성: 데모 5분 + 피드백 10분 + 결정 10분 + 예비 5분
+
+**결정 항목 요약**:
+1. D1: 9개 담보 표시 범위 (모두 표시 / 일부만 / 아코디언) - 추천: 모두 표시
+2. D2: 보험료 비교 기능 (제공 참고용 / 강한 경고 / 제거) - 추천: 제공 참고용
+3. D3: PDF 원문 보기 (1차 필수 / 2차 구현 / 제거) - 추천: 2차 구현
+4. D4: Notes 기본 상태 (접힌 / 펼쳐진 / 제거) - 추천: 접힌 상태
+5. D5: 회사명 표시 위치 (현재 / 테이블 위 / 상단 고정) - 추천: 현재 위치
+6. D6: 모바일 우선 개발 (데스크톱 / 모바일 / 반응형) - 추천: 데스크톱 먼저
+
+**다음 단계**: 고객 미팅 (30분) → 결정 확정 → 실제 구현 착수
+
+---
 
 ## 완료된 보험사 현황
 
