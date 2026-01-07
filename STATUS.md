@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-07
-**현재 상태**: ✅ **STEP NEXT-59: Unmapped Status Report SSOT Separation** (오염 제거 완료)
+**현재 상태**: ✅ **STEP NEXT-59: Premium Waiver Tagging** (납입면제 항목 보존)
 
 ---
 
@@ -10,7 +10,8 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
-| **✅ Unmapped Status SSOT Separation** | STEP NEXT-59 | ✅ 완료 | 2026-01-07 |
+| **✅ Premium Waiver Tagging** | STEP NEXT-59 | ✅ 완료 | 2026-01-07 |
+| **✅ Unmapped Status SSOT Separation** | STEP NEXT-59 (Phase 1) | ✅ 완료 | 2026-01-07 |
 | **✅ Candidate Mapping LEVEL 1.5** | STEP NEXT-58-E | ✅ 완료 | 2026-01-07 |
 | **✅ Candidate Mapping (LEVEL 1)** | STEP NEXT-57 | ✅ 완료 | 2026-01-07 |
 | **✅ KB/HYUNDAI Unmapped Separation** | STEP NEXT-56-C | ✅ 완료 | 2026-01-07 |
@@ -144,7 +145,30 @@
 
 ---
 
-### STEP NEXT-59 — Unmapped Status Report SSOT Separation ✅ **COMPLETE** (2026-01-07)
+### STEP NEXT-59 — Premium Waiver Tagging ✅ **COMPLETE** (2026-01-07)
+
+**목표**: 납입면제 항목 DROP 금지 + 태깅으로 전환
+
+**Problem**:
+- 삼성 "보험료 납입면제대상Ⅱ" dropped by `PREMIUM_WAIVER_TARGET` rule
+- KB "보험료납입면제대상보장(8대기본)" dropped by `PREMIUM_WAIVER_TARGET` rule
+- 납입면제는 **핵심 비교 축** (보장 항목 자체) — DROP하면 downstream 복구 불가
+
+**Solution** (Step2-a Sanitize 수정):
+1. ❌ **REMOVED DROP patterns**: `PREMIUM_WAIVER_TARGET`, `META_ENTRY` (both disabled)
+2. ✅ **ADDED tagging**: `coverage_kind="premium_waiver"`, `coverage_axis=["waiver"]`
+3. ✅ **Override logic**: Premium waiver items NEVER dropped (override in sanitize loop)
+4. ✅ **Deterministic keyword detection**: `납입면제`, `보험료납입면제` (NO LLM)
+
+**Verification** (PASS):
+- ✅ Samsung: "보험료 납입면제대상Ⅱ" in sanitized output with tags
+- ✅ KB: "보험료납입면제대상보장(8대기본)" in sanitized output with tags
+- ✅ Total kept: 340 (increased by 2)
+- ✅ Regression: Other DROP categories preserved (DUPLICATE_VARIANT, FRAGMENTED_HANGUL, etc.)
+
+---
+
+### STEP NEXT-59 (Phase 1) — Unmapped Status Report SSOT Separation ✅ **COMPLETE** (2026-01-07)
 
 **목표**: Step2-a dropped vs Step2-b unmapped 오염 제거, SSOT 기반 정확한 리포트 생성
 
