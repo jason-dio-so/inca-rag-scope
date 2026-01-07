@@ -1,8 +1,8 @@
 # inca-rag-scope - 작업 현황 보고서
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
-**최종 업데이트**: 2026-01-06
-**현재 상태**: ✅ **EX3 Routing + EX2 Insurer Selection Restored** (STEP NEXT-OPS-CYCLE-03B: EX3 comparison routing 복구 + EX2 auto-expand 제거)
+**최종 업데이트**: 2026-01-07
+**현재 상태**: ✅ **STEP NEXT-59: Unmapped Status Report SSOT Separation** (오염 제거 완료)
 
 ---
 
@@ -10,6 +10,10 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ Unmapped Status SSOT Separation** | STEP NEXT-59 | ✅ 완료 | 2026-01-07 |
+| **✅ Candidate Mapping LEVEL 1.5** | STEP NEXT-58-E | ✅ 완료 | 2026-01-07 |
+| **✅ Candidate Mapping (LEVEL 1)** | STEP NEXT-57 | ✅ 완료 | 2026-01-07 |
+| **✅ KB/HYUNDAI Unmapped Separation** | STEP NEXT-56-C | ✅ 완료 | 2026-01-07 |
 | **✅ EX3 Routing + EX2 Insurer Selection Restored** | STEP NEXT-OPS-CYCLE-03B | ✅ 완료 | 2026-01-06 |
 | **✅ Product Name + Variant Injection** | STEP NEXT-PRODUCT-1 | ✅ 완료 | 2026-01-05 |
 | **✅ EX4 Preset Routing Lock** | STEP NEXT-141 | ✅ 완료 | 2026-01-05 |
@@ -96,7 +100,185 @@
 
 ---
 
-## 🎯 최신 진행 항목 (2026-01-06)
+## 🎯 최신 진행 항목 (2026-01-07)
+
+### STEP NEXT-58-E — Candidate Mapping LEVEL 1.5 (HYUNDAI Enhancement) ✅ **COMPLETE**
+
+**목표**: HYUNDAI unmapped items에 LEVEL 1.5 normalization 적용으로 candidate 생성률 개선
+
+**Constitutional Principles**:
+- ✅ Option C 유지 (Step2-a/Step2-b unchanged)
+- ✅ HYUNDAI-only branching (기타 보험사 unchanged)
+- ✅ NO LLM, deterministic only
+- ✅ Candidates remain suggestions (NOT confirmed mappings)
+- ✅ Step2-c enhancement only
+
+**LEVEL 1.5 Enhancements**:
+
+1. **HYUNDAI Normalization** (`normalize_for_candidate_hyundai`):
+   - Remove newlines/tabs: `\n` → removed
+   - Remove "담보" suffix: `항암약물치료Ⅱ담보` → `항암약물치료`
+   - Fix broken parentheses
+   - Remove short fragments
+
+2. **HYUNDAI Token Expansion** (`expand_tokens_hyundai`):
+   - `I49` / `Ⅰ49` → add `부정맥`
+   - `CAR-T` / `카티` → ensure both
+   - `다빈치` / `로봇` → ensure both
+   - `주요심장염증` → add `심장`, `염증`
+
+3. **Enhanced Tokenization** (all insurers):
+   - Added: `진단`, `수술`, `입원`, `치료`
+   - Lowered min_confidence: 0.5 → **0.4**
+
+**Results**:
+
+| Insurer | LEVEL 1 | LEVEL 1.5 | Change |
+|---------|---------|-----------|--------|
+| **KB** | 9/12 (75.0%) | **10/12 (83.3%)** | +1 |
+| **HYUNDAI** | 3/11 (27.3%) | **3/11 (27.3%)** | 0 (Excel gaps) |
+
+**HYUNDAI Analysis**: Normalization working (clean `candidate_input_text`), but no rate improvement due to Excel coverage gaps (심혈관질환 variants missing).
+
+**Tracking Fields**: `applied_rules`, `candidate_input_text`
+
+---
+
+### STEP NEXT-59 — Unmapped Status Report SSOT Separation ✅ **COMPLETE** (2026-01-07)
+
+**목표**: Step2-a dropped vs Step2-b unmapped 오염 제거, SSOT 기반 정확한 리포트 생성
+
+**문제 정의**:
+- 이전 리포트가 Step2-b unmapped를 "fragments"로 재분류 (구조적으로 불가능)
+- KB/HYUNDAI에서 `2.`, `105.` 같은 Step1 raw 형태가 fragments로 잘못 분류됨
+- `.coverage_name` 필드 선택 오류로 null 값 빈발
+- Step2-a dropped와 Step2-b unmapped가 혼재
+
+**Solution (Constitutional Rules)**:
+1. ✅ **SSOT Separation**: Group A (Step2-a dropped) ≠ Group B (Step2-b unmapped)
+2. ✅ **No Fragment Logic on Step2-b**: Step2-b unmapped는 fragments가 아님 (legitimate unmapped)
+3. ✅ **Field Priority**: `coverage_name_normalized` > `coverage_name_raw` > `coverage_name`
+4. ✅ **Overview = Step2-b SSOT**: Total/Mapped/Unmapped는 mapping_report.jsonl만 사용
+5. ❌ **No LLM**: Deterministic only
+6. ❌ **No Logic Change**: Step2-a/Step2-b 단 1줄도 변경 안 함
+
+**Corrected Results** (10 companies, 333 items total):
+- **Step2-b Total**: 333
+- **Mapped**: 278 (83.5%)
+- **Group B (Step2-b unmapped)**: 55 (legitimate unmapped, require Excel additions)
+- **Group A (Step2-a dropped)**: 37 (fragments/noise, already handled)
+
+**Key Fixes**:
+- KB: 12 unmapped (Group B) vs 21 dropped (Group A) — SSOT numbers match ✅
+- HYUNDAI: 11 unmapped (Group B) vs 11 dropped (Group A) — SSOT numbers match ✅
+- No more "2. 일반상해후유장해..." in fragments (correctly in Group B unmapped)
+
+**Verification Passed**:
+```bash
+KB Step2-b total: 42 ✅
+KB Step2-b mapped: 30 ✅
+KB Step2-b unmapped: 12 ✅
+KB Step2-a dropped: 21 ✅
+```
+
+**Files**:
+- NEW: `tools/audit/unmapped_status_by_company.py` (corrected SSOT-separated generator)
+- NEW: `docs/audit/UNMAPPED_STATUS_BY_COMPANY.md` (corrected report)
+- DELETED: `tools/audit/unmapped_company_summary.py` (contaminated version)
+- DELETED: `docs/audit/UNMAPPED_COMPANY_SUMMARY.md` (contaminated version)
+
+**Definition of Success**:
+> "Overview 수치가 Step2-b mapping_report와 100% 일치. Group A/B가 SSOT 파일 기준으로 분리. Step1 raw 형태가 Group B에 정상 노출 (fragments 아님)."
+
+---
+
+### STEP NEXT-57 — Candidate Mapping (LEVEL 1) ✅ **COMPLETE**
+
+**목표**: Step2-b의 unmapped 항목에 대해 deterministic token matching으로 candidate coverage_code 후보 생성
+
+**Constitutional Principles**:
+- ❌ Candidates do NOT change Step2-b mapping results (mapped/unmapped status unchanged)
+- ❌ NO LLM usage (deterministic token matching only)
+- ❌ NO forced mapping (candidates are suggestions, not confirmations)
+- ✅ 신정원 통일코드 (SSOT) unchanged
+- ✅ Step2-c output (separate from Step2-b)
+
+**Implementation**:
+- **New Module**: `pipeline/step2_candidate_mapping/`
+  - `candidate_mapper.py`: Token extraction, scoring, candidate generation
+  - `run.py`: CLI runner for all insurers
+- **Scoring Rules** (deterministic):
+  1. Disease keywords: +10 per match (암, 뇌, 심장, 후유장해, etc.)
+  2. Action keywords: +10 per match (진단비, 수술비, 입원일당, etc.)
+  3. Special keywords: +15 per match (다빈치, CAR-T, 표적항암, etc.)
+  4. Modifier keywords: +3 per match (최초1회, 갱신형, etc.)
+  5. Token overlap: +5 per common token
+  6. Disease/action mismatch penalty: -20
+
+**Results**:
+
+| Insurer | Unmapped | Candidates Generated | Rate |
+|---------|----------|---------------------|------|
+| **KB** | 12 | 9 | **75.0%** |
+| **HYUNDAI** | 11 | 3 | **27.3%** |
+
+**Top 3 Candidate Examples (KB)**:
+1. **표적항암약물허가치료비(3대특정암)(최초1회한)Ⅱ(갱신형)**
+   - → `A9619_1` (표적항암약물허가치료비(최초1회한))
+   - Confidence: 0.84 (good match)
+   - Matched terms: 치료비, 암, 표적, 항암, 약물
+
+2. **카티(CAR-T)항암약물허가치료비(연간1회한)(갱신형)**
+   - → `A9620_1` (카티(CAR-T)항암약물허가치료비)
+   - Confidence: 0.84 (good match)
+   - Matched terms: CAR-T, 카티, 치료비, 항암, 약물
+
+3. **다빈치로봇 암수술비(갑상선암 및 전립선암 제외)(최초1회한)(갱신형)**
+   - → `A5200_6` ((10년갱신)갱신형다빈치로봇암수술비(암특정암제외))
+   - Confidence: 0.72 (weak match)
+   - Matched terms: 수술비, 다빈치, 로봇
+
+**Output Files**:
+- `data/scope_v3/kb_step2_candidate_report_v1.jsonl`
+- `data/scope_v3/hyundai_step2_candidate_report_v1.jsonl`
+
+**Tests**:
+- `tests/test_candidate_mapping_smoke.py` (7/7 PASS)
+  - Candidate report generation verified
+  - Schema validation passed
+  - Step2-b mapping unchanged verified
+  - Special keyword detection verified
+
+**Usage**:
+```bash
+# Single insurer
+python -m pipeline.step2_candidate_mapping.run --insurer kb
+
+# All insurers
+python -m pipeline.step2_candidate_mapping.run
+```
+
+---
+
+### STEP NEXT-56-C — KB/HYUNDAI Unmapped Separation ✅ **COMPLETE**
+
+**목표**: KB/HYUNDAI unmapped 항목을 fragment와 legit variant로 분리, common normalization 보강
+
+**Results**:
+
+| Metric | KB | HYUNDAI |
+|--------|-----|---------|
+| **Mapping Rate** | 69.0% → **71.4%** (+2.4%) | 69.4% (no change) |
+| **GROUP-1 (Fragments)** | 3 (25.0%) | 1 (9.1%) |
+| **GROUP-2 (Legit)** | 9 (75.0%) | 10 (90.9%) |
+
+**Diagnostic Tool**: `tools/audit/diagnose_unmapped.py`
+**Enhanced Normalization**: `pipeline/step2_canonical_mapping/canonical_mapper.py`
+- Bracket prefix removal: `[기본계약]` → removed
+- `(기본)` suffix removal
+- Percent normalization: `3%~100%` / `3-100` → `3~100%`
+
+---
 
 ### STEP NEXT-OPS-CYCLE-03B — EX3 Routing + EX2 Insurer Selection Restored ✅ **COMPLETE**
 
