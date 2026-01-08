@@ -85,6 +85,55 @@ EVIDENCE_PATTERNS = {
         context_lines=5,
         table_priority=False
     ),
+
+    # STEP NEXT-76-A: Extended slots for customer questions 1-5, 8
+    "underwriting_condition": EvidencePattern(
+        slot_key="underwriting_condition",
+        keywords=[
+            "유병자", "고혈압", "당뇨", "당뇨병", "인수 가능", "가입 가능",
+            "건강고지", "특별조건", "할증", "인수 조건", "가입 제한",
+            "질환자", "건강상태", "병력", "과거 질환"
+        ],
+        context_lines=10,
+        table_priority=False
+    ),
+
+    "mandatory_dependency": EvidencePattern(
+        slot_key="mandatory_dependency",
+        keywords=[
+            "주계약 필수", "주계약필수", "필수 가입", "필수가입",
+            "최소 가입금액", "최소가입금액", "동시 가입", "동시가입",
+            "의무 가입", "의무가입", "단독가입", "단독 가입",
+            "특약만", "특약 단독"
+        ],
+        context_lines=7,
+        table_priority=False
+    ),
+
+    "payout_frequency": EvidencePattern(
+        slot_key="payout_frequency",
+        keywords=[
+            "1회한", "1회 한", "최초 1회한", "최초1회한",
+            "연간", "연 1회", "매년", "평생", "생애",
+            "재발", "재진단", "반복지급", "반복 지급",
+            "회수 제한", "회수제한", "지급회수", "지급 회수",
+            "경과기간", "경과 기간"
+        ],
+        context_lines=7,
+        table_priority=True  # Often in payout condition tables
+    ),
+
+    "industry_aggregate_limit": EvidencePattern(
+        slot_key="industry_aggregate_limit",
+        keywords=[
+            "업계 누적", "업계누적", "타사 가입", "타사가입",
+            "합산", "총 한도", "총한도", "전체 한도",
+            "다른 보험사", "타 보험사", "전체 보험",
+            "누적한도", "누적 한도", "통산한도", "통산 한도"
+        ],
+        context_lines=10,
+        table_priority=False
+    ),
 }
 
 

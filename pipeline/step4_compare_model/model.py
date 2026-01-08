@@ -114,6 +114,12 @@ class CompareRow:
     entry_age: Optional[SlotValue] = None
     waiting_period: Optional[SlotValue] = None
 
+    # STEP NEXT-76-A: Extended slots for customer questions 1-5, 8
+    underwriting_condition: Optional[SlotValue] = None
+    mandatory_dependency: Optional[SlotValue] = None
+    payout_frequency: Optional[SlotValue] = None
+    industry_aggregate_limit: Optional[SlotValue] = None
+
     # Optional renewal condition (from semantics)
     renewal_condition: Optional[str] = None
 
@@ -130,10 +136,12 @@ class CompareRow:
         if self.semantics:
             result["semantics"] = self.semantics.to_dict()
 
-        # Slots
+        # Slots (existing + extended from STEP NEXT-76-A)
         slots = {}
         for slot_name in ["start_date", "exclusions", "payout_limit",
-                          "reduction", "entry_age", "waiting_period"]:
+                          "reduction", "entry_age", "waiting_period",
+                          "underwriting_condition", "mandatory_dependency",
+                          "payout_frequency", "industry_aggregate_limit"]:
             slot = getattr(self, slot_name)
             if slot:
                 slots[slot_name] = slot.to_dict()

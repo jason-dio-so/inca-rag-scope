@@ -264,6 +264,46 @@ The pipeline is considered correct when:
 
 ⸻
 
+10. Coverage Slot Extensions (STEP NEXT-76-A)
+
+10.1 Slot Taxonomy
+	•	Core Slots (existing, STEP 1-5 active):
+		•	start_date
+		•	exclusions
+		•	payout_limit
+		•	reduction
+		•	entry_age
+		•	waiting_period
+
+	•	Extended Slots (STEP NEXT-76-A, customer questions 1-5, 8):
+		•	underwriting_condition (유병자 인수 조건)
+		•	mandatory_dependency (필수 가입 조건)
+		•	payout_frequency (지급 빈도)
+		•	industry_aggregate_limit (업계 누적 한도)
+
+10.2 Slot Extension Rules
+	•	✅ Evidence-based ONLY (약관/요약서/사업방법서)
+	•	✅ Step3 Evidence Resolver fills slots
+	•	✅ Same GATE rules as existing slots (FOUND/FOUND_GLOBAL/CONFLICT/UNKNOWN)
+	•	❌ NO LLM calls
+	•	❌ NO inference/calculation
+
+10.3 Excluded Slots (intentional)
+	•	❌ discount (할인 - 마케팅)
+	•	❌ refund_rate (환급률 - 저축)
+	•	❌ family_discount (가족결합 - 마케팅)
+	•	❌ marketing_phrases (홍보 문구)
+
+Reason: Out of scope for evidence-based insurance comparison
+
+10.4 Capability Boundary
+	•	System capability defined in: docs/CAPABILITY_BOUNDARY.md
+	•	🟢 GREEN: Core slots (immediate answer)
+	•	🟡 YELLOW: Extended slots (conditional answer)
+	•	🔴 RED: Excluded (intentionally unsupported)
+
+⸻
+
 End of Constitution
 
 ⸻
@@ -272,4 +312,4 @@ End of Constitution
 	1.	✅ 이 문서를 ACTIVE_CONSTITUTION.md로 저장
 	2.	👉 Claude에게 다음 한 줄만 전달
 
-All future actions MUST comply with ACTIVE_CONSTITUTION.md. Proceed with STEP NEXT-63-A.
+All future actions MUST comply with ACTIVE_CONSTITUTION.md.
