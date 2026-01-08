@@ -1,0 +1,30 @@
+# LOCAL ALIAS OVERRIDES (SSOT CANDIDATE LAYER)
+# ⚠️ This file contains PROPOSED mappings from STEP NEXT-72 unanchored backlog analysis.
+# ⚠️ These are NOT approved for production use without customer confirmation.
+# ⚠️ DO NOT merge these into the SSOT Excel file without explicit authorization.
+# Generated from: docs/audit/unanchored_backlog_v2.csv
+# resolution_type values: ALIAS_EXISTING, INTENTIONAL_UNMAPPED
+insurer_key,product_key,variant_key,coverage_name_normalized,suggested_coverage_code,resolution_type,confidence,reason,source_ref
+db,db__무배당프로미라이프,default,상해사망·후유장해(20-100%),A1300,ALIAS_EXISTING,0.84,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row2
+hanwha,hanwha__한화더건강한한아름종합보험,default,상해후유장해(3-100%),A3300_1,ALIAS_EXISTING,1.2,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row4
+hanwha,hanwha__한화더건강한한아름종합보험,default,4대유사암진단비,A4210,ALIAS_EXISTING,1.2,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row5
+hanwha,hanwha__한화더건강한한아름종합보험,default,암(갑상선암및전립선암제외)다빈치로봇수술비(1회한)(갱신형),A9630_1,ALIAS_EXISTING,1.2,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row6
+hanwha,hanwha__한화더건강한한아름종합보험,default,"질병사망 1,",A1100,ALIAS_EXISTING,0.84,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row7
+heungkuk,heungkuk__무배당흥Good행복한파워종합보험,default,일반상해후유장해(80%이상),A3300_1,ALIAS_EXISTING,1.2,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row8
+heungkuk,heungkuk__무배당흥Good행복한파워종합보험,default,[갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년),A9619_1,ALIAS_EXISTING,0.84,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row9
+lotte,lotte__무배당let:smile종합건강보험더끌림포우먼2506무해지형납입,default,일반암수술비(1회한),A5200,ALIAS_EXISTING,1.2,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row10
+lotte,lotte__무배당let:smile종합건강보험더끌림포우먼2506무해지형납입,default,뇌경색증(I63) 혈전용해치료비,A9640_1,ALIAS_EXISTING,1.2,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row11
+lotte,lotte__무배당let:smile종합건강보험더끌림포우먼2506무해지형납입,default,허혈성심장질환진단비,A4105,ALIAS_EXISTING,1.2,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row12
+lotte,lotte__무배당let:smile종합건강보험더끌림포우먼2506무해지형납입,default,급성심근경색증(I21) 혈전용해치료비,A9640_1,ALIAS_EXISTING,1.2,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row13
+lotte,lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면,default,일반암수술비(1회한),A5200,ALIAS_EXISTING,1.2,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row14
+lotte,lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면,default,뇌경색증(I63) 혈전용해치료비,A9640_1,ALIAS_EXISTING,1.2,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row15
+lotte,lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면,default,허혈성심장질환진단비,A4105,ALIAS_EXISTING,1.2,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row16
+lotte,lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면,default,급성심근경색증(I21) 혈전용해치료비,A9640_1,ALIAS_EXISTING,1.2,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row17
+meritz,meritz__무알파Plus보장보험2511보험료납입면제형,default,일반상해사망,A1300,ALIAS_EXISTING,1.2,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row18
+samsung,samsung__삼성화재건강보험,default,"골절 진단비(치아파절(깨짐, 부러짐) 제외)",A4301_1,ALIAS_EXISTING,0.84,Auto-confirmed high confidence match (score >= 0.7),unanchored_backlog_v2:row19
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,일반상해후유장해(20~100%)(기본),A3300_1,ALIAS_EXISTING,1.0,Confirmed match,unanchored_backlog_v2:row45
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,부정맥질환(Ⅰ49)진단비,A4104_1,ALIAS_EXISTING,1.0,Confirmed match (I49 variant),unanchored_backlog_v2:row46
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,다빈치로봇 암수술비(갑상선암 및 전립선암 제외)(최초1회한)(갱신형),A9630_1,ALIAS_EXISTING,1.0,Confirmed match,unanchored_backlog_v2:row47
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,다빈치로봇 갑상선암 및 전립선암수술비(최초1회한)(갱신형),A9630_1,ALIAS_EXISTING,1.0,Confirmed match,unanchored_backlog_v2:row48
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,표적항암약물허가치료비(3대특정암)(최초1회한)Ⅱ(갱신형),A9619_1,ALIAS_EXISTING,0.8,Confirmed match,unanchored_backlog_v2:row49
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,표적항암약물허가치료비(림프종·백혈병 관련암)(최초1회한)Ⅱ(갱신형),A9619_1,ALIAS_EXISTING,0.8,Confirmed match,unanchored_backlog_v2:row50

@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """
-STEP NEXT-54: Step2-b Canonical Mapping Runner (Variant-Aware)
-================================================================
+STEP NEXT-73: Step2-b Canonical Mapping Runner (SSOT Gate Enforcement)
+========================================================================
 
 CLI runner for canonical coverage mapping.
 Processes ALL Step2-a sanitized files using glob, preserving variant axis.
 
 Usage:
-    python -m pipeline.step2_canonical_mapping.run
+    python -m pipeline.step2_canonical_mapping.run [--mapping-source {approved|local}]
+
+Options:
+    --mapping-source approved  Use SSOT Excel only (default, PRODUCTION MODE)
+    --mapping-source local     Use SSOT Excel + local_alias_overrides.csv (TESTING ONLY)
 
 Input:
     data/scope_v3/*_step2_sanitized_scope_v1.jsonl
@@ -18,13 +22,15 @@ Output:
     data/scope_v3/{insurer}_step2_mapping_report.jsonl
     data/scope_v3/{insurer}_{variant}_step2_mapping_report.jsonl
 
-Constitutional Rules (STEP NEXT-54):
+Constitutional Rules (STEP NEXT-73):
+- ZERO-TOLERANCE GATE: Default mode MUST use approved SSOT only
 - Variant axis MUST be preserved from Step2-a → Step2-b
 - NO LLM, NO PDF, NO Step1 module imports
 - Input contract: Step2-a sanitized ONLY (hard fail if raw Step1)
 - SSOT: data/scope_v3/ only
 """
 
+import argparse
 import re
 import sys
 from pathlib import Path
@@ -65,12 +71,51 @@ def parse_step2a_filename(filename: str) -> tuple[str, str | None]:
 
 
 def main():
+    # Parse arguments
+    parser = argparse.ArgumentParser(
+        description='Step2-b Canonical Mapping with SSOT Gate Enforcement'
+    )
+    parser.add_argument(
+        '--mapping-source',
+        choices=['approved', 'local'],
+        default='approved',
+        help='Mapping source selection (default: approved = SSOT Excel only)'
+    )
+    args = parser.parse_args()
+
     project_root = Path(__file__).resolve().parents[2]
     mapping_excel = project_root / 'data' / 'sources' / 'mapping' / '담보명mapping자료.xlsx'
+    local_overrides = project_root / 'data' / 'sources' / 'mapping' / 'local_alias_overrides.csv'
 
     if not mapping_excel.exists():
         print(f"[ERROR] Canonical mapping file not found: {mapping_excel}")
         return 1
+
+    # STEP NEXT-73: ZERO-TOLERANCE GATE
+    if args.mapping_source == 'approved':
+        if local_overrides.exists():
+            print(f"[GATE ENFORCEMENT] Mode: APPROVED (SSOT Excel only)")
+            print(f"  ✅ Mapping source: {mapping_excel.name}")
+            print(f"  🔒 Local overrides: BLOCKED (file exists but not loaded)")
+            print()
+        else:
+            print(f"[GATE ENFORCEMENT] Mode: APPROVED (SSOT Excel only)")
+            print(f"  ✅ Mapping source: {mapping_excel.name}")
+            print()
+    elif args.mapping_source == 'local':
+        print(f"[GATE ENFORCEMENT] Mode: LOCAL (TESTING ONLY)")
+        print(f"  ⚠️  WARNING: This mode uses unapproved mapping candidates!")
+        print(f"  ⚠️  DO NOT use for production or final deliverables!")
+        print(f"  ✅ Primary source: {mapping_excel.name}")
+        if local_overrides.exists():
+            print(f"  ⚠️  Override layer: {local_overrides.name} (loaded)")
+            # FUTURE: Load and merge local_overrides.csv here
+            print(f"  ❌ ERROR: Local override integration not yet implemented")
+            return 1
+        else:
+            print(f"  ❌ ERROR: Local override file not found: {local_overrides}")
+            return 1
+        print()
 
     # STEP NEXT-52-HK: Enforce scope_v3 SSOT
     SSOT_DIR = project_root / 'data' / 'scope_v3'
@@ -210,6 +255,7 @@ def main():
     print(f"📎 Mapping reports: data/scope_v3/*_step2_mapping_report.jsonl")
     print(f"🔒 SSOT path: {SSOT_DIR} (enforced in STEP NEXT-52-HK)")
     print(f"🎯 Variant preservation: ENABLED (STEP NEXT-54)")
+    print(f"🚦 Mapping source: {args.mapping_source.upper()} (STEP NEXT-73)")
 
     # Check for gate failures
     if failed_gates:

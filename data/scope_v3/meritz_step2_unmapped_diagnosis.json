@@ -1,0 +1,87 @@
+{
+  "insurer_key": "meritz",
+  "total_rows": 37,
+  "unmapped_count": 9,
+  "unmapped_rate": "24.3%",
+  "excel_hit_unmapped": [],
+  "excel_hit_count": 0,
+  "excel_miss_unmapped": [
+    {
+      "coverage_name_raw": "일반상해80%이상후유장해[기본계약]",
+      "coverage_name_normalized": "일반상해80%이상후유장해[기본계약]",
+      "product_key": "meritz__무알파Plus보장보험2511보험료납입면제형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "일반상해사망",
+      "coverage_name_normalized": "일반상해사망",
+      "product_key": "meritz__무알파Plus보장보험2511보험료납입면제형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "일반상해중환자실입원일당(1일이상)",
+      "coverage_name_normalized": "일반상해중환자실입원일당(1일이상)",
+      "product_key": "meritz__무알파Plus보장보험2511보험료납입면제형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "신화상치료비(화상수술비)",
+      "coverage_name_normalized": "신화상치료비(화상수술비)",
+      "product_key": "meritz__무알파Plus보장보험2511보험료납입면제형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "신화상치료비(화상진단비)",
+      "coverage_name_normalized": "신화상치료비(화상진단비)",
+      "product_key": "meritz__무알파Plus보장보험2511보험료납입면제형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "신화상치료비(중증화상및부식진단비)",
+      "coverage_name_normalized": "신화상치료비(중증화상및부식진단비)",
+      "product_key": "meritz__무알파Plus보장보험2511보험료납입면제형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "자동갱신특약",
+      "coverage_name_normalized": "자동갱신특약",
+      "product_key": "meritz__무알파Plus보장보험2511보험료납입면제형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "보험료 비교(예시)",
+      "coverage_name_normalized": "보험료 비교(예시)",
+      "product_key": "meritz__무알파Plus보장보험2511보험료납입면제형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "대표계약 기준 : 남자40세,20년납,100세만기,월납,일반상해80%이상후유장해[기본계약] 5,000만원, 일반상해사망 5,000만원, 질병사망 5,000만원",
+      "coverage_name_normalized": "대표계약 기준 : 남자40세,20년납,100세만기,월납,일반상해80%이상후유장해[기본계약] 5,000만원, 일반상해사망 5,000만원, 질병사망 5,000만원",
+      "product_key": "meritz__무알파Plus보장보험2511보험료납입면제형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    }
+  ],
+  "excel_miss_count": 9,
+  "classification": {
+    "PIPELINE_BUG": 0,
+    "MAPPING_GAP": 9
+  }
+}

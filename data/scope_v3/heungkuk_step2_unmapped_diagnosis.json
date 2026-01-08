@@ -1,0 +1,47 @@
+{
+  "insurer_key": "heungkuk",
+  "total_rows": 36,
+  "unmapped_count": 4,
+  "unmapped_rate": "11.1%",
+  "excel_hit_unmapped": [],
+  "excel_hit_count": 0,
+  "excel_miss_unmapped": [
+    {
+      "coverage_name_raw": "일반상해후유장해(80%이상)",
+      "coverage_name_normalized": "일반상해후유장해(80%이상)",
+      "product_key": "heungkuk__무배당흥Good행복한파워종합보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "질병후유장해(80%이상)(감액없음)",
+      "coverage_name_normalized": "질병후유장해(80%이상)(감액없음)",
+      "product_key": "heungkuk__무배당흥Good행복한파워종합보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "보험료 납입면제대상보장(6대질병진단 및 상해·질병후유장해(80%이상))",
+      "coverage_name_normalized": "보험료 납입면제대상보장(6대질병진단 및 상해·질병후유장해(80%이상))",
+      "product_key": "heungkuk__무배당흥Good행복한파워종합보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "[갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년)",
+      "coverage_name_normalized": "[갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년)",
+      "product_key": "heungkuk__무배당흥Good행복한파워종합보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    }
+  ],
+  "excel_miss_count": 4,
+  "classification": {
+    "PIPELINE_BUG": 0,
+    "MAPPING_GAP": 4
+  }
+}

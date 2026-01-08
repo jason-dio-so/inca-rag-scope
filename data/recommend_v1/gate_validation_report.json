@@ -1,0 +1,45 @@
+{
+  "gates": {
+    "G1": {
+      "gate": "G1_FACT_ONLY",
+      "status": "PASS",
+      "violations": [],
+      "total_violations": 0
+    },
+    "G2": {
+      "gate": "G2_EVIDENCE",
+      "status": "PASS",
+      "violations": [],
+      "total_violations": 0
+    },
+    "G3": {
+      "gate": "G3_DETERMINISTIC",
+      "status": "PASS",
+      "input_hash": "5af53d9fe44a0a50...",
+      "note": "Hash recorded for deterministic verification"
+    },
+    "G4": {
+      "gate": "G4_NO_INFERENCE",
+      "status": "PASS",
+      "input_file": "data/compare_v1/compare_rows_v1.jsonl",
+      "note": "Input file integrity verified"
+    }
+  },
+  "additional_checks": {
+    "evidence_traceability": {
+      "check": "EVIDENCE_TRACEABILITY",
+      "status": "PASS",
+      "total_results": 25,
+      "total_evidence_refs": 75,
+      "avg_evidence_per_result": 3.0,
+      "unique_doc_types": [
+        "가입설계서",
+        "사업방법서",
+        "상품요약서",
+        "약관"
+      ],
+      "unique_page_refs": 12
+    }
+  },
+  "overall_status": "PASS"
+}

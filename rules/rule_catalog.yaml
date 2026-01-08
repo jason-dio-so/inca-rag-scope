@@ -1,0 +1,137 @@
+# Rule Catalog for Insurance Recommendation
+# Each rule operates ONLY on fact-based data from compare_rows_v1.jsonl
+# NO LLM inference / NO semantic interpretation / NO new evidence generation
+
+rules:
+  # R-001: 면책기간 없는 암진단비 추천
+  - rule_id: R-001
+    intent: "면책기간 없는 암진단비 추천"
+    description: "면책기간이 없거나 가장 짧은 암진단비 담보를 찾아 추천"
+    required_fields:
+      - waiting_period
+    filters:
+      # coverage_title에 "암" 키워드 포함
+      - field: identity.coverage_title
+        operator: contains
+        value: "암"
+      # waiting_period slot이 FOUND 상태
+      - field: slots.waiting_period.status
+        operator: in
+        value: ["FOUND", "FOUND_GLOBAL"]
+    calculation:
+      # waiting_period 값의 첫 번째 숫자를 추출 (예: "90, 1, 50" -> 90)
+      metric: waiting_days
+      source: slots.waiting_period.value
+      extract_pattern: "^(\\d+)"
+    rank:
+      order: asc  # 면책기간 짧은 순
+      top_k: 5
+    group_by:
+      - insurer_key
+
+  # R-002: 가입금액 대비 낮은 보험료 (premium-to-coverage ratio)
+  # Note: 실제 premium 데이터가 없으므로 payout_limit 기준으로 대체
+  - rule_id: R-002
+    intent: "가입금액이 높은 암진단비"
+    description: "암진단비 담보 중 가입금액(지급한도)이 높은 순서로 추천"
+    required_fields:
+      - payout_limit
+    filters:
+      - field: identity.coverage_title
+        operator: contains
+        value: "암"
+      - field: slots.payout_limit.status
+        operator: in
+        value: ["FOUND", "FOUND_GLOBAL"]
+    calculation:
+      metric: payout_amount
+      source: slots.payout_limit.value
+      extract_pattern: "^(\\d+)"
+    rank:
+      order: desc  # 가입금액 높은 순
+      top_k: 5
+    group_by:
+      - insurer_key
+
+  # R-003: 지급횟수 제한 없는 담보
+  - rule_id: R-003
+    intent: "지급횟수 제한 없는 담보 추천"
+    description: "payout_limit에서 회수 제한이 없거나 높은 담보를 추천"
+    required_fields:
+      - payout_limit
+    filters:
+      - field: slots.payout_limit.status
+        operator: in
+        value: ["FOUND", "FOUND_GLOBAL"]
+      # coverage_title에 "암" 또는 "진단" 포함
+      - field: identity.coverage_title
+        operator: regex
+        value: "(암|진단)"
+    calculation:
+      # payout_limit의 두 번째 숫자 추출 (회수 제한, 예: "90, 1, 1163010" -> 1)
+      metric: payout_count_limit
+      source: slots.payout_limit.value
+      extract_pattern: ",\\s*(\\d+)"
+    rank:
+      order: desc  # 지급횟수 많은 순 (단, 무제한은 별도 처리)
+      top_k: 5
+    group_by:
+      - insurer_key
+
+  # R-004: 갱신형 vs 비갱신형 구분 (renewal_flag 대신 reduction 활용)
+  - rule_id: R-004
+    intent: "감액 없는 담보 추천"
+    description: "reduction 정보가 없거나 감액률이 낮은 담보를 추천"
+    required_fields:
+      - reduction
+    filters:
+      - field: slots.reduction.status
+        operator: in
+        value: ["FOUND", "FOUND_GLOBAL"]
+    calculation:
+      metric: reduction_rate
+      source: slots.reduction.value
+      extract_pattern: "^(\\d+)"
+    rank:
+      order: asc  # 감액률 낮은 순
+      top_k: 5
+    group_by:
+      - insurer_key
+
+  # R-005: 가입연령 범위가 넓은 담보
+  - rule_id: R-005
+    intent: "가입연령 범위가 넓은 담보"
+    description: "entry_age 값이 높은(상한이 높은) 담보를 추천"
+    required_fields:
+      - entry_age
+    filters:
+      - field: slots.entry_age.status
+        operator: in
+        value: ["FOUND", "FOUND_GLOBAL"]
+    calculation:
+      metric: max_entry_age
+      source: slots.entry_age.value
+      extract_pattern: "^(\\d+)"
+    rank:
+      order: desc  # 최대 가입연령 높은 순
+      top_k: 5
+    group_by:
+      - insurer_key
+
+# GATES (Hard Fail conditions)
+gates:
+  G1_FACT_ONLY:
+    description: "모든 값은 coverage slot에서만 사용"
+    validation: "모든 metric 계산은 slots.*.value에서만 추출"
+
+  G2_EVIDENCE:
+    description: "결과에 사용된 slot은 evidence >= 1 필수"
+    validation: "각 slot의 evidences 배열이 비어있지 않아야 함"
+
+  G3_DETERMINISTIC:
+    description: "동일 입력 → 동일 결과 (hash 검증)"
+    validation: "동일한 compare_rows_v1.jsonl 입력 시 결과 hash 일치"
+
+  G4_NO_INFERENCE:
+    description: "coverage_semantics 수정 시 즉시 FAIL"
+    validation: "입력 파일의 무결성 검증 (hash 비교)"

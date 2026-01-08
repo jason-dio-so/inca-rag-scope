@@ -1,0 +1,55 @@
+{
+  "insurer_key": "hanwha",
+  "total_rows": 33,
+  "unmapped_count": 5,
+  "unmapped_rate": "15.2%",
+  "excel_hit_unmapped": [],
+  "excel_hit_count": 0,
+  "excel_miss_unmapped": [
+    {
+      "coverage_name_raw": "보험료납입면제대상보장(8대사유)",
+      "coverage_name_normalized": "보험료납입면제대상보장(8대사유)",
+      "product_key": "hanwha__한화더건강한한아름종합보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "상해후유장해(3-100%)",
+      "coverage_name_normalized": "상해후유장해(3-100%)",
+      "product_key": "hanwha__한화더건강한한아름종합보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "4대유사암진단비",
+      "coverage_name_normalized": "4대유사암진단비",
+      "product_key": "hanwha__한화더건강한한아름종합보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "암(갑상선암및전립선암제외)다빈치로봇수술비(1회한)(갱신형)",
+      "coverage_name_normalized": "암(갑상선암및전립선암제외)다빈치로봇수술비(1회한)(갱신형)",
+      "product_key": "hanwha__한화더건강한한아름종합보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "10. 질병사망 1,",
+      "coverage_name_normalized": "질병사망 1,",
+      "product_key": "hanwha__한화더건강한한아름종합보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    }
+  ],
+  "excel_miss_count": 5,
+  "classification": {
+    "PIPELINE_BUG": 0,
+    "MAPPING_GAP": 5
+  }
+}

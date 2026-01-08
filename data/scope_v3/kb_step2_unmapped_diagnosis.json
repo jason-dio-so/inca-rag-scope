@@ -1,0 +1,119 @@
+{
+  "insurer_key": "kb",
+  "total_rows": 43,
+  "unmapped_count": 13,
+  "unmapped_rate": "30.2%",
+  "excel_hit_unmapped": [],
+  "excel_hit_count": 0,
+  "excel_miss_unmapped": [
+    {
+      "coverage_name_raw": "2. 일반상해후유장해(20~100%)(기본)",
+      "coverage_name_normalized": "일반상해후유장해(20~100%)(기본)",
+      "product_key": "kb__KB닥터플러스건강보험세만기해약환급금미지급형무배",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "3. 보험료납입면제대상보장(8대기본)",
+      "coverage_name_normalized": "보험료납입면제대상보장(8대기본)",
+      "product_key": "kb__KB닥터플러스건강보험세만기해약환급금미지급형무배",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "105. 부정맥질환(Ⅰ49)진단비",
+      "coverage_name_normalized": "부정맥질환(Ⅰ49)진단비",
+      "product_key": "kb__KB닥터플러스건강보험세만기해약환급금미지급형무배",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "206. 다빈치로봇 암수술비(갑상선암 및 전립선암 제외)(최초1회한)(갱신형)",
+      "coverage_name_normalized": "다빈치로봇 암수술비(갑상선암 및 전립선암 제외)(최초1회한)(갱신형)",
+      "product_key": "kb__KB닥터플러스건강보험세만기해약환급금미지급형무배",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "207. 다빈치로봇 갑상선암 및 전립선암수술비(최초1회한)(갱신형)",
+      "coverage_name_normalized": "다빈치로봇 갑상선암 및 전립선암수술비(최초1회한)(갱신형)",
+      "product_key": "kb__KB닥터플러스건강보험세만기해약환급금미지급형무배",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "278. 표적항암약물허가치료비(3대특정암)(최초1회한)Ⅱ(갱신형)",
+      "coverage_name_normalized": "표적항암약물허가치료비(3대특정암)(최초1회한)Ⅱ(갱신형)",
+      "product_key": "kb__KB닥터플러스건강보험세만기해약환급금미지급형무배",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "279. 표적항암약물허가치료비(림프종·백혈병 관련암)(최초1회한)Ⅱ(갱신형)",
+      "coverage_name_normalized": "표적항암약물허가치료비(림프종·백혈병 관련암)(최초1회한)Ⅱ(갱신형)",
+      "product_key": "kb__KB닥터플러스건강보험세만기해약환급금미지급형무배",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "280  표적항암약물허가치료비(3대특정암 및 림프종·백혈병 관련암 제외)(최초1회한) Ⅱ(갱신형)",
+      "coverage_name_normalized": "표적항암약물허가치료비(3대특정암 및 림프종·백혈병 관련암 제외)(최초1회한) Ⅱ(갱신형)",
+      "product_key": "kb__KB닥터플러스건강보험세만기해약환급금미지급형무배",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "283. 특정항암호르몬약물허가치료비(최초1회한)Ⅱ(갱신형)",
+      "coverage_name_normalized": "특정항암호르몬약물허가치료비(최초1회한)Ⅱ(갱신형)",
+      "product_key": "kb__KB닥터플러스건강보험세만기해약환급금미지급형무배",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "291. 카티(CAR-T)항암약물허가치료비(연간1회한)(갱신형)",
+      "coverage_name_normalized": "카티(CAR-T)항암약물허가치료비(연간1회한)(갱신형)",
+      "product_key": "kb__KB닥터플러스건강보험세만기해약환급금미지급형무배",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "최초1회",
+      "coverage_name_normalized": "최초1회",
+      "product_key": "kb__KB닥터플러스건강보험세만기해약환급금미지급형무배",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "다빈치로봇 암수술비(갑상선암 및 전립선암 제외)(",
+      "coverage_name_normalized": "다빈치로봇 암수술비(갑상선암 및 전립선암 제외)(",
+      "product_key": "kb__KB닥터플러스건강보험세만기해약환급금미지급형무배",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "다빈치로봇 갑상선암 및 전립선암수술비(",
+      "coverage_name_normalized": "다빈치로봇 갑상선암 및 전립선암수술비(",
+      "product_key": "kb__KB닥터플러스건강보험세만기해약환급금미지급형무배",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    }
+  ],
+  "excel_miss_count": 13,
+  "classification": {
+    "PIPELINE_BUG": 0,
+    "MAPPING_GAP": 13
+  }
+}

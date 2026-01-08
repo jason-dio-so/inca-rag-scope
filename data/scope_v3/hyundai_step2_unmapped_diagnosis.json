@@ -1,0 +1,111 @@
+{
+  "insurer_key": "hyundai",
+  "total_rows": 37,
+  "unmapped_count": 12,
+  "unmapped_rate": "32.4%",
+  "excel_hit_unmapped": [],
+  "excel_hit_count": 0,
+  "excel_miss_unmapped": [
+    {
+      "coverage_name_raw": "3. 보험료납입면제대상담보",
+      "coverage_name_normalized": "보험료납입면제대상담보",
+      "product_key": "hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "10. 유사암진단Ⅱ담보",
+      "coverage_name_normalized": "유사암진단Ⅱ담보",
+      "product_key": "hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "17. 심혈관질환(특정Ⅰ,I49제외)진단담보",
+      "coverage_name_normalized": "심혈관질환(특정Ⅰ,I49제외)진단담보",
+      "product_key": "hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "18. 심혈관질환(I49)진단담보",
+      "coverage_name_normalized": "심혈관질환(I49)진단담보",
+      "product_key": "hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "19. 심혈관질환(주요심장염증)진단담보",
+      "coverage_name_normalized": "심혈관질환(주요심장염증)진단담보",
+      "product_key": "hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "21. 심혈관질환(특정2대)진단담보",
+      "coverage_name_normalized": "심혈관질환(특정2대)진단담보",
+      "product_key": "hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "22. 심혈관질환(대동맥판막협착증)진단담보",
+      "coverage_name_normalized": "심혈관질환(대동맥판막협착증)진단담보",
+      "product_key": "hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "23. 심혈관질환(심근병증)진단담보",
+      "coverage_name_normalized": "심혈관질환(심근병증)진단담보",
+      "product_key": "hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "24. 항암약물치료Ⅱ담보",
+      "coverage_name_normalized": "항암약물치료Ⅱ담보",
+      "product_key": "hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "28. 질병입원일당(1-180일)담보",
+      "coverage_name_normalized": "질병입원일당(1-180일)담보",
+      "product_key": "hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "37. 혈전용해치료비Ⅱ(최초1회한)(특정심장질환)담보",
+      "coverage_name_normalized": "혈전용해치료비Ⅱ(최초1회한)(특정심장질환)담보",
+      "product_key": "hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "로봇암수술(다빈치및레보아이\n)(갑상선암및전립선암)(최초\n1회한)(갱신형)담보",
+      "coverage_name_normalized": "로봇암수술(다빈치및레보아이)(갑상선암및전립선암)(최초1회한)(갱신형)담보",
+      "product_key": "hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    }
+  ],
+  "excel_miss_count": 12,
+  "classification": {
+    "PIPELINE_BUG": 0,
+    "MAPPING_GAP": 12
+  }
+}

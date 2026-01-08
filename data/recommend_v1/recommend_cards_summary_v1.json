@@ -1,0 +1,21 @@
+{
+  "total_cards": 25,
+  "cards_by_rule": {
+    "R-001": 5,
+    "R-002": 5,
+    "R-003": 5,
+    "R-004": 5,
+    "R-005": 5
+  },
+  "conflict_count": 8,
+  "unknown_count": 0,
+  "anchored_count": 23,
+  "unanchored_count": 2,
+  "slot_status_distribution": {
+    "FOUND": 95,
+    "FOUND_GLOBAL": 46,
+    "CONFLICT": 9,
+    "UNKNOWN": 0
+  },
+  "gate_failures": []
+}

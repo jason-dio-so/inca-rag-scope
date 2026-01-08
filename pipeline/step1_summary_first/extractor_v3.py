@@ -38,6 +38,14 @@ from pipeline.step1_summary_first.detail_extractor import (
     DetailTableExtractor,
     match_summary_to_detail
 )
+from pipeline.step1_summary_first.product_variant_extractor import (
+    ProductVariantExtractor,
+    extract_insurer_code
+)
+from pipeline.step1_summary_first.coverage_semantics import (
+    extract_coverage_semantics,
+    get_evidence_requirements
+)
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +69,9 @@ class ExtractorV3:
 
         # STEP NEXT-45-D: Fingerprint gate (HARD GATE)
         self._verify_fingerprint()
+
+        # STEP NEXT-61: Extract product and variant identity (GATE-1, GATE-2)
+        self._extract_product_variant_identity()
 
     def _load_profile(self) -> Dict[str, Any]:
         """Load profile JSON"""
@@ -113,6 +124,70 @@ class ExtractorV3:
             f"{self.insurer} ({self.variant}): Fingerprint verification passed "
             f"(sha256: {current_fp['sha256_first_2mb'][:16]}...)"
         )
+
+    def _extract_product_variant_identity(self):
+        """
+        STEP NEXT-61: Extract product and variant identity (GATE-1, GATE-2)
+
+        Constitutional rules:
+        - Product name = ONLY from page 1 of proposal PDF
+        - Variant context = ONLY from "상품명 바로 아래 블록"
+        - NO inference from file names
+        - Explicit "default" when variant not found
+
+        Sets:
+            self.product_identity: Dict with product/variant/context fields
+            self.insurer_key: str
+            self.ins_cd: str
+        """
+        try:
+            extractor = ProductVariantExtractor(
+                insurer=self.insurer,
+                pdf_path=self.pdf_path,
+                variant_hint=self.variant  # For validation only
+            )
+            identity = extractor.extract()
+
+            # Store identity
+            self.product_identity = identity
+
+            # Set insurer identifiers
+            self.insurer_key = self.insurer.lower()
+            self.ins_cd = extract_insurer_code(self.insurer)
+
+            # GATE-1: Product gate (HARD GATE)
+            if not identity["product"]["product_name_raw"]:
+                logger.error(
+                    f"{self.insurer}: Product name not found in page 1 (GATE-1 FAIL)"
+                )
+                sys.exit(2)
+
+            if not identity["product"]["product_key"]:
+                logger.error(
+                    f"{self.insurer}: Product key generation failed (GATE-1 FAIL)"
+                )
+                sys.exit(2)
+
+            # GATE-2: Variant gate (WARNING ONLY if hint mismatch)
+            extracted_variant = identity["variant"]["variant_key"]
+            if self.variant != "default" and extracted_variant != self.variant:
+                logger.warning(
+                    f"{self.insurer}: Variant mismatch (GATE-2 WARNING) - "
+                    f"Expected: {self.variant}, Extracted: {extracted_variant}. "
+                    f"Using extracted value (file name hint is reference only)."
+                )
+
+            logger.info(
+                f"{self.insurer}: Product identity extracted - "
+                f"product_key: {identity['product']['product_key']}, "
+                f"variant_key: {extracted_variant}"
+            )
+
+        except Exception as e:
+            logger.error(
+                f"{self.insurer}: Product/Variant extraction failed (GATE-1/2 FAIL): {e}"
+            )
+            sys.exit(2)
 
     def extract(self) -> List[ProposalFact]:
         """
@@ -366,6 +441,12 @@ class ExtractorV3:
 
                 # Convert hybrid rows to ProposalFacts
                 for row in rows:
+                    # STEP NEXT-66-A: Extract coverage semantics
+                    coverage_semantics = extract_coverage_semantics(row.coverage_name_raw)
+
+                    # STEP NEXT-66-C: Determine evidence requirements
+                    evidence_requirements = get_evidence_requirements(row.coverage_name_raw)
+
                     fact = ProposalFact(
                         coverage_name_raw=row.coverage_name_raw,
                         proposal_facts={
@@ -373,6 +454,13 @@ class ExtractorV3:
                             "premium_text": row.premium_text,
                             "period_text": row.period_text,
                             "payment_method_text": None,
+
+                            # STEP NEXT-66-A: Include coverage semantics
+                            "coverage_semantics": coverage_semantics,
+
+                            # STEP NEXT-66-C: Include evidence requirements
+                            "evidence_requirements": evidence_requirements,
+
                             "evidences": [
                                 {
                                     "doc_type": "가입설계서",
@@ -470,7 +558,11 @@ class ExtractorV3:
         page: int,
         row_idx: int
     ) -> Optional[ProposalFact]:
-        """Extract single fact from table row"""
+        """
+        Extract single fact from table row
+
+        STEP NEXT-66-A: Now includes coverage semantics extraction
+        """
         # Get coverage name (accounting for row-number column)
         coverage_col = column_map.get("coverage_name")
         if coverage_col is None or coverage_col >= len(row):
@@ -479,6 +571,12 @@ class ExtractorV3:
         coverage_name_raw = str(row[coverage_col]).strip() if row[coverage_col] else ""
         if not coverage_name_raw:
             return None
+
+        # STEP NEXT-66-A: Extract coverage semantics
+        coverage_semantics = extract_coverage_semantics(coverage_name_raw)
+
+        # STEP NEXT-66-C: Determine evidence requirements
+        evidence_requirements = get_evidence_requirements(coverage_name_raw)
 
         # Extract other fields
         coverage_amount_text = self._safe_get_cell(row, column_map.get("coverage_amount"))
@@ -493,6 +591,13 @@ class ExtractorV3:
                 "premium_text": premium_text,
                 "period_text": period_text,
                 "payment_method_text": None,  # Not in summary tables
+
+                # STEP NEXT-66-A: Include coverage semantics
+                "coverage_semantics": coverage_semantics,
+
+                # STEP NEXT-66-C: Include evidence requirements
+                "evidence_requirements": evidence_requirements,
+
                 "evidences": [
                     {
                         "doc_type": "가입설계서",
@@ -520,19 +625,27 @@ class ExtractorV3:
 
 def main():
     """
-    Extract Step1 v3 from manifest (STEP NEXT-45-D)
+    Extract Step1 v3 (STEP NEXT-56-R: --insurer support + lowercase enforcement)
 
     Usage:
+        # Standard: single insurer without manifest
+        python -m pipeline.step1_summary_first.extractor_v3 --insurer samsung
+
+        # Legacy: manifest-based (still supported)
         python -m pipeline.step1_summary_first.extractor_v3 --manifest data/manifests/proposal_pdfs_v1.json
     """
     import argparse
 
-    parser = argparse.ArgumentParser(description="Extractor V3 (manifest-based, fingerprint-gated)")
+    parser = argparse.ArgumentParser(description="Extractor V3 (STEP NEXT-56-R: --insurer support + lowercase)")
     parser.add_argument(
         "--manifest",
         type=str,
-        default="data/manifests/proposal_pdfs_v1.json",
-        help="Path to manifest JSON file"
+        help="Path to manifest JSON file (legacy mode)"
+    )
+    parser.add_argument(
+        "--insurer",
+        type=str,
+        help="Insurer code (standard mode, e.g., samsung, kb)"
     )
     args = parser.parse_args()
 
@@ -541,34 +654,83 @@ def main():
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
-    # Load manifest
-    manifest_path = Path(args.manifest)
-    if not manifest_path.exists():
-        print(f"❌ Manifest not found: {manifest_path}")
-        return 1
-
-    with open(manifest_path, 'r', encoding='utf-8') as f:
-        manifest = json.load(f)
-
-    print("\n" + "="*80)
-    print("STEP NEXT-45-D: Extractor V3 (Manifest-driven, Fingerprint-gated)")
-    print("="*80 + "\n")
-    print(f"Manifest: {manifest_path}")
-    print(f"Version: {manifest['version']}")
-    print(f"Items: {len(manifest['items'])}\n")
-
     profile_dir = Path(__file__).parent.parent.parent / "data" / "profile"
     output_dir = Path(__file__).parent.parent.parent / "data" / "scope_v3"
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # STEP NEXT-56-R: Determine execution mode
+    if args.insurer:
+        # Standard mode: single insurer without manifest
+        insurer_raw = args.insurer.strip().lower()  # Force lowercase
+        variant = "default"
+
+        # Auto-detect PDF path
+        pdf_dir = Path(__file__).parent.parent.parent / "data" / "sources" / "insurers" / insurer_raw / "가입설계서"
+        if not pdf_dir.exists():
+            print(f"❌ PDF directory not found: {pdf_dir}")
+            return 1
+
+        pdf_files = list(pdf_dir.glob("*.pdf"))
+        if not pdf_files:
+            print(f"❌ No PDF files found in: {pdf_dir}")
+            return 1
+
+        pdf_path = pdf_files[0]  # Use first PDF
+
+        # Determine profile path
+        profile_filename = f"{insurer_raw}_proposal_profile_v3.json"
+        profile_path = profile_dir / profile_filename
+
+        if not profile_path.exists():
+            print(f"❌ Profile not found: {profile_path}")
+            print(f"   Run profile_builder_v3 first: python -m pipeline.step1_summary_first.profile_builder_v3 --insurer {insurer_raw}")
+            return 1
+
+        # Create single-item manifest-like structure for processing
+        items = [{
+            "insurer": insurer_raw,
+            "variant": variant,
+            "pdf_path": str(pdf_path)
+        }]
+
+        print("\n" + "="*80)
+        print("STEP NEXT-56-R: Extractor V3 (Standard --insurer mode)")
+        print("="*80 + "\n")
+        print(f"Insurer: {insurer_raw}")
+        print(f"PDF: {pdf_path}")
+        print(f"Profile: {profile_path}\n")
+
+    elif args.manifest:
+        # Legacy mode: manifest-based
+        manifest_path = Path(args.manifest)
+        if not manifest_path.exists():
+            print(f"❌ Manifest not found: {manifest_path}")
+            return 1
+
+        with open(manifest_path, 'r', encoding='utf-8') as f:
+            manifest = json.load(f)
+
+        print("\n" + "="*80)
+        print("STEP NEXT-45-D: Extractor V3 (Legacy manifest mode)")
+        print("="*80 + "\n")
+        print(f"Manifest: {manifest_path}")
+        print(f"Version: {manifest['version']}")
+        print(f"Items: {len(manifest['items'])}\n")
+
+        items = manifest["items"]
+    else:
+        print("❌ Either --insurer or --manifest must be specified")
+        parser.print_help()
+        return 1
+
     results = []
 
-    for item in manifest["items"]:
-        insurer = item["insurer"]
-        variant = item["variant"]
+    for item in items:
+        insurer = item["insurer"].strip().lower()  # STEP NEXT-56-R: Force lowercase
+        variant = item.get("variant", "default")
         pdf_path = Path(item["pdf_path"])
 
-        # Determine profile filename
+        # Determine profile filename (lowercase)
         if variant == "default":
             profile_filename = f"{insurer}_proposal_profile_v3.json"
             output_filename = f"{insurer}_step1_raw_scope_v3.jsonl"
@@ -592,20 +754,60 @@ def main():
             extractor = ExtractorV3(insurer, pdf_path, profile_path, variant)
             facts = extractor.extract()
 
-            # Save facts to JSONL
-            # STEP NEXT-67D: facts are now dicts (not ProposalFact objects)
+            # STEP NEXT-66-FIX: Filter out standalone fragments
+            fragments_output_path = output_dir / output_filename.replace("_step1_raw_scope_v3.jsonl", "_step1_fragments_v3.jsonl")
+
+            # Separate fragments from valid facts
+            valid_facts = []
+            fragment_facts = []
+
+            for fact in facts:
+                semantics = fact.get("proposal_facts", {}).get("coverage_semantics", {})
+                is_fragment = semantics.get("fragment_detected", False)
+
+                # STEP NEXT-66-FIX: All fragments go to separate file
+                if is_fragment:
+                    fragment_facts.append(fact)
+                else:
+                    valid_facts.append(fact)
+
+            # Save valid facts to main JSONL (STEP NEXT-61: with product/variant identity)
             output_path = output_dir / output_filename
             with open(output_path, 'w', encoding='utf-8') as f:
-                for fact in facts:
-                    # fact is already a dict with coverage_name_raw, proposal_facts, proposal_detail_facts
+                for fact in valid_facts:
+                    # STEP NEXT-61: Include product/variant identity in every row
                     fact_dict = {
-                        "insurer": insurer,
+                        # Identity fields (STEP NEXT-61)
+                        "insurer_key": extractor.insurer_key,
+                        "ins_cd": extractor.ins_cd,
+                        "product": extractor.product_identity["product"],
+                        "variant": extractor.product_identity["variant"],
+                        "proposal_context": extractor.product_identity["proposal_context"],
+
+                        # Coverage fields (existing)
                         "coverage_name_raw": fact["coverage_name_raw"],
                         "proposal_facts": fact["proposal_facts"],
                         "proposal_detail_facts": fact.get("proposal_detail_facts")
                     }
                     json.dump(fact_dict, f, ensure_ascii=False)
                     f.write('\n')
+
+            # STEP NEXT-66-FIX: Save fragments to separate file
+            if fragment_facts:
+                with open(fragments_output_path, 'w', encoding='utf-8') as f:
+                    for fact in fragment_facts:
+                        fact_dict = {
+                            "insurer_key": extractor.insurer_key,
+                            "ins_cd": extractor.ins_cd,
+                            "product": extractor.product_identity["product"],
+                            "variant": extractor.product_identity["variant"],
+                            "proposal_context": extractor.product_identity["proposal_context"],
+                            "coverage_name_raw": fact["coverage_name_raw"],
+                            "proposal_facts": fact["proposal_facts"],
+                            "proposal_detail_facts": fact.get("proposal_detail_facts")
+                        }
+                        json.dump(fact_dict, f, ensure_ascii=False)
+                        f.write('\n')
 
             # Read baseline for comparison
             baseline_path = Path(f"data/scope/{insurer}_scope.csv")
@@ -614,17 +816,22 @@ def main():
                 with open(baseline_path, 'r') as f:
                     baseline_count = sum(1 for _ in f) - 1  # -1 for header
 
-            delta = len(facts) - baseline_count if baseline_count > 0 else 0
+            delta = len(valid_facts) - baseline_count if baseline_count > 0 else 0
             delta_pct = (delta / baseline_count * 100) if baseline_count > 0 else 0
 
             status = "✅" if delta_pct >= -5 else ("⚠️" if delta_pct >= -15 else "❌")
 
-            print(f"   {status} Extracted: {len(facts)} facts (baseline: {baseline_count}, delta: {delta:+d} / {delta_pct:+.1f}%)")
+            # STEP NEXT-66-FIX: Report fragment filtering
+            if fragment_facts:
+                print(f"   🔍 Fragment filtering: {len(fragment_facts)} fragments separated (standalone metadata)")
+                print(f"      Fragment output: {fragments_output_path}")
+
+            print(f"   {status} Extracted: {len(valid_facts)} valid facts (baseline: {baseline_count}, delta: {delta:+d} / {delta_pct:+.1f}%)")
             print(f"   ✓ Output: {output_path}\n")
 
             results.append({
                 'insurer': insurer,
-                'v3_count': len(facts),
+                'v3_count': len(valid_facts),  # STEP NEXT-66-FIX: Count only valid facts
                 'baseline_count': baseline_count,
                 'delta': delta,
                 'delta_pct': delta_pct

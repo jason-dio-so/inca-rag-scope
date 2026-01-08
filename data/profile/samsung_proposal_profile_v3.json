@@ -1,8 +1,8 @@
 {
   "profile_version": "v3",
   "builder_version": "step-next-45d",
-  "generated_at": "2026-01-01T13:04:13.483778+09:00",
-  "source_manifest": "data/manifests/proposal_pdfs_v1.json",
+  "generated_at": "2026-01-07T14:24:19.731844+09:00",
+  "source_manifest": "/tmp/samsung_manifest_test.json",
   "insurer": "samsung",
   "variant": "default",
   "source_pdf_path": "data/sources/insurers/samsung/가입설계서/삼성_가입설계서_2511.pdf",
@@ -249,37 +249,8 @@
     "variant_signatures": []
   },
   "detail_table": {
-    "exists": true,
-    "priority": 2,
-    "pages": [
-      4,
-      5,
-      6,
-      7
-    ],
-    "table_name_candidates": [
-      "담보별 보장내용"
-    ],
-    "columns": {
-      "coverage_name": [
-        "담보별 보장내용"
-      ],
-      "description": [
-        "담보별 보장내용"
-      ],
-      "coverage_amount": [
-        "가입금액"
-      ],
-      "premium": [
-        "보험료(원)"
-      ]
-    },
-    "structure": {
-      "row_count": "5-14 rows per page",
-      "col_count": "7 columns",
-      "header_pattern": "담보별 보장내용 | 가입금액 | 보험료(원) | 납입기간\n보험기간"
-    },
-    "notes": "상세 테이블은 페이지 4-7에 존재. 보장내용 설명문 포함 (column 1: 담보명, column 2: 설명). 요약 테이블 우선 사용."
+    "exists": false,
+    "pages": []
   },
   "known_anomalies": [],
   "evidences": [

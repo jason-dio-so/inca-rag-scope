@@ -1,0 +1,31 @@
+{
+  "insurer_key": "db_over41",
+  "total_rows": 31,
+  "unmapped_count": 2,
+  "unmapped_rate": "6.5%",
+  "excel_hit_unmapped": [],
+  "excel_hit_count": 0,
+  "excel_miss_unmapped": [
+    {
+      "coverage_name_raw": "1. 상해사망·후유장해(20-100%)",
+      "coverage_name_normalized": "상해사망·후유장해(20-100%)",
+      "product_key": "db__무배당프로미라이프",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "2. 보험료납입면제대상보장(10대사유)",
+      "coverage_name_normalized": "보험료납입면제대상보장(10대사유)",
+      "product_key": "db__무배당프로미라이프",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    }
+  ],
+  "excel_miss_count": 2,
+  "classification": {
+    "PIPELINE_BUG": 0,
+    "MAPPING_GAP": 2
+  }
+}

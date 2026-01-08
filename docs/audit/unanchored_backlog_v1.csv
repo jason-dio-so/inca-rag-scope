@@ -1,0 +1,65 @@
+insurer_key,product_key,variant_key,coverage_name_raw,coverage_name_normalized,coverage_code_step2,coverage_code_step4,mapping_method,step2b_has_code,drop_reason,classification,note
+samsung,samsung__삼성화재건강보험,default,보험료 납입면제대상Ⅱ,보험료 납입면제대상Ⅱ,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+samsung,samsung__삼성화재건강보험,default,"골절 진단비(치아파절(깨짐, 부러짐) 제외)","골절 진단비(치아파절(깨짐, 부러짐) 제외)",,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+samsung,samsung__삼성화재건강보험,default,수술,수술,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+samsung,samsung__삼성화재건강보험,default,장해/장애,장해/장애,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+samsung,samsung__삼성화재건강보험,default,간병/사망,간병/사망,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hanwha,hanwha__한화더건강한한아름종합보험,default,보험료납입면제대상보장(8대사유),보험료납입면제대상보장(8대사유),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hanwha,hanwha__한화더건강한한아름종합보험,default,상해후유장해(3-100%),상해후유장해(3-100%),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hanwha,hanwha__한화더건강한한아름종합보험,default,4대유사암진단비,4대유사암진단비,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hanwha,hanwha__한화더건강한한아름종합보험,default,암(갑상선암및전립선암제외)다빈치로봇수술비(1회한)(갱신형),암(갑상선암및전립선암제외)다빈치로봇수술비(1회한)(갱신형),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hanwha,hanwha__한화더건강한한아름종합보험,default,"10. 질병사망 1,","질병사망 1,",,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+heungkuk,heungkuk__무배당흥Good행복한파워종합보험,default,일반상해후유장해(80%이상),일반상해후유장해(80%이상),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+heungkuk,heungkuk__무배당흥Good행복한파워종합보험,default,질병후유장해(80%이상)(감액없음),질병후유장해(80%이상)(감액없음),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+heungkuk,heungkuk__무배당흥Good행복한파워종합보험,default,보험료 납입면제대상보장(6대질병진단 및 상해·질병후유장해(80%이상)),보험료 납입면제대상보장(6대질병진단 및 상해·질병후유장해(80%이상)),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+heungkuk,heungkuk__무배당흥Good행복한파워종합보험,default,[갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년),[갱신형]표적항암약물허가치료비Ⅱ(갱신형_10년),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hyundai,hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형,default,3. 보험료납입면제대상담보,보험료납입면제대상담보,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hyundai,hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형,default,10. 유사암진단Ⅱ담보,유사암진단Ⅱ담보,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hyundai,hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형,default,"17. 심혈관질환(특정Ⅰ,I49제외)진단담보","심혈관질환(특정Ⅰ,I49제외)진단담보",,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hyundai,hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형,default,18. 심혈관질환(I49)진단담보,심혈관질환(I49)진단담보,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hyundai,hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형,default,19. 심혈관질환(주요심장염증)진단담보,심혈관질환(주요심장염증)진단담보,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hyundai,hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형,default,21. 심혈관질환(특정2대)진단담보,심혈관질환(특정2대)진단담보,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hyundai,hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형,default,22. 심혈관질환(대동맥판막협착증)진단담보,심혈관질환(대동맥판막협착증)진단담보,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hyundai,hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형,default,23. 심혈관질환(심근병증)진단담보,심혈관질환(심근병증)진단담보,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hyundai,hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형,default,24. 항암약물치료Ⅱ담보,항암약물치료Ⅱ담보,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hyundai,hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형,default,28. 질병입원일당(1-180일)담보,질병입원일당(1-180일)담보,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hyundai,hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형,default,37. 혈전용해치료비Ⅱ(최초1회한)(특정심장질환)담보,혈전용해치료비Ⅱ(최초1회한)(특정심장질환)담보,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+hyundai,hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형,default,"로봇암수술(다빈치및레보아이
+)(갑상선암및전립선암)(최초
+1회한)(갱신형)담보",로봇암수술(다빈치및레보아이)(갑상선암및전립선암)(최초1회한)(갱신형)담보,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,2. 일반상해후유장해(20~100%)(기본),일반상해후유장해(20~100%)(기본),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,3. 보험료납입면제대상보장(8대기본),보험료납입면제대상보장(8대기본),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,105. 부정맥질환(Ⅰ49)진단비,부정맥질환(Ⅰ49)진단비,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,206. 다빈치로봇 암수술비(갑상선암 및 전립선암 제외)(최초1회한)(갱신형),다빈치로봇 암수술비(갑상선암 및 전립선암 제외)(최초1회한)(갱신형),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,207. 다빈치로봇 갑상선암 및 전립선암수술비(최초1회한)(갱신형),다빈치로봇 갑상선암 및 전립선암수술비(최초1회한)(갱신형),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,278. 표적항암약물허가치료비(3대특정암)(최초1회한)Ⅱ(갱신형),표적항암약물허가치료비(3대특정암)(최초1회한)Ⅱ(갱신형),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,279. 표적항암약물허가치료비(림프종·백혈병 관련암)(최초1회한)Ⅱ(갱신형),표적항암약물허가치료비(림프종·백혈병 관련암)(최초1회한)Ⅱ(갱신형),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,280  표적항암약물허가치료비(3대특정암 및 림프종·백혈병 관련암 제외)(최초1회한) Ⅱ(갱신형),표적항암약물허가치료비(3대특정암 및 림프종·백혈병 관련암 제외)(최초1회한) Ⅱ(갱신형),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,283. 특정항암호르몬약물허가치료비(최초1회한)Ⅱ(갱신형),특정항암호르몬약물허가치료비(최초1회한)Ⅱ(갱신형),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,291. 카티(CAR-T)항암약물허가치료비(연간1회한)(갱신형),카티(CAR-T)항암약물허가치료비(연간1회한)(갱신형),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,최초1회,최초1회,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,다빈치로봇 암수술비(갑상선암 및 전립선암 제외)(,다빈치로봇 암수술비(갑상선암 및 전립선암 제외)(,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+kb,kb__KB닥터플러스건강보험세만기해약환급금미지급형무배,default,다빈치로봇 갑상선암 및 전립선암수술비(,다빈치로봇 갑상선암 및 전립선암수술비(,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+meritz,meritz__무알파Plus보장보험2511보험료납입면제형,default,일반상해80%이상후유장해[기본계약],일반상해80%이상후유장해[기본계약],,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+meritz,meritz__무알파Plus보장보험2511보험료납입면제형,default,일반상해사망,일반상해사망,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+meritz,meritz__무알파Plus보장보험2511보험료납입면제형,default,일반상해중환자실입원일당(1일이상),일반상해중환자실입원일당(1일이상),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+meritz,meritz__무알파Plus보장보험2511보험료납입면제형,default,신화상치료비(화상수술비),신화상치료비(화상수술비),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+meritz,meritz__무알파Plus보장보험2511보험료납입면제형,default,신화상치료비(화상진단비),신화상치료비(화상진단비),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+meritz,meritz__무알파Plus보장보험2511보험료납입면제형,default,신화상치료비(중증화상및부식진단비),신화상치료비(중증화상및부식진단비),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+meritz,meritz__무알파Plus보장보험2511보험료납입면제형,default,자동갱신특약,자동갱신특약,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+meritz,meritz__무알파Plus보장보험2511보험료납입면제형,default,보험료 비교(예시),보험료 비교(예시),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+meritz,meritz__무알파Plus보장보험2511보험료납입면제형,default,"대표계약 기준 : 남자40세,20년납,100세만기,월납,일반상해80%이상후유장해[기본계약] 5,000만원, 일반상해사망 5,000만원, 질병사망 5,000만원","대표계약 기준 : 남자40세,20년납,100세만기,월납,일반상해80%이상후유장해[기본계약] 5,000만원, 일반상해사망 5,000만원, 질병사망 5,000만원",,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+db,db__무배당프로미라이프,default,1. 상해사망·후유장해(20-100%),상해사망·후유장해(20-100%),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+db,db__무배당프로미라이프,default,2. 보험료납입면제대상보장(10대사유),보험료납입면제대상보장(10대사유),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+db,db__무배당프로미라이프,default,1. 상해사망·후유장해(20-100%),상해사망·후유장해(20-100%),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+db,db__무배당프로미라이프,default,2. 보험료납입면제대상보장(11대사유),보험료납입면제대상보장(11대사유),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+lotte,lotte__무배당let:smile종합건강보험더끌림포우먼2506무해지형납입,default,일반암수술비(1회한),일반암수술비(1회한),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+lotte,lotte__무배당let:smile종합건강보험더끌림포우먼2506무해지형납입,default,암직접입원비(요양병원제외)(1일-120일),암직접입원비(요양병원제외)(1일-120일),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+lotte,lotte__무배당let:smile종합건강보험더끌림포우먼2506무해지형납입,default,뇌경색증(I63) 혈전용해치료비,뇌경색증(I63) 혈전용해치료비,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+lotte,lotte__무배당let:smile종합건강보험더끌림포우먼2506무해지형납입,default,허혈성심장질환진단비,허혈성심장질환진단비,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+lotte,lotte__무배당let:smile종합건강보험더끌림포우먼2506무해지형납입,default,급성심근경색증(I21) 혈전용해치료비,급성심근경색증(I21) 혈전용해치료비,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+lotte,lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면,default,일반암수술비(1회한),일반암수술비(1회한),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+lotte,lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면,default,암직접입원비(요양병원제외)(1일-120일),암직접입원비(요양병원제외)(1일-120일),,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+lotte,lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면,default,뇌경색증(I63) 혈전용해치료비,뇌경색증(I63) 혈전용해치료비,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+lotte,lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면,default,허혈성심장질환진단비,허혈성심장질환진단비,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping
+lotte,lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면,default,급성심근경색증(I21) 혈전용해치료비,급성심근경색증(I21) 혈전용해치료비,,,unmapped,FALSE,,A_MAPPING_GAP,No coverage_code in Step2-b canonical mapping

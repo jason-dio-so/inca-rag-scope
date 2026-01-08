@@ -1,0 +1,614 @@
+{
+  "samsung": {
+    "insurer_key": "samsung",
+    "counts": {
+      "RECOMMENDED": 22,
+      "CONDITIONAL": 10,
+      "NOT_RECOMMENDED": 0,
+      "NO_EVIDENCE": 0
+    },
+    "total_coverages": 32,
+    "top_recommended": [
+      {
+        "coverage_title": "암 진단비",
+        "coverage_code": "A4200_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(11건), 상품요약서(4건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "암 수술비",
+        "coverage_code": "A5200",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(10건), 상품요약서(5건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "수술",
+        "coverage_code": "",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(10건), 상품요약서(3건), 약관(4건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "허혈성심장질환 진단비",
+        "coverage_code": "A4105",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(5건), 상품요약서(12건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "유사암 진단비",
+        "coverage_code": "A4210",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(11건), 상품요약서(6건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "유사암 진단비",
+        "coverage_code": "A4210",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(11건), 상품요약서(6건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "유사암 진단비",
+        "coverage_code": "A4210",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(11건), 상품요약서(6건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "유사암 진단비",
+        "coverage_code": "A4210",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(11건), 상품요약서(6건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "유사암 진단비",
+        "coverage_code": "A4210",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(11건), 상품요약서(6건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "신재진단암",
+        "coverage_code": "A4299_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(9건), 상품요약서(6건), 약관(2건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      }
+    ]
+  },
+  "kb": {
+    "insurer_key": "kb",
+    "counts": {
+      "RECOMMENDED": 36,
+      "CONDITIONAL": 7,
+      "NOT_RECOMMENDED": 0,
+      "NO_EVIDENCE": 0
+    },
+    "total_coverages": 43,
+    "top_recommended": [
+      {
+        "coverage_title": "질병수술비",
+        "coverage_code": "A5100",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(5건), 상품요약서(6건), 약관(7건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "뇌혈관질환수술비",
+        "coverage_code": "A5104_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(7건), 상품요약서(2건), 약관(9건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "암직접치료입원일당",
+        "coverage_code": "A6200",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(8건), 상품요약서(4건), 약관(6건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "상해입원일당",
+        "coverage_code": "A6300_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(8건), 상품요약서(2건), 약관(8건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "일반상해후유장해",
+        "coverage_code": "",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(9건), 사업방법서(1건), 상품요약서(3건), 약관(4건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "보험료납입면제대상보장",
+        "coverage_code": "",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(12건), 상품요약서(2건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "다빈치로봇 암수술비",
+        "coverage_code": "",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(9건), 상품요약서(2건), 약관(6건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "표적항암약물허가치료비",
+        "coverage_code": "",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(12건), 상품요약서(3건), 약관(2건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "표적항암약물허가치료비",
+        "coverage_code": "",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(12건), 상품요약서(3건), 약관(2건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "최초1회",
+        "coverage_code": "",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(14건), 상품요약서(2건), 약관(1건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      }
+    ]
+  },
+  "hanwha": {
+    "insurer_key": "hanwha",
+    "counts": {
+      "RECOMMENDED": 24,
+      "CONDITIONAL": 9,
+      "NOT_RECOMMENDED": 0,
+      "NO_EVIDENCE": 0
+    },
+    "total_coverages": 33,
+    "top_recommended": [
+      {
+        "coverage_title": "상해후유장해",
+        "coverage_code": "",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(13건), 상품요약서(1건), 약관(4건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "암",
+        "coverage_code": "",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(15건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "질병사망 1,",
+        "coverage_code": "",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(13건), 상품요약서(2건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "보통약관",
+        "coverage_code": "A1300",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(10건), 사업방법서(1건), 상품요약서(4건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "암",
+        "coverage_code": "A4200_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(15건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "암",
+        "coverage_code": "A5200",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(15건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "암",
+        "coverage_code": "A9617_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(15건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "암",
+        "coverage_code": "A9617_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(15건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "암",
+        "coverage_code": "A9619_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(15건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "카티",
+        "coverage_code": "A9620_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(9건), 상품요약서(5건), 약관(4건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      }
+    ]
+  },
+  "heungkuk": {
+    "insurer_key": "heungkuk",
+    "counts": {
+      "RECOMMENDED": 28,
+      "CONDITIONAL": 8,
+      "NOT_RECOMMENDED": 0,
+      "NO_EVIDENCE": 0
+    },
+    "total_coverages": 36,
+    "top_recommended": [
+      {
+        "coverage_title": "특정심혈관질환",
+        "coverage_code": "A4104_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(9건), 사업방법서(2건), 상품요약서(7건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "특정심혈관질환",
+        "coverage_code": "A4104_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(9건), 사업방법서(2건), 상품요약서(7건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "질병수술비",
+        "coverage_code": "A5100",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(7건), 사업방법서(1건), 상품요약서(7건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "암수술비",
+        "coverage_code": "A5200",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(13건), 상품요약서(5건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "질병입원비",
+        "coverage_code": "A6100_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(6건), 사업방법서(2건), 상품요약서(6건), 약관(4건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "뇌졸중진단비",
+        "coverage_code": "A4103",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(9건), 상품요약서(7건), 약관(1건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "재진단암Ⅲ진단비",
+        "coverage_code": "A4299_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(8건), 사업방법서(1건), 상품요약서(6건), 약관(2건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "일반상해사망",
+        "coverage_code": "A1300",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 16건 근거: 가입설계서(9건), 사업방법서(1건), 상품요약서(5건), 약관(1건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 16
+      },
+      {
+        "coverage_title": "뇌혈관질환진단비",
+        "coverage_code": "A4101",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 16건 근거: 가입설계서(8건), 사업방법서(1건), 상품요약서(7건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 16
+      },
+      {
+        "coverage_title": "심장판막협착증",
+        "coverage_code": "A4104_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 16건 근거: 가입설계서(8건), 상품요약서(4건), 약관(4건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 16
+      }
+    ]
+  },
+  "hyundai": {
+    "insurer_key": "hyundai",
+    "counts": {
+      "RECOMMENDED": 32,
+      "CONDITIONAL": 4,
+      "NOT_RECOMMENDED": 1,
+      "NO_EVIDENCE": 0
+    },
+    "total_coverages": 37,
+    "top_recommended": [
+      {
+        "coverage_title": "질병입원일당",
+        "coverage_code": "",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(5건), 사업방법서(3건), 상품요약서(5건), 약관(5건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "질병수술담보",
+        "coverage_code": "A5100",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(7건), 사업방법서(3건), 상품요약서(5건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "암직접치료입원일당",
+        "coverage_code": "A6200",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(12건), 사업방법서(4건), 약관(2건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "보험료납입면제대상담보",
+        "coverage_code": "",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(14건), 사업방법서(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "질병사망담보",
+        "coverage_code": "A1100",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(11건), 사업방법서(4건), 상품요약서(2건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "기본계약",
+        "coverage_code": "A1300",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(10건), 사업방법서(4건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "기본계약",
+        "coverage_code": "A3300_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(13건), 사업방법서(4건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "뇌혈관질환진단담보",
+        "coverage_code": "A4101",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(8건), 사업방법서(5건), 상품요약서(1건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "심혈관질환",
+        "coverage_code": "A4104_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(11건), 사업방법서(4건), 상품요약서(2건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "골절진단",
+        "coverage_code": "A4301_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(11건), 사업방법서(4건), 상품요약서(2건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      }
+    ]
+  },
+  "meritz": {
+    "insurer_key": "meritz",
+    "counts": {
+      "RECOMMENDED": 20,
+      "CONDITIONAL": 17,
+      "NOT_RECOMMENDED": 0,
+      "NO_EVIDENCE": 0
+    },
+    "total_coverages": 37,
+    "top_recommended": [
+      {
+        "coverage_title": "암수술비",
+        "coverage_code": "A5200",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(6건), 사업방법서(3건), 상품요약서(5건), 약관(4건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "일반상해입원일당",
+        "coverage_code": "A6300_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 18건 근거: 가입설계서(10건), 상품요약서(6건), 약관(2건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "항암방사선약물치료비",
+        "coverage_code": "A9617_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 17건 근거: 가입설계서(6건), 사업방법서(3건), 상품요약서(6건), 약관(2건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 17
+      },
+      {
+        "coverage_title": "암진단비",
+        "coverage_code": "A4200_1",
+        "reason_highlights": [
+          "핵심 항목 4개 명확히 확인됨 (총 16건 근거: 가입설계서(10건), 상품요약서(2건), 약관(4건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(확인)"
+        ],
+        "evidence_count": 16
+      },
+      {
+        "coverage_title": "뇌혈관질환진단비",
+        "coverage_code": "A4101",
+        "reason_highlights": [
+          "핵심 항목 3개 명확히 확인됨 (총 18건 근거: 가입설계서(13건), 상품요약서(5건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(전역)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "뇌출혈진단비",
+        "coverage_code": "A4102",
+        "reason_highlights": [
+          "핵심 항목 3개 명확히 확인됨 (총 18건 근거: 가입설계서(11건), 상품요약서(4건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(전역)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "재진단암진단비",
+        "coverage_code": "A4200_5",
+        "reason_highlights": [
+          "핵심 항목 3개 명확히 확인됨 (총 18건 근거: 가입설계서(11건), 상품요약서(6건), 약관(1건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(전역)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "유사암진단비",
+        "coverage_code": "A4210",
+        "reason_highlights": [
+          "핵심 항목 3개 명확히 확인됨 (총 18건 근거: 가입설계서(10건), 사업방법서(1건), 상품요약서(4건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(전역)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "질병수술비",
+        "coverage_code": "A5100",
+        "reason_highlights": [
+          "핵심 항목 3개 명확히 확인됨 (총 18건 근거: 가입설계서(7건), 상품요약서(7건), 약관(4건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(전역)"
+        ],
+        "evidence_count": 18
+      },
+      {
+        "coverage_title": "허혈성심장질환수술비",
+        "coverage_code": "A5107_1",
+        "reason_highlights": [
+          "핵심 항목 3개 명확히 확인됨 (총 18건 근거: 가입설계서(8건), 사업방법서(1건), 상품요약서(6건), 약관(3건))",
+          "핵심 항목 상태: start_date(확인), exclusions(확인), payout_limit(확인), reduction(전역)"
+        ],
+        "evidence_count": 18
+      }
+    ]
+  }
+}

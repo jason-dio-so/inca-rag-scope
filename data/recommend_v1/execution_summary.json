@@ -1,0 +1,14 @@
+{
+  "input_file": "data/compare_v1/compare_rows_v1.jsonl",
+  "input_hash": "5af53d9fe44a0a500fbf4d7aca3b4b5913d1e592bcad08d9af78a05106af59cc",
+  "total_rules": 5,
+  "rules_executed": 5,
+  "total_recommendations": 25,
+  "results_by_rule": {
+    "R-001": 5,
+    "R-002": 5,
+    "R-003": 5,
+    "R-004": 5,
+    "R-005": 5
+  }
+}

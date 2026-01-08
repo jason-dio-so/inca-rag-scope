@@ -239,6 +239,47 @@ def deduplicate_variants(entries: List[Dict]) -> Tuple[List[Dict], List[Dict]]:
     return kept, dropped
 
 
+def validate_step1_identity_fields(entry: Dict, line_num: int, input_file: Path) -> None:
+    """
+    STEP NEXT-62: GATE-3 validation (Hard Fail)
+
+    Validates that Step1 output contains required identity fields.
+
+    Args:
+        entry: Step1 output row
+        line_num: Line number in input file
+        input_file: Input file path
+
+    Raises:
+        SystemExit(2) if validation fails
+    """
+    required_fields = ['insurer_key', 'product', 'variant']
+
+    for field in required_fields:
+        if field not in entry or entry[field] is None:
+            print(f"❌ GATE-3 FAIL: Missing '{field}' field")
+            print(f"   File: {input_file}")
+            print(f"   Line: {line_num}")
+            print(f"   Coverage: {entry.get('coverage_name_raw', 'UNKNOWN')}")
+            exit(2)
+
+    # Check product.product_key
+    if 'product_key' not in entry['product'] or not entry['product']['product_key']:
+        print(f"❌ GATE-3 FAIL: Missing or empty 'product.product_key'")
+        print(f"   File: {input_file}")
+        print(f"   Line: {line_num}")
+        print(f"   Coverage: {entry.get('coverage_name_raw', 'UNKNOWN')}")
+        exit(2)
+
+    # Check variant.variant_key
+    if 'variant_key' not in entry['variant'] or not entry['variant']['variant_key']:
+        print(f"❌ GATE-3 FAIL: Missing or empty 'variant.variant_key'")
+        print(f"   File: {input_file}")
+        print(f"   Line: {line_num}")
+        print(f"   Coverage: {entry.get('coverage_name_raw', 'UNKNOWN')}")
+        exit(2)
+
+
 def sanitize_step1_output(
     input_jsonl: Path,
     output_jsonl: Path,
@@ -246,6 +287,8 @@ def sanitize_step1_output(
 ) -> Dict:
     """
     Sanitize Step1 raw extraction output.
+
+    STEP NEXT-62: Carries product/variant identity fields through sanitization.
 
     Args:
         input_jsonl: Input Step1 raw scope JSONL
@@ -260,12 +303,17 @@ def sanitize_step1_output(
 
     # Read input
     entries = []
+    line_num = 0
     with open(input_jsonl, 'r', encoding='utf-8') as f:
         for line in f:
+            line_num += 1
             if not line.strip():
                 continue
 
             o = json.loads(line)
+
+            # STEP NEXT-62: GATE-3 validation (Hard Fail)
+            validate_step1_identity_fields(o, line_num, input_jsonl)
 
             # --- STEP NEXT-XX: Step1 raw compatibility fix ---
             # Some Step1 raw outputs (e.g. SAMSUNG) do not provide `coverage_name`
@@ -302,8 +350,9 @@ def sanitize_step1_output(
             drop_reason = None
 
         if should_drop:
+            # STEP NEXT-62: Preserve identity fields in dropped entries
             dropped_entries.append({
-                **entry,
+                **entry,  # Includes insurer_key, product, variant, proposal_context
                 'sanitized': False,
                 'drop_reason': drop_reason
             })
@@ -316,19 +365,34 @@ def sanitize_step1_output(
 
             # Check if normalization resulted in empty string
             if not normalized_name:
+                # STEP NEXT-62: Preserve identity fields in dropped entries
                 dropped_entries.append({
-                    **entry,
+                    **entry,  # Includes insurer_key, product, variant, proposal_context
                     'sanitized': False,
                     'drop_reason': 'NORMALIZED_TO_EMPTY',
                     'normalization_applied': transformations
                 })
                 continue
 
-            # Build kept entry with normalization metadata
+            # STEP NEXT-62: Build kept entry with identity fields + normalization metadata
             kept_entry = {
-                **entry,
+                # Identity fields (STEP NEXT-62: carry-through from Step1)
+                'insurer_key': entry['insurer_key'],
+                'ins_cd': entry.get('ins_cd'),
+                'product': entry['product'],
+                'variant': entry['variant'],
+                'proposal_context': entry.get('proposal_context'),
+
+                # Coverage fields (existing)
+                'coverage_name_raw': entry.get('coverage_name_raw'),
                 'coverage_name_normalized': normalized_name,
                 'normalization_applied': transformations,
+
+                # Proposal facts (existing)
+                'proposal_facts': entry.get('proposal_facts'),
+                'proposal_detail_facts': entry.get('proposal_detail_facts'),
+
+                # Metadata (existing)
                 'sanitized': True,
                 'drop_reason': None
             }

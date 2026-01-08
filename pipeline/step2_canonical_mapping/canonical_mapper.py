@@ -137,13 +137,17 @@ class CanonicalMapper:
         """
         Normalize coverage name for fuzzy matching.
 
+        STEP NEXT-56-C: Enhanced with common normalization rules.
+
         Removes:
             - Whitespace variations
             - Suffix markers: Ⅱ, Ⅲ, (갱신형), (1회한), (1년50%), etc
             - Fragment markers: )(갱신형)담보, 신형)담보
-            - Prefix markers: [갱신형], [갱신형]
+            - Prefix markers: [갱신형], [기본계약], etc
             - Trailing: 담보, 보장
             - Parentheses content variations
+            - (기본) suffix (STEP NEXT-56-C)
+            - Percent sign variations: 3%~100%, 3~100%, 3~100 % → normalized
 
         Args:
             raw_name: Raw coverage name from proposal
@@ -153,12 +157,18 @@ class CanonicalMapper:
         """
         name = raw_name.strip()
 
-        # Remove prefix markers
-        name = re.sub(r'^\[갱신형\]\s*', '', name)
+        # STEP NEXT-56-C: Remove bracket prefixes (common across insurers)
+        # e.g., "[기본계약]", "[갱신형]"
+        name = re.sub(r'^\[[^\]]+\]\s*', '', name)
 
         # Remove fragment patterns (Hyundai-specific)
         name = re.sub(r'\)\s*\(갱신형\)\s*담보', '', name)
         name = re.sub(r'신형\)\s*담보', '', name)
+
+        # STEP NEXT-56-C: Remove (기본) suffix before other suffixes
+        # e.g., "일반상해후유장해(20~100%)(기본)" → "일반상해후유장해(20~100%)"
+        name = re.sub(r'\)\s*\(기본\)\s*$', ')', name)
+        name = re.sub(r'\s*\(기본\)\s*$', '', name)
 
         # Remove suffix markers and conditions
         name = re.sub(r'[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹ]+$', '', name)
@@ -169,7 +179,18 @@ class CanonicalMapper:
         name = re.sub(r'\s*\(1년50%\)\s*$', '', name)
         name = re.sub(r'\s*\(1년\s*감액\)\s*$', '', name)
         name = re.sub(r'\s*\(1-180,요양병원제외\)\s*$', '', name)
-        name = re.sub(r'\s*\(기본\)\s*$', '', name)
+
+        # STEP NEXT-56-C: Normalize percent sign variations
+        # 3%~100% / 3~100% / 3~100 % / 3-100 → 3~100%
+        # First, normalize tilde/hyphen: 3-100 → 3~100
+        name = re.sub(r'(\d+)\s*-\s*(\d+)', r'\1~\2', name)
+        # Remove spaces around %
+        name = re.sub(r'\s*%\s*', '%', name)
+        # Remove % from first number in range: 3%~100% → 3~100%
+        name = re.sub(r'(\d+)%~(\d+)', r'\1~\2', name)
+        # Add % after range end ONLY if no % exists: 3~100 → 3~100%
+        # Use word boundary to avoid matching "100" in "100%"
+        name = re.sub(r'(\d+~\d+)(?!%)\b', r'\1%', name)
 
         # Remove parentheses content variations (after suffix removal)
         # e.g., "골절 진단비(치아파절(깨짐, 부러짐) 제외)" → "골절진단비(치아파절제외)"
@@ -196,20 +217,24 @@ class CanonicalMapper:
         Map coverage to canonical code/name.
 
         STEP NEXT-55: Now uses coverage_name_normalized from Step2-a as primary input.
+        STEP NEXT-56-R: Case-insensitive insurer lookup (samsung/SAMSUNG both work)
 
         Args:
-            insurer: Insurer name (samsung, hanwha, etc)
+            insurer: Insurer name (samsung, hanwha, etc) - case-insensitive
             coverage_name_normalized: Normalized coverage name from Step2-a
             coverage_name_raw: Raw coverage name (for audit trail only)
 
         Returns:
             (coverage_code, canonical_name, mapping_method, confidence, evidence)
         """
-        if insurer not in self.insurer_mappings:
-            return None, None, 'unmapped', 0.0, {'error': 'INSURER_NOT_FOUND'}
+        # STEP NEXT-56-R: Force lowercase for lookup (samsung/SAMSUNG → samsung)
+        insurer_key = insurer.strip().lower()
 
-        exact_map = self.insurer_mappings[insurer]['exact']
-        normalized_map = self.insurer_mappings[insurer]['normalized']
+        if insurer_key not in self.insurer_mappings:
+            return None, None, 'unmapped', 0.0, {'error': 'INSURER_NOT_FOUND', 'input_insurer': insurer}
+
+        exact_map = self.insurer_mappings[insurer_key]['exact']
+        normalized_map = self.insurer_mappings[insurer_key]['normalized']
 
         # Method 1: Exact match (using normalized name from Step2-a)
         if coverage_name_normalized in exact_map:
@@ -238,6 +263,48 @@ class CanonicalMapper:
         return None, None, 'unmapped', 0.0, {'source': '신정원_v2024.12'}
 
 
+def validate_step2a_identity_fields(entry: Dict, line_num: int, input_file: Path) -> None:
+    """
+    STEP NEXT-62-B: GATE-3 validation for Step2-b input (Hard Fail)
+
+    Validates that Step2-a output contains required identity fields.
+    Same validation as Step2-a, enforced at Step2-b input gate.
+
+    Args:
+        entry: Entry dict from Step2-a sanitized scope
+        line_num: Line number in input file
+        input_file: Input file path
+
+    Raises:
+        SystemExit(2) on validation failure
+    """
+    required_fields = ['insurer_key', 'product', 'variant']
+
+    for field in required_fields:
+        if field not in entry or entry[field] is None:
+            print(f"❌ GATE-3 FAIL (Step2-b): Missing '{field}' field")
+            print(f"   File: {input_file}")
+            print(f"   Line: {line_num}")
+            print(f"   Coverage: {entry.get('coverage_name_raw', 'UNKNOWN')}")
+            exit(2)
+
+    # Check product.product_key
+    if 'product_key' not in entry['product'] or not entry['product']['product_key']:
+        print(f"❌ GATE-3 FAIL (Step2-b): Missing or empty 'product.product_key'")
+        print(f"   File: {input_file}")
+        print(f"   Line: {line_num}")
+        print(f"   Coverage: {entry.get('coverage_name_raw', 'UNKNOWN')}")
+        exit(2)
+
+    # Check variant.variant_key
+    if 'variant_key' not in entry['variant'] or not entry['variant']['variant_key']:
+        print(f"❌ GATE-3 FAIL (Step2-b): Missing or empty 'variant.variant_key'")
+        print(f"   File: {input_file}")
+        print(f"   Line: {line_num}")
+        print(f"   Coverage: {entry.get('coverage_name_raw', 'UNKNOWN')}")
+        exit(2)
+
+
 def map_sanitized_scope(
     input_jsonl: Path,
     output_jsonl: Path,
@@ -246,6 +313,8 @@ def map_sanitized_scope(
 ) -> Dict:
     """
     Map sanitized scope to canonical coverage codes.
+
+    STEP NEXT-62-B: Preserves product/variant identity fields from Step2-a.
 
     Args:
         input_jsonl: Input Step2-a sanitized scope JSONL
@@ -262,12 +331,21 @@ def map_sanitized_scope(
     # Load mapper
     mapper = CanonicalMapper(mapping_excel_path)
 
-    # Read input
+    # Read input with GATE-3 validation
     entries = []
+    line_num = 0
     with open(input_jsonl, 'r', encoding='utf-8') as f:
         for line in f:
-            if line.strip():
-                entries.append(json.loads(line))
+            line_num += 1
+            if not line.strip():
+                continue
+
+            entry = json.loads(line)
+
+            # STEP NEXT-62-B: GATE-3 validation (Hard Fail)
+            validate_step2a_identity_fields(entry, line_num, input_jsonl)
+
+            entries.append(entry)
 
     # Map
     mapped_entries = []
@@ -278,17 +356,41 @@ def map_sanitized_scope(
     }
 
     for entry in entries:
-        insurer = entry['insurer']
+        # STEP NEXT-62-B: Use insurer_key (NOT ins_cd) for mapping lookup
+        # Constitutional rule: Mapping key = (insurer_key, coverage_name_normalized) ONLY
+        insurer_key = entry['insurer_key']
         coverage_name_raw = entry['coverage_name_raw']
         coverage_name_normalized = entry.get('coverage_name_normalized', coverage_name_raw)
 
         # STEP NEXT-55: Use normalized name from Step2-a
+        # STEP NEXT-62-B: Pass insurer_key (lowercase insurer code) for mapping
         code, canonical_name, method, confidence, evidence = mapper.map_coverage(
-            insurer, coverage_name_normalized, coverage_name_raw
+            insurer_key, coverage_name_normalized, coverage_name_raw
         )
 
+        # STEP NEXT-62-B: Preserve identity fields from Step2-a (explicit mapping)
         mapped_entry = {
-            **entry,  # Preserve all fields from Step2-a
+            # Identity fields (STEP NEXT-62-B: carry-through from Step2-a)
+            'insurer_key': entry['insurer_key'],
+            'ins_cd': entry.get('ins_cd'),
+            'product': entry['product'],
+            'variant': entry['variant'],
+            'proposal_context': entry.get('proposal_context'),
+
+            # Coverage fields (existing from Step2-a)
+            'coverage_name_raw': coverage_name_raw,
+            'coverage_name_normalized': coverage_name_normalized,
+            'normalization_applied': entry.get('normalization_applied', []),
+
+            # Proposal facts (existing from Step2-a)
+            'proposal_facts': entry.get('proposal_facts'),
+            'proposal_detail_facts': entry.get('proposal_detail_facts'),
+
+            # Metadata from Step2-a
+            'sanitized': entry.get('sanitized', True),
+            'drop_reason': entry.get('drop_reason'),
+
+            # Mapping results (NEW from Step2-b)
             'coverage_code': code,
             'canonical_name': canonical_name,
             'mapping_method': method,
@@ -305,17 +407,31 @@ def map_sanitized_scope(
         for entry in mapped_entries:
             f.write(json.dumps(entry, ensure_ascii=False) + '\n')
 
-    # Write mapping report
+    # Write mapping report (STEP NEXT-62-B: Include identity fields)
     report_jsonl.parent.mkdir(parents=True, exist_ok=True)
     with open(report_jsonl, 'w', encoding='utf-8') as f:
         for entry in mapped_entries:
+            # STEP NEXT-62-B: Enhanced report with 4-dimension identity
             report_entry = {
-                'insurer': entry['insurer'],
+                # Identity fields (STEP NEXT-62-B)
+                'insurer_key': entry['insurer_key'],
+                'ins_cd': entry['ins_cd'],
+                'product_key': entry['product']['product_key'],
+                'variant_key': entry['variant']['variant_key'],
+
+                # Coverage fields
                 'coverage_name_raw': entry['coverage_name_raw'],
+                'coverage_name_normalized': entry['coverage_name_normalized'],
+
+                # Mapping results
                 'coverage_code': entry['coverage_code'],
                 'canonical_name': entry['canonical_name'],
                 'mapping_method': entry['mapping_method'],
-                'mapping_confidence': entry['mapping_confidence']
+                'mapping_confidence': entry['mapping_confidence'],
+
+                # Mapping evidence (for debugging)
+                'matched_term': entry['evidence'].get('matched_term'),
+                'reason': 'NO_EXACT_MATCH' if entry['mapping_method'] == 'unmapped' else entry['mapping_method'].upper()
             }
             f.write(json.dumps(report_entry, ensure_ascii=False) + '\n')
 

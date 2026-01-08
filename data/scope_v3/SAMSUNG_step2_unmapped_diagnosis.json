@@ -1,0 +1,55 @@
+{
+  "insurer_key": "SAMSUNG",
+  "total_rows": 32,
+  "unmapped_count": 5,
+  "unmapped_rate": "15.6%",
+  "excel_hit_unmapped": [],
+  "excel_hit_count": 0,
+  "excel_miss_unmapped": [
+    {
+      "coverage_name_raw": "보험료 납입면제대상Ⅱ",
+      "coverage_name_normalized": "보험료 납입면제대상Ⅱ",
+      "product_key": "samsung__삼성화재건강보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "골절 진단비(치아파절(깨짐, 부러짐) 제외)",
+      "coverage_name_normalized": "골절 진단비(치아파절(깨짐, 부러짐) 제외)",
+      "product_key": "samsung__삼성화재건강보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "수술",
+      "coverage_name_normalized": "수술",
+      "product_key": "samsung__삼성화재건강보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "장해/장애",
+      "coverage_name_normalized": "장해/장애",
+      "product_key": "samsung__삼성화재건강보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "간병/사망",
+      "coverage_name_normalized": "간병/사망",
+      "product_key": "samsung__삼성화재건강보험",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    }
+  ],
+  "excel_miss_count": 5,
+  "classification": {
+    "PIPELINE_BUG": 0,
+    "MAPPING_GAP": 5
+  }
+}

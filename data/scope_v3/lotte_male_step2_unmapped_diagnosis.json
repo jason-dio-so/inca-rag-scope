@@ -1,0 +1,55 @@
+{
+  "insurer_key": "lotte_male",
+  "total_rows": 30,
+  "unmapped_count": 5,
+  "unmapped_rate": "16.7%",
+  "excel_hit_unmapped": [],
+  "excel_hit_count": 0,
+  "excel_miss_unmapped": [
+    {
+      "coverage_name_raw": "일반암수술비(1회한)",
+      "coverage_name_normalized": "일반암수술비(1회한)",
+      "product_key": "lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "암직접입원비(요양병원제외)(1일-120일)",
+      "coverage_name_normalized": "암직접입원비(요양병원제외)(1일-120일)",
+      "product_key": "lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "뇌경색증(I63) 혈전용해치료비",
+      "coverage_name_normalized": "뇌경색증(I63) 혈전용해치료비",
+      "product_key": "lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "허혈성심장질환진단비",
+      "coverage_name_normalized": "허혈성심장질환진단비",
+      "product_key": "lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    },
+    {
+      "coverage_name_raw": "급성심근경색증(I21) 혈전용해치료비",
+      "coverage_name_normalized": "급성심근경색증(I21) 혈전용해치료비",
+      "product_key": "lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면",
+      "variant_key": "default",
+      "diagnosis": "MAPPING_GAP",
+      "reason": "Term does not exist in Excel mapping reference"
+    }
+  ],
+  "excel_miss_count": 5,
+  "classification": {
+    "PIPELINE_BUG": 0,
+    "MAPPING_GAP": 5
+  }
+}

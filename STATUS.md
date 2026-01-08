@@ -1,8 +1,8 @@
 # inca-rag-scope - 작업 현황 보고서
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
-**최종 업데이트**: 2026-01-07
-**현재 상태**: ✅ **STEP NEXT-59-FIX: SSOT Line-Based Report Counts** (set() 중복제거 왜곡 제거)
+**최종 업데이트**: 2026-01-08
+**현재 상태**: ✅ **STEP NEXT-75: Recommendation Output Lock** (customer-facing card schema with 4 gates)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ Recommendation Output Lock** | STEP NEXT-75 | ✅ 완료 | 2026-01-08 |
 | **✅ SSOT Line-Based Report Counts** | STEP NEXT-59-FIX | ✅ 완료 | 2026-01-07 |
 | **✅ Premium Waiver Tagging** | STEP NEXT-59 | ✅ 완료 | 2026-01-07 |
 | **✅ Unmapped Status SSOT Separation** | STEP NEXT-59 (Phase 1) | ✅ 완료 | 2026-01-07 |
