@@ -1,8 +1,8 @@
 # inca-rag-scope - 작업 현황 보고서
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
-**최종 업데이트**: 2026-01-08
-**현재 상태**: ✅ **STEP NEXT-76: Coverage Slot Extension + Capability Boundary** (4 extended slots + capability doc)
+**최종 업데이트**: 2026-01-09
+**현재 상태**: 🔒 **STEP NEXT-VWX: Customer API Integration + Q14 Enhancement + Operational Stability** (SPEC LOCKED, Implementation Pending)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **🔒 Customer API + Q14 + Ops Stability (SPEC)** | STEP NEXT-VWX | 🔒 SPEC LOCKED | 2026-01-09 |
 | **✅ Coverage Slot Extension + Capability Boundary** | STEP NEXT-76 | ✅ 완료 | 2026-01-08 |
 | **✅ Recommendation Output Lock** | STEP NEXT-75 | ✅ 완료 | 2026-01-08 |
 | **✅ SSOT Line-Based Report Counts** | STEP NEXT-59-FIX | ✅ 완료 | 2026-01-07 |
@@ -104,7 +105,69 @@
 
 ---
 
-## 🎯 최신 진행 항목 (2026-01-07)
+## 🎯 최신 진행 항목 (2026-01-09)
+
+### STEP NEXT-VWX — Customer API Integration + Q14 Enhancement + Operational Stability (SPEC) 🔒 **SPEC LOCKED**
+
+**목표**: Q12/Q1/Q14 고객 API 연결 + 보험료 가성비 랭킹 + 운영 안정화
+
+**Status**: 🔒 **SPECIFICATION LOCKED** (Implementation Pending)
+
+**Document**: `docs/audit/STEP_NEXT_VWX_RUNTIME_INTEGRATION_LOCK.md`
+
+**Constitutional Principles**:
+- ✅ Premium = SSOT only (NO LLM/estimation/inference)
+- ✅ Q12 requires ALL insurers premium (G10 gate)
+- ✅ Q14 formula deterministic (premium_per_10m = premium / (cancer_amt / 10M))
+- ✅ Birthday = templates only (30→19960101, 40→19860101, 50→19760101)
+- ✅ baseDt rolling + failure tracking mandatory
+
+**3-Phase Breakdown**:
+
+**STEP NEXT-V: Customer API Integration (Q12/Q1)**
+- Runtime Flow: Customer Request → SSOT Lookup → (Optional) Synchronous Pull → Return
+- Q12: Inject `premium_monthly` slot with source_kind="PREMIUM_SSOT"
+- G10 Gate: Q12 MUST have premium for ALL insurers (if ANY missing → FAIL)
+- Q1: Top-N ranking by coverage amount + premium metadata
+
+**STEP NEXT-W: Q14 Premium Ranking**
+- Formula (LOCKED): `premium_per_10m = premium_monthly / (cancer_amt / 10_000_000)`
+- Sort: ASC (lower is better)
+- Tie-Breaker: (1) premium_per_10m (2) premium_monthly (3) insurer_key (deterministic)
+- Rounding: 소수점 2자리
+- Output: Top-3 with source metadata (baseDt, as_of_date, table_id)
+
+**STEP NEXT-X: Operational Stability**
+- baseDt Rolling: Monthly batch (54 API calls) + On-demand Pull
+- Failure Policy: 5xx/timeout retry 2x, 4xx no retry → save to `_failures/`
+- Cache: Key=(baseDt, age, sex, plan_variant, product_id), TTL=baseDt-based
+- Deduplication: content_hash check before API call
+
+**Deliverables (Pending)**:
+- [ ] `pipeline/step4_compare_model/premium_injector.py` (Q12)
+- [ ] `pipeline/product_comparison/build_q1_ranking.py` (Q1)
+- [ ] `pipeline/product_comparison/build_q14_premium_ranking.py` (Q14)
+- [ ] `pipeline/premium_ssot/batch_pull.py` (monthly cron)
+- [ ] `pipeline/premium_ssot/on_demand_pull.py` (runtime fallback)
+- [ ] `tools/audit/validate_vwx_e2e.py` (DoD validation)
+
+**DoD Criteria**:
+- **V1**: Q12 premium_monthly slot exists + source_kind="PREMIUM_SSOT"
+- **V2**: Q12 모든 insurer premium 존재 (G10 gate)
+- **V3**: Q1 Top-N deterministic
+- **W1**: Q14 동일 입력 → 동일 Top-3
+- **W2**: Premium 누락 상품 제외 (추정 금지)
+- **X1**: 54 API calls 성공/실패 집계 PASS
+- **X2**: Premium SSOT sum match PASS
+
+**Next Steps**:
+1. Review spec with stakeholders
+2. Decide: Option A (synchronous Pull) vs Option B (FAIL on SSOT miss)
+3. Implement Phase 1 (V: Customer API Integration)
+
+---
+
+## 🎯 이전 진행 항목 (2026-01-07)
 
 ### STEP NEXT-58-E — Candidate Mapping LEVEL 1.5 (HYUNDAI Enhancement) ✅ **COMPLETE**
 

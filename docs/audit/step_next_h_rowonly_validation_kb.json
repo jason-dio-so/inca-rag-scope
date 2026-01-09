@@ -1,0 +1,354 @@
+{
+  "insurer": "kb",
+  "metrics": {
+    "total_slots": 60,
+    "found_count": 4,
+    "search_fail_count": 3,
+    "missing_count": 53,
+    "found_pct": 6.7,
+    "search_fail_pct": 5.0,
+    "missing_pct": 88.3
+  },
+  "coverage_results": {
+    "A4200_1": {
+      "coverage_name": "70. 암진단비(유사암제외)",
+      "slot_results": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL",
+          "reason": "다른 담보 값 혼입",
+          "matched_exclusion": "기타피부암",
+          "total_count": 2
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL",
+          "reason": "다른 담보 값 혼입",
+          "matched_exclusion": "기타피부암",
+          "total_count": 4
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "entry_age": {
+          "status": "FOUND",
+          "classification": "FOUND",
+          "total_count": 3
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL",
+          "reason": "다른 담보 값 혼입",
+          "matched_exclusion": "기타피부암",
+          "total_count": 3
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "benefit_day_range": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "subtype_coverage_map": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL",
+          "reason": "다른 담보 값 혼입",
+          "matched_exclusion": "치료비",
+          "total_count": 12
+        }
+      }
+    },
+    "A4209": {
+      "coverage_name": "72. 10대고액치료비암진단비",
+      "slot_results": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "benefit_day_range": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "subtype_coverage_map": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL",
+          "reason": "다른 담보 값 혼입",
+          "matched_exclusion": "치료비",
+          "total_count": 1
+        }
+      }
+    },
+    "A4210": {
+      "coverage_name": "74. 유사암진단비",
+      "slot_results": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "benefit_day_range": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "subtype_coverage_map": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        }
+      }
+    },
+    "A4299_1": {
+      "coverage_name": "85. 재진단암진단비",
+      "slot_results": {
+        "start_date": {
+          "status": "FOUND",
+          "classification": "FOUND",
+          "total_count": 2
+        },
+        "exclusions": {
+          "status": "FOUND",
+          "classification": "FOUND",
+          "total_count": 1
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "FOUND",
+          "classification": "FOUND",
+          "total_count": 3
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "benefit_day_range": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "subtype_coverage_map": {
+          "status": "FOUND",
+          "classification": "FOUND",
+          "total_count": 3
+        }
+      }
+    },
+    "A4103": {
+      "coverage_name": "93. 뇌졸중진단비",
+      "slot_results": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "benefit_day_range": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "subtype_coverage_map": {
+          "status": "FOUND",
+          "classification": "FOUND",
+          "total_count": 1
+        }
+      }
+    },
+    "A4105": {
+      "coverage_name": "101. 허혈성심장질환진단비",
+      "slot_results": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "benefit_day_range": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "subtype_coverage_map": {
+          "status": "FOUND",
+          "classification": "FOUND",
+          "total_count": 1
+        }
+      }
+    }
+  }
+}

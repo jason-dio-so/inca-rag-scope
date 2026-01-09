@@ -74,6 +74,51 @@ class EvidenceGates:
                 r"\d+\s*일|\d+\s*개월|경과"  # Duration pattern
             ],
             "min_patterns": 2
+        },
+        # STEP NEXT-76-A: Extended slots structural signals
+        "underwriting_condition": {
+            "required_patterns": [
+                r"유병자|고혈압|당뇨|인수|가입|건강고지|특별조건|할증",  # Underwriting keyword
+                r"가능|제한|조건|병력|질환"  # Condition/restriction
+            ],
+            "min_patterns": 2
+        },
+        "mandatory_dependency": {
+            "required_patterns": [
+                r"주계약|필수|최소|동시|의무|단독",  # Dependency keyword
+                r"가입|금액|특약|계약"  # Contract/coverage reference
+            ],
+            "min_patterns": 2
+        },
+        "payout_frequency": {
+            "required_patterns": [
+                r"1회한|최초|연간|평생|재발|재진단|반복|회수",  # Frequency keyword
+                r"지급|제한|경과|기간|\d+\s*회"  # Count/period pattern
+            ],
+            "min_patterns": 2
+        },
+        "industry_aggregate_limit": {
+            "required_patterns": [
+                r"업계|타사|다른\s*보험사|통산|누적",  # Industry/other insurer keyword
+                r"한도|합산|가입|전체"  # Limit/total keyword
+            ],
+            "min_patterns": 2
+        },
+        # STEP NEXT-80: benefit_day_range structural signals
+        "benefit_day_range": {
+            "required_patterns": [
+                r"입원일당|입원일수|일당|보장일수|지급일수",  # Day/count keyword
+                r"\d+\s*일|1일부터|최대|범위"  # Day pattern
+            ],
+            "min_patterns": 2
+        },
+        # STEP NEXT-81: subtype_coverage_map structural signals
+        "subtype_coverage_map": {
+            "required_patterns": [
+                r"제자리암|상피내암|경계성종양|경계성신생물|CIS",  # Subtype keyword
+                r"포함|보장|지급|제외|진단|수술|치료"  # Coverage/exclusion indicator
+            ],
+            "min_patterns": 2
         }
     }
 

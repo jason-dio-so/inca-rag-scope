@@ -1,0 +1,306 @@
+{
+  "insurer": "samsung",
+  "metrics": {
+    "total_slots": 50,
+    "found_count": 3,
+    "search_fail_count": 5,
+    "missing_count": 42,
+    "found_pct": 6.0,
+    "search_fail_pct": 10.0,
+    "missing_pct": 84.0
+  },
+  "coverage_results": {
+    "A4200_1": {
+      "coverage_name": "암 진단비(유사암 제외)",
+      "slot_results": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL",
+          "reason": "다른 담보 값 혼입",
+          "matched_exclusion": "갑상선암",
+          "total_count": 3
+        },
+        "exclusions": {
+          "status": "FOUND",
+          "classification": "FOUND",
+          "total_count": 4
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL",
+          "reason": "다른 담보 값 혼입",
+          "matched_exclusion": "갑상선암",
+          "total_count": 4
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "benefit_day_range": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "subtype_coverage_map": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL",
+          "reason": "다른 담보 값 혼입",
+          "matched_exclusion": "갑상선암",
+          "total_count": 13
+        }
+      }
+    },
+    "A4210": {
+      "coverage_name": "유사암 진단비(경계성종양)(1년50%)",
+      "slot_results": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "entry_age": {
+          "status": "FOUND",
+          "classification": "FOUND",
+          "total_count": 1
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "benefit_day_range": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "subtype_coverage_map": {
+          "status": "FOUND",
+          "classification": "FOUND",
+          "total_count": 1
+        }
+      }
+    },
+    "A4299_1": {
+      "coverage_name": "신재진단암(기타피부암 및 갑상선암 포함) 진단비(1년주기,5회한)",
+      "slot_results": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL",
+          "reason": "담보 귀속 확인 불가",
+          "matched_exclusion": null,
+          "total_count": 2
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL",
+          "reason": "담보 귀속 확인 불가",
+          "matched_exclusion": null,
+          "total_count": 2
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL",
+          "reason": "담보 귀속 확인 불가",
+          "matched_exclusion": null,
+          "total_count": 7
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "benefit_day_range": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "subtype_coverage_map": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL",
+          "reason": "담보 귀속 확인 불가",
+          "matched_exclusion": null,
+          "total_count": 7
+        }
+      }
+    },
+    "A4103": {
+      "coverage_name": "뇌졸중 진단비(1년50%)",
+      "slot_results": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "entry_age": {
+          "status": "FOUND",
+          "classification": "FOUND",
+          "total_count": 1
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "benefit_day_range": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "subtype_coverage_map": {
+          "status": "FOUND",
+          "classification": "FOUND",
+          "total_count": 3
+        }
+      }
+    },
+    "A4105": {
+      "coverage_name": "허혈성심장질환 진단비(1년50%)",
+      "slot_results": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "benefit_day_range": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "subtype_coverage_map": {
+          "status": "FOUND",
+          "classification": "FOUND",
+          "total_count": 2
+        }
+      }
+    }
+  }
+}

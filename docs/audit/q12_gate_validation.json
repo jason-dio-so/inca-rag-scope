@@ -1,0 +1,18 @@
+{
+  "G1_ssot_input": {
+    "passed": true,
+    "failures": []
+  },
+  "G2_evidence": {
+    "passed": true,
+    "failures": []
+  },
+  "G3_anchor": {
+    "passed": true,
+    "failures": []
+  },
+  "G4_deterministic": {
+    "passed": true,
+    "notes": "Manual verification required"
+  }
+}

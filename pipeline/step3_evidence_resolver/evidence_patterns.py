@@ -134,6 +134,31 @@ EVIDENCE_PATTERNS = {
         context_lines=10,
         table_priority=False
     ),
+
+    # STEP NEXT-80: benefit_day_range for 암직접입원비 coverage day range
+    "benefit_day_range": EvidencePattern(
+        slot_key="benefit_day_range",
+        keywords=[
+            "입원일당", "입원 일당", "입원일수", "입원 일수",
+            "1일부터", "최대", "120일", "180일", "365일",
+            "일당", "보장일수", "보장 일수", "지급일수", "지급 일수"
+        ],
+        context_lines=7,
+        table_priority=True  # Often in benefit tables
+    ),
+
+    # STEP NEXT-81: subtype_coverage_map for 제자리암/경계성종양 coverage
+    "subtype_coverage_map": EvidencePattern(
+        slot_key="subtype_coverage_map",
+        keywords=[
+            "제자리암", "상피내암", "CIS", "Carcinoma in situ",
+            "경계성종양", "경계성신생물", "borderline tumor",
+            "포함", "보장", "지급", "진단", "수술", "치료",
+            "제외", "보장제외", "지급하지 않는", "지급 제외"
+        ],
+        context_lines=10,
+        table_priority=False
+    ),
 }
 
 

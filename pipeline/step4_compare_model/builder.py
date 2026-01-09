@@ -4,6 +4,8 @@ Comparison Table Builder - STEP NEXT-68
 Converts Step3 gated output to comparison rows and tables.
 
 NO LLM. NO inference. Evidence-first only.
+
+STEP NEXT-F: Coverage Attribution Gate (G5) integrated.
 """
 
 import json
@@ -22,10 +24,21 @@ from .model import (
     extract_coverage_title,
     normalize_coverage_title
 )
+from .gates import (
+    DiagnosisCoverageRegistry,
+    CoverageAttributionValidator,
+    SlotGateValidator,
+    SlotTierEnforcementGate,
+    ConfidenceLabeler
+)
 
 
 class CompareRowBuilder:
-    """Builds CompareRow from Step3 gated coverage"""
+    """
+    Builds CompareRow from Step3 gated coverage.
+
+    STEP NEXT-F: G5 Coverage Attribution Gate applied.
+    """
 
     SLOT_NAMES = [
         "start_date",
@@ -33,8 +46,20 @@ class CompareRowBuilder:
         "payout_limit",
         "reduction",
         "entry_age",
-        "waiting_period"
+        "waiting_period",
+        # STEP NEXT-76-A: Extended slots
+        "underwriting_condition",
+        "mandatory_dependency",
+        "payout_frequency",
+        "industry_aggregate_limit",
+        # STEP NEXT-R: Premium slot (Q12 only, injected separately)
+        # "premium_monthly"  # Not from Step3 evidence
     ]
+
+    def __init__(self):
+        """Initialize with G5 gate validator and G6 tier enforcement"""
+        self.gate_validator = SlotGateValidator()
+        self.tier_gate = SlotTierEnforcementGate()
 
     def build_row(self, step3_coverage: Dict) -> CompareRow:
         """
@@ -128,14 +153,29 @@ class CompareRowBuilder:
         )
 
     def _build_slots(self, coverage: Dict) -> Dict[str, SlotValue]:
-        """Build all comparison slots"""
+        """
+        Build all comparison slots.
+
+        STEP NEXT-F: Apply G5 Coverage Attribution Gate to all slots.
+        STEP NEXT-I: Apply G6 Slot Tier Enforcement Gate.
+        """
         slots = {}
 
         evidence_status = coverage.get("evidence_status", {})
         evidence_slots = coverage.get("evidence_slots", {})
         evidences = coverage.get("evidence", [])
 
+        # Get coverage identity for G5 gate
+        coverage_code = coverage.get("coverage_code")
+        coverage_name = coverage.get("coverage_name_normalized", "")
+
         for slot_name in self.SLOT_NAMES:
+            # STEP NEXT-I: G6 - Check if slot can be used in comparison
+            tier_check = self.tier_gate.validate_comparison_usage(slot_name)
+            if not tier_check["valid"]:
+                # Skip Tier-C slots entirely (don't add to slots dict)
+                continue
+
             status = evidence_status.get(slot_name, "UNKNOWN")
 
             # Get slot metadata
@@ -153,11 +193,78 @@ class CompareRowBuilder:
             # Build notes from reason or gate status
             notes = reason if reason else None
 
+            # STEP NEXT-F: Apply G5 Coverage Attribution Gate
+            # Build temporary slot_data for validation
+            slot_data = {
+                "status": status,
+                "value": value,
+                "evidences": [
+                    {
+                        "excerpt": ev.excerpt,
+                        "doc_type": ev.doc_type,
+                        "page": ev.page
+                    }
+                    for ev in slot_evidences
+                ]
+            }
+
+            gate_result = self.gate_validator.validate_slot(
+                slot_name,
+                slot_data,
+                coverage_code or "",
+                coverage_name
+            )
+
+            # If gate validation failed, demote to UNKNOWN
+            if not gate_result["valid"]:
+                status = "UNKNOWN"
+                value = None
+                gate_violation = gate_result.get("gate_violation")
+                gate_reason = gate_result.get("reason")
+
+                # Update notes with gate violation info
+                if gate_reason:
+                    notes = f"G5 Gate: {gate_reason}" + (f" ({notes})" if notes else "")
+                else:
+                    notes = f"G5 Gate: {gate_violation}" + (f" ({notes})" if notes else "")
+
+            # STEP NEXT-I: G6 - Apply tier-specific output policy
+            tier_output = self.tier_gate.validate_value_output(
+                slot_name,
+                slot_data,
+                gate_result if gate_result else None
+            )
+
+            # Use display_value from G6 (handles "❓ 정보 없음" and "(상품 기준)" suffix)
+            if tier_output.get("display_value") is not None:
+                value = tier_output["display_value"]
+
+            # If G6 says display should be "❓ 정보 없음", update status
+            if value == "❓ 정보 없음":
+                status = "UNKNOWN"
+                value = None
+
+            # STEP NEXT-K: Assign confidence label (Tier-A only)
+            evidence_dicts = [
+                {
+                    "doc_type": ev.doc_type,
+                    "excerpt": ev.excerpt,
+                    "page": ev.page
+                }
+                for ev in slot_evidences
+            ]
+            confidence = ConfidenceLabeler.assign_confidence(
+                slot_name,
+                status,
+                evidence_dicts
+            )
+
             slots[slot_name] = SlotValue(
                 status=status,
                 value=value,
                 evidences=slot_evidences,
-                notes=notes
+                notes=notes,
+                confidence=confidence
             )
 
         return slots
@@ -348,9 +455,10 @@ class CompareTableBuilder:
 class CompareBuilder:
     """High-level builder for comparison tables from Step3 files"""
 
-    def __init__(self):
+    def __init__(self, db_conn=None):
         self.row_builder = CompareRowBuilder()
         self.table_builder = CompareTableBuilder()
+        self.db_conn = db_conn  # STEP NEXT-R: For G10 Premium SSOT Gate
 
     def build_from_step3_files(
         self,
@@ -429,3 +537,111 @@ class CompareBuilder:
         """Write CompareTable to JSONL"""
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(json.dumps(table.to_dict(), ensure_ascii=False) + '\n')
+
+    def inject_premium_for_q12(
+        self,
+        rows: List[CompareRow],
+        question_id: str,
+        age: int = 40,
+        sex: str = "M",
+        plan_variant: str = "NO_REFUND"
+    ) -> List[CompareRow]:
+        """
+        Inject premium_monthly slot for Q12 comparison.
+
+        STEP NEXT-R: G10 Premium SSOT Gate
+
+        Args:
+            rows: List of CompareRow instances
+            question_id: Question identifier (must be Q12)
+            age: Age for premium lookup (default: 40)
+            sex: Sex for premium lookup (default: M)
+            plan_variant: Plan variant (default: NO_REFUND)
+
+        Returns:
+            Updated rows with premium_monthly slot (if G10 PASS)
+        """
+        # Only inject premium for Q12
+        if question_id != "Q12":
+            return rows
+
+        # Require database connection
+        if not self.db_conn:
+            # Skip premium injection if no DB connection
+            return rows
+
+        from .gates import PremiumSSOTGate
+
+        premium_gate = PremiumSSOTGate(self.db_conn)
+
+        # Group rows by insurer
+        insurer_rows = {}
+        for row in rows:
+            insurer_key = row.identity.insurer_key
+            if insurer_key not in insurer_rows:
+                insurer_rows[insurer_key] = []
+            insurer_rows[insurer_key].append(row)
+
+        # Fetch premium for each insurer
+        premium_results = []
+
+        for insurer_key, insurer_row_list in insurer_rows.items():
+            # Get product_id from first row
+            if not insurer_row_list:
+                continue
+
+            product_id = insurer_row_list[0].identity.product_key
+
+            # Fetch premium via G10 gate
+            premium_result = premium_gate.fetch_premium(
+                insurer_key=insurer_key,
+                product_id=product_id,
+                age=age,
+                sex=sex,
+                plan_variant=plan_variant
+            )
+
+            premium_results.append({
+                "insurer_key": insurer_key,
+                **premium_result
+            })
+
+            # If G10 PASS, inject premium_monthly slot into ALL rows for this insurer
+            if premium_result["valid"]:
+                premium_monthly = premium_result["premium_monthly"]
+                source = premium_result["source"]
+                conditions = premium_result["conditions"]
+
+                # Build SlotValue for premium_monthly
+                from .model import SlotValue
+
+                premium_slot = SlotValue(
+                    status="FOUND",
+                    value={
+                        "amount": premium_monthly,
+                        "plan_variant": conditions["plan_variant"],
+                        "currency": "KRW"
+                    },
+                    evidences=[],  # No DOC evidence for SSOT
+                    notes=None,
+                    confidence={
+                        "level": "HIGH",
+                        "basis": f"Premium SSOT ({source['table']})"
+                    },
+                    source_kind="PREMIUM_SSOT"
+                )
+
+                # Inject into all rows for this insurer
+                for row in insurer_row_list:
+                    row.premium_monthly = premium_slot
+
+        # STEP NEXT-R: G10 HARD GATE - Q12 requires ALL insurers to have premium
+        validation = premium_gate.validate_q12_premium_requirement(premium_results)
+
+        if not validation["valid"]:
+            # Q12 FAIL: Missing premium for some insurers
+            # Log warning (actual enforcement happens in Step5/output layer)
+            missing = validation["missing_insurers"]
+            print(f"⚠️  G10 FAIL: Q12 requires premium for ALL insurers. Missing: {', '.join(missing)}")
+
+        return rows

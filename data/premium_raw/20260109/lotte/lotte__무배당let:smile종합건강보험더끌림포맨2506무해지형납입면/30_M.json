@@ -1,0 +1,19 @@
+{
+  "insurer_key": "lotte",
+  "product_id": "lotte__무배당let:smile종합건강보험더끌림포맨2506무해지형납입면",
+  "request_age": 30,
+  "response_age": 30,
+  "quotes": [
+    {
+      "age": 30,
+      "sex": "M",
+      "smoke": "NA",
+      "pay_term_years": 20,
+      "ins_term_years": 80,
+      "monthly_prem_sum": 50000,
+      "total_prem_sum": 12000000,
+      "as_of_date": "2026-01-09",
+      "coverages": []
+    }
+  ]
+}

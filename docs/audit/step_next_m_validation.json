@@ -1,0 +1,45 @@
+{
+  "input_file": "/Users/cheollee/inca-rag-scope/data/recommend_explain_cards_v2.jsonl",
+  "total_cards": 8,
+  "total_bullets": 24,
+  "why_count": 16,
+  "why_not_count": 8,
+  "checks": {
+    "g7_balanced_card": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    },
+    "g8_no_promotion": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    },
+    "why_not_fact_based": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    },
+    "confidence_high_only": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    },
+    "evidence_refs_required": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    },
+    "max_bullets": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    },
+    "deterministic": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    }
+  },
+  "overall_pass": true
+}

@@ -1,0 +1,222 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-01-09",
+  "description": "Question → Card Routing Registry (HARD LOCK)",
+  "routing_rules": {
+    "Q1": {
+      "question_id": "Q1",
+      "question_summary": "보장 금액/한도는?",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["NUMERIC_COMPARE", "WHY_ONLY", "RAW_SLOTS"],
+      "special_rules": {
+        "single_insurer": true,
+        "evidence_required": true,
+        "numeric_output": false
+      }
+    },
+    "Q2": {
+      "question_id": "Q2",
+      "question_summary": "유병자(고혈압/당뇨) 가입 가능?",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["NUMERIC_COMPARE", "WHY_ONLY", "RAW_SLOTS"],
+      "special_rules": {
+        "single_insurer": true,
+        "evidence_required": true,
+        "numeric_output": false
+      }
+    },
+    "Q3": {
+      "question_id": "Q3",
+      "question_summary": "특약 단독 가입 가능?",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["NUMERIC_COMPARE", "WHY_ONLY", "RAW_SLOTS"],
+      "special_rules": {
+        "single_insurer": true,
+        "evidence_required": true,
+        "numeric_output": false
+      }
+    },
+    "Q4": {
+      "question_id": "Q4",
+      "question_summary": "재발/재진단 시에도 지급?",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["NUMERIC_COMPARE", "WHY_ONLY", "RAW_SLOTS"],
+      "special_rules": {
+        "single_insurer": true,
+        "evidence_required": true,
+        "numeric_output": false
+      }
+    },
+    "Q5": {
+      "question_id": "Q5",
+      "question_summary": "면책기간/대기기간은?",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["NUMERIC_COMPARE", "WHY_ONLY", "RAW_SLOTS"],
+      "special_rules": {
+        "single_insurer": true,
+        "evidence_required": true,
+        "numeric_output": false
+      }
+    },
+    "Q6": {
+      "question_id": "Q6",
+      "question_summary": "감액기간/비율은?",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["NUMERIC_COMPARE", "WHY_ONLY", "RAW_SLOTS"],
+      "special_rules": {
+        "single_insurer": true,
+        "evidence_required": true,
+        "numeric_output": false
+      }
+    },
+    "Q7": {
+      "question_id": "Q7",
+      "question_summary": "가입 나이 제한은?",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["NUMERIC_COMPARE", "WHY_ONLY", "RAW_SLOTS"],
+      "special_rules": {
+        "single_insurer": true,
+        "evidence_required": true,
+        "numeric_output": false
+      }
+    },
+    "Q8": {
+      "question_id": "Q8",
+      "question_summary": "타사 가입도 영향? (업계 누적)",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["NUMERIC_COMPARE", "WHY_ONLY", "RAW_SLOTS"],
+      "special_rules": {
+        "single_insurer": true,
+        "evidence_required": true,
+        "numeric_output": false
+      }
+    },
+    "Q9": {
+      "question_id": "Q9",
+      "question_summary": "보장 개시일은?",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["NUMERIC_COMPARE", "WHY_ONLY", "RAW_SLOTS"],
+      "special_rules": {
+        "single_insurer": true,
+        "evidence_required": true,
+        "numeric_output": false
+      }
+    },
+    "Q10": {
+      "question_id": "Q10",
+      "question_summary": "어떤 경우 제외? (면책사항)",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["NUMERIC_COMPARE", "WHY_ONLY", "RAW_SLOTS"],
+      "special_rules": {
+        "single_insurer": true,
+        "evidence_required": true,
+        "numeric_output": false
+      }
+    },
+    "Q11": {
+      "question_id": "Q11",
+      "question_summary": "암직접입원비 보장한도(일수구간)",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["NUMERIC_COMPARE", "WHY_ONLY", "RAW_SLOTS"],
+      "special_rules": {
+        "single_insurer": true,
+        "evidence_required": true,
+        "numeric_output": false
+      }
+    },
+    "Q12": {
+      "question_id": "Q12",
+      "question_summary": "회사간 암진단비 비교 + 추천",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["WHY_ONLY", "RAW_NUMERIC", "RAW_SLOTS"],
+      "special_rules": {
+        "multi_insurer": true,
+        "per_insurer_cards": true,
+        "evidence_required": true,
+        "numeric_output": false,
+        "recommendation_rule_based": true,
+        "requires_premium": true,
+        "premium_gate": "G10"
+      }
+    },
+    "Q13": {
+      "question_id": "Q13",
+      "question_summary": "제자리암/경계성종양 O/X 비교",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["NUMERIC_COMPARE", "WHY_ONLY", "RAW_SLOTS"],
+      "special_rules": {
+        "multi_insurer": true,
+        "per_insurer_cards": true,
+        "evidence_required": true,
+        "ox_matrix": true,
+        "numeric_output": false
+      }
+    },
+    "Q14": {
+      "question_id": "Q14",
+      "question_summary": "보험료 가성비 Top 4 비교",
+      "allowed_card_types": ["BALANCED_EXPLAIN"],
+      "min_why": 1,
+      "min_why_not": 1,
+      "forbidden_card_types": ["WHY_ONLY", "RAW_SLOTS"],
+      "special_rules": {
+        "multi_insurer": true,
+        "external_data_required": true,
+        "deterministic_formula": true,
+        "evidence_required": true,
+        "numeric_output": false
+      },
+      "status": "CONDITIONAL",
+      "condition": "Requires premium_table and rate_example.xlsx"
+    }
+  },
+  "gate_rules": {
+    "G9": {
+      "name": "Question Routing Gate",
+      "description": "Enforce question → card type mapping",
+      "checks": [
+        "question_id must exist in routing_rules",
+        "card_type must be in allowed_card_types",
+        "WHY count >= min_why",
+        "WHY_NOT count >= min_why_not",
+        "card_type NOT in forbidden_card_types"
+      ],
+      "failure_action": "exit(2)"
+    }
+  },
+  "metadata": {
+    "total_questions": 14,
+    "green_status": 13,
+    "yellow_status": 1,
+    "red_status": 0,
+    "customer_facing_card_type": "BALANCED_EXPLAIN",
+    "deprecated_card_types": ["WHY_ONLY"],
+    "internal_only_types": ["RAW_SLOTS", "NUMERIC_COMPARE"]
+  }
+}

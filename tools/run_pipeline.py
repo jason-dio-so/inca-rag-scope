@@ -119,7 +119,7 @@ class PipelineRunner:
 
         Required:
         - Filename ends with _step3_evidence_enriched_v1_gated.jsonl
-        - Contains required fields: evidence_pack, coverage_code, insurer_key
+        - Contains required fields: evidence, evidence_status, insurer_key
         """
         if not file_path.exists():
             return False, f"File not found: {file_path}"
@@ -141,7 +141,7 @@ class PipelineRunner:
 
             try:
                 obj = json.loads(first_line)
-                required_fields = ['coverage_code', 'evidence_pack', 'insurer_key']
+                required_fields = ['evidence', 'evidence_status', 'insurer_key']
                 missing = [f for f in required_fields if f not in obj]
                 if missing:
                     return False, f"Missing required Step3 fields: {missing}"
@@ -380,8 +380,16 @@ class PipelineRunner:
             print(f"   Skipping Step4 execution")
             return {"stage": "step4", "status": "skipped", "reason": "runner_not_found"}
 
-        # Run Step4
-        cmd = [sys.executable, str(step4_script)]
+        # Extract insurer keys from Step3 files
+        insurers = []
+        for step3_file in step3_outputs:
+            # Extract insurer from filename: {insurer}_step3_evidence_enriched_v1_gated.jsonl
+            insurer = step3_file.stem.replace("_step3_evidence_enriched_v1_gated", "").replace("_step3_evidence_enriched_v1", "")
+            if insurer:
+                insurers.append(insurer)
+
+        # Run Step4 with module syntax
+        cmd = [sys.executable, "-m", "pipeline.step4_compare_model.run", "--insurers"] + insurers
         result = subprocess.run(cmd, cwd=self.project_root, capture_output=True, text=True)
 
         if result.returncode != 0:

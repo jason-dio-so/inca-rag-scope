@@ -1,0 +1,56 @@
+{
+  "input_file": "/Users/cheollee/inca-rag-scope/data/policy/question_card_routing.json",
+  "total_questions": 14,
+  "checks": {
+    "all_questions_covered": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    },
+    "balanced_enforcement": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    },
+    "customer_facing_policy": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    },
+    "forbidden_types_declared": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    },
+    "evidence_required": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    },
+    "no_numeric_output": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    },
+    "deterministic_config": {
+      "pass": true,
+      "violation_count": 0,
+      "violations": []
+    }
+  },
+  "overall_pass": true,
+  "metadata": {
+    "total_questions": 14,
+    "green_status": 13,
+    "yellow_status": 1,
+    "red_status": 0,
+    "customer_facing_card_type": "BALANCED_EXPLAIN",
+    "deprecated_card_types": [
+      "WHY_ONLY"
+    ],
+    "internal_only_types": [
+      "RAW_SLOTS",
+      "NUMERIC_COMPARE"
+    ]
+  }
+}

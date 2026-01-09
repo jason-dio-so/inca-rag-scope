@@ -30,19 +30,28 @@ class SlotValue:
     Evidence-based slot value.
 
     CONSTRAINT: value must be derived from evidences (no inference).
+
+    STEP NEXT-K: confidence field added for Tier-A slots.
+    STEP NEXT-R: source_kind field added for premium_monthly slot.
     """
     status: str  # FOUND | FOUND_GLOBAL | CONFLICT | UNKNOWN
     value: Optional[str] = None  # Normalized value if deterministic
     evidences: List[EvidenceReference] = field(default_factory=list)
     notes: Optional[str] = None  # Gate failure reason, conflict summary
+    confidence: Optional[Dict[str, str]] = None  # {"level": "HIGH|MEDIUM", "basis": "가입설계서"}
+    source_kind: str = "DOC_EVIDENCE"  # DOC_EVIDENCE | PREMIUM_SSOT
 
     def to_dict(self) -> Dict:
-        return {
+        result = {
             "status": self.status,
             "value": self.value,
             "evidences": [ev.to_dict() for ev in self.evidences],
-            "notes": self.notes
+            "notes": self.notes,
+            "source_kind": self.source_kind
         }
+        if self.confidence:
+            result["confidence"] = self.confidence
+        return result
 
 
 @dataclass
@@ -120,6 +129,9 @@ class CompareRow:
     payout_frequency: Optional[SlotValue] = None
     industry_aggregate_limit: Optional[SlotValue] = None
 
+    # STEP NEXT-R: Premium slot (SSOT-based, Q12 only)
+    premium_monthly: Optional[SlotValue] = None
+
     # Optional renewal condition (from semantics)
     renewal_condition: Optional[str] = None
 
@@ -136,12 +148,13 @@ class CompareRow:
         if self.semantics:
             result["semantics"] = self.semantics.to_dict()
 
-        # Slots (existing + extended from STEP NEXT-76-A)
+        # Slots (existing + extended from STEP NEXT-76-A + premium from STEP NEXT-R)
         slots = {}
         for slot_name in ["start_date", "exclusions", "payout_limit",
                           "reduction", "entry_age", "waiting_period",
                           "underwriting_condition", "mandatory_dependency",
-                          "payout_frequency", "industry_aggregate_limit"]:
+                          "payout_frequency", "industry_aggregate_limit",
+                          "premium_monthly"]:
             slot = getattr(self, slot_name)
             if slot:
                 slots[slot_name] = slot.to_dict()

@@ -1,0 +1,20 @@
+{
+  "total_cells": 2,
+  "violations": [],
+  "diagnosis_benefit_count": 0,
+  "treatment_trigger_count": 2,
+  "diagnosis_benefit_cases": [],
+  "treatment_trigger_cases": [
+    {
+      "row_id": "kb|280  표적항암약물허가치료비(3대특정암 및 림프종·백혈병 관련암 제외)(최초1회한) Ⅱ(갱신형)",
+      "subtype": "in_situ",
+      "display": "진단 시 치료비 지급 (진단비 아님)"
+    },
+    {
+      "row_id": "kb|280  표적항암약물허가치료비(3대특정암 및 림프종·백혈병 관련암 제외)(최초1회한) Ⅱ(갱신형)",
+      "subtype": "borderline",
+      "display": "진단 시 치료비 지급 (진단비 아님)"
+    }
+  ],
+  "dod_passed": true
+}

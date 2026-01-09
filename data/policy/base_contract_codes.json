@@ -1,0 +1,25 @@
+{
+  "version": "v1",
+  "as_of_date": "2025-01-09",
+  "policy": "BASE_CONTRACT_POLICY",
+  "description": "기본계약(의무담보) 코드 SSOT - Q3 base_contract_monthly_sum 계산용",
+  "base_contract_codes": [
+    "A1100",
+    "A1300",
+    "A3300_1"
+  ],
+  "code_definitions": {
+    "A1100": "질병사망",
+    "A1300": "상해사망",
+    "A3300_1": "상해후유장해"
+  },
+  "rules": [
+    "base_contract_monthly_sum = sum(coverage_premium_quote.premium_monthly_coverage for codes in base_contract_codes)",
+    "Coverage 없으면 NULL (Q3에서 제외, 추정 금지)",
+    "코드 추가/변경은 이 파일 수정 후 재배포"
+  ],
+  "notes": [
+    "1차 LOCK: 사망/장해 섹션 최소 구성",
+    "기존 A4001~A4003는 DEPRECATED (이 파일이 SSOT)"
+  ]
+}

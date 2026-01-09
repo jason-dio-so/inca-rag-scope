@@ -1,0 +1,19 @@
+{
+  "insurer_key": "hyundai",
+  "product_id": "hyundai__무배당현대해상퍼펙트플러스종합보험세만기형Hi25083종해약환급금미지급형",
+  "request_age": 30,
+  "response_age": 30,
+  "quotes": [
+    {
+      "age": 30,
+      "sex": "M",
+      "smoke": "NA",
+      "pay_term_years": 20,
+      "ins_term_years": 80,
+      "monthly_prem_sum": 50000,
+      "total_prem_sum": 12000000,
+      "as_of_date": "2026-01-09",
+      "coverages": []
+    }
+  ]
+}

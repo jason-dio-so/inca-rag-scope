@@ -1,0 +1,102 @@
+{
+  "G1_schema": {
+    "passed": true,
+    "failures": []
+  },
+  "G2_no_garbage": {
+    "passed": true,
+    "failures": []
+  },
+  "G3_deterministic": {
+    "passed": true,
+    "notes": "Manual verification required"
+  },
+  "G4_fix2_hard": {
+    "passed": true,
+    "violations": [
+      {
+        "insurer": "samsung",
+        "slot": "waiting_period",
+        "violation": "attribution_failed",
+        "display": "정보 없음"
+      },
+      {
+        "insurer": "samsung",
+        "slot": "reduction",
+        "violation": "attribution_failed",
+        "display": "정보 없음"
+      },
+      {
+        "insurer": "samsung",
+        "slot": "payout_limit",
+        "violation": "attribution_failed",
+        "display": "정보 없음"
+      },
+      {
+        "insurer": "samsung",
+        "slot": "entry_age",
+        "violation": "attribution_failed",
+        "display": "정보 없음"
+      },
+      {
+        "insurer": "meritz",
+        "slot": "reduction",
+        "violation": "rate_pct_missing",
+        "display": "정보 없음"
+      },
+      {
+        "insurer": "meritz",
+        "slot": "payout_limit",
+        "violation": "attribution_failed",
+        "display": "정보 없음"
+      },
+      {
+        "insurer": "meritz",
+        "slot": "entry_age",
+        "violation": "attribution_failed",
+        "display": "정보 없음"
+      }
+    ]
+  },
+  "G5_attribution": {
+    "passed": true,
+    "violations": [
+      {
+        "insurer": "samsung",
+        "slot": "waiting_period",
+        "violation": "attribution_failed",
+        "display": "정보 없음"
+      },
+      {
+        "insurer": "samsung",
+        "slot": "reduction",
+        "violation": "attribution_failed",
+        "display": "정보 없음"
+      },
+      {
+        "insurer": "samsung",
+        "slot": "payout_limit",
+        "violation": "attribution_failed",
+        "display": "정보 없음"
+      },
+      {
+        "insurer": "samsung",
+        "slot": "entry_age",
+        "violation": "attribution_failed",
+        "display": "정보 없음"
+      },
+      {
+        "insurer": "meritz",
+        "slot": "payout_limit",
+        "violation": "attribution_failed",
+        "display": "정보 없음"
+      },
+      {
+        "insurer": "meritz",
+        "slot": "entry_age",
+        "violation": "attribution_failed",
+        "display": "정보 없음"
+      }
+    ]
+  }
+}

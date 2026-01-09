@@ -1,0 +1,116 @@
+{
+  "request_age": 30,
+  "sex": "M",
+  "request_params": {
+    "baseDt": "20260109",
+    "birthday": "19960101",
+    "customerNm": "홍길동",
+    "sex": "1",
+    "age": "30"
+  },
+  "status_code": 200,
+  "retry_count": 0,
+  "_raw_response": {
+    "customerSeq": 32551,
+    "customerIpSeq": 1,
+    "outPrList": [
+      {
+        "prProdLineCd": "PRODLN0002",
+        "insCd": "N01",
+        "insNm": "메리츠화재",
+        "prCd": "6ADYW",
+        "prNm": "(무)알파Plus보장보험2508_해약환급금미지급형(납입후50%)_보험료납입면제형",
+        "prScore": 200,
+        "newDispYn": "N",
+        "monthlyPrem": 96111,
+        "updateDt": "20250808",
+        "updatingYn": "N"
+      },
+      {
+        "prProdLineCd": "PRODLN0002",
+        "insCd": "N02",
+        "insNm": "한화손보",
+        "prCd": "LA02768003",
+        "prNm": "한화 더건강한 한아름종합보험 무배당2504(납입면제형, 납입후50%해약환급금지급형)",
+        "prScore": 150,
+        "newDispYn": "N",
+        "monthlyPrem": 110981,
+        "updateDt": "20251217",
+        "updatingYn": "N"
+      },
+      {
+        "prProdLineCd": "PRODLN0002",
+        "insCd": "N03",
+        "insNm": "롯데손보",
+        "prCd": "LA0772E002",
+        "prNm": "무배당 let:smile 종합건강보험(더끌림 포맨)(2506)(무해지형)_납입면제적용형",
+        "prScore": 140,
+        "newDispYn": "N",
+        "monthlyPrem": 118594,
+        "updateDt": "20251217",
+        "updatingYn": "N"
+      },
+      {
+        "prProdLineCd": "PRODLN0002",
+        "insCd": "N08",
+        "insNm": "삼성화재",
+        "prCd": "ZPB275100",
+        "prNm": "무배당 삼성화재 건강보험 마이헬스 파트너(2508.12) 3종(납입면제해약환급금 미지급형II)",
+        "prScore": 170,
+        "newDispYn": "N",
+        "monthlyPrem": 132685,
+        "updateDt": "20251219",
+        "updatingYn": "N"
+      },
+      {
+        "prProdLineCd": "PRODLN0002",
+        "insCd": "N13",
+        "insNm": "DB손보",
+        "prCd": "30633",
+        "prNm": "무배당 프로미라이프 참좋은훼밀리더블플러스종합보험2508_무해지납중0%/납후50% 납면적용B 세만기",
+        "prScore": 190,
+        "newDispYn": "N",
+        "monthlyPrem": 134693,
+        "updateDt": "20251022",
+        "updatingYn": "N"
+      },
+      {
+        "prProdLineCd": "PRODLN0002",
+        "insCd": "N09",
+        "insNm": "현대해상",
+        "prCd": "137D",
+        "prNm": "무배당현대해상퍼펙트플러스종합보험(세만기형)(Hi2508)3종(해약환급금미지급형)",
+        "prScore": 180,
+        "newDispYn": "N",
+        "monthlyPrem": 135061,
+        "updateDt": "20251219",
+        "updatingYn": "N"
+      },
+      {
+        "prProdLineCd": "PRODLN0002",
+        "insCd": "N10",
+        "insNm": "KB손보",
+        "prCd": "24882",
+        "prNm": "KB닥터플러스건강보험(세만기)(해약환급금미지급형)(25.08)_8대납입면제기본,납입후50%지급형",
+        "prScore": 160,
+        "newDispYn": "N",
+        "monthlyPrem": 144594,
+        "updateDt": "20251219",
+        "updatingYn": "N"
+      },
+      {
+        "prProdLineCd": "PRODLN0002",
+        "insCd": "N05",
+        "insNm": "흥국화재",
+        "prCd": "L3701",
+        "prNm": "무배당 흥Good 행복한 파워종합보험(25.09)_(2종)(납입후해약환급금지급형의50%)",
+        "prScore": 130,
+        "newDispYn": "N",
+        "monthlyPrem": 152987,
+        "updateDt": "20251219",
+        "updatingYn": "N"
+      }
+    ],
+    "compPlanId": 1002
+  }
+}

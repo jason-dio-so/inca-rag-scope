@@ -148,5 +148,98 @@
       "pct_mapped": 81.8
     },
     "status": "success"
+  },
+  {
+    "stage": "step4",
+    "timestamp": "2026-01-09T11:16:05.171730",
+    "inputs": [
+      "data/scope_v3/SAMSUNG_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/db_over41_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/db_under40_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/hanwha_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/heungkuk_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/hyundai_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/kb_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/lotte_female_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/lotte_male_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/meritz_step3_evidence_enriched_v1_gated.jsonl"
+    ],
+    "outputs": [
+      {
+        "file": "data/compare_v1/compare_rows_v1.jsonl",
+        "sha256": "64d6b3a26f4a6888",
+        "line_count": 340,
+        "schema_version": "v1"
+      },
+      {
+        "file": "data/compare_v1/compare_tables_v1.jsonl",
+        "sha256": "5907dac63def721f",
+        "line_count": 1,
+        "schema_version": "v1"
+      }
+    ],
+    "status": "success"
+  },
+  {
+    "stage": "step4",
+    "timestamp": "2026-01-09T12:30:06.887514",
+    "inputs": [
+      "data/scope_v3/SAMSUNG_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/db_over41_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/db_under40_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/hanwha_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/heungkuk_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/hyundai_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/kb_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/lotte_female_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/lotte_male_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/meritz_step3_evidence_enriched_v1_gated.jsonl"
+    ],
+    "outputs": [
+      {
+        "file": "data/compare_v1/compare_rows_v1.jsonl",
+        "sha256": "b91b9f042f27596b",
+        "line_count": 340,
+        "schema_version": "v1"
+      },
+      {
+        "file": "data/compare_v1/compare_tables_v1.jsonl",
+        "sha256": "25b80bb705ba0621",
+        "line_count": 1,
+        "schema_version": "v1"
+      }
+    ],
+    "status": "success"
+  },
+  {
+    "stage": "step4",
+    "timestamp": "2026-01-09T13:31:37.532423",
+    "inputs": [
+      "data/scope_v3/SAMSUNG_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/db_over41_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/db_under40_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/hanwha_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/heungkuk_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/hyundai_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/kb_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/lotte_female_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/lotte_male_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/meritz_step3_evidence_enriched_v1_gated.jsonl"
+    ],
+    "outputs": [
+      {
+        "file": "data/compare_v1/compare_rows_v1.jsonl",
+        "sha256": "6d528b2b3545419c",
+        "line_count": 340,
+        "schema_version": "v1"
+      },
+      {
+        "file": "data/compare_v1/compare_tables_v1.jsonl",
+        "sha256": "a3fe013f03e8dd9d",
+        "line_count": 1,
+        "schema_version": "v1"
+      }
+    ],
+    "status": "success"
   }
 ]

@@ -1,0 +1,1168 @@
+{
+  "matrix": {
+    "A4200_1": {
+      "samsung": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        }
+      },
+      "kb": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "reduction": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        }
+      }
+    },
+    "A4210": {
+      "samsung": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "reduction": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "payout_limit": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        }
+      },
+      "kb": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        }
+      }
+    },
+    "A4299_1": {
+      "samsung": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        }
+      },
+      "kb": {
+        "start_date": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "waiting_period": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "payout_frequency": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        }
+      }
+    },
+    "A4103": {
+      "samsung": {
+        "start_date": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "reduction": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "payout_limit": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "exclusions": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        }
+      },
+      "kb": {
+        "start_date": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "reduction": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "payout_frequency": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        }
+      }
+    },
+    "A4105": {
+      "samsung": {
+        "start_date": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "reduction": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "exclusions": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_MISSING"
+        }
+      },
+      "kb": {
+        "start_date": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "payout_limit": {
+          "status": "CONFLICT",
+          "classification": "FOUND"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "payout_frequency": {
+          "status": "FOUND",
+          "classification": "FOUND"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        }
+      }
+    },
+    "A4209": {
+      "kb": {
+        "start_date": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "waiting_period": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "reduction": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "payout_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "entry_age": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "exclusions": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "underwriting_condition": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "mandatory_dependency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "payout_frequency": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        },
+        "industry_aggregate_limit": {
+          "status": "UNKNOWN",
+          "classification": "UNKNOWN_SEARCH_FAIL"
+        }
+      }
+    }
+  },
+  "summary": {
+    "total_slots_checked": 110,
+    "found_count": 19,
+    "unknown_missing_count": 20,
+    "unknown_search_fail_count": 71,
+    "by_coverage": {
+      "A4200_1 (암진단비(유사암제외))": {
+        "found": 1,
+        "missing": 4,
+        "search_fail": 15,
+        "total": 20
+      },
+      "A4210 (유사암진단비)": {
+        "found": 2,
+        "missing": 4,
+        "search_fail": 14,
+        "total": 20
+      },
+      "A4299_1 (재진단암진단비)": {
+        "found": 3,
+        "missing": 4,
+        "search_fail": 13,
+        "total": 20
+      },
+      "A4103 (뇌졸중진단비)": {
+        "found": 7,
+        "missing": 4,
+        "search_fail": 9,
+        "total": 20
+      },
+      "A4105 (허혈성심장질환진단비)": {
+        "found": 6,
+        "missing": 4,
+        "search_fail": 10,
+        "total": 20
+      },
+      "A4209 (고액암진단비)": {
+        "found": 0,
+        "missing": 0,
+        "search_fail": 10,
+        "total": 10
+      }
+    },
+    "by_insurer": {
+      "samsung": {
+        "found": 9,
+        "missing": 20,
+        "search_fail": 21,
+        "total": 50
+      },
+      "kb": {
+        "found": 10,
+        "missing": 0,
+        "search_fail": 50,
+        "total": 60
+      }
+    },
+    "by_slot": {
+      "start_date": {
+        "found": 5,
+        "missing": 0,
+        "search_fail": 6,
+        "total": 11
+      },
+      "waiting_period": {
+        "found": 1,
+        "missing": 0,
+        "search_fail": 10,
+        "total": 11
+      },
+      "reduction": {
+        "found": 5,
+        "missing": 0,
+        "search_fail": 6,
+        "total": 11
+      },
+      "payout_limit": {
+        "found": 3,
+        "missing": 0,
+        "search_fail": 8,
+        "total": 11
+      },
+      "entry_age": {
+        "found": 0,
+        "missing": 0,
+        "search_fail": 11,
+        "total": 11
+      },
+      "exclusions": {
+        "found": 2,
+        "missing": 0,
+        "search_fail": 9,
+        "total": 11
+      },
+      "underwriting_condition": {
+        "found": 0,
+        "missing": 5,
+        "search_fail": 6,
+        "total": 11
+      },
+      "mandatory_dependency": {
+        "found": 0,
+        "missing": 5,
+        "search_fail": 6,
+        "total": 11
+      },
+      "payout_frequency": {
+        "found": 3,
+        "missing": 5,
+        "search_fail": 3,
+        "total": 11
+      },
+      "industry_aggregate_limit": {
+        "found": 0,
+        "missing": 5,
+        "search_fail": 6,
+        "total": 11
+      }
+    }
+  },
+  "search_fail_backlog": [
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "samsung",
+      "slot": "start_date",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "samsung",
+      "slot": "waiting_period",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "samsung",
+      "slot": "reduction",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "samsung",
+      "slot": "payout_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "samsung",
+      "slot": "entry_age",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "samsung",
+      "slot": "exclusions",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "samsung",
+      "slot": "start_date",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "samsung",
+      "slot": "waiting_period",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "samsung",
+      "slot": "entry_age",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "samsung",
+      "slot": "exclusions",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4299_1",
+      "insurer": "samsung",
+      "slot": "start_date",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4299_1",
+      "insurer": "samsung",
+      "slot": "waiting_period",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4299_1",
+      "insurer": "samsung",
+      "slot": "reduction",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4299_1",
+      "insurer": "samsung",
+      "slot": "payout_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4299_1",
+      "insurer": "samsung",
+      "slot": "entry_age",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "CONFLICT",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4299_1",
+      "insurer": "samsung",
+      "slot": "exclusions",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4103",
+      "insurer": "samsung",
+      "slot": "waiting_period",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4103",
+      "insurer": "samsung",
+      "slot": "entry_age",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4105",
+      "insurer": "samsung",
+      "slot": "waiting_period",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4105",
+      "insurer": "samsung",
+      "slot": "payout_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4105",
+      "insurer": "samsung",
+      "slot": "entry_age",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "kb",
+      "slot": "start_date",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "kb",
+      "slot": "waiting_period",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "kb",
+      "slot": "payout_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "kb",
+      "slot": "entry_age",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "kb",
+      "slot": "exclusions",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "kb",
+      "slot": "underwriting_condition",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "kb",
+      "slot": "mandatory_dependency",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "kb",
+      "slot": "payout_frequency",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4200_1",
+      "insurer": "kb",
+      "slot": "industry_aggregate_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 2
+    },
+    {
+      "coverage_code": "A4209",
+      "insurer": "kb",
+      "slot": "start_date",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4209",
+      "insurer": "kb",
+      "slot": "waiting_period",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4209",
+      "insurer": "kb",
+      "slot": "reduction",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4209",
+      "insurer": "kb",
+      "slot": "payout_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4209",
+      "insurer": "kb",
+      "slot": "entry_age",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4209",
+      "insurer": "kb",
+      "slot": "exclusions",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4209",
+      "insurer": "kb",
+      "slot": "underwriting_condition",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4209",
+      "insurer": "kb",
+      "slot": "mandatory_dependency",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4209",
+      "insurer": "kb",
+      "slot": "payout_frequency",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4209",
+      "insurer": "kb",
+      "slot": "industry_aggregate_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 2
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "kb",
+      "slot": "start_date",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "kb",
+      "slot": "waiting_period",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "kb",
+      "slot": "reduction",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "kb",
+      "slot": "payout_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "kb",
+      "slot": "entry_age",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "kb",
+      "slot": "exclusions",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "kb",
+      "slot": "underwriting_condition",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "kb",
+      "slot": "mandatory_dependency",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "kb",
+      "slot": "payout_frequency",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4210",
+      "insurer": "kb",
+      "slot": "industry_aggregate_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 2
+    },
+    {
+      "coverage_code": "A4299_1",
+      "insurer": "kb",
+      "slot": "reduction",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4299_1",
+      "insurer": "kb",
+      "slot": "payout_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4299_1",
+      "insurer": "kb",
+      "slot": "entry_age",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4299_1",
+      "insurer": "kb",
+      "slot": "exclusions",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4299_1",
+      "insurer": "kb",
+      "slot": "underwriting_condition",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4299_1",
+      "insurer": "kb",
+      "slot": "mandatory_dependency",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4299_1",
+      "insurer": "kb",
+      "slot": "industry_aggregate_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 2
+    },
+    {
+      "coverage_code": "A4103",
+      "insurer": "kb",
+      "slot": "waiting_period",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4103",
+      "insurer": "kb",
+      "slot": "payout_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4103",
+      "insurer": "kb",
+      "slot": "entry_age",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4103",
+      "insurer": "kb",
+      "slot": "exclusions",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4103",
+      "insurer": "kb",
+      "slot": "underwriting_condition",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4103",
+      "insurer": "kb",
+      "slot": "mandatory_dependency",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4103",
+      "insurer": "kb",
+      "slot": "industry_aggregate_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 2
+    },
+    {
+      "coverage_code": "A4105",
+      "insurer": "kb",
+      "slot": "waiting_period",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4105",
+      "insurer": "kb",
+      "slot": "reduction",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4105",
+      "insurer": "kb",
+      "slot": "entry_age",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4105",
+      "insurer": "kb",
+      "slot": "exclusions",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4105",
+      "insurer": "kb",
+      "slot": "underwriting_condition",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4105",
+      "insurer": "kb",
+      "slot": "mandatory_dependency",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 담보 귀속 확인 불가)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 3
+    },
+    {
+      "coverage_code": "A4105",
+      "insurer": "kb",
+      "slot": "industry_aggregate_limit",
+      "reason": "UNKNOWN_SEARCH_FAIL (G5: 다른 담보 값 혼입)",
+      "step3_status": "FOUND_GLOBAL",
+      "evidence_count": 2
+    }
+  ]
+}
