@@ -689,7 +689,7 @@ class ConfidenceLabeler:
 
 
 # ============================================================================
-# STEP NEXT-R: G10 Premium SSOT Gate
+# STEP NEXT-R/V: G10 Premium SSOT Gate + Runtime Injection
 # ============================================================================
 
 class PremiumSSOTGate:
@@ -946,3 +946,63 @@ class PremiumSSOTGate:
             "missing_insurers": [],
             "reason": None
         }
+
+
+# ============================================================================
+# STEP NEXT-V: Runtime Premium Injection (G10 enforcement)
+# ============================================================================
+
+def inject_premium_for_q12_runtime(
+    compare_rows: List[Dict[str, Any]],
+    base_dt: str,
+    age: int,
+    sex: str,
+    plan_variant: str = "NO_REFUND"
+) -> Dict[str, Any]:
+    """
+    Runtime Premium Injection for Q12 with G10 gate enforcement
+
+    STEP NEXT-V: Connects PremiumInjector to Q12 comparison flow
+
+    Args:
+        compare_rows: List of CompareRow dicts
+        base_dt: YYYYMMDD
+        age: 30 | 40 | 50
+        sex: "M" | "F"
+        plan_variant: "NO_REFUND" | "GENERAL"
+
+    Returns:
+        Dict with:
+            - compare_rows: List[Dict] with premium_monthly injected
+            - status: "SUCCESS" | "FAIL"
+            - missing_insurers: List[str] (if G10 violation)
+            - errors: List[str]
+
+    Raises:
+        GateViolationError: If G10 gate fails (ANY insurer missing premium)
+    """
+    from pipeline.step4_compare_model.premium_injector import PremiumInjector
+
+    injector = PremiumInjector()
+
+    result = injector.inject_premium_for_q12(
+        compare_rows=compare_rows,
+        base_dt=base_dt,
+        age=age,
+        sex=sex,
+        plan_variant=plan_variant
+    )
+
+    # G10 GATE: If status FAIL, raise exception
+    if result["status"] == "FAIL":
+        error_msg = "\n".join(result["errors"])
+        raise GateViolationError(
+            f"G10 Premium SSOT Gate FAIL:\n{error_msg}"
+        )
+
+    return result
+
+
+class GateViolationError(Exception):
+    """Exception raised when a gate validation fails"""
+    pass
