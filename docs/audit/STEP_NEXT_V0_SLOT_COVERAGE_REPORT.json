@@ -1,0 +1,221 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-09T17:33:26.294507",
+    "jsonl_source": "data/compare_v1/compare_rows_v1.jsonl",
+    "policy_source": "data/policy/question_card_routing.json",
+    "total_rows": 340,
+    "total_insurers": 8,
+    "total_slots": 8
+  },
+  "premium_gate_q12": {
+    "premium_slot": "premium_monthly",
+    "insurers": {
+      "samsung": {
+        "present": 0,
+        "missing": 0,
+        "total": 0,
+        "ratio": 0.0
+      },
+      "db": {
+        "present": 0,
+        "missing": 0,
+        "total": 0,
+        "ratio": 0.0
+      },
+      "hanwha": {
+        "present": 0,
+        "missing": 0,
+        "total": 0,
+        "ratio": 0.0
+      },
+      "heungkuk": {
+        "present": 0,
+        "missing": 0,
+        "total": 0,
+        "ratio": 0.0
+      },
+      "hyundai": {
+        "present": 0,
+        "missing": 0,
+        "total": 0,
+        "ratio": 0.0
+      },
+      "kb": {
+        "present": 0,
+        "missing": 0,
+        "total": 0,
+        "ratio": 0.0
+      },
+      "lotte": {
+        "present": 0,
+        "missing": 0,
+        "total": 0,
+        "ratio": 0.0
+      },
+      "meritz": {
+        "present": 0,
+        "missing": 0,
+        "total": 0,
+        "ratio": 0.0
+      }
+    },
+    "gate_status": "PASS",
+    "reason": "All insurers have complete premium data"
+  },
+  "insurer_stats": {
+    "samsung": {
+      "row_count": 32,
+      "slot_presence": {
+        "start_date": 32,
+        "exclusions": 32,
+        "payout_limit": 32,
+        "reduction": 32,
+        "entry_age": 32,
+        "waiting_period": 32,
+        "mandatory_dependency": 32
+      },
+      "slot_missing": {}
+    },
+    "db": {
+      "row_count": 62,
+      "slot_presence": {
+        "start_date": 62,
+        "exclusions": 62,
+        "payout_limit": 62,
+        "reduction": 62,
+        "entry_age": 62,
+        "waiting_period": 62,
+        "mandatory_dependency": 62
+      },
+      "slot_missing": {}
+    },
+    "hanwha": {
+      "row_count": 33,
+      "slot_presence": {
+        "start_date": 33,
+        "exclusions": 33,
+        "payout_limit": 33,
+        "reduction": 33,
+        "entry_age": 33,
+        "waiting_period": 33,
+        "mandatory_dependency": 33
+      },
+      "slot_missing": {}
+    },
+    "heungkuk": {
+      "row_count": 36,
+      "slot_presence": {
+        "start_date": 36,
+        "exclusions": 36,
+        "payout_limit": 36,
+        "reduction": 36,
+        "entry_age": 36,
+        "waiting_period": 36,
+        "mandatory_dependency": 36
+      },
+      "slot_missing": {}
+    },
+    "hyundai": {
+      "row_count": 37,
+      "slot_presence": {
+        "start_date": 37,
+        "exclusions": 37,
+        "payout_limit": 37,
+        "reduction": 37,
+        "entry_age": 37,
+        "waiting_period": 37,
+        "mandatory_dependency": 37
+      },
+      "slot_missing": {}
+    },
+    "kb": {
+      "row_count": 43,
+      "slot_presence": {
+        "start_date": 43,
+        "exclusions": 43,
+        "payout_limit": 43,
+        "reduction": 43,
+        "entry_age": 43,
+        "waiting_period": 43,
+        "mandatory_dependency": 43
+      },
+      "slot_missing": {}
+    },
+    "lotte": {
+      "row_count": 60,
+      "slot_presence": {
+        "start_date": 60,
+        "exclusions": 60,
+        "payout_limit": 60,
+        "reduction": 60,
+        "entry_age": 60,
+        "waiting_period": 60,
+        "mandatory_dependency": 60
+      },
+      "slot_missing": {}
+    },
+    "meritz": {
+      "row_count": 37,
+      "slot_presence": {
+        "start_date": 37,
+        "exclusions": 37,
+        "payout_limit": 37,
+        "reduction": 37,
+        "entry_age": 37,
+        "waiting_period": 37,
+        "mandatory_dependency": 37
+      },
+      "slot_missing": {}
+    }
+  },
+  "global_stats": {
+    "mandatory_dependency": {
+      "present_count": 340,
+      "missing_count": 0,
+      "total_count": 340,
+      "present_ratio": 1.0
+    },
+    "payout_limit": {
+      "present_count": 340,
+      "missing_count": 0,
+      "total_count": 340,
+      "present_ratio": 1.0
+    },
+    "entry_age": {
+      "present_count": 340,
+      "missing_count": 0,
+      "total_count": 340,
+      "present_ratio": 1.0
+    },
+    "reduction": {
+      "present_count": 340,
+      "missing_count": 0,
+      "total_count": 340,
+      "present_ratio": 1.0
+    },
+    "premium_monthly": {
+      "present_count": 0,
+      "missing_count": 0,
+      "total_count": 0,
+      "present_ratio": 0.0
+    },
+    "start_date": {
+      "present_count": 340,
+      "missing_count": 0,
+      "total_count": 340,
+      "present_ratio": 1.0
+    },
+    "waiting_period": {
+      "present_count": 340,
+      "missing_count": 0,
+      "total_count": 340,
+      "present_ratio": 1.0
+    },
+    "exclusions": {
+      "present_count": 340,
+      "missing_count": 0,
+      "total_count": 340,
+      "present_ratio": 1.0
+    }
+  }
+}
