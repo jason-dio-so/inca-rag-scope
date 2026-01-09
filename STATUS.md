@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-09
-**현재 상태**: ✅ **Premium SSOT DB-ONLY + Q14 Ranking LOCKED** (DB2 적재 완료, W 전환 완료)
+**현재 상태**: ✅ **Premium SSOT DB-ONLY (fallback 제거 완료)** + ⚠️ **payout_limit 추출 필요** (Q14 blocker)
 
 ---
 

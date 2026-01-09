@@ -76,10 +76,10 @@ class Q14RankingBuilder:
 
     def load_cancer_amounts(self) -> int:
         """
-        Load cancer amounts from compare_rows_v1.jsonl.
+        Load cancer amounts from compare_rows_v1.jsonl (DB-ONLY, NO FALLBACK).
 
         Extract payout_limit (만원) from A4200_1 coverage ONLY.
-        NO estimation - if payout_limit is NULL/missing, exclude that insurer.
+        NO estimation, NO fallback - if payout_limit is NULL/missing, SKIP that insurer.
 
         Returns: count of insurers with valid cancer_amt
         """
@@ -90,6 +90,8 @@ class Q14RankingBuilder:
             sys.exit(2)
 
         count = 0
+        skipped = []
+
         with open(self.jsonl_path, 'r', encoding='utf-8') as f:
             for line in f:
                 line = line.strip()
@@ -110,10 +112,9 @@ class Q14RankingBuilder:
                     if not insurer_key:
                         continue
 
-                    # Extract payout_limit (MUST be present, NO estimation)
+                    # Extract payout_limit (MUST be present, NO fallback)
                     slots = row.get('slots', {})
                     payout_limit = slots.get('payout_limit', {})
-
                     value_str = payout_limit.get('value')
 
                     # Try to parse numeric value (in 만원)
@@ -126,14 +127,18 @@ class Q14RankingBuilder:
                         except (ValueError, TypeError):
                             pass
 
-                    # Fallback: Use default 3000만원 (common cancer coverage amount)
-                    # NOTE: This is a TEMPORARY fallback until payout_limit is properly extracted
+                    # NO FALLBACK: If payout_limit is missing/invalid, SKIP this insurer
                     if cancer_amt is None or cancer_amt == 0:
-                        cancer_amt = 3000  # Default: 3000만원 = 30,000,000원
+                        skipped.append({
+                            "insurer_key": insurer_key,
+                            "reason": "payout_limit missing or invalid",
+                            "value": value_str
+                        })
+                        continue
 
                     self.cancer_amounts[insurer_key] = cancer_amt
                     count += 1
-                    print(f"  {insurer_key}: {cancer_amt:,}만원 (fallback default)")
+                    print(f"  ✅ {insurer_key}: {cancer_amt:,}만원")
 
                 except json.JSONDecodeError:
                     continue
@@ -143,9 +148,15 @@ class Q14RankingBuilder:
 
         print(f"[INFO] Loaded {count} cancer amounts (A4200_1 payout_limit)")
 
+        if skipped:
+            print(f"[WARN] Skipped {len(skipped)} insurers due to missing payout_limit:")
+            for skip in skipped:
+                print(f"  ❌ {skip['insurer_key']}: {skip['reason']} (value={skip['value']})")
+
         if count == 0:
             print("[ERROR] No valid cancer amounts found - cannot build ranking")
-            print("[ERROR] All insurers require payout_limit in compare_rows_v1.jsonl")
+            print("[ERROR] All insurers have missing/invalid payout_limit")
+            print("[ACTION] Fix payout_limit extraction in compare_rows_v1.jsonl")
             sys.exit(2)
 
         return count
