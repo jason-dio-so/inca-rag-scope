@@ -771,17 +771,18 @@ class PremiumSSOTGate:
                 "reason": "No database connection (validation-only mode)"
             }
 
-        # Build query
+        # Build query (DB-ONLY: product_premium_quote_v2)
+        # premium_quote is DEPRECATED - use product_premium_quote_v2
         query = """
             SELECT
-                premium_monthly,
-                premium_total,
+                premium_monthly_total as premium_monthly,
+                premium_total_total as premium_total,
                 as_of_date,
                 source_table_id,
                 source_row_id,
                 pay_term_years,
                 ins_term_years
-            FROM premium_quote
+            FROM product_premium_quote_v2
             WHERE insurer_key = %s
               AND product_id = %s
               AND age = %s

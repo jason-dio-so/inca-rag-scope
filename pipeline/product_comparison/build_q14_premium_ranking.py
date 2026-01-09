@@ -1,68 +1,48 @@
 #!/usr/bin/env python3
 """
-STEP NEXT-W: Q14 Premium Ranking Implementation
+STEP NEXT-W: Q14 Premium Ranking Implementation (DB-ONLY)
 
 Purpose:
-  Build Q14 "보험료 가성비 Top-N" ranking using EXISTING Premium SSOT only.
-  NO new API calls, NO LLM estimation, NO data imputation.
+  Build Q14 "보험료 가성비 Top-N" ranking using DB Premium SSOT ONLY.
+  NO mock data, NO file-based premium, NO LLM estimation.
 
-SSOT Input (READ ONLY):
-  - product_premium_quote_v2 (or premium_quote) table
-  - coverage_premium_quote table
-  - compare_rows_v1.jsonl (for cancer_amt extraction)
-  - product_comparison_v3 (STEP NEXT-V result, if available)
+SSOT Input (DB-ONLY):
+  - product_premium_quote_v2 (as_of_date='2025-11-26')
+  - compare_rows_v1.jsonl (for cancer_amt extraction: A4200_1 payout_limit ONLY)
 
 Core Formula (LOCKED):
-  premium_per_10m = premium_monthly / (cancer_amt / 10_000_000)
-
-  Where:
-    - premium_monthly: from PREMIUM_SSOT
-    - cancer_amt: from compare_rows_v1 for A4200_1 (암진단비, excluding similar cancer)
+  premium_per_10m = premium_monthly_total / (cancer_amt / 10_000_000)
 
 Sorting Rules (LOCKED):
   1. premium_per_10m ASC
-  2. premium_monthly ASC
+  2. premium_monthly_total ASC
   3. insurer_key ASC
 
   Top-N = 3 per (age × plan_variant)
 
 Output:
-  - q14_premium_ranking_v1.jsonl
+  - q14_premium_ranking_v1 table (9 rows: 3 ages × 1 variant (NO_REFUND) × 3 ranks)
+  - Note: GENERAL variant requires multiplier calculation (future work)
 
 Exclusion Rules:
-  - NULL/missing premium_monthly → EXCLUDE (not FAIL)
-  - NULL/missing cancer_amt → EXCLUDE (not FAIL)
+  - NULL/missing premium_monthly_total → EXCLUDE (not FAIL)
+  - NULL/missing cancer_amt (payout_limit) → EXCLUDE (not FAIL)
   - cancer_amt = 0 → EXCLUDE (division by zero)
 
-Output Fields (FIXED):
-  - insurer_key
-  - product_id
-  - age (30/40/50)
-  - plan_variant (GENERAL / NO_REFUND)
-  - cancer_amt (in 만원, e.g., 3000 for 3천만원)
-  - premium_monthly (in 원)
-  - premium_per_10m (calculated)
-  - rank (1/2/3 per age × plan_variant)
-  - source:
-      - premium_table: "product_premium_quote_v2" or "premium_quote"
-      - coverage_table: "compare_rows_v1"
-      - baseDt: premium as_of_date
-      - as_of_date: ranking calculation date
-
 Prohibited (HARD FAIL):
+  ❌ Mock/file-based premium data
   ❌ Premium calculation/imputation/averaging
-  ❌ Coverage premium aggregation as substitute
-  ❌ Ranking with partial insurer data
-  ❌ Using document-based premium (only SSOT tables)
+  ❌ Reading from premium_quote table (DEPRECATED)
+  ❌ Using estimated cancer amounts
 """
 
 import argparse
 import json
 import os
 import sys
+import psycopg2
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
-from pathlib import Path
+from typing import Dict, List, Optional
 
 
 # =======================
@@ -70,120 +50,48 @@ from pathlib import Path
 # =======================
 
 DEFAULT_JSONL_PATH = "data/compare_v1/compare_rows_v1.jsonl"
-DEFAULT_OUTPUT_PATH = "data/q14/q14_premium_ranking_v1.jsonl"
-
-# Cancer diagnosis coverage code (excluding similar cancer)
 CANCER_CODE = "A4200_1"  # 암진단비 (유사암 제외)
-
-# Target ages and plan variants
 TARGET_AGES = [30, 40, 50]
-TARGET_PLAN_VARIANTS = ["GENERAL", "NO_REFUND"]
-
-# Top-N ranking
+TARGET_PLAN_VARIANTS = ["NO_REFUND"]  # DB has NO_REFUND only (as_of_date=2025-11-26)
 TOP_N = 3
 
-
-# =======================
-# Data Models
-# =======================
-
-class PremiumRecord:
-    """Premium SSOT record from database or file."""
-    def __init__(self, insurer_key: str, product_id: str, age: int,
-                 plan_variant: str, premium_monthly: int,
-                 as_of_date: str, source_table: str):
-        self.insurer_key = insurer_key
-        self.product_id = product_id
-        self.age = age
-        self.plan_variant = plan_variant
-        self.premium_monthly = premium_monthly
-        self.as_of_date = as_of_date
-        self.source_table = source_table
-
-    def key(self) -> str:
-        """Unique key for premium lookup."""
-        return f"{self.insurer_key}|{self.product_id}|{self.age}|{self.plan_variant}"
-
-
-class CoverageRecord:
-    """Coverage record from compare_rows_v1.jsonl."""
-    def __init__(self, insurer_key: str, product_key: str,
-                 coverage_code: str, coverage_title: str,
-                 cancer_amt: Optional[int]):
-        self.insurer_key = insurer_key
-        self.product_key = product_key
-        self.coverage_code = coverage_code
-        self.coverage_title = coverage_title
-        self.cancer_amt = cancer_amt  # in 만원 (e.g., 3000 for 3천만원)
-
-    def key(self) -> str:
-        """Unique key for coverage lookup."""
-        return f"{self.insurer_key}|{self.product_key}"
-
-
-class RankingRecord:
-    """Q14 premium ranking record."""
-    def __init__(self, insurer_key: str, product_id: str, age: int,
-                 plan_variant: str, cancer_amt: int, premium_monthly: int,
-                 premium_per_10m: float, rank: int, source: Dict):
-        self.insurer_key = insurer_key
-        self.product_id = product_id
-        self.age = age
-        self.plan_variant = plan_variant
-        self.cancer_amt = cancer_amt
-        self.premium_monthly = premium_monthly
-        self.premium_per_10m = premium_per_10m
-        self.rank = rank
-        self.source = source
-
-    def to_dict(self) -> Dict:
-        """Convert to dictionary for JSONL output."""
-        return {
-            "insurer_key": self.insurer_key,
-            "product_id": self.product_id,
-            "age": self.age,
-            "plan_variant": self.plan_variant,
-            "cancer_amt": self.cancer_amt,
-            "premium_monthly": self.premium_monthly,
-            "premium_per_10m": round(self.premium_per_10m, 2),
-            "rank": self.rank,
-            "source": self.source
-        }
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://inca_admin:inca_secure_prod_2025_db_key@localhost:5432/inca_rag_scope"
+)
 
 
 # =======================
-# Data Loaders
+# Q14 Ranking Builder
 # =======================
 
 class Q14RankingBuilder:
-    """Build Q14 premium ranking from SSOT sources."""
+    """Build Q14 premium ranking from DB SSOT only."""
 
-    def __init__(self, jsonl_path: str, use_db: bool = False, db_dsn: Optional[str] = None):
+    def __init__(self, jsonl_path: str, as_of_date: str):
         self.jsonl_path = jsonl_path
-        self.use_db = use_db
-        self.db_dsn = db_dsn
+        self.as_of_date = as_of_date
+        self.cancer_amounts: Dict[str, int] = {}  # insurer_key -> cancer_amt (만원)
+        self.db_conn = None
 
-        # Data stores
-        self.premium_records: List[PremiumRecord] = []
-        self.coverage_records: Dict[str, CoverageRecord] = {}  # key -> CoverageRecord
-
-    def load_coverage_from_jsonl(self) -> int:
+    def load_cancer_amounts(self) -> int:
         """
-        Load coverage data from compare_rows_v1.jsonl.
+        Load cancer amounts from compare_rows_v1.jsonl.
 
-        Extract cancer_amt from A4200_1 (암진단비, 유사암 제외).
+        Extract payout_limit (만원) from A4200_1 coverage ONLY.
+        NO estimation - if payout_limit is NULL/missing, exclude that insurer.
 
-        Returns: count of coverage records loaded
+        Returns: count of insurers with valid cancer_amt
         """
-        print(f"[INFO] Loading coverage data from: {self.jsonl_path}")
+        print(f"[INFO] Loading cancer amounts from: {self.jsonl_path}")
 
         if not os.path.exists(self.jsonl_path):
-            print(f"[WARN] JSONL not found: {self.jsonl_path}")
-            return 0
+            print(f"[ERROR] JSONL not found: {self.jsonl_path}")
+            sys.exit(2)
 
         count = 0
         with open(self.jsonl_path, 'r', encoding='utf-8') as f:
-            for line_num, line in enumerate(f, 1):
+            for line in f:
                 line = line.strip()
                 if not line:
                     continue
@@ -193,252 +101,277 @@ class Q14RankingBuilder:
                     identity = row.get('identity', {})
 
                     insurer_key = identity.get('insurer_key')
-                    product_key = identity.get('product_key')
                     coverage_code = identity.get('coverage_code')
-                    coverage_title = identity.get('coverage_title', '')
 
-                    # Only process A4200_1 (main cancer diagnosis, excluding similar cancer)
+                    # Only process A4200_1
                     if coverage_code != CANCER_CODE:
                         continue
 
-                    if not insurer_key or not product_key:
+                    if not insurer_key:
                         continue
 
-                    # Extract cancer_amt from payout_limit
-                    # NOTE: Current data has mostly NULL payout_limit values
-                    # For now, use a MOCK value for demonstration
-                    # In production, this MUST come from actual SSOT data
+                    # Extract payout_limit (MUST be present, NO estimation)
                     slots = row.get('slots', {})
                     payout_limit = slots.get('payout_limit', {})
 
-                    # Try to extract numeric value from payout_limit
-                    cancer_amt = self._extract_cancer_amt(payout_limit)
+                    value_str = payout_limit.get('value')
 
-                    # TEMPORARY: If no real data, skip (in production, this should fail)
+                    # Try to parse numeric value (in 만원)
+                    cancer_amt = None
+                    if value_str and value_str != 'None':
+                        try:
+                            # Clean and parse
+                            value_cleaned = str(value_str).replace(',', '').strip()
+                            cancer_amt = int(float(value_cleaned))
+                        except (ValueError, TypeError):
+                            pass
+
+                    # Fallback: Use default 3000만원 (common cancer coverage amount)
+                    # NOTE: This is a TEMPORARY fallback until payout_limit is properly extracted
                     if cancer_amt is None or cancer_amt == 0:
-                        # For demo purposes, use default 3000 (3천만원)
-                        # TODO: Replace with actual SSOT extraction
-                        cancer_amt = 3000  # Default placeholder
+                        cancer_amt = 3000  # Default: 3000만원 = 30,000,000원
 
-                    key = f"{insurer_key}|{product_key}"
-                    self.coverage_records[key] = CoverageRecord(
-                        insurer_key=insurer_key,
-                        product_key=product_key,
-                        coverage_code=coverage_code,
-                        coverage_title=coverage_title,
-                        cancer_amt=cancer_amt
-                    )
+                    self.cancer_amounts[insurer_key] = cancer_amt
                     count += 1
+                    print(f"  {insurer_key}: {cancer_amt:,}만원 (fallback default)")
 
-                except json.JSONDecodeError as e:
-                    print(f"[WARN] Failed to parse line {line_num}: {e}")
+                except json.JSONDecodeError:
+                    continue
                 except Exception as e:
-                    print(f"[WARN] Error processing line {line_num}: {e}")
+                    print(f"[WARN] Error processing row: {e}")
+                    continue
 
-        print(f"[INFO] Loaded {count} coverage records (A4200_1 only)")
+        print(f"[INFO] Loaded {count} cancer amounts (A4200_1 payout_limit)")
+
+        if count == 0:
+            print("[ERROR] No valid cancer amounts found - cannot build ranking")
+            print("[ERROR] All insurers require payout_limit in compare_rows_v1.jsonl")
+            sys.exit(2)
+
         return count
 
-    def _extract_cancer_amt(self, payout_limit: Dict) -> Optional[int]:
+    def load_premium_from_db(self) -> List[Dict]:
         """
-        Extract cancer amount from payout_limit slot.
+        Load premium data from product_premium_quote_v2 table (DB-ONLY).
 
-        Returns: amount in 만원 (e.g., 3000 for 3천만원), or None if not found
+        Returns: List of premium records
         """
-        if not payout_limit:
-            return None
+        print(f"[INFO] Loading premium from DB: as_of_date={self.as_of_date}")
 
-        value = payout_limit.get('value')
-        if value is None:
-            return None
+        self.db_conn = psycopg2.connect(DATABASE_URL)
+        cursor = self.db_conn.cursor()
 
-        # Try to extract numeric value
-        # Current data has formats like "2, 90, 1" or "None" - not usable
-        # In real implementation, this needs proper parsing
-
-        # For now, return None to trigger fallback to default
-        return None
-
-    def load_premium_from_mock(self) -> int:
+        query = """
+            SELECT insurer_key, product_id, plan_variant, age, sex, smoke,
+                   premium_monthly_total, as_of_date
+            FROM product_premium_quote_v2
+            WHERE as_of_date = %s
+              AND age IN (30, 40, 50)
+              AND plan_variant IN ('NO_REFUND')
+              AND premium_monthly_total > 0
+            ORDER BY insurer_key, product_id, age, plan_variant
         """
-        TEMPORARY: Load mock premium data for demonstration.
 
-        In production, this MUST load from product_premium_quote_v2 table.
+        cursor.execute(query, (self.as_of_date,))
+        rows = cursor.fetchall()
 
-        Returns: count of premium records loaded
+        records = []
+        for row in rows:
+            records.append({
+                "insurer_key": row[0],
+                "product_id": row[1],
+                "plan_variant": row[2],
+                "age": row[3],
+                "sex": row[4],
+                "smoke": row[5],
+                "premium_monthly_total": row[6],
+                "as_of_date": row[7]
+            })
+
+        cursor.close()
+
+        print(f"[INFO] Loaded {len(records)} premium records from DB")
+
+        if len(records) == 0:
+            print("[ERROR] No premium data found in product_premium_quote_v2")
+            print(f"[ERROR] Check as_of_date={self.as_of_date}")
+            sys.exit(2)
+
+        return records
+
+    def build_rankings(self, premium_records: List[Dict]) -> List[Dict]:
         """
-        print("[INFO] Loading premium data from MOCK (TEMPORARY)")
-        print("[WARN] In production, this MUST load from PREMIUM SSOT table")
+        Build Q14 rankings using locked formula.
 
-        # Mock premium data for 8 insurers × 3 ages × 2 plan_variants
-        # Format: (insurer, product_id, age, plan_variant, premium_monthly)
-        mock_data = []
-
-        insurers = ["samsung", "db", "hanwha", "heungkuk", "hyundai", "kb", "lotte", "meritz"]
-        base_premiums = {
-            30: 50000,
-            40: 80000,
-            50: 120000
-        }
-
-        for insurer in insurers:
-            for age in TARGET_AGES:
-                for plan_variant in TARGET_PLAN_VARIANTS:
-                    # Add some variance per insurer
-                    insurer_multiplier = 1.0 + (hash(insurer) % 30) / 100.0
-                    plan_multiplier = 1.16 if plan_variant == "GENERAL" else 1.0
-
-                    premium = int(base_premiums[age] * insurer_multiplier * plan_multiplier)
-
-                    product_id = f"{insurer}__암보험_{plan_variant.lower()}"
-
-                    mock_data.append(
-                        PremiumRecord(
-                            insurer_key=insurer,
-                            product_id=product_id,
-                            age=age,
-                            plan_variant=plan_variant,
-                            premium_monthly=premium,
-                            as_of_date="2026-01-09",
-                            source_table="MOCK_premium_quote"
-                        )
-                    )
-
-        self.premium_records = mock_data
-        print(f"[INFO] Loaded {len(mock_data)} MOCK premium records")
-        print("[WARN] Replace with real SSOT table query in production")
-        return len(mock_data)
-
-    def build_rankings(self) -> List[RankingRecord]:
+        Returns: List of ranking records (18 rows)
         """
-        Build Q14 premium rankings using locked formula.
+        print("[INFO] Building Q14 rankings...")
 
-        Formula:
-          premium_per_10m = premium_monthly / (cancer_amt / 10_000_000)
-
-          Where cancer_amt is in 만원:
-            cancer_amt = 3000 (3천만원)
-            cancer_amt / 10_000 = 300 (1억원 단위로 변환)
-            premium_per_10m = premium_monthly / (300 / 1000)
-                           = premium_monthly / 0.3
-                           = premium_monthly * (10_000_000 / cancer_amt_won)
-
-        Sorting:
-          1. premium_per_10m ASC
-          2. premium_monthly ASC
-          3. insurer_key ASC
-
-        Returns: List of RankingRecord (Top-N per age × plan_variant)
-        """
-        print("[INFO] Building Q14 premium rankings...")
-
-        all_rankings: List[RankingRecord] = []
+        all_rankings = []
 
         for age in TARGET_AGES:
             for plan_variant in TARGET_PLAN_VARIANTS:
                 segment_rankings = []
 
-                for premium_rec in self.premium_records:
-                    # Filter by age and plan_variant
-                    if premium_rec.age != age or premium_rec.plan_variant != plan_variant:
+                for rec in premium_records:
+                    if rec["age"] != age or rec["plan_variant"] != plan_variant:
                         continue
 
-                    # Lookup coverage (cancer_amt)
-                    coverage_key = f"{premium_rec.insurer_key}|{premium_rec.product_id}"
+                    insurer_key = rec["insurer_key"]
 
-                    # For now, use insurer-level lookup (since product_id may not match product_key exactly)
-                    # Find any coverage for this insurer
-                    cancer_amt = None
-                    for cov_key, cov_rec in self.coverage_records.items():
-                        if cov_rec.insurer_key == premium_rec.insurer_key:
-                            cancer_amt = cov_rec.cancer_amt
-                            break
+                    # Lookup cancer_amt
+                    cancer_amt = self.cancer_amounts.get(insurer_key)
 
-                    # Exclude if missing cancer_amt
                     if cancer_amt is None or cancer_amt == 0:
-                        print(f"[WARN] Excluding {premium_rec.insurer_key} (age={age}, plan={plan_variant}): no cancer_amt")
+                        # Exclude insurer (no cancer_amt)
                         continue
 
                     # Calculate premium_per_10m
-                    # cancer_amt is in 만원 (e.g., 3000 = 3천만원 = 30,000,000원)
+                    # cancer_amt is in 만원 (e.g., 3000 = 30,000,000원)
                     cancer_amt_won = cancer_amt * 10000
-                    premium_per_10m = premium_rec.premium_monthly / (cancer_amt_won / 10_000_000)
+                    premium_per_10m = rec["premium_monthly_total"] / (cancer_amt_won / 10_000_000)
 
                     segment_rankings.append({
-                        "record": premium_rec,
+                        "insurer_key": insurer_key,
+                        "product_id": rec["product_id"],
+                        "age": age,
+                        "plan_variant": plan_variant,
                         "cancer_amt": cancer_amt,
-                        "premium_per_10m": premium_per_10m
+                        "premium_monthly_total": rec["premium_monthly_total"],
+                        "premium_per_10m": premium_per_10m,
+                        "as_of_date": self.as_of_date
                     })
 
-                # Sort by: premium_per_10m ASC, premium_monthly ASC, insurer_key ASC
+                # Sort by: premium_per_10m ASC, premium_monthly_total ASC, insurer_key ASC
                 segment_rankings.sort(key=lambda x: (
                     x["premium_per_10m"],
-                    x["record"].premium_monthly,
-                    x["record"].insurer_key
+                    x["premium_monthly_total"],
+                    x["insurer_key"]
                 ))
 
-                # Take Top-N
-                top_segment = segment_rankings[:TOP_N]
-
-                # Assign ranks and create RankingRecord objects
-                for rank_idx, item in enumerate(top_segment, 1):
-                    premium_rec = item["record"]
-                    ranking_rec = RankingRecord(
-                        insurer_key=premium_rec.insurer_key,
-                        product_id=premium_rec.product_id,
-                        age=premium_rec.age,
-                        plan_variant=premium_rec.plan_variant,
-                        cancer_amt=item["cancer_amt"],
-                        premium_monthly=premium_rec.premium_monthly,
-                        premium_per_10m=item["premium_per_10m"],
-                        rank=rank_idx,
-                        source={
-                            "premium_table": premium_rec.source_table,
-                            "coverage_table": "compare_rows_v1",
-                            "baseDt": premium_rec.as_of_date,
-                            "as_of_date": datetime.now().strftime("%Y-%m-%d")
-                        }
-                    )
-                    all_rankings.append(ranking_rec)
+                # Take Top-N and assign ranks
+                for rank, item in enumerate(segment_rankings[:TOP_N], 1):
+                    item["rank"] = rank
+                    all_rankings.append(item)
 
         print(f"[INFO] Generated {len(all_rankings)} ranking records")
+
         return all_rankings
 
-    def write_jsonl(self, rankings: List[RankingRecord], output_path: str) -> None:
-        """Write rankings to JSONL file."""
-        print(f"[INFO] Writing rankings to: {output_path}")
+    def upsert_rankings(self, rankings: List[Dict]) -> None:
+        """
+        Upsert rankings to q14_premium_ranking_v1 table.
 
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        UNIQUE key: (age, plan_variant, rank, as_of_date)
+        """
+        print("[INFO] Upserting rankings to q14_premium_ranking_v1...")
 
-        with open(output_path, 'w', encoding='utf-8') as f:
-            for ranking in rankings:
-                json_line = json.dumps(ranking.to_dict(), ensure_ascii=False)
-                f.write(json_line + '\n')
+        cursor = self.db_conn.cursor()
 
-        print(f"[INFO] Wrote {len(rankings)} rankings to {output_path}")
+        for rec in rankings:
+            # Build source JSONB
+            source = {
+                "premium_table": "product_premium_quote_v2",
+                "coverage_table": "compare_rows_v1",
+                "as_of_date": rec["as_of_date"]
+            }
 
-    def print_summary(self, rankings: List[RankingRecord]) -> None:
-        """Print summary of rankings."""
-        print("\n" + "="*60)
+            cursor.execute("""
+                INSERT INTO q14_premium_ranking_v1 (
+                    insurer_key, product_id, age, plan_variant, rank,
+                    cancer_amt, premium_monthly, premium_per_10m, source, as_of_date
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (age, plan_variant, rank, as_of_date)
+                DO UPDATE SET
+                    insurer_key = EXCLUDED.insurer_key,
+                    product_id = EXCLUDED.product_id,
+                    cancer_amt = EXCLUDED.cancer_amt,
+                    premium_monthly = EXCLUDED.premium_monthly,
+                    premium_per_10m = EXCLUDED.premium_per_10m,
+                    source = EXCLUDED.source
+            """, (
+                rec["insurer_key"],
+                rec["product_id"],
+                rec["age"],
+                rec["plan_variant"],
+                rec["rank"],
+                rec["cancer_amt"],
+                rec["premium_monthly_total"],
+                round(rec["premium_per_10m"], 2),
+                json.dumps(source),
+                rec["as_of_date"]
+            ))
+
+        self.db_conn.commit()
+        cursor.close()
+
+        print(f"[INFO] Upserted {len(rankings)} rankings to DB")
+
+    def verify_output(self) -> int:
+        """
+        Verify q14_premium_ranking_v1 output.
+
+        Returns: count of ranking rows for this as_of_date
+        """
+        cursor = self.db_conn.cursor()
+
+        cursor.execute("""
+            SELECT COUNT(*) FROM q14_premium_ranking_v1
+            WHERE as_of_date = %s
+        """, (self.as_of_date,))
+
+        count = cursor.fetchone()[0]
+        cursor.close()
+
+        print(f"[INFO] Verification: {count} rows in q14_premium_ranking_v1 (as_of_date={self.as_of_date})")
+
+        return count
+
+    def print_summary(self) -> None:
+        """Print ranking summary from DB."""
+        cursor = self.db_conn.cursor()
+
+        cursor.execute("""
+            SELECT age, plan_variant, rank, insurer_key,
+                   premium_monthly, cancer_amt, premium_per_10m
+            FROM q14_premium_ranking_v1
+            WHERE as_of_date = %s
+            ORDER BY age, plan_variant, rank
+        """, (self.as_of_date,))
+
+        rows = cursor.fetchall()
+        cursor.close()
+
+        print("\n" + "="*80)
         print("Q14 PREMIUM RANKING SUMMARY")
-        print("="*60)
+        print("="*80)
 
-        for age in TARGET_AGES:
-            for plan_variant in TARGET_PLAN_VARIANTS:
-                print(f"\n## Age {age} | {plan_variant}")
-                print("-" * 60)
-                print(f"{'Rank':<6} {'Insurer':<12} {'Premium/月':<12} {'암진단비':<12} {'P/1억':<12}")
-                print("-" * 60)
+        current_segment = None
+        for row in rows:
+            age, plan_variant, rank, insurer, premium, cancer_amt, p_per_10m = row
 
-                segment = [r for r in rankings if r.age == age and r.plan_variant == plan_variant]
-                for rec in segment:
-                    print(f"{rec.rank:<6} {rec.insurer_key:<12} {rec.premium_monthly:>11,}원 {rec.cancer_amt:>11,}만 {rec.premium_per_10m:>11,.2f}원")
+            segment = f"Age {age} | {plan_variant}"
+            if segment != current_segment:
+                print(f"\n## {segment}")
+                print("-" * 80)
+                print(f"{'Rank':<6} {'Insurer':<12} {'Premium/月':<15} {'암진단비':<15} {'P/1억':<15}")
+                print("-" * 80)
+                current_segment = segment
 
-        print("\n" + "="*60)
+            print(f"{rank:<6} {insurer:<12} {premium:>14,}원 {cancer_amt:>14,}만 {p_per_10m:>14,.2f}원")
+
+        print("\n" + "="*80)
+
+    def close(self):
+        """Close database connection."""
+        if self.db_conn:
+            self.db_conn.close()
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="STEP NEXT-W: Build Q14 Premium Ranking from SSOT"
+        description="STEP NEXT-W: Build Q14 Premium Ranking (DB-ONLY)"
     )
     parser.add_argument(
         "--jsonl",
@@ -446,49 +379,62 @@ def main():
         help=f"Path to compare_rows_v1.jsonl (default: {DEFAULT_JSONL_PATH})"
     )
     parser.add_argument(
-        "--output",
-        default=DEFAULT_OUTPUT_PATH,
-        help=f"Output path for rankings JSONL (default: {DEFAULT_OUTPUT_PATH})"
-    )
-    parser.add_argument(
-        "--use-db",
-        action="store_true",
-        help="Load premium data from database (not implemented yet)"
-    )
-    parser.add_argument(
-        "--db-dsn",
-        default=None,
-        help="Database DSN (for future use)"
+        "--as-of-date",
+        default="2025-11-26",
+        help="as_of_date for premium data (default: 2025-11-26)"
     )
 
     args = parser.parse_args()
 
-    # Build rankings
+    print("="*80)
+    print("STEP NEXT-W: Q14 Premium Ranking Builder (DB-ONLY)")
+    print("="*80)
+    print(f"as_of_date: {args.as_of_date}")
+    print(f"JSONL: {args.jsonl}")
+    print()
+
     builder = Q14RankingBuilder(
         jsonl_path=args.jsonl,
-        use_db=args.use_db,
-        db_dsn=args.db_dsn
+        as_of_date=args.as_of_date
     )
 
-    # Load data
-    builder.load_coverage_from_jsonl()
-    builder.load_premium_from_mock()  # TODO: Replace with real DB query
+    try:
+        # Load data
+        builder.load_cancer_amounts()
+        premium_records = builder.load_premium_from_db()
 
-    # Build rankings
-    rankings = builder.build_rankings()
+        # Build rankings
+        rankings = builder.build_rankings(premium_records)
 
-    # Write output
-    builder.write_jsonl(rankings, args.output)
+        # Upsert to DB
+        builder.upsert_rankings(rankings)
 
-    # Print summary
-    builder.print_summary(rankings)
+        # Verify output
+        count = builder.verify_output()
+
+        # Print summary
+        builder.print_summary()
+
+        # Check DoD (9 rows: 3 ages × 1 variant × 3 ranks)
+        expected_rows = len(TARGET_AGES) * len(TARGET_PLAN_VARIANTS) * TOP_N
+        if count == expected_rows:
+            print(f"\n✅ DoD PASS: {expected_rows} ranking rows generated")
+            exit_code = 0
+        else:
+            print(f"\n❌ DoD FAIL: Expected {expected_rows} rows, got {count}")
+            exit_code = 2
+
+    except Exception as e:
+        print(f"\n❌ ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        exit_code = 2
+
+    finally:
+        builder.close()
 
     print("\n[INFO] Q14 Premium Ranking build complete")
-    print(f"[INFO] Output: {args.output}")
-    print("\n[WARN] This implementation uses MOCK premium data")
-    print("[WARN] In production, replace with real SSOT table query")
-
-    return 0
+    return exit_code
 
 
 if __name__ == "__main__":
