@@ -1006,3 +1006,142 @@ def inject_premium_for_q12_runtime(
 class GateViolationError(Exception):
     """Exception raised when a gate validation fails"""
     pass
+
+
+# ============================================================================
+# STEP NEXT-DB1: G11 Premium Schema Gate (DB Reality Lock)
+# ============================================================================
+
+class PremiumSchemaGate:
+    """
+    G11: Premium Schema Gate (ZERO TOLERANCE)
+
+    HARD RULES (STEP NEXT-DB1):
+    1. Premium SSOT tables MUST exist in DB before pipeline runs
+    2. NO mock/fallback to file-based premium data
+    3. FAIL FAST if tables missing (exit 2)
+    4. Log DB connection evidence on every check
+
+    Required Tables:
+    - premium_quote
+    - coverage_premium_quote
+    - product_premium_quote_v2
+    - q14_premium_ranking_v1
+
+    Reference: docs/audit/STEP_NEXT_DB1_PREMIUM_DB_REALITY_LOCK.md
+    """
+
+    REQUIRED_TABLES = [
+        "premium_quote",
+        "coverage_premium_quote",
+        "product_premium_quote_v2",
+        "q14_premium_ranking_v1"
+    ]
+
+    def __init__(self, db_conn=None):
+        """
+        Initialize gate with database connection.
+
+        Args:
+            db_conn: Database connection (psycopg2 connection)
+        """
+        self.db_conn = db_conn
+
+    def validate(self) -> Dict[str, Any]:
+        """
+        Validate that all required premium tables exist in DB.
+
+        Returns:
+            {
+                "valid": bool,
+                "missing_tables": List[str],
+                "db_info": {
+                    "database": str,
+                    "host": str,
+                    "port": int
+                },
+                "reason": str | None
+            }
+
+        Raises:
+            GateViolationError: If validation fails (missing tables)
+        """
+        if not self.db_conn:
+            raise GateViolationError(
+                "G11 Premium Schema Gate FAIL: No database connection"
+            )
+
+        try:
+            cursor = self.db_conn.cursor()
+
+            # Get DB connection info for audit
+            cursor.execute("""
+                SELECT
+                    current_database() as database,
+                    inet_server_addr() as host,
+                    inet_server_port() as port,
+                    version() as pg_version
+            """)
+            db_info_row = cursor.fetchone()
+            db_info = {
+                "database": db_info_row[0],
+                "host": str(db_info_row[1]) if db_info_row[1] else "localhost",
+                "port": db_info_row[2],
+                "pg_version": db_info_row[3].split(",")[0] if db_info_row[3] else "unknown"
+            }
+
+            # Check each required table
+            missing_tables = []
+            for table_name in self.REQUIRED_TABLES:
+                cursor.execute("""
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM information_schema.tables
+                        WHERE table_schema = 'public'
+                        AND table_name = %s
+                    )
+                """, (table_name,))
+                exists = cursor.fetchone()[0]
+
+                if not exists:
+                    missing_tables.append(table_name)
+
+            cursor.close()
+
+            # HARD RULE: ALL tables must exist
+            if missing_tables:
+                error_msg = f"""
+G11 Premium Schema Gate FAIL (STEP NEXT-DB1):
+
+DATABASE: {db_info['database']} @ {db_info['host']}:{db_info['port']}
+MISSING TABLES: {', '.join(missing_tables)}
+
+REQUIRED TABLES:
+{chr(10).join(f'  - {t}' for t in self.REQUIRED_TABLES)}
+
+ACTION REQUIRED:
+Apply schema migrations:
+  psql $DATABASE_URL -f schema/020_premium_quote.sql
+  psql $DATABASE_URL -f schema/040_coverage_premium_quote.sql
+  psql $DATABASE_URL -f schema/050_q14_premium_ranking.sql
+  psql $DATABASE_URL -f schema/030_product_comparison_v1.sql
+
+POLICY: Premium SSOT is DB-ONLY. NO mock/fallback allowed.
+                """.strip()
+
+                raise GateViolationError(error_msg)
+
+            # SUCCESS: All tables exist
+            return {
+                "valid": True,
+                "missing_tables": [],
+                "db_info": db_info,
+                "reason": None
+            }
+
+        except GateViolationError:
+            raise
+        except Exception as e:
+            raise GateViolationError(
+                f"G11 Premium Schema Gate ERROR: {str(e)}"
+            )

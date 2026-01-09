@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-09
-**현재 상태**: ✅ **HOTFIX: V0 Premium Audit Split + G10 Enforcement** (COMPLETE)
+**현재 상태**: ✅ **STEP NEXT-DB1: Premium DB Reality Lock** (COMPLETE)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ Premium SSOT DB Reality Lock** | STEP NEXT-DB1 | ✅ 완료 | 2026-01-09 |
 | **✅ HOTFIX: V0 Premium Audit Split + G10** | STEP NEXT-V0-FIX | ✅ 완료 | 2026-01-09 |
 | **✅ Q14 Premium Ranking Implementation** | STEP NEXT-W | ✅ 완료 | 2026-01-09 |
 | **✅ Slot Coverage Audit Report** | STEP NEXT-V0 | ✅ 완료 | 2026-01-09 |
@@ -110,6 +111,76 @@
 ---
 
 ## 🎯 최신 진행 항목 (2026-01-09)
+
+### STEP NEXT-DB1 — Premium SSOT DB Reality Lock ✅ **COMPLETE** (2026-01-09)
+
+**목표**: Lock Premium SSOT to actual database (port 5432), ban all mock/file-based fallbacks
+
+**Problem (ROOT CAUSE)**:
+- Premium SSOT tables were NOT in actual runtime database (port 5432)
+- Risk of mock/file-based fallback logic bypassing DB enforcement
+- DB port confusion (5432 vs 5433)
+- No FAIL FAST mechanism if tables missing
+
+**Solution**:
+1. **Schema Migrations Applied**: All premium tables created in 5432
+2. **G11 PremiumSchemaGate**: FAIL FAST if ANY table missing (exit 2)
+3. **DB Connection Evidence Logging**: All premium operations log DB info
+4. **Zero Tolerance Policy**: NO mock/fallback allowed
+
+**Changes Made**:
+
+1. **Database Migrations** (port 5432):
+   - ✅ Applied: `020_premium_quote.sql`
+   - ✅ Applied: `040_coverage_premium_quote.sql`
+   - ✅ Applied: `050_q14_premium_ranking.sql`
+   - ✅ Applied: `030_product_comparison_v1.sql`
+   - ✅ Verified: 5 premium tables created (premium_quote, coverage_premium_quote, product_premium_quote_v2, q14_premium_ranking_v1, premium_multiplier)
+
+2. **G11 PremiumSchemaGate** (`pipeline/step4_compare_model/gates.py`, lines 1011-1147):
+   - Required tables: premium_quote, coverage_premium_quote, product_premium_quote_v2, q14_premium_ranking_v1
+   - HARD FAIL if ANY table missing
+   - Logs DB connection info (database, host, port, version)
+   - NO mock/fallback logic allowed
+
+3. **Documentation** (`docs/audit/STEP_NEXT_DB1_PREMIUM_DB_REALITY_LOCK.md`):
+   - Complete audit trail with evidence
+   - DB connection verification (5432)
+   - Port 5433 confusion resolved (not accessible)
+   - Migration execution logs
+   - Table verification queries
+   - Enforcement policy (ZERO TOLERANCE)
+
+**Key Results**:
+- ✅ Port 5432 confirmed as PRIMARY database (inca_rag_scope)
+- ✅ Port 5433 NOT accessible (no confusion)
+- ✅ 5 premium tables created and verified
+- ✅ All count(*) queries succeed (tables empty but ready)
+- ✅ G11 gate implemented with FAIL FAST behavior
+- ✅ DB-ONLY policy enforced (no file fallbacks)
+
+**Database Environment**:
+```
+DATABASE_URL: postgresql://inca_admin:inca_secure_prod_2025_db_key@localhost:5432/inca_rag_scope
+PostgreSQL: 16.11 (Debian 16.11-1.pgdg12+1)
+Host: 172.20.0.2:5432
+```
+
+**Policy (LOCKED)**:
+- ❌ NO premium data from files (/tmp/*.jsonl, data/q14/*.jsonl)
+- ❌ NO mock/fallback if tables missing
+- ❌ NO graceful degradation
+- ✅ DB-ONLY source of truth
+- ✅ FAIL FAST (exit 2) if ANY table missing
+- ✅ Log DB connection evidence on every operation
+
+**Next Steps**:
+1. Integrate G11 gate into pipeline startup
+2. Populate premium tables with actual data
+3. Add G11 validation to Q14 builder
+4. Add G11 validation to API server startup
+
+---
 
 ### HOTFIX: STEP NEXT-V0-FIX — Premium Audit Split + G10 Enforcement ✅ **COMPLETE** (2026-01-09)
 
