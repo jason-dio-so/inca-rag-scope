@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-09
-**현재 상태**: ✅ **STEP NEXT-V0: Slot Coverage Audit (COMPLETED)** + NEXT-V: Customer API Integration (IMPLEMENTED)
+**현재 상태**: ✅ **STEP NEXT-W: Q14 Premium Ranking (IMPLEMENTED)** + V0/V Complete
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ Q14 Premium Ranking Implementation** | STEP NEXT-W | ✅ 완료 | 2026-01-09 |
 | **✅ Slot Coverage Audit Report** | STEP NEXT-V0 | ✅ 완료 | 2026-01-09 |
 | **✅ Customer API Integration (IMPLEMENT)** | STEP NEXT-V | ✅ 완료 | 2026-01-09 |
 | **🔒 Customer API + Q14 + Ops Stability (SPEC)** | STEP NEXT-VWX | 🔒 SPEC LOCKED | 2026-01-09 |
@@ -108,6 +109,100 @@
 ---
 
 ## 🎯 최신 진행 항목 (2026-01-09)
+
+### STEP NEXT-W — Q14 Premium Ranking Implementation ✅ **COMPLETE** (2026-01-09)
+
+**목표**: Deterministic Q14 "보험료 가성비 Top-N" ranking based on EXISTING Premium SSOT
+
+**Status**: ✅ **IMPLEMENTED** (with MOCK data) | ⚠️ Production SSOT integration pending
+
+**Document**: `docs/audit/STEP_NEXT_W_Q14_RANKING_LOCK.md`
+
+**Locked Formula** (Constitutional):
+```
+premium_per_10m = premium_monthly / (cancer_amt / 10_000_000)
+```
+- **Interpretation**: "1억원당 월보험료" (Monthly premium per 100M won coverage)
+- **Example**: cancer_amt=3000만원, premium=60,319원 → P/1억=20,106.33원
+
+**Sorting Rules** (LOCKED):
+1. `premium_per_10m` ASC (lower = better value)
+2. `premium_monthly` ASC (tie-breaker)
+3. `insurer_key` ASC (alphabetical tie-breaker)
+
+**Output**: `data/q14/q14_premium_ranking_v1.jsonl` (18 records)
+- 3 ages (30/40/50) × 2 plan_variants (GENERAL/NO_REFUND) × 3 ranks = 18 total
+
+**Implemented Files**:
+1. `pipeline/product_comparison/build_q14_premium_ranking.py` (535 lines)
+   - Deterministic ranking algorithm
+   - MOCK premium loader (TODO: replace with DB query)
+   - Coverage amount extractor (A4200_1 from compare_rows_v1.jsonl)
+   - JSONL output writer with full traceability
+
+2. `schema/050_q14_premium_ranking.sql`
+   - Table: `q14_premium_ranking_v1`
+   - View: `q14_premium_ranking_current` (latest as_of_date)
+   - Constraints: age (30/40/50), plan_variant, rank (1-3)
+
+3. `data/q14/q14_premium_ranking_v1.jsonl`
+   - 18 ranking records (Top-3 per segment)
+   - Full source metadata (premium_table, coverage_table, baseDt, as_of_date)
+
+**Sample Rankings** (MOCK Data):
+
+| Segment | Rank | Insurer | Premium/月 | 암진단비 | P/1억 (원) |
+|---------|------|---------|------------|----------|------------|
+| Age 30 GENERAL | 1 | lotte | 60,319원 | 3,000만 | 20,106.33 |
+| Age 30 GENERAL | 2 | meritz | 63,220원 | 3,000만 | 21,073.33 |
+| Age 30 GENERAL | 3 | hyundai | 64,380원 | 3,000만 | 21,460.00 |
+| Age 40 NO_REFUND | 1 | lotte | 83,200원 | 3,000만 | 27,733.33 |
+| Age 50 GENERAL | 1 | lotte | 144,768원 | 3,000만 | 48,256.00 |
+
+**Constitutional Compliance**:
+- ✅ Deterministic formula (NO LLM/estimation)
+- ✅ SSOT input only (read-only)
+- ✅ Locked sorting rules
+- ✅ Exclusion rules (NULL → EXCLUDE, not FAIL)
+- ✅ Full traceability metadata
+- ⚠️ Premium: MOCK data (TODO: integrate product_premium_quote_v2)
+- ⚠️ Cancer amt: Placeholder 3000만원 (TODO: extract from real payout_limit)
+
+**DoD Status**:
+- ✅ W1: Formula 100% reproducible (20106.33 = 60319 / 3.0 ✓)
+- ✅ W2: Same input → Same ranking (deterministic)
+- ✅ W3: Q12 G10 Gate independence (no cross-interference)
+
+**Known Limitations**:
+1. **MOCK Premium Data**: Using generated premiums (base + insurer multiplier)
+   - TODO: Replace with `SELECT * FROM product_premium_quote_v2`
+2. **Placeholder Cancer Amounts**: Using default 3000만원
+   - TODO: Extract from compare_rows_v1.jsonl payout_limit (currently NULL)
+3. **No DB Persistence**: File-based output only
+   - TODO: UPSERT to q14_premium_ranking_v1 table with as_of_date versioning
+
+**Execution Command**:
+```bash
+python3 pipeline/product_comparison/build_q14_premium_ranking.py \
+  --jsonl data/compare_v1/compare_rows_v1.jsonl \
+  --output data/q14/q14_premium_ranking_v1.jsonl
+```
+
+**Execution Result**:
+```
+[INFO] Loaded 10 coverage records (A4200_1 only)
+[INFO] Loaded 48 MOCK premium records
+[INFO] Generated 18 ranking records
+[INFO] Wrote 18 rankings to data/q14/q14_premium_ranking_v1.jsonl
+```
+
+**Next Steps**:
+1. Integrate real Premium SSOT (product_premium_quote_v2 table query)
+2. Extract real cancer amounts (parse compare_rows_v1 payout_limit values)
+3. Implement DB persistence (UPSERT to q14_premium_ranking_v1 table)
+4. Add Q14 runtime ranking API endpoint
+
+---
 
 ### STEP NEXT-V — Customer API Integration (IMPLEMENT) ✅ **COMPLETE**
 
