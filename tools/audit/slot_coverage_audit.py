@@ -76,7 +76,12 @@ class SlotCoverageAuditor:
         return len(self.rows)
 
     def load_policy(self) -> None:
-        """Load policy JSON to extract expected slots."""
+        """
+        Load policy JSON to extract expected slots.
+
+        NOTE: premium_monthly is NOT a document slot - it's runtime SSOT only.
+        We intentionally DO NOT add it to expected_slots here.
+        """
         if not self.policy_json_path or not os.path.exists(self.policy_json_path):
             print(f"[INFO] Policy JSON not found or not specified, skipping expected slots extraction")
             return
@@ -85,15 +90,16 @@ class SlotCoverageAuditor:
         with open(self.policy_json_path, 'r', encoding='utf-8') as f:
             self.policy_data = json.load(f)
 
-        # Extract expected slots from policy (Q12 premium requirements, etc.)
+        # Extract expected slots from policy
+        # NOTE: We intentionally EXCLUDE premium_monthly because it's a runtime-only slot
+        # that is injected via SSOT, not extracted from documents
         routing_rules = self.policy_data.get("routing_rules", {})
-        for q_id, q_data in routing_rules.items():
-            special_rules = q_data.get("special_rules", {})
-            if special_rules.get("requires_premium"):
-                self.expected_slots.add(self.premium_slot)
-            # Add other expected slots based on policy (can be extended)
+
+        # Document-based slots only (can be extended in future)
+        # Premium slots are handled by separate premium_runtime_audit.py
 
         print(f"[INFO] Extracted {len(self.expected_slots)} expected slots from policy")
+        print(f"[INFO] NOTE: premium_monthly is NOT included (runtime-only slot, see premium_runtime_audit.py)")
 
     def extract_slots_from_row(self, row: Dict) -> Tuple[str, Dict[str, Any]]:
         """
@@ -225,25 +231,24 @@ class SlotCoverageAuditor:
 
     def check_premium_gate_q12(self) -> Dict[str, Any]:
         """
-        Check Q12 Premium Gate (G10) compliance.
+        Check Q12 Premium Gate (G10) compliance for DOCUMENT SLOTS.
 
-        Rule: If ANY insurer has missing premium → FAIL
+        IMPORTANT: premium_monthly is a RUNTIME-ONLY slot injected via SSOT.
+        This audit CANNOT determine Q12 readiness - use premium_runtime_audit.py instead.
 
         Returns: {
             "premium_slot": str,
             "insurers": {insurer: {present: int, missing: int, ratio: float}},
-            "gate_status": "PASS" | "FAIL",
+            "gate_status": "N/A (Runtime-only)",
             "reason": str
         }
         """
         premium_data = {
             "premium_slot": self.premium_slot,
             "insurers": {},
-            "gate_status": "UNKNOWN",
-            "reason": ""
+            "gate_status": "N/A",
+            "reason": "premium_monthly is a runtime-only slot (not in JSONL). Use premium_runtime_audit.py for Q12 G10 gate validation."
         }
-
-        has_any_missing = False
 
         for insurer, stats in self.insurer_stats.items():
             present = stats["slot_presence"].get(self.premium_slot, 0)
@@ -257,16 +262,6 @@ class SlotCoverageAuditor:
                 "total": total,
                 "ratio": ratio
             }
-
-            if missing > 0:
-                has_any_missing = True
-
-        if has_any_missing:
-            premium_data["gate_status"] = "FAIL"
-            premium_data["reason"] = "G10 Gate: At least one insurer has missing premium data"
-        else:
-            premium_data["gate_status"] = "PASS"
-            premium_data["reason"] = "All insurers have complete premium data"
 
         return premium_data
 
@@ -299,20 +294,27 @@ class SlotCoverageAuditor:
             f.write("- ✅ Measurement only (no LLM estimation or imputation)\n")
             f.write("- ✅ Q12 Premium Gate (G10): FAIL if ANY insurer has missing premium\n\n")
 
-            # Q12 Premium Gate Status
+            # Runtime-Only Slots Section
             f.write("---\n\n")
-            f.write("## Q12 Premium Gate (G10) Status\n\n")
-            f.write(f"**Premium Slot**: `{premium_gate['premium_slot']}`\n\n")
-            f.write(f"**Gate Status**: **{premium_gate['gate_status']}**\n\n")
-            f.write(f"**Reason**: {premium_gate['reason']}\n\n")
+            f.write("## Runtime-Only Slots (Not in JSONL)\n\n")
+            f.write("**Important**: Some slots are NOT extracted from documents but injected at runtime via SSOT.\n\n")
+            f.write(f"**Runtime-Only Slot**: `{premium_gate['premium_slot']}`\n\n")
+            f.write("**JSONL Coverage**: 0% (Expected - this is NOT a document slot)\n\n")
+            f.write(f"**Note**: {premium_gate['reason']}\n\n")
 
-            f.write("### Premium Coverage by Insurer\n\n")
+            f.write("### Q12 Premium Gate (G10) - Runtime Validation Required\n\n")
+            f.write("**Q12 Readiness Status**: ⚠️ **NOT DETERMINED** (requires Premium Runtime Audit)\n\n")
+            f.write("**Why**: `premium_monthly` is injected at runtime from Premium SSOT, not extracted from documents.\n\n")
+            f.write("**Action Required**: Run `tools/audit/premium_runtime_audit.py` to validate Q12 G10 gate compliance.\n\n")
+
+            f.write("### Premium Slot in JSONL (for reference)\n\n")
             f.write("| Insurer | Present | Missing | Total | Ratio |\n")
             f.write("|---------|---------|---------|-------|-------|\n")
             for insurer, pdata in sorted(premium_gate["insurers"].items()):
                 f.write(f"| {insurer} | {pdata['present']} | {pdata['missing']} | "
                        f"{pdata['total']} | {pdata['ratio']:.2%} |\n")
             f.write("\n")
+            f.write("**Expected Result**: All 0 (premium is runtime-only)\n\n")
 
             # Insurer-Level Statistics
             f.write("---\n\n")
@@ -381,7 +383,8 @@ class SlotCoverageAuditor:
                         f.write(f"- `{slot}`\n")
                     f.write("\n")
                 else:
-                    f.write("✅ All policy-expected slots have at least one occurrence in JSONL.\n\n")
+                    f.write("✅ All policy-expected document slots have at least one occurrence in JSONL.\n\n")
+                    f.write("**Note**: Runtime-only slots (like `premium_monthly`) are intentionally excluded from this check.\n\n")
 
             # Footer
             f.write("---\n\n")
@@ -390,8 +393,9 @@ class SlotCoverageAuditor:
             f.write(f"- **Execution Time**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"- **JSONL Rows**: {len(self.rows)}\n")
             f.write(f"- **Insurers**: {len(self.insurer_stats)}\n")
-            f.write(f"- **Unique Slots**: {len(self.all_slots)}\n")
-            f.write(f"- **Premium Gate (Q12)**: **{premium_gate['gate_status']}**\n")
+            f.write(f"- **Unique Document Slots**: {len(self.all_slots)}\n")
+            f.write(f"- **Runtime-Only Slots**: `premium_monthly` (see Premium Runtime Audit)\n")
+            f.write(f"- **Q12 Readiness**: ⚠️ NOT DETERMINED (Premium Runtime Audit required)\n")
             f.write("\n")
 
         print(f"[INFO] Markdown report written to: {output_path}")

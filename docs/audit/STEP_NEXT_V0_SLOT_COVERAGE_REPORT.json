@@ -1,11 +1,11 @@
 {
   "metadata": {
-    "generated_at": "2026-01-09T17:33:26.294507",
+    "generated_at": "2026-01-09T17:51:29.129444",
     "jsonl_source": "data/compare_v1/compare_rows_v1.jsonl",
     "policy_source": "data/policy/question_card_routing.json",
     "total_rows": 340,
     "total_insurers": 8,
-    "total_slots": 8
+    "total_slots": 7
   },
   "premium_gate_q12": {
     "premium_slot": "premium_monthly",
@@ -59,8 +59,8 @@
         "ratio": 0.0
       }
     },
-    "gate_status": "PASS",
-    "reason": "All insurers have complete premium data"
+    "gate_status": "N/A",
+    "reason": "premium_monthly is a runtime-only slot (not in JSONL). Use premium_runtime_audit.py for Q12 G10 gate validation."
   },
   "insurer_stats": {
     "samsung": {
@@ -175,12 +175,6 @@
       "total_count": 340,
       "present_ratio": 1.0
     },
-    "payout_limit": {
-      "present_count": 340,
-      "missing_count": 0,
-      "total_count": 340,
-      "present_ratio": 1.0
-    },
     "entry_age": {
       "present_count": 340,
       "missing_count": 0,
@@ -193,11 +187,11 @@
       "total_count": 340,
       "present_ratio": 1.0
     },
-    "premium_monthly": {
-      "present_count": 0,
+    "exclusions": {
+      "present_count": 340,
       "missing_count": 0,
-      "total_count": 0,
-      "present_ratio": 0.0
+      "total_count": 340,
+      "present_ratio": 1.0
     },
     "start_date": {
       "present_count": 340,
@@ -205,13 +199,13 @@
       "total_count": 340,
       "present_ratio": 1.0
     },
-    "waiting_period": {
+    "payout_limit": {
       "present_count": 340,
       "missing_count": 0,
       "total_count": 340,
       "present_ratio": 1.0
     },
-    "exclusions": {
+    "waiting_period": {
       "present_count": 340,
       "missing_count": 0,
       "total_count": 340,

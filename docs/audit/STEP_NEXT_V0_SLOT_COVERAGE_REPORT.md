@@ -1,6 +1,6 @@
 # STEP NEXT-V0: Slot Coverage Audit Report
 
-**Generated**: 2026-01-09 17:33:26
+**Generated**: 2026-01-09 17:51:29
 
 **JSONL Source**: `data/compare_v1/compare_rows_v1.jsonl`
 
@@ -8,7 +8,7 @@
 
 **Total Insurers**: 8
 
-**Total Unique Slots**: 8
+**Total Unique Slots**: 7
 
 **Policy Source**: `data/policy/question_card_routing.json`
 
@@ -25,15 +25,25 @@ This report provides a deterministic audit of slot coverage in `compare_rows_v1.
 
 ---
 
-## Q12 Premium Gate (G10) Status
+## Runtime-Only Slots (Not in JSONL)
 
-**Premium Slot**: `premium_monthly`
+**Important**: Some slots are NOT extracted from documents but injected at runtime via SSOT.
 
-**Gate Status**: **PASS**
+**Runtime-Only Slot**: `premium_monthly`
 
-**Reason**: All insurers have complete premium data
+**JSONL Coverage**: 0% (Expected - this is NOT a document slot)
 
-### Premium Coverage by Insurer
+**Note**: premium_monthly is a runtime-only slot (not in JSONL). Use premium_runtime_audit.py for Q12 G10 gate validation.
+
+### Q12 Premium Gate (G10) - Runtime Validation Required
+
+**Q12 Readiness Status**: ⚠️ **NOT DETERMINED** (requires Premium Runtime Audit)
+
+**Why**: `premium_monthly` is injected at runtime from Premium SSOT, not extracted from documents.
+
+**Action Required**: Run `tools/audit/premium_runtime_audit.py` to validate Q12 G10 gate compliance.
+
+### Premium Slot in JSONL (for reference)
 
 | Insurer | Present | Missing | Total | Ratio |
 |---------|---------|---------|-------|-------|
@@ -45,6 +55,8 @@ This report provides a deterministic audit of slot coverage in `compare_rows_v1.
 | lotte | 0 | 0 | 0 | 0.00% |
 | meritz | 0 | 0 | 0 | 0.00% |
 | samsung | 0 | 0 | 0 | 0.00% |
+
+**Expected Result**: All 0 (premium is runtime-only)
 
 ---
 
@@ -68,13 +80,12 @@ This report provides a deterministic audit of slot coverage in `compare_rows_v1.
 | Slot | Present | Missing | Total | Ratio |
 |------|---------|---------|-------|-------|
 | mandatory_dependency | 340 | 0 | 340 | 100.00% |
-| payout_limit | 340 | 0 | 340 | 100.00% |
 | entry_age | 340 | 0 | 340 | 100.00% |
 | reduction | 340 | 0 | 340 | 100.00% |
-| start_date | 340 | 0 | 340 | 100.00% |
-| waiting_period | 340 | 0 | 340 | 100.00% |
 | exclusions | 340 | 0 | 340 | 100.00% |
-| premium_monthly | 0 | 0 | 0 | 0.00% |
+| start_date | 340 | 0 | 340 | 100.00% |
+| payout_limit | 340 | 0 | 340 | 100.00% |
+| waiting_period | 340 | 0 | 340 | 100.00% |
 
 ---
 
@@ -83,13 +94,12 @@ This report provides a deterministic audit of slot coverage in `compare_rows_v1.
 | Slot | Present | Missing | Total | Ratio |
 |------|---------|---------|-------|-------|
 | mandatory_dependency | 340 | 0 | 340 | 100.00% |
-| payout_limit | 340 | 0 | 340 | 100.00% |
 | entry_age | 340 | 0 | 340 | 100.00% |
 | reduction | 340 | 0 | 340 | 100.00% |
-| start_date | 340 | 0 | 340 | 100.00% |
-| waiting_period | 340 | 0 | 340 | 100.00% |
 | exclusions | 340 | 0 | 340 | 100.00% |
-| premium_monthly | 0 | 0 | 0 | 0.00% |
+| start_date | 340 | 0 | 340 | 100.00% |
+| payout_limit | 340 | 0 | 340 | 100.00% |
+| waiting_period | 340 | 0 | 340 | 100.00% |
 
 ---
 
@@ -100,20 +110,13 @@ This report provides a deterministic audit of slot coverage in `compare_rows_v1.
 
 ---
 
-## Policy-Expected Slots with Zero Occurrence
-
-The following slots are expected by policy but have ZERO occurrences in JSONL:
-
-- `premium_monthly`
-
----
-
 ## Metadata
 
 - **Script**: `tools/audit/slot_coverage_audit.py`
-- **Execution Time**: 2026-01-09 17:33:26
+- **Execution Time**: 2026-01-09 17:51:29
 - **JSONL Rows**: 340
 - **Insurers**: 8
-- **Unique Slots**: 8
-- **Premium Gate (Q12)**: **PASS**
+- **Unique Document Slots**: 7
+- **Runtime-Only Slots**: `premium_monthly` (see Premium Runtime Audit)
+- **Q12 Readiness**: ⚠️ NOT DETERMINED (Premium Runtime Audit required)
 

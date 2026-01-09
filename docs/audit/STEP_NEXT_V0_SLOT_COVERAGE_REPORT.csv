@@ -3,7 +3,6 @@ db,entry_age,62,0,62,1.0000
 db,exclusions,62,0,62,1.0000
 db,mandatory_dependency,62,0,62,1.0000
 db,payout_limit,62,0,62,1.0000
-db,premium_monthly,0,0,0,0.0000
 db,reduction,62,0,62,1.0000
 db,start_date,62,0,62,1.0000
 db,waiting_period,62,0,62,1.0000
@@ -11,7 +10,6 @@ hanwha,entry_age,33,0,33,1.0000
 hanwha,exclusions,33,0,33,1.0000
 hanwha,mandatory_dependency,33,0,33,1.0000
 hanwha,payout_limit,33,0,33,1.0000
-hanwha,premium_monthly,0,0,0,0.0000
 hanwha,reduction,33,0,33,1.0000
 hanwha,start_date,33,0,33,1.0000
 hanwha,waiting_period,33,0,33,1.0000
@@ -19,7 +17,6 @@ heungkuk,entry_age,36,0,36,1.0000
 heungkuk,exclusions,36,0,36,1.0000
 heungkuk,mandatory_dependency,36,0,36,1.0000
 heungkuk,payout_limit,36,0,36,1.0000
-heungkuk,premium_monthly,0,0,0,0.0000
 heungkuk,reduction,36,0,36,1.0000
 heungkuk,start_date,36,0,36,1.0000
 heungkuk,waiting_period,36,0,36,1.0000
@@ -27,7 +24,6 @@ hyundai,entry_age,37,0,37,1.0000
 hyundai,exclusions,37,0,37,1.0000
 hyundai,mandatory_dependency,37,0,37,1.0000
 hyundai,payout_limit,37,0,37,1.0000
-hyundai,premium_monthly,0,0,0,0.0000
 hyundai,reduction,37,0,37,1.0000
 hyundai,start_date,37,0,37,1.0000
 hyundai,waiting_period,37,0,37,1.0000
@@ -35,7 +31,6 @@ kb,entry_age,43,0,43,1.0000
 kb,exclusions,43,0,43,1.0000
 kb,mandatory_dependency,43,0,43,1.0000
 kb,payout_limit,43,0,43,1.0000
-kb,premium_monthly,0,0,0,0.0000
 kb,reduction,43,0,43,1.0000
 kb,start_date,43,0,43,1.0000
 kb,waiting_period,43,0,43,1.0000
@@ -43,7 +38,6 @@ lotte,entry_age,60,0,60,1.0000
 lotte,exclusions,60,0,60,1.0000
 lotte,mandatory_dependency,60,0,60,1.0000
 lotte,payout_limit,60,0,60,1.0000
-lotte,premium_monthly,0,0,0,0.0000
 lotte,reduction,60,0,60,1.0000
 lotte,start_date,60,0,60,1.0000
 lotte,waiting_period,60,0,60,1.0000
@@ -51,7 +45,6 @@ meritz,entry_age,37,0,37,1.0000
 meritz,exclusions,37,0,37,1.0000
 meritz,mandatory_dependency,37,0,37,1.0000
 meritz,payout_limit,37,0,37,1.0000
-meritz,premium_monthly,0,0,0,0.0000
 meritz,reduction,37,0,37,1.0000
 meritz,start_date,37,0,37,1.0000
 meritz,waiting_period,37,0,37,1.0000
@@ -59,7 +52,6 @@ samsung,entry_age,32,0,32,1.0000
 samsung,exclusions,32,0,32,1.0000
 samsung,mandatory_dependency,32,0,32,1.0000
 samsung,payout_limit,32,0,32,1.0000
-samsung,premium_monthly,0,0,0,0.0000
 samsung,reduction,32,0,32,1.0000
 samsung,start_date,32,0,32,1.0000
 samsung,waiting_period,32,0,32,1.0000

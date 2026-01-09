@@ -1,0 +1,9 @@
+insurer,age,sex,plan_variant,premium_monthly,has_premium,gate_status
+db,40,M,NO_REFUND,86317,YES,PASS
+hanwha,40,M,NO_REFUND,83829,YES,PASS
+heungkuk,40,M,NO_REFUND,82745,YES,PASS
+hyundai,40,M,NO_REFUND,81750,YES,PASS
+kb,40,M,NO_REFUND,87417,YES,PASS
+lotte,40,M,NO_REFUND,87681,YES,PASS
+meritz,40,M,NO_REFUND,80025,YES,PASS
+samsung,40,M,NO_REFUND,81000,YES,PASS
