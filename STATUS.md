@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-09
-**현재 상태**: ✅ **STEP NEXT-DB2: Premium API Verified + Infrastructure Ready** (COMPLETE)
+**현재 상태**: ⚠️ **STEP NEXT-DBR-1: DB Reality Audited - Code Fix Required** (BLOCKER IDENTIFIED)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **⚠️ DB Reality Re-Audit (Code Blocker Identified)** | STEP NEXT-DBR-1 | ⚠️ 완료 | 2026-01-09 |
 | **✅ Premium API Verified + Infrastructure Ready** | STEP NEXT-DB2 | ✅ 완료 | 2026-01-09 |
 | **✅ Premium SSOT DB Reality Lock** | STEP NEXT-DB1 | ✅ 완료 | 2026-01-09 |
 | **✅ HOTFIX: V0 Premium Audit Split + G10** | STEP NEXT-V0-FIX | ✅ 완료 | 2026-01-09 |
@@ -112,6 +113,80 @@
 ---
 
 ## 🎯 최신 진행 항목 (2026-01-09)
+
+### STEP NEXT-DBR-1 — DB Reality Re-Audit ⚠️ **BLOCKER IDENTIFIED** (2026-01-09)
+
+**목표**: Audit actual DB schema with hard psql evidence (NO ASSUMPTIONS)
+
+**Audit Results (HARD EVIDENCE)**:
+
+**Schema Verification:**
+- ✅ ALL 5 premium tables EXIST in inca_rag_scope@5432
+- ✅ Schema DDL is CORRECT (matches schema/*.sql files)
+- ✅ ALL tables use `as_of_date` (date type)
+- ❌ NO `base_dt` column exists in ANY table
+
+**Data Status:**
+- ❌ ALL tables are EMPTY (0 rows)
+- ❌ premium_multiplier: 0 rows (no Excel file, no loader run)
+
+**Critical Blocker Identified:**
+- ❌ Code references non-existent `base_dt` column
+- ❌ DB uses `as_of_date` (date type: YYYY-MM-DD)
+- ❌ Code expects `base_dt` (text type: YYYYMMDD)
+- ❌ DB2 load will FAIL on column mismatch
+
+**Evidence Collected:**
+1. `\conninfo` - Connected to inca_rag_scope@5432 ✅
+2. `\dt *premium*` - 5 tables exist ✅
+3. `\d {table}` - Schema details for each table ✅
+4. `information_schema.columns` - 75 columns verified ✅
+5. Row counts - ALL 0 (empty) ❌
+6. Schema file grep - `as_of_date` confirmed ✅
+
+**Column Name Discrepancy:**
+
+| Location | Column Name | Data Type | Format |
+|----------|-------------|-----------|--------|
+| DB Schema (actual) | `as_of_date` | date | YYYY-MM-DD |
+| Code (wrong) | `base_dt` | text (assumed) | YYYYMMDD |
+| Schema Files (source) | `as_of_date` | date | YYYY-MM-DD |
+
+**Affected Code:**
+- `tools/premium/run_db2_load.py` - Uses `base_dt` in INSERT/SELECT
+- DB2 audit docs - References `base_dt` in queries
+- Verification queries - Filter on non-existent column
+
+**Verdict:**
+- DB1 Claim: ✅ TRUE (tables exist with correct schema)
+- DB2 Status: ❌ BLOCKED (code fix required)
+- Root Cause: Schema spec (as_of_date) vs code (base_dt) mismatch
+
+**Remediation Plan (LOCKED):**
+
+**Option A: Fix Code to Match DB (RECOMMENDED):**
+1. Update `run_db2_load.py` to convert baseDt → as_of_date
+   ```python
+   base_dt = "20251126"
+   as_of_date = f"{base_dt[:4]}-{base_dt[4:6]}-{base_dt[6:]}"  # "2025-11-26"
+   ```
+2. Update INSERT statements to use `as_of_date`
+3. Update SELECT/WHERE clauses to filter on `as_of_date = 'YYYY-MM-DD'`
+4. Update audit docs to use correct column name
+
+**Option B: Migrate DB Schema (NOT RECOMMENDED):**
+- Add `base_dt` column to all tables
+- Update constraints and indexes
+- Risk: Breaking existing design
+
+**Decision:** ✅ Fix code to match DB schema (Option A)
+
+**Documentation:**
+- ✅ `docs/audit/STEP_NEXT_DBR_1_DB_REALITY_EVIDENCE.md` - Complete evidence with psql outputs
+
+**Key Learning:** ALWAYS audit DB reality before assuming schema. DB schema was correct all along, code had wrong assumptions.
+
+---
 
 ### STEP NEXT-DB2 — Premium API Verified + Infrastructure Ready ✅ **COMPLETE** (2026-01-09)
 
