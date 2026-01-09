@@ -551,7 +551,213 @@ SELECT count(*) FROM coverage_premium_quote WHERE base_dt = '20251126';
 
 ---
 
+---
+
+## 11) FULL LOAD EXECUTION - 2026-01-09 (HOTFIX)
+
+### 11.1 Issue Identified
+
+**Problem:** DB2 loader crashed with `AttributeError: DB2LoadRunner has no attribute '_process_api_result'`
+
+**Evidence:**
+```
+File: tools/premium/run_db2_load.py:111
+Error: AttributeError: 'DB2LoadRunner' object has no attribute '_process_api_result'
+```
+
+**Root Cause:** Critical function `_process_api_result()` was missing from implementation.
+
+### 11.2 Hotfix Implementation
+
+**Fixed Issues:**
+1. ✅ Implemented missing `_process_api_result()` function
+2. ✅ Updated UPSERT queries to use `as_of_date` (NOT `base_dt`) for UNIQUE constraints
+3. ✅ Updated verification queries to use `as_of_date` grouping
+4. ✅ Added pay_term_years/ins_term_years parsing (Korean format → integer)
+5. ✅ Fixed column names to match schema (`premium_monthly_coverage` vs `premium_monthly`)
+6. ✅ Filter out zero-premium coverages (violates `chk_cpq_premium_positive`)
+
+**Implementation Details:**
+
+```python
+# baseDt → as_of_date conversion
+base_dt = "20251126"
+as_of_date = "2025-11-26"  # YYYY-MM-DD format
+
+# Term parsing examples
+"20년" → 20
+"100세만기" → 100
+"전기납" → 0 (cannot parse)
+
+# Insurer code mapping
+INSURER_CODE_MAP = {
+    "N01": "meritz", "N02": "hanwha", "N03": "lotte",
+    "N05": "heungkuk", "N08": "samsung", "N09": "hyundai",
+    "N10": "kb", "N13": "db"
+}
+```
+
+### 11.3 Full Load Execution
+
+**Command:**
+```bash
+python3 tools/premium/run_db2_load.py --baseDt 20251126
+```
+
+**Execution Log:**
+```
+================================================================================
+STEP NEXT-DB2: Premium SSOT Real Data Load
+================================================================================
+baseDt: 20251126
+Ages: [30, 40, 50]
+Sexes: ['M', 'F']
+Total API calls: 12 (prInfo + prDetail)
+
+[1/7] DB Reality Gate...
+✅ All 5 premium tables exist
+
+[2/7] Skip multiplier (NO_REFUND only)...
+✅ Skipped (NO_REFUND data only)
+
+[3/7] API Pull (12 calls)...
+  Calling API: age=30, sex=M...
+  Calling API: age=30, sex=F...
+  Calling API: age=40, sex=M...
+  Calling API: age=40, sex=F...
+  Calling API: age=50, sex=M...
+  Calling API: age=50, sex=F...
+✅ Completed 6 API call groups
+   Failures: 0
+
+[4/7] Convert API results to DB records...
+✅ Generated 48 product records
+✅ Generated 1494 coverage records
+✅ Sum validation: ALL PASS
+
+[6/7] Upsert to DB...
+✅ DB upsert complete
+
+[7/7] Verification queries...
+  premium_multiplier: 0 rows (total)
+  product_premium_quote_v2: 48 rows (as_of_date=2025-11-26)
+  coverage_premium_quote: 1494 rows (as_of_date=2025-11-26)
+  premium_quote: 0 rows (as_of_date=2025-11-26)
+✅ Verification complete
+
+================================================================================
+✅ STEP NEXT-DB2 COMPLETE
+================================================================================
+```
+
+**Status:** ✅ SUCCESS (exit code 0)
+
+### 11.4 Database Verification
+
+**Query 1: product_premium_quote_v2**
+```sql
+SELECT as_of_date, count(*) FROM product_premium_quote_v2
+GROUP BY 1 ORDER BY 1;
+
+ as_of_date | count
+------------+-------
+ 2025-11-26 |    48
+(1 row)
+```
+
+**Query 2: coverage_premium_quote**
+```sql
+SELECT as_of_date, count(*) FROM coverage_premium_quote
+GROUP BY 1 ORDER BY 1;
+
+ as_of_date | count
+------------+-------
+ 2025-11-26 |  1494
+(1 row)
+```
+
+**Query 3: premium_quote**
+```sql
+SELECT as_of_date, count(*) FROM premium_quote
+GROUP BY 1 ORDER BY 1;
+
+as_of_date | count
+------------+-------
+(0 rows)
+```
+*Note: premium_quote table not populated by this loader (as expected)*
+
+**Query 4: Sample Coverage Distribution**
+```sql
+SELECT insurer_key, product_id, age, sex, COUNT(*) as coverage_count
+FROM coverage_premium_quote
+WHERE as_of_date = '2025-11-26'
+GROUP BY insurer_key, product_id, age, sex
+ORDER BY insurer_key, product_id, age, sex
+LIMIT 10;
+
+ insurer_key | product_id | age | sex | coverage_count
+-------------+------------+-----+-----+----------------
+ db          | 30633      |  30 | F   |             32
+ db          | 30633      |  30 | M   |             32
+ db          | 30633      |  40 | F   |             32
+ db          | 30633      |  40 | M   |             32
+ db          | 30633      |  50 | F   |             32
+ db          | 30633      |  50 | M   |             32
+ hanwha      | LA02768003 |  30 | F   |             28
+ hanwha      | LA02768003 |  30 | M   |             28
+ hanwha      | LA02768003 |  40 | F   |             28
+ hanwha      | LA02768003 |  40 | M   |             28
+(10 rows)
+```
+
+### 11.5 DoD Verification
+
+✅ **D1:** product_premium_quote_v2 has 48 rows for as_of_date=2025-11-26
+✅ **D2:** coverage_premium_quote has 1494 rows for as_of_date=2025-11-26
+✅ **D3:** Sum validation: 0 mismatches (ZERO TOLERANCE enforced)
+✅ **D4:** All API calls successful (failures=0)
+✅ **D5:** UPSERT uses as_of_date natural keys (NOT base_dt)
+✅ **D6:** Zero-premium coverages filtered (constraint compliance)
+✅ **D7:** Pay/ins term years parsed from Korean format
+
+### 11.6 Evidence Files
+
+**Raw API Responses:**
+```
+data/premium_raw/20251126/_prInfo/
+  ✅ 30_F.json
+  ✅ 30_M.json
+  ✅ 40_F.json
+  ✅ 40_M.json
+  ✅ 50_F.json
+  ✅ 50_M.json
+
+data/premium_raw/20251126/_prDetail/
+  ✅ 30_F.json
+  ✅ 30_M.json
+  ✅ 40_F.json
+  ✅ 40_M.json
+  ✅ 50_F.json
+  ✅ 50_M.json
+```
+
+**Failures:** None (0 failures)
+
+### 11.7 Commit
+
+**Commit Message:**
+```
+fix(step-next-db2): implement missing _process_api_result + as_of_date pipeline
+```
+
+**Files Modified:**
+- `tools/premium/run_db2_load.py` - Implemented _process_api_result + UPSERT fixes
+
+---
+
 **END OF REPORT**
 
-**STATUS:** ✅ API VERIFIED + INFRASTRUCTURE READY
-**NEXT:** Execute full 12-call load when required
+**STATUS:** ✅ DB2 LOAD COMPLETE (48 products, 1494 coverages, 0 failures)
+**DATE:** 2026-01-09
+**EXIT CODE:** 0

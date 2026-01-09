@@ -225,6 +225,182 @@ class DB2LoadRunner:
 
         return results
 
+    def _process_api_result(
+        self,
+        api_result: Dict[str, Any],
+        all_product_records: List[Dict[str, Any]],
+        all_coverage_records: List[Dict[str, Any]],
+        sum_mismatches: List[Dict[str, Any]]
+    ):
+        """
+        Process single API result and generate DB records
+
+        Args:
+            api_result: Result from pull_premium_for_request()
+            all_product_records: Accumulator for product records
+            all_coverage_records: Accumulator for coverage records
+            sum_mismatches: Accumulator for sum validation errors
+        """
+        # Convert baseDt "20251126" → as_of_date "2025-11-26"
+        base_dt = api_result.get("base_dt", self.BASE_DT)
+        as_of_date = f"{base_dt[0:4]}-{base_dt[4:6]}-{base_dt[6:8]}"
+
+        age = api_result["age"]
+        sex = api_result["sex"]
+        plan_variant = api_result["plan_variant"]
+
+        prdetail_response = api_result.get("prdetail_response")
+        if not prdetail_response:
+            # prDetail API failed, skip this result
+            return
+
+        # Insurer code map (insCd → insurer_key)
+        INSURER_CODE_MAP = {
+            "N01": "meritz",
+            "N02": "hanwha",
+            "N03": "lotte",
+            "N05": "heungkuk",
+            "N08": "samsung",
+            "N09": "hyundai",
+            "N10": "kb",
+            "N13": "db"
+        }
+
+        # Navigate structure: prProdLineCondOutSearchDiv[] → prProdLineCondOutIns[]
+        search_divs = prdetail_response.get("prProdLineCondOutSearchDiv", [])
+
+        for search_div in search_divs:
+            ins_list = search_div.get("prProdLineCondOutIns", [])
+
+            for ins_detail in ins_list:
+                ins_cd = ins_detail.get("insCd")
+                pr_cd = ins_detail.get("prCd")
+                pr_nm = ins_detail.get("prNm")
+                monthly_prem_sum = ins_detail.get("monthlyPremSum", 0)
+                total_prem_sum = ins_detail.get("totalPremSum", 0)
+                pay_term_years_raw = ins_detail.get("payTermYears", "")
+                ins_term_years_raw = ins_detail.get("insTermYears", "")
+
+                # Map insurer_key
+                insurer_key = INSURER_CODE_MAP.get(ins_cd)
+                if not insurer_key:
+                    # Unknown insurer → skip
+                    continue
+
+                # Parse pay_term_years and ins_term_years
+                pay_term_years = self._parse_term_years(pay_term_years_raw)
+                ins_term_years = self._parse_term_years(ins_term_years_raw)
+
+                # Product ID: use prCd as product_id
+                product_id = pr_cd
+
+                # Process coverages
+                cvr_amt_arr_lst = ins_detail.get("cvrAmtArrLst", [])
+                coverage_sum = 0
+
+                for cvr in cvr_amt_arr_lst:
+                    cvr_cd = cvr.get("cvrCd")
+                    cvr_nm = cvr.get("cvrNm")
+
+                    # Premium: Try monthlyPremInt first, fallback to monthlyPrem
+                    monthly_prem_int = cvr.get("monthlyPremInt")
+                    monthly_prem = cvr.get("monthlyPrem", 0)
+
+                    premium_monthly = monthly_prem_int if monthly_prem_int is not None else monthly_prem
+
+                    coverage_sum += premium_monthly
+
+                    # Skip zero-premium coverages (violates chk_cpq_premium_positive)
+                    if premium_monthly <= 0:
+                        continue
+
+                    # Create coverage record
+                    coverage_record = {
+                        "insurer_key": insurer_key,
+                        "product_id": product_id,
+                        "coverage_code": cvr_cd,
+                        "plan_variant": plan_variant,
+                        "age": age,
+                        "sex": sex,
+                        "smoke": "N",  # LOCKED: NO_REFUND only
+                        "pay_term_years": pay_term_years,
+                        "ins_term_years": ins_term_years,
+                        "premium_monthly_coverage": premium_monthly,
+                        "as_of_date": as_of_date,
+                        "source_table_id": None,
+                        "source_row_id": None
+                    }
+                    all_coverage_records.append(coverage_record)
+
+                # Sum validation (0 tolerance)
+                if abs(coverage_sum - monthly_prem_sum) > 0.01:
+                    sum_mismatches.append({
+                        "insurer_key": insurer_key,
+                        "product_id": product_id,
+                        "age": age,
+                        "sex": sex,
+                        "expected_sum": monthly_prem_sum,
+                        "calculated_sum": coverage_sum,
+                        "error": abs(coverage_sum - monthly_prem_sum)
+                    })
+
+                # Create product record
+                product_record = {
+                    "insurer_key": insurer_key,
+                    "product_id": product_id,
+                    "plan_variant": plan_variant,
+                    "age": age,
+                    "sex": sex,
+                    "smoke": "N",  # LOCKED: NO_REFUND only
+                    "pay_term_years": pay_term_years,
+                    "ins_term_years": ins_term_years,
+                    "as_of_date": as_of_date,
+                    "premium_monthly_total": monthly_prem_sum,
+                    "premium_total_total": total_prem_sum,
+                    "source_table_id": None,
+                    "source_row_id": None
+                }
+                all_product_records.append(product_record)
+
+    def _parse_term_years(self, term_str: str) -> int:
+        """
+        Parse term years from Korean format
+
+        Examples:
+            "20년" → 20
+            "100세만기" → 100
+            "전기납" → 0 (cannot parse)
+            "" → 0
+
+        Args:
+            term_str: Term string from API
+
+        Returns:
+            Parsed years (int), or 0 if cannot parse
+        """
+        if not term_str:
+            return 0
+
+        term_str = str(term_str).strip()
+
+        # Pattern: "숫자년" → extract number
+        if "년" in term_str:
+            try:
+                return int(term_str.replace("년", "").strip())
+            except ValueError:
+                return 0
+
+        # Pattern: "숫자세만기" → extract number
+        if "세만기" in term_str or "세" in term_str:
+            try:
+                num_str = term_str.replace("세만기", "").replace("세", "").strip()
+                return int(num_str)
+            except ValueError:
+                return 0
+
+        # Cannot parse → return 0
+        return 0
+
     def _build_product_id_map(self, api_results: List[Dict[str, Any]]) -> Dict[tuple, str]:
         """Build product ID map from API results"""
         return build_product_id_map(api_results, base_dt=self.BASE_DT)
@@ -234,50 +410,56 @@ class DB2LoadRunner:
         product_records: List[Dict[str, Any]],
         coverage_records: List[Dict[str, Any]]
     ):
-        """Upsert product and coverage records to DB"""
+        """Upsert product and coverage records to DB using as_of_date natural keys"""
         conn = psycopg2.connect(self.DATABASE_URL)
         cursor = conn.cursor()
 
         # Upsert product_premium_quote_v2
+        # UNIQUE constraint: (insurer_key, product_id, plan_variant, age, sex, smoke, pay_term_years, ins_term_years, as_of_date)
         for pr in product_records:
             cursor.execute("""
                 INSERT INTO product_premium_quote_v2 (
                     insurer_key, product_id, plan_variant, age, sex, smoke,
-                    pay_term_years, ins_term_years, as_of_date, base_dt,
+                    pay_term_years, ins_term_years, as_of_date,
                     premium_monthly_total, premium_total_total, source_table_id, source_row_id
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (insurer_key, product_id, plan_variant, age, sex, smoke, base_dt)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (insurer_key, product_id, plan_variant, age, sex, smoke, pay_term_years, ins_term_years, as_of_date)
                 DO UPDATE SET
                     premium_monthly_total = EXCLUDED.premium_monthly_total,
                     premium_total_total = EXCLUDED.premium_total_total,
-                    as_of_date = EXCLUDED.as_of_date
+                    updated_at = CURRENT_TIMESTAMP
             """, (
                 pr["insurer_key"], pr["product_id"], pr["plan_variant"],
                 pr["age"], pr["sex"], pr["smoke"],
                 pr["pay_term_years"], pr["ins_term_years"],
-                pr["as_of_date"], self.BASE_DT,
+                pr["as_of_date"],
                 pr["premium_monthly_total"], pr["premium_total_total"],
                 pr.get("source_table_id"), pr.get("source_row_id")
             ))
 
         # Upsert coverage_premium_quote
+        # UNIQUE constraint: (insurer_key, product_id, coverage_code, plan_variant, age, sex, smoke, as_of_date)
         for cr in coverage_records:
             cursor.execute("""
                 INSERT INTO coverage_premium_quote (
                     insurer_key, product_id, coverage_code, plan_variant,
-                    age, sex, smoke, premium_monthly, as_of_date, base_dt,
+                    age, sex, smoke, pay_term_years, ins_term_years,
+                    premium_monthly_coverage, as_of_date,
                     source_table_id, source_row_id
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (insurer_key, product_id, coverage_code, plan_variant, age, sex, smoke, base_dt)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (insurer_key, product_id, coverage_code, plan_variant, age, sex, smoke, as_of_date)
                 DO UPDATE SET
-                    premium_monthly = EXCLUDED.premium_monthly,
-                    as_of_date = EXCLUDED.as_of_date
+                    premium_monthly_coverage = EXCLUDED.premium_monthly_coverage,
+                    pay_term_years = EXCLUDED.pay_term_years,
+                    ins_term_years = EXCLUDED.ins_term_years,
+                    updated_at = CURRENT_TIMESTAMP
             """, (
                 cr["insurer_key"], cr["product_id"], cr["coverage_code"],
                 cr["plan_variant"], cr["age"], cr["sex"], cr["smoke"],
-                cr["premium_monthly"], cr["as_of_date"], self.BASE_DT,
+                cr["pay_term_years"], cr["ins_term_years"],
+                cr["premium_monthly_coverage"], cr["as_of_date"],
                 cr.get("source_table_id"), cr.get("source_row_id")
             ))
 
@@ -290,23 +472,34 @@ class DB2LoadRunner:
         conn = psycopg2.connect(self.DATABASE_URL)
         cursor = conn.cursor()
 
-        # Count queries
+        # Convert baseDt to as_of_date for queries
+        as_of_date = f"{self.BASE_DT[0:4]}-{self.BASE_DT[4:6]}-{self.BASE_DT[6:8]}"
+
+        # Count queries using as_of_date
         tables = [
             "premium_multiplier",
             "product_premium_quote_v2",
             "coverage_premium_quote",
-            "q14_premium_ranking_v1"
+            "premium_quote"
         ]
 
         for table in tables:
             if table == "premium_multiplier":
                 cursor.execute(f"SELECT count(*) FROM {table}")
+                count = cursor.fetchone()[0]
+                print(f"  {table}: {count} rows (total)")
             else:
-                cursor.execute(f"SELECT count(*) FROM {table} WHERE base_dt = %s", (self.BASE_DT,))
+                # as_of_date query
+                cursor.execute(f"SELECT as_of_date, count(*) FROM {table} WHERE as_of_date = %s GROUP BY 1", (as_of_date,))
+                result = cursor.fetchone()
+                if result:
+                    count = result[1]
+                    print(f"  {table}: {count} rows (as_of_date={as_of_date})")
+                else:
+                    print(f"  {table}: 0 rows (as_of_date={as_of_date})")
+                    count = 0
 
-            count = cursor.fetchone()[0]
-            print(f"  {table}: {count} rows")
-            self.audit_log.append({"table": table, "count": count})
+            self.audit_log.append({"table": table, "as_of_date": as_of_date if table != "premium_multiplier" else None, "count": count})
 
         cursor.close()
         conn.close()
