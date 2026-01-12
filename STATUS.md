@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **⚠️ GENERAL SSOT (Multiplier 212 rows, BLOCKER: name mismatch)** | STEP NEXT-GENERAL-SSOT | ⚠️ BLOCKED | 2026-01-12 |
 | **🔒 Q1/Q14 Final Lock (2025-11-26 snapshot)** | STEP NEXT-FINAL-LOCK | 🔒 LOCKED | 2026-01-12 |
 | **✅ Q1/Q14 Presentation Separation (42 rows)** | STEP NEXT-FINAL | ✅ 완료 | 2026-01-12 |
 | **✅ Q14 DB Consistency (18 rows, sex separation)** | STEP NEXT-Q14-DB-CLEAN | ✅ 완료 | 2026-01-12 |
