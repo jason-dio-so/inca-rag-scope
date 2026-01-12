@@ -24,14 +24,15 @@
 | Q8 | 업계누적 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 | Q9 | 보장개시 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 | Q10 | 면책사항 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
-| Q11 | 암직접입원비 일수 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
+| Q11 | 암직접입원비 한도 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 (⚠️ slot semantic mismatch) |
 | Q13 | 제자리암 O/X | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 
 **Summary**: 3 READY / 11 BLOCKED
 **Blocker**:
 - Q3: Mandatory coverage SSOT missing (100% UNKNOWN slots) - requires product-structure analysis
 - Q5: Evidence attribution failure (87.5% UNKNOWN slots) - requires Step3 G5 Gate fix
-- Q2, Q4, Q6-Q11, Q13: Require UI spec + API endpoint (slots exist, no presentation layer)
+- Q11: Slot semantic mismatch (payout_limit has amount, not duration limit) - requires slot schema redesign
+- Q2, Q4, Q6-Q10, Q13: Require UI spec + API endpoint (slots exist, no presentation layer)
 
 See: `docs/policy/Q_REGISTRY.md` for full definitions
 
