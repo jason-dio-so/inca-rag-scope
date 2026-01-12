@@ -18,7 +18,7 @@
 | Q2 | 유병자 가입 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 | Q3 | 특약 단독가입 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 | Q4 | 재발지급 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
-| Q5 | 면책기간 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
+| Q5 | 면책기간 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 (⚠️ Step3 fix required) |
 | Q6 | 감액 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 | Q7 | 가입나이 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 | Q8 | 업계누적 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
@@ -28,7 +28,9 @@
 | Q13 | 제자리암 O/X | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 
 **Summary**: 3 READY / 11 BLOCKED
-**Blocker**: Q2-Q11, Q13 require UI spec + API endpoint (slots exist, no presentation layer)
+**Blocker**:
+- Q5: Evidence attribution failure (87.5% UNKNOWN slots) - requires Step3 G5 Gate fix
+- Q2-Q11, Q13: Require UI spec + API endpoint (slots exist, no presentation layer)
 
 See: `docs/policy/Q_REGISTRY.md` for full definitions
 
