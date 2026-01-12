@@ -873,11 +873,14 @@ async def q11_cancer_hospitalization_comparison(
     """
     Q11: 암직접입원비 담보 중 보장한도가 다른 상품 찾기
 
-    LOCK:
-    - coverage_title: 암직접.*입원 (regex match)
-    - sort: duration_limit_days DESC, daily_benefit_amount_won DESC, insurer_key ASC
-    - UNKNOWN: value=null → "UNKNOWN (근거 부족)"
-    - NO fallback/estimation
+    LOCK (SSOT):
+    - coverage_code: A6200 ONLY (canonical code allowlist)
+    - Data source: compare_tables_v1.jsonl (has coverage_code)
+    - Sort: duration_limit_days DESC NULLS LAST, daily_benefit_amount_won DESC NULLS LAST, insurer_key ASC
+    - UNKNOWN: value=null → UI displays "UNKNOWN (근거 부족)"
+    - NO text pattern matching, NO fallback/estimation
+
+    Policy: docs/policy/Q11_COVERAGE_CODE_LOCK.md
 
     Args:
         as_of_date: Data snapshot date (default: 2025-11-26)
@@ -887,75 +890,85 @@ async def q11_cancer_hospitalization_comparison(
         {
             "query_id": "Q11",
             "as_of_date": str,
+            "coverage_code": "A6200",
             "items": [...] (ranked list)
         }
     """
     import json
 
+    # Q11 Coverage Code Allowlist (SSOT)
+    Q11_COVERAGE_CODES = ["A6200"]
+
     try:
-        # Load data from compare_rows_v1.jsonl
-        data_path = "data/compare_v1/compare_rows_v1.jsonl"
+        # Load data from compare_tables_v1.jsonl (has coverage_code)
+        data_path = "data/compare_v1/compare_tables_v1.jsonl"
 
         items = []
         with open(data_path, 'r', encoding='utf-8') as f:
             for line in f:
                 if not line.strip():
                     continue
-                row = json.loads(line)
+                table_data = json.loads(line)
 
-                # Filter: coverage_title matches 암직접.*입원
-                coverage_title = row.get('identity', {}).get('coverage_title', '')
-                if not re.search(r'암직접.*입원', coverage_title, re.IGNORECASE):
-                    continue
+                # Extract coverage_rows
+                for row in table_data.get('coverage_rows', []):
+                    identity = row.get('identity', {})
 
-                # Filter: both slots FOUND with non-null values
-                slots = row.get('slots', {})
-                daily_slot = slots.get('daily_benefit_amount_won', {})
-                days_slot = slots.get('duration_limit_days', {})
-
-                # Extract values
-                insurer_key = row.get('identity', {}).get('insurer_key', '')
-                daily_value = daily_slot.get('value')
-                days_value = days_slot.get('value')
-
-                # Filter by insurers if specified
-                if insurers:
-                    allowed_insurers = [i.strip().lower() for i in insurers.split(',')]
-                    if insurer_key.lower() not in allowed_insurers:
+                    # Filter: coverage_code IN allowlist (SSOT)
+                    coverage_code = identity.get('coverage_code')
+                    if coverage_code not in Q11_COVERAGE_CODES:
                         continue
 
-                # Get evidence (first one)
-                days_evidences = days_slot.get('evidences', [])
-                evidence_data = {}
-                if days_evidences and len(days_evidences) > 0:
-                    ev = days_evidences[0]
-                    evidence_data = {
-                        "doc_type": ev.get('doc_type', ''),
-                        "page": ev.get('page'),
-                        "excerpt": ev.get('excerpt', '')[:200] if ev.get('excerpt') else ''
+                    # Extract slots
+                    slots = row.get('slots', {})
+                    daily_slot = slots.get('daily_benefit_amount_won', {})
+                    days_slot = slots.get('duration_limit_days', {})
+
+                    # Extract values
+                    insurer_key = identity.get('insurer_key', '')
+                    coverage_title = identity.get('coverage_title', '')
+                    daily_value = daily_slot.get('value')
+                    days_value = days_slot.get('value')
+
+                    # Filter by insurers if specified
+                    if insurers:
+                        allowed_insurers = [i.strip().lower() for i in insurers.split(',')]
+                        if insurer_key.lower() not in allowed_insurers:
+                            continue
+
+                    # Get evidence (first one from duration_limit_days)
+                    days_evidences = days_slot.get('evidences', [])
+                    evidence_data = {}
+                    if days_evidences and len(days_evidences) > 0:
+                        ev = days_evidences[0]
+                        evidence_data = {
+                            "doc_type": ev.get('doc_type', ''),
+                            "page": ev.get('page'),
+                            "excerpt": ev.get('excerpt', '')[:200] if ev.get('excerpt') else ''
+                        }
+
+                    # Build item
+                    item = {
+                        "insurer_key": insurer_key,
+                        "coverage_code": coverage_code,
+                        "coverage_name": coverage_title,
+                        "daily_benefit_amount_won": int(daily_value) if daily_value and str(daily_value).isdigit() else None,
+                        "duration_limit_days": int(days_value) if days_value and str(days_value).isdigit() else None,
+                        "evidence": evidence_data if evidence_data else None
                     }
 
-                # Build item
-                item = {
-                    "insurer_key": insurer_key,
-                    "coverage_name": coverage_title,
-                    "daily_benefit_amount_won": int(daily_value) if daily_value and str(daily_value).isdigit() else None,
-                    "duration_limit_days": int(days_value) if days_value and str(days_value).isdigit() else None,
-                    "evidence": evidence_data if evidence_data else None
-                }
+                    items.append(item)
 
-                items.append(item)
-
-        # Sort: deterministic
-        # 1. duration_limit_days DESC (None last)
-        # 2. daily_benefit_amount_won DESC (None last)
-        # 3. insurer_key ASC
+        # Sort: deterministic (NULLS LAST)
+        # 1. duration_limit_days DESC (None sorts LAST)
+        # 2. daily_benefit_amount_won DESC (None sorts LAST)
+        # 3. insurer_key ASC (tie-break)
         def sort_key(x):
             days = x['duration_limit_days']
             daily = x['daily_benefit_amount_won']
             insurer = x['insurer_key']
 
-            # None sorts last
+            # NULLS LAST: (is_null, -value) ensures None sorts after all numbers
             days_sort = (days is None, -days if days is not None else 0)
             daily_sort = (daily is None, -daily if daily is not None else 0)
             insurer_sort = insurer
@@ -971,6 +984,7 @@ async def q11_cancer_hospitalization_comparison(
         return {
             "query_id": "Q11",
             "as_of_date": as_of_date,
+            "coverage_code": "A6200",
             "items": items
         }
 

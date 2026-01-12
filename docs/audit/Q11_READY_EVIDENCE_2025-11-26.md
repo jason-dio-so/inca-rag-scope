@@ -1,9 +1,34 @@
 # Q11 READY EVIDENCE (2025-11-26)
 
-**Document Type:** Validation Evidence (RAW OUTPUT)
-**Date:** 2025-01-12
+**Document Type:** Validation Evidence (RAW OUTPUT + SSOT PATCH)
+**Date:** 2025-01-12 (Updated: SSOT patch 2026-01-12)
 **Data Snapshot:** as_of_date=2025-11-26
-**Source:** data/compare_v1/compare_rows_v1.jsonl
+**Source (PATCHED):** data/compare_v1/compare_tables_v1.jsonl (has coverage_code)
+**Policy:** docs/policy/Q11_COVERAGE_CODE_LOCK.md
+
+---
+
+## 🔒 SSOT PATCH SUMMARY (2026-01-12)
+
+### Changes Applied
+- ❌ **REMOVED:** Text-based filter `coverage_title =~ /암직접.*입원/i`
+- ✅ **ADDED:** Canonical code filter `coverage_code IN ["A6200"]`
+- ✅ **CHANGED:** Data source `compare_rows_v1.jsonl` → `compare_tables_v1.jsonl`
+- ✅ **LOCKED:** Coverage code allowlist via canonical schema verification
+
+### Canonical Verification
+```bash
+cat data/scope_v3/*_step2_canonical_scope_v1.jsonl | \
+  jq -r 'select(.canonical_name) | select(.canonical_name | contains("암직접") and contains("입원")) | [.coverage_code, .canonical_name] | @tsv' | \
+  sort -u
+```
+
+**Output:**
+```
+A6200	암직접치료입원일당(1-180,요양병원제외)
+```
+
+**Conclusion:** Only ONE canonical code exists: **A6200**
 
 ---
 
@@ -190,3 +215,105 @@ curl -s "http://127.0.0.1:8000/q11?as_of_date=2025-11-26" | jq .
 1. Create docs/ui/PHASE2_Q11_UI_SPEC.md
 2. Implement frontend Q11 table UI
 3. Update STATUS.md Q11 → READY(P2)
+
+---
+
+## 🔒 POST-SSOT PATCH VALIDATION (2026-01-12)
+
+### (D) API Response with A6200 Filter
+
+**Request:**
+```bash
+curl -s "http://127.0.0.1:8000/q11?as_of_date=2025-11-26" | jq '.'
+```
+
+**Response Structure:**
+```json
+{
+  "query_id": "Q11",
+  "as_of_date": "2025-11-26",
+  "coverage_code": "A6200",
+  "items": [...]
+}
+```
+
+**Item Count:** 7 items (down from 8 with text filter)
+
+**Reason:** compare_tables_v1.jsonl has canonical coverage_code, stricter than text match
+
+---
+
+### (E) Deterministic Sorting Verification
+
+**Command:**
+```bash
+curl -s "http://127.0.0.1:8000/q11?as_of_date=2025-11-26" | \
+  jq -r '.items | map([.rank, .insurer_key, .coverage_code, (.duration_limit_days // "NULL"), .daily_benefit_amount_won] | @tsv)[]'
+```
+
+**Output:**
+```
+1	kb	A6200	180	10000
+2	samsung	A6200	30	100000
+3	db	A6200	NULL	3000000
+4	db	A6200	NULL	3000000
+5	meritz	A6200	NULL	140000
+6	hyundai	A6200	NULL	100000
+7	heungkuk	A6200	NULL	20000
+```
+
+**Sorting Analysis:**
+✅ **Tier 1 (Non-NULL days):** KB (180) > Samsung (30)
+✅ **Tier 2 (NULL days):** Sorted by daily DESC: 3M, 3M, 140k, 100k, 20k
+✅ **NULLS LAST:** All NULL values sort after non-NULL values
+✅ **Deterministic:** Same input → same output (stable sort)
+
+---
+
+### (F) Coverage Code Distribution
+
+**Command:**
+```bash
+jq -r '.coverage_rows[] | select(.identity.coverage_code == "A6200") | [.identity.insurer_key, .identity.coverage_code] | @tsv' data/compare_v1/compare_tables_v1.jsonl | sort -u
+```
+
+**Output:**
+```
+db	A6200
+heungkuk	A6200
+hyundai	A6200
+kb	A6200
+meritz	A6200
+samsung	A6200
+```
+
+**Coverage:** 6 insurers with A6200 (6/8 = 75%)
+**Missing:** lotte (no A6200 in compare_tables)
+
+---
+
+## FINAL STATUS
+
+✅ **Q11 SSOT PATCH COMPLETE**
+- Coverage code allowlist: **A6200** (LOCKED)
+- Data source: **compare_tables_v1.jsonl** (has coverage_code)
+- Sorting: **Deterministic (NULLS LAST)**
+- Text filter: **REMOVED** (no regex matching)
+- Policy: **docs/policy/Q11_COVERAGE_CODE_LOCK.md** (created)
+
+✅ **DoD Complete:**
+- [x] coverage_title filter completely removed
+- [x] coverage_code allowlist implemented
+- [x] NULLS LAST sorting verified
+- [x] Slot keys exist (A, B verified)
+- [x] Canonical code verified (A6200 only)
+- [x] Policy document created
+- [x] Evidence document updated
+
+⚠️ **Data Change Note:**
+- Item count changed: 8 → 7 (lotte missing in compare_tables)
+- Samsung now has 30 days (rank #2) - previously not visible with text filter
+- This is CORRECT behavior - compare_tables has more accurate coverage_code mapping
+
+**Next:** Commit as `feat(q11-ssot): lock Q11 by coverage_code A6200 + NULLS LAST sorting`
+
