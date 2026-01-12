@@ -2,14 +2,43 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-12
-**현재 상태**: 🔒 **FINAL-LOCK: Q1/Q12/Q14 ViewModel + Smoke Gate Locked**
+**현재 상태**: 🔒 **Q_REGISTRY: Q1-Q14 Locked (3 READY, 11 BLOCKED)**
 
 ---
 
 ## 📊 전체 진행 상황
 
+### Q1-Q14 Customer Question Status
+
+| Q# | Question | Status | SSOT Source | Priority |
+|----|----------|--------|-------------|----------|
+| Q1 | 가성비 Top3 | ✅ READY | `q14_premium_ranking_v1` | 🔥 Tier 1 |
+| Q12 | 삼성 vs 메리츠 비교 | ✅ READY | `product_premium_quote_v2` | 🔥 Tier 1 |
+| Q14 | 보험료 Top4 | ✅ READY | `q14_premium_top4_v1` | 🔥 Tier 1 |
+| Q2 | 유병자 가입 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
+| Q3 | 특약 단독가입 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
+| Q4 | 재발지급 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
+| Q5 | 면책기간 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
+| Q6 | 감액 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
+| Q7 | 가입나이 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
+| Q8 | 업계누적 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
+| Q9 | 보장개시 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
+| Q10 | 면책사항 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
+| Q11 | 암직접입원비 일수 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
+| Q13 | 제자리암 O/X | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
+
+**Summary**: 3 READY / 11 BLOCKED
+**Blocker**: Q2-Q11, Q13 require UI spec + API endpoint (slots exist, no presentation layer)
+
+See: `docs/policy/Q_REGISTRY.md` for full definitions
+
+---
+
+### Phase History
+
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **🔒 Q_REGISTRY: Q1-Q14 Registry Lock** | STEP NEXT-QREG | 🔒 LOCKED | 2026-01-12 |
 | **🔒 FINAL-LOCK: ViewModel + Smoke Gate** | STEP NEXT-FINAL-LOCK | 🔒 LOCKED | 2026-01-12 |
 | **✅ Q1/Q14 GENERAL Extension (36+48 rows)** | STEP NEXT-GENERAL-Q1Q14 | ✅ 완료 | 2026-01-12 |
 | **✅ GENERAL Premium Enabled (1,164 coverage + 48 product rows)** | STEP NEXT-GENERAL-MAP-1 | ✅ 완료 | 2026-01-12 |
