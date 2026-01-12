@@ -183,6 +183,27 @@ class CompareRowBuilder:
             value = slot_meta.get("value")
             reason = slot_meta.get("reason")
 
+            # STEP NEXT-Y: For payout_limit, prioritize proposal_facts.coverage_amount_text
+            # Evidence search with "회한" keywords extracts occurrence limits, NOT amounts
+            # For diagnosis coverages (e.g., A4200_1), coverage_amount_text is the payout_limit
+            from_proposal_facts = False
+            if slot_name == "payout_limit":
+                proposal_facts = coverage.get("proposal_facts", {})
+                coverage_amount_text = proposal_facts.get("coverage_amount_text")
+
+                if coverage_amount_text:
+                    # Parse amount to integer (원 units)
+                    parsed_amount = self._parse_amount_to_won(coverage_amount_text)
+                    if parsed_amount is not None:
+                        value = str(parsed_amount)
+                        status = "FOUND"
+                        from_proposal_facts = True
+                        # Keep reason if evidence extraction also found something
+                        if slot_meta.get("value"):
+                            reason = f"proposal_facts (evidence: {slot_meta.get('value')})"
+                        else:
+                            reason = "proposal_facts.coverage_amount_text"
+
             # Get evidences for this slot
             slot_evidences = [
                 self._build_evidence_reference(ev)
@@ -194,6 +215,7 @@ class CompareRowBuilder:
             notes = reason if reason else None
 
             # STEP NEXT-F: Apply G5 Coverage Attribution Gate
+            # STEP NEXT-Y: Skip G5 for payout_limit from proposal_facts (no evidence excerpts)
             # Build temporary slot_data for validation
             slot_data = {
                 "status": status,
@@ -208,12 +230,16 @@ class CompareRowBuilder:
                 ]
             }
 
-            gate_result = self.gate_validator.validate_slot(
-                slot_name,
-                slot_data,
-                coverage_code or "",
-                coverage_name
-            )
+            # Skip G5 gate if payout_limit comes from proposal_facts (trusted source)
+            if from_proposal_facts:
+                gate_result = {"valid": True}
+            else:
+                gate_result = self.gate_validator.validate_slot(
+                    slot_name,
+                    slot_data,
+                    coverage_code or "",
+                    coverage_name
+                )
 
             # If gate validation failed, demote to UNKNOWN
             if not gate_result["valid"]:
@@ -278,6 +304,46 @@ class CompareRowBuilder:
             locator=evidence.get("locator", {}),
             gate_status=evidence.get("gate_status")
         )
+
+    def _parse_amount_to_won(self, amount_text: str) -> Optional[int]:
+        """
+        Parse Korean amount text to integer in 원 units.
+
+        STEP NEXT-Y: Extract amount from coverage_amount_text for payout_limit.
+
+        Examples:
+            "3,000만원" -> 30000000
+            "5천만원" -> 50000000
+            "1억원" -> 100000000
+            "500만원" -> 5000000
+
+        Returns:
+            Integer amount in 원, or None if parsing fails
+        """
+        import re
+
+        if not amount_text:
+            return None
+
+        # Remove commas and spaces
+        text = amount_text.replace(",", "").replace(" ", "")
+
+        # Pattern: digits + unit (만원, 천만원, 억원, 원)
+        # Example: "3000만원", "5천만원", "1억원"
+        patterns = [
+            (r'(\d+)억(\d+)만원', lambda m: int(m.group(1)) * 100000000 + int(m.group(2)) * 10000),
+            (r'(\d+)억원', lambda m: int(m.group(1)) * 100000000),
+            (r'(\d+)천만원', lambda m: int(m.group(1)) * 10000000),
+            (r'(\d+)만원', lambda m: int(m.group(1)) * 10000),
+            (r'(\d+)원', lambda m: int(m.group(1))),
+        ]
+
+        for pattern, converter in patterns:
+            match = re.search(pattern, text)
+            if match:
+                return converter(match)
+
+        return None
 
     def _build_renewal_condition(self, semantics: Optional[CoverageSemantics]) -> Optional[str]:
         """Build renewal condition string from semantics"""

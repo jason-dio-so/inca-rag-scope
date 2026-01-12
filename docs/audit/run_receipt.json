@@ -241,5 +241,67 @@
       }
     ],
     "status": "success"
+  },
+  {
+    "stage": "step4",
+    "timestamp": "2026-01-12T09:51:27.279030",
+    "inputs": [
+      "data/scope_v3/SAMSUNG_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/db_over41_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/db_under40_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/hanwha_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/heungkuk_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/hyundai_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/kb_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/lotte_female_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/lotte_male_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/meritz_step3_evidence_enriched_v1_gated.jsonl"
+    ],
+    "outputs": [
+      {
+        "file": "data/compare_v1/compare_rows_v1.jsonl",
+        "sha256": "404551c89f44f1cc",
+        "line_count": 340,
+        "schema_version": "v1"
+      },
+      {
+        "file": "data/compare_v1/compare_tables_v1.jsonl",
+        "sha256": "12481c96b27bd01c",
+        "line_count": 1,
+        "schema_version": "v1"
+      }
+    ],
+    "status": "success"
+  },
+  {
+    "stage": "step4",
+    "timestamp": "2026-01-12T09:52:01.425379",
+    "inputs": [
+      "data/scope_v3/SAMSUNG_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/db_over41_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/db_under40_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/hanwha_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/heungkuk_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/hyundai_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/kb_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/lotte_female_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/lotte_male_step3_evidence_enriched_v1_gated.jsonl",
+      "data/scope_v3/meritz_step3_evidence_enriched_v1_gated.jsonl"
+    ],
+    "outputs": [
+      {
+        "file": "data/compare_v1/compare_rows_v1.jsonl",
+        "sha256": "5ffd888b1463b393",
+        "line_count": 340,
+        "schema_version": "v1"
+      },
+      {
+        "file": "data/compare_v1/compare_tables_v1.jsonl",
+        "sha256": "5847043a90f49e5c",
+        "line_count": 1,
+        "schema_version": "v1"
+      }
+    ],
+    "status": "success"
   }
 ]

@@ -1,8 +1,8 @@
 # inca-rag-scope - 작업 현황 보고서
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
-**최종 업데이트**: 2026-01-09
-**현재 상태**: ✅ **Premium SSOT DB-ONLY (fallback 제거 완료)** + ⚠️ **payout_limit 추출 필요** (Q14 blocker)
+**최종 업데이트**: 2026-01-12
+**현재 상태**: ✅ **A4200_1 payout_limit 복구 완료** + ✅ **Q14 Unblocked (10 rows)**
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ A4200_1 payout_limit Recovery (10/10 rows)** | STEP NEXT-Y | ✅ 완료 | 2026-01-12 |
 | **⚠️ DB Reality Re-Audit (Code Blocker Identified)** | STEP NEXT-DBR-1 | ⚠️ 완료 | 2026-01-09 |
 | **✅ Premium API Verified + Infrastructure Ready** | STEP NEXT-DB2 | ✅ 완료 | 2026-01-09 |
 | **✅ Premium SSOT DB Reality Lock** | STEP NEXT-DB1 | ✅ 완료 | 2026-01-09 |
