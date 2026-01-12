@@ -2,7 +2,7 @@
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
 **최종 업데이트**: 2026-01-12
-**현재 상태**: ✅ **Q1/Q14 Separation Complete (42 rows total)**
+**현재 상태**: 🔒 **Q1/Q14 FINAL LOCK (2025-11-26 snapshot)**
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **🔒 Q1/Q14 Final Lock (2025-11-26 snapshot)** | STEP NEXT-FINAL-LOCK | 🔒 LOCKED | 2026-01-12 |
 | **✅ Q1/Q14 Presentation Separation (42 rows)** | STEP NEXT-FINAL | ✅ 완료 | 2026-01-12 |
 | **✅ Q14 DB Consistency (18 rows, sex separation)** | STEP NEXT-Q14-DB-CLEAN | ✅ 완료 | 2026-01-12 |
 | **✅ A4200_1 payout_limit Recovery (10/10 rows)** | STEP NEXT-Y | ✅ 완료 | 2026-01-12 |
