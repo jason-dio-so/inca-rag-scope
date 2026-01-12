@@ -18,21 +18,29 @@
 | Q2 | 유병자 가입 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 | Q3 | 의무담보 최소화 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 (⚠️ mandatory SSOT missing) |
 | Q4 | 재발지급 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
-| Q5 | 면책기간 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 (⚠️ Step3 fix required) |
+| Q5 | 면책기간 | 🔧 SPEC READY | `compare_rows_v1.jsonl` (slot) | Tier 2 (⚠️ P2-FIX pending) |
 | Q6 | 감액 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 | Q7 | 가입나이 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 | Q8 | 업계누적 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 | Q9 | 보장개시 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 | Q10 | 면책사항 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
-| Q11 | 암직접입원비 한도 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 (⚠️ slot semantic mismatch) |
+| Q11 | 암직접입원비 한도 | 🔧 SPEC READY | `compare_rows_v1.jsonl` (slot) | Tier 2 (⚠️ P2-FIX pending) |
 | Q13 | 제자리암 O/X | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 
-**Summary**: 3 READY / 11 BLOCKED
-**Blocker**:
-- Q3: Mandatory coverage SSOT missing (100% UNKNOWN slots) - requires product-structure analysis
-- Q5: Evidence attribution failure (87.5% UNKNOWN slots) - requires Step3 G5 Gate fix
-- Q11: Slot semantic mismatch (payout_limit has amount, not duration limit) - requires slot schema redesign
-- Q2, Q4, Q6-Q10, Q13: Require UI spec + API endpoint (slots exist, no presentation layer)
+**Summary**: 3 READY / 9 BLOCKED / 2 SPEC READY
+**Status**:
+- ✅ Q1, Q12, Q14: READY (implemented)
+- 🔧 Q5, Q11: SPEC READY (P2-FIX specs complete, implementation pending)
+- ❌ Q3: BLOCKED (requires new SSOT - product structure analysis, 9-14 days)
+- ❌ Q2, Q4, Q6-Q10, Q13: BLOCKED (require UI spec + API endpoint)
+
+**P2-FIX Package** (2026-01-12):
+- ✅ Q11 slot redesign spec: Split payout_limit → daily_benefit_amount_won + duration_limit_days
+- ✅ G5 Gate attribution upgrade spec: Enforce coverage anchors, prohibit FOUND_GLOBAL
+- ✅ Mock validation report: 0-10% potential FOUND (evidence source problem identified)
+- ✅ Q3 requirements spec: Defines product_coverage_structure SSOT (9-14 day implementation)
+
+**Next Action**: Implement P2-FIX (Phase 1: document section selection + Phase 2: slot/gate changes) → Expected Q5/Q11 FOUND rates 70-90%
 
 See: `docs/policy/Q_REGISTRY.md` for full definitions
 
