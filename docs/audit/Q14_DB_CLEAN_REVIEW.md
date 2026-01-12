@@ -258,14 +258,27 @@ WHERE q14.as_of_date = %s
 - Q14 picks **any valid premium** for the (age, sex, plan_variant) combination
 - Orphan check ensures **product exists** in premium table, not that exact quote matches
 
-**Example**:
-- product_premium_quote_v2 has:
-  - meritz/6ADYW, age=30, sex=F, NO_REFUND, smoke=N, pay=20, ins=80 → 87373
-  - meritz/6ADYW, age=30, sex=F, NO_REFUND, smoke=Y, pay=10, ins=90 → 95000
-- Q14 stores: meritz/6ADYW, 30, F, NO_REFUND → 87373 (picked first match)
-- V2 check: LEFT JOIN matches **both premium rows** → No orphan ✅
+**Reality Check (psql evidence)**:
+```bash
+$ PGPASSWORD=inca_secure_prod_2025_db_key psql -U inca_admin -d inca_rag_scope -h localhost -p 5432 -c "
+SELECT insurer_key, product_id, age, sex, plan_variant, as_of_date, COUNT(*) as cnt
+FROM product_premium_quote_v2
+WHERE as_of_date='2025-11-26' AND age IN (30, 40, 50) AND plan_variant = 'NO_REFUND'
+GROUP BY insurer_key, product_id, age, sex, plan_variant, as_of_date
+HAVING COUNT(*) > 1;
+"
 
-**This is intentional** - Q14 is a product-level ranking, not quote-level.
+ insurer_key | product_id | age | sex | plan_variant | as_of_date | cnt
+-------------+------------+-----+-----+--------------+------------+-----
+(0 rows)
+```
+
+**Result**: ✅ **No duplicate rows** for Q14 join key `(insurer_key, product_id, age, sex, plan_variant, as_of_date)`
+
+**LOCK**: Current SSOT (as_of_date=2025-11-26) has **exactly 1 premium row** per Q14 natural key.
+- No tie-breaker logic needed
+- No ambiguity in premium selection
+- Future data: If duplicates appear (different smoke/pay/ins), Q14 will pick **first match** from DB query (undefined order - must add ORDER BY if needed)
 
 ---
 
@@ -416,7 +429,133 @@ WHERE as_of_date='2025-11-26';
 
 ---
 
-## 9. Lessons Learned
+## 9. Q14 v1 Policy LOCK (FINAL)
+
+### 1. Snapshot Regeneration Table (DELETE Scope)
+
+**LOCK**: `q14_premium_ranking_v1` is a **snapshot-based table** where each `as_of_date` represents a complete, independent ranking snapshot.
+
+**DELETE Policy**:
+```sql
+DELETE FROM q14_premium_ranking_v1 WHERE as_of_date = %s
+```
+
+**Rationale**:
+- ✅ **Intentional full replacement** per date (not partial update)
+- ✅ Prevents orphan rows when product lineup changes
+- ✅ Clean slate for each regeneration (no stale data)
+- ⚠️ Side effect: If GENERAL variant added later, running NO_REFUND regeneration will NOT delete GENERAL rows (current scope is safe)
+
+**Alternative NOT used**: `WHERE as_of_date = %s AND plan_variant IN (...)`
+- Would enable partial updates per variant
+- Adds complexity (must track which variants exist)
+- Current policy: **Regenerate entire snapshot** is simpler and safer
+
+### 2. Join Key Duplicate Risk (Premium Selection)
+
+**LOCK**: Q14 join key = `(insurer_key, product_id, age, sex, plan_variant, as_of_date)` (excludes smoke, pay_term, ins_term)
+
+**Current Reality** (psql evidence):
+```sql
+SELECT insurer_key, product_id, age, sex, plan_variant, as_of_date, COUNT(*)
+FROM product_premium_quote_v2
+WHERE as_of_date='2025-11-26' AND age IN (30,40,50) AND plan_variant='NO_REFUND'
+GROUP BY insurer_key, product_id, age, sex, plan_variant, as_of_date
+HAVING COUNT(*) > 1;
+-- Result: 0 rows ✅
+```
+
+**Status**: ✅ **No duplicates** in current SSOT (as_of_date=2025-11-26)
+
+**Future Risk**: If premium table later has multiple rows per join key (e.g., different smoke status):
+- meritz/6ADYW, 30, F, NO_REFUND, smoke=N → 87373
+- meritz/6ADYW, 30, F, NO_REFUND, smoke=Y → 95000
+
+**Current Code Behavior**: build_q14.py:176-184 loads **all matching rows** without ORDER BY
+```python
+cursor.execute("""
+    SELECT insurer_key, product_id, plan_variant, age, sex, smoke,
+           premium_monthly_total, as_of_date
+    FROM product_premium_quote_v2
+    WHERE as_of_date = %s AND age IN (30, 40, 50)
+      AND plan_variant IN ('NO_REFUND')
+      AND premium_monthly_total > 0
+    ORDER BY insurer_key, product_id, age, plan_variant
+""", (self.as_of_date,))
+```
+
+**Problem**: ORDER BY does NOT include `smoke/pay_term/ins_term` → **undefined selection** if duplicates exist
+
+**LOCK - Tie-Breaker Rule (IF DUPLICATES APPEAR)**:
+```sql
+-- Add to line 184:
+ORDER BY insurer_key, product_id, age, sex, plan_variant,
+         premium_monthly_total ASC  -- Pick cheapest quote
+```
+
+**Policy**: If multiple quotes exist for same product, pick **lowest premium** (customer-favorable)
+
+**Current Status**: ✅ No tie-breaker needed (no duplicates), but ORDER BY ready for future
+
+### 3. Q14 v1 Scope LOCK (Row Count Expectation)
+
+**LOCK**: Q14 v1 generates rankings for:
+- **Ages**: 30, 40, 50 (3 values)
+- **Sexes**: M, F (2 values)
+- **Plan Variants**: NO_REFUND only (1 value)
+- **Ranks**: Top 3 per segment (3 values)
+
+**Expected Rows**: 3 ages × 2 sexes × 1 variant × 3 ranks = **18 rows** per as_of_date
+
+**GENERAL Variant Policy**:
+- ❌ **NOT included** in v1 (requires multiplier calculation)
+- ❌ **NO estimation/inference** allowed (DB-ONLY policy)
+- ✅ Will add when SSOT ready: `TARGET_PLAN_VARIANTS = ["NO_REFUND", "GENERAL"]` → 36 rows
+
+**Code LOCK** (build_q14.py:54-56):
+```python
+TARGET_AGES = [30, 40, 50]
+TARGET_SEXES = ["M", "F"]  # STEP NEXT-Q14-DB-CLEAN: Rank M and F separately
+TARGET_PLAN_VARIANTS = ["NO_REFUND"]  # DB has NO_REFUND only (as_of_date=2025-11-26)
+TOP_N = 3
+```
+
+**Verification** (build_q14.py:442-448):
+```python
+expected_rows = len(TARGET_AGES) * len(TARGET_SEXES) * len(TARGET_PLAN_VARIANTS) * TOP_N
+if count == expected_rows:
+    print(f"\n✅ DoD PASS: {expected_rows} ranking rows generated")
+    exit_code = 0
+else:
+    print(f"\n❌ DoD FAIL: Expected {expected_rows} rows, got {count}")
+    exit_code = 2
+```
+
+**psql Evidence**:
+```bash
+$ psql "$DATABASE_URL" -c "
+SELECT age, sex, plan_variant, COUNT(*)
+FROM q14_premium_ranking_v1
+WHERE as_of_date='2025-11-26'
+GROUP BY age, sex, plan_variant;
+"
+
+ age | sex | plan_variant | count
+-----+-----+--------------+-------
+  30 | F   | NO_REFUND    |     3
+  30 | M   | NO_REFUND    |     3
+  40 | F   | NO_REFUND    |     3
+  40 | M   | NO_REFUND    |     3
+  50 | F   | NO_REFUND    |     3
+  50 | M   | NO_REFUND    |     3
+(6 rows)
+```
+
+**Result**: ✅ 6 segments × 3 ranks = 18 rows (LOCK satisfied)
+
+---
+
+## 10. Lessons Learned
 
 ### Why Unit Errors Are Dangerous
 
