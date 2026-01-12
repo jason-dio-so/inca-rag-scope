@@ -2,30 +2,42 @@
 
 **Date**: 2026-01-12
 **Task**: Clean q14_premium_ranking_v1 to 100% match product_premium_quote_v2 SSOT
-**Result**: ✅ **18/18 rows** validated, all checks passed
+**Result**: ✅ **18/18 rows** validated + ✅ **Unit fix applied** (원/1천만원)
+
+⚠️ **CRITICAL**: Unit violation fixed after initial completion - see Q14_DB_CLEAN_REVIEW.md
 
 ---
 
 ## Executive Summary
 
-**Problem**: q14_premium_ranking_v1 table had **9 rows** (missing sex dimension), causing incomplete rankings and potential data integrity issues.
+**Problem 1**: q14_premium_ranking_v1 table had **9 rows** (missing sex dimension), causing incomplete rankings and potential data integrity issues.
 
 **Root Cause**:
 1. Schema missing `sex` column (product_premium_quote_v2 has M/F separation)
 2. build_q14_premium_ranking.py not looping over sex dimension
 3. UNIQUE constraint insufficient: `(age, plan_variant, rank, as_of_date)` → missing sex
 
+**Problem 2 (CRITICAL)**: premium_per_10m unit violated LOCKED formula (discovered post-completion)
+
+**Root Cause**:
+1. Calculation used `cancer_amt * 10000 / 10_000_000` → net effect `/1000`
+2. Result: **만원/1천만원** (2.91) instead of **원/1천만원** (29,124.33)
+3. **10,000x magnitude error** in all efficiency values
+
 **Solution**:
 1. Added `sex` column to q14_premium_ranking_v1 (migration 070)
 2. Updated UNIQUE constraint to `(age, sex, plan_variant, rank, as_of_date)`
 3. Modified build_q14 to rank M/F separately
 4. Implemented DELETE+INSERT pattern (snapshot regeneration)
+5. **Fixed premium_per_10m calculation** (removed `* 10000` to match LOCKED formula)
+6. **Updated all unit labels** (원/1천만원 throughout code/docs/display)
 
 **Impact**:
 - ✅ 18/18 rows generated (3 ages × 2 sexes × 1 variant × 3 ranks)
 - ✅ V1 check: No duplicate keys
 - ✅ V2 check: No orphan rows (100% LEFT JOIN with premium SSOT)
 - ✅ V3 check: Expected row count validated
+- ✅ **V4 check: Unit correctness** (stored = recomputed LOCKED formula)
 - ✅ DB-ONLY policy maintained (no mock/fallback data)
 
 ---

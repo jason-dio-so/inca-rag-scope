@@ -118,11 +118,11 @@ class Q14RankingBuilder:
                     payout_limit = slots.get('payout_limit', {})
                     value_str = payout_limit.get('value')
 
-                    # Try to parse numeric value (in 만원)
+                    # Try to parse numeric value (in 원)
                     cancer_amt = None
                     if value_str and value_str != 'None':
                         try:
-                            # Clean and parse
+                            # Clean and parse (원 단위)
                             value_cleaned = str(value_str).replace(',', '').strip()
                             cancer_amt = int(float(value_cleaned))
                         except (ValueError, TypeError):
@@ -139,7 +139,7 @@ class Q14RankingBuilder:
 
                     self.cancer_amounts[insurer_key] = cancer_amt
                     count += 1
-                    print(f"  ✅ {insurer_key}: {cancer_amt:,}만원")
+                    print(f"  ✅ {insurer_key}: {cancer_amt:,}원 ({cancer_amt/10000:,.0f}만원)")
 
                 except json.JSONDecodeError:
                     continue
@@ -241,10 +241,11 @@ class Q14RankingBuilder:
                             # Exclude insurer (no cancer_amt)
                             continue
 
-                        # Calculate premium_per_10m
-                        # cancer_amt is in 만원 (e.g., 3000 = 30,000,000원)
-                        cancer_amt_won = cancer_amt * 10000
-                        premium_per_10m = rec["premium_monthly_total"] / (cancer_amt_won / 10_000_000)
+                        # Calculate premium_per_10m (LOCKED FORMULA)
+                        # cancer_amt is in 원 (e.g., 30000000 = 3천만원)
+                        # Formula: premium_monthly / (cancer_amt / 10,000,000)
+                        # Unit: 원/1천만원 (how much premium per 10M won of coverage)
+                        premium_per_10m = rec["premium_monthly_total"] / (cancer_amt / 10_000_000)
 
                         segment_rankings.append({
                             "insurer_key": insurer_key,
@@ -377,11 +378,11 @@ class Q14RankingBuilder:
             if segment != current_segment:
                 print(f"\n## {segment}")
                 print("-" * 80)
-                print(f"{'Rank':<6} {'Insurer':<12} {'Premium/月':<15} {'암진단비':<15} {'P/1억':<15}")
+                print(f"{'Rank':<6} {'Insurer':<12} {'Premium/月':<15} {'암진단비':<15} {'P/1천만원':<15}")
                 print("-" * 80)
                 current_segment = segment
 
-            print(f"{rank:<6} {insurer:<12} {premium:>14,}원 {cancer_amt:>14,}만 {p_per_10m:>14,.2f}원")
+            print(f"{rank:<6} {insurer:<12} {premium:>14,}원 {cancer_amt/10000:>14,.0f}만원 {p_per_10m:>14,.2f}원")
 
         print("\n" + "="*80)
 
