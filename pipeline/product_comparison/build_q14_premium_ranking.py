@@ -53,7 +53,7 @@ DEFAULT_JSONL_PATH = "data/compare_v1/compare_rows_v1.jsonl"
 CANCER_CODE = "A4200_1"  # 암진단비 (유사암 제외)
 TARGET_AGES = [30, 40, 50]
 TARGET_SEXES = ["M", "F"]  # STEP NEXT-Q14-DB-CLEAN: Rank M and F separately
-TARGET_PLAN_VARIANTS = ["NO_REFUND"]  # DB has NO_REFUND only (as_of_date=2025-11-26)
+TARGET_PLAN_VARIANTS = ["NO_REFUND", "GENERAL"]  # DB has NO_REFUND + GENERAL (as_of_date=2025-11-26)
 TOP_N = 3
 
 DATABASE_URL = os.getenv(
@@ -179,7 +179,7 @@ class Q14RankingBuilder:
             FROM product_premium_quote_v2
             WHERE as_of_date = %s
               AND age IN (30, 40, 50)
-              AND plan_variant IN ('NO_REFUND')
+              AND plan_variant IN ('NO_REFUND', 'GENERAL')
               AND premium_monthly_total > 0
             ORDER BY insurer_key, product_id, age, plan_variant
         """
@@ -204,6 +204,7 @@ class Q14RankingBuilder:
 
         print(f"[INFO] Loaded {len(records)} premium records from DB")
 
+
         if len(records) == 0:
             print("[ERROR] No premium data found in product_premium_quote_v2")
             print(f"[ERROR] Check as_of_date={self.as_of_date}")
@@ -215,9 +216,10 @@ class Q14RankingBuilder:
         """
         Build Q14 rankings using locked formula.
 
-        STEP NEXT-Q14-DB-CLEAN: Rank M and F separately (18 rows total)
+        STEP NEXT-Q14-DB-CLEAN: Rank M and F separately
+        STEP NEXT-GENERAL-Q1Q14: Extend to GENERAL variant
 
-        Returns: List of ranking records (18 rows = 3 ages × 2 sexes × 1 variant × 3 ranks)
+        Returns: List of ranking records (36 rows = 3 ages × 2 sexes × 2 variants × 3 ranks)
         """
         print("[INFO] Building Q14 rankings...")
 
@@ -259,17 +261,20 @@ class Q14RankingBuilder:
                             "as_of_date": self.as_of_date
                         })
 
-                # Sort by: premium_per_10m ASC, premium_monthly_total ASC, insurer_key ASC
-                segment_rankings.sort(key=lambda x: (
-                    x["premium_per_10m"],
-                    x["premium_monthly_total"],
-                    x["insurer_key"]
-                ))
+                    if len(segment_rankings) == 0:
+                        continue
 
-                # Take Top-N and assign ranks
-                for rank, item in enumerate(segment_rankings[:TOP_N], 1):
-                    item["rank"] = rank
-                    all_rankings.append(item)
+                    # Sort by: premium_per_10m ASC, premium_monthly_total ASC, insurer_key ASC
+                    segment_rankings.sort(key=lambda x: (
+                        x["premium_per_10m"],
+                        x["premium_monthly_total"],
+                        x["insurer_key"]
+                    ))
+
+                    # Take Top-N and assign ranks
+                    for rank, item in enumerate(segment_rankings[:TOP_N], 1):
+                        item["rank"] = rank
+                        all_rankings.append(item)
 
         print(f"[INFO] Generated {len(all_rankings)} ranking records")
 
@@ -278,9 +283,10 @@ class Q14RankingBuilder:
     def upsert_rankings(self, rankings: List[Dict]) -> None:
         """
         STEP NEXT-Q14-DB-CLEAN: DELETE+INSERT pattern (snapshot regeneration)
+        STEP NEXT-GENERAL-Q1Q14: DELETE only target plan_variants (not all)
 
         Policy:
-        1. DELETE all rows for target as_of_date
+        1. DELETE rows for target as_of_date + plan_variants
         2. INSERT new rankings (Top3 per age×sex×variant)
 
         UNIQUE key: (age, sex, plan_variant, rank, as_of_date)
@@ -289,13 +295,17 @@ class Q14RankingBuilder:
 
         cursor = self.db_conn.cursor()
 
-        # Step 1: DELETE all rows for this as_of_date
-        cursor.execute("""
-            DELETE FROM q14_premium_ranking_v1
-            WHERE as_of_date = %s
-        """, (self.as_of_date,))
-        deleted_count = cursor.rowcount
-        print(f"[INFO] Deleted {deleted_count} existing rows for as_of_date={self.as_of_date}")
+        # Step 1: DELETE only rows for target plan_variants
+        # Get unique plan_variants from rankings
+        plan_variants = list(set(r["plan_variant"] for r in rankings))
+
+        for pv in plan_variants:
+            cursor.execute("""
+                DELETE FROM q14_premium_ranking_v1
+                WHERE as_of_date = %s AND plan_variant = %s
+            """, (self.as_of_date, pv))
+            deleted = cursor.rowcount
+            print(f"[INFO] Deleted {deleted} existing rows for as_of_date={self.as_of_date}, plan_variant={pv}")
 
         # Step 2: INSERT new rankings
         for rec in rankings:
@@ -438,8 +448,9 @@ def main():
         # Print summary
         builder.print_summary()
 
-        # Check DoD (18 rows: 3 ages × 2 sexes × 1 variant × 3 ranks)
+        # Check DoD (36 rows: 3 ages × 2 sexes × 2 variants × 3 ranks)
         # STEP NEXT-Q14-DB-CLEAN: Updated to include sex dimension
+        # STEP NEXT-GENERAL-Q1Q14: Updated to include GENERAL variant
         expected_rows = len(TARGET_AGES) * len(TARGET_SEXES) * len(TARGET_PLAN_VARIANTS) * TOP_N
         if count == expected_rows:
             print(f"\n✅ DoD PASS: {expected_rows} ranking rows generated")

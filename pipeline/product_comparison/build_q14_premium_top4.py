@@ -35,7 +35,7 @@ from typing import Dict, List
 
 TARGET_AGES = [30, 40, 50]
 TARGET_SEXES = ["M", "F"]
-TARGET_PLAN_VARIANTS = ["NO_REFUND"]  # NO GENERAL until SSOT ready
+TARGET_PLAN_VARIANTS = ["NO_REFUND", "GENERAL"]  # DB has NO_REFUND + GENERAL (as_of_date=2025-11-26)
 TOP_N = 4
 
 DATABASE_URL = os.getenv(
@@ -77,7 +77,7 @@ class Q14Top4Builder:
             FROM product_premium_quote_v2
             WHERE as_of_date = %s
               AND age IN (30, 40, 50)
-              AND plan_variant IN ('NO_REFUND')
+              AND plan_variant IN ('NO_REFUND', 'GENERAL')
               AND premium_monthly_total > 0
             ORDER BY insurer_key, product_id, age, sex, plan_variant
         """
@@ -167,9 +167,10 @@ class Q14Top4Builder:
     def upsert_rankings(self, rankings: List[Dict]) -> None:
         """
         DELETE+INSERT pattern (snapshot regeneration).
+        STEP NEXT-GENERAL-Q1Q14: DELETE only target plan_variants (not all)
 
         Policy:
-        1. DELETE all rows for target as_of_date
+        1. DELETE rows for target as_of_date + plan_variants
         2. INSERT new rankings (Top4 per age×sex×variant)
 
         UNIQUE key: (as_of_date, age, sex, plan_variant, rank)
@@ -178,13 +179,16 @@ class Q14Top4Builder:
 
         cursor = self.db_conn.cursor()
 
-        # Step 1: DELETE all rows for this as_of_date
-        cursor.execute("""
-            DELETE FROM q14_premium_top4_v1
-            WHERE as_of_date = %s
-        """, (self.as_of_date,))
-        deleted_count = cursor.rowcount
-        print(f"[INFO] Deleted {deleted_count} existing rows for as_of_date={self.as_of_date}")
+        # Step 1: DELETE only rows for target plan_variants
+        plan_variants = list(set(r["plan_variant"] for r in rankings))
+
+        for pv in plan_variants:
+            cursor.execute("""
+                DELETE FROM q14_premium_top4_v1
+                WHERE as_of_date = %s AND plan_variant = %s
+            """, (self.as_of_date, pv))
+            deleted = cursor.rowcount
+            print(f"[INFO] Deleted {deleted} existing rows for as_of_date={self.as_of_date}, plan_variant={pv}")
 
         # Step 2: INSERT new rankings
         for rec in rankings:
