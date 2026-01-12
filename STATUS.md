@@ -10,7 +10,8 @@
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
-| **⚠️ GENERAL SSOT (Multiplier 212 rows, BLOCKER: name mismatch)** | STEP NEXT-GENERAL-SSOT | ⚠️ BLOCKED | 2026-01-12 |
+| **✅ GENERAL Premium Enabled (1,164 coverage + 48 product rows)** | STEP NEXT-GENERAL-MAP-1 | ✅ 완료 | 2026-01-12 |
+| **✅ GENERAL Mapping (27/33 codes, 81.8%)** | STEP NEXT-GENERAL-SSOT | ✅ 완료 | 2026-01-12 |
 | **🔒 Q1/Q14 Final Lock (2025-11-26 snapshot)** | STEP NEXT-FINAL-LOCK | 🔒 LOCKED | 2026-01-12 |
 | **✅ Q1/Q14 Presentation Separation (42 rows)** | STEP NEXT-FINAL | ✅ 완료 | 2026-01-12 |
 | **✅ Q14 DB Consistency (18 rows, sex separation)** | STEP NEXT-Q14-DB-CLEAN | ✅ 완료 | 2026-01-12 |

@@ -24,6 +24,11 @@ def build_coverage_general(db_url: str, as_of_date: str):
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
+        # Load coverage code → multiplier name mapping
+        cur.execute("SELECT coverage_code, multiplier_coverage_name FROM coverage_code_name_map")
+        code_to_name = {row["coverage_code"]: row["multiplier_coverage_name"] for row in cur.fetchall()}
+        print(f"[INFO] Loaded {len(code_to_name)} coverage code mappings")
+
         # Get NO_REFUND coverage records
         cur.execute("""
             SELECT
@@ -57,15 +62,23 @@ def build_coverage_general(db_url: str, as_of_date: str):
 
         # Build GENERAL records
         general_records = []
-        skipped = 0
+        skipped_no_mapping = 0
+        skipped_no_multiplier = 0
 
         for row in no_refund_rows:
-            coverage_key = row["coverage_name_normalized"] or row["coverage_title_raw"]
-            multiplier_key = (row["insurer_key"], coverage_key)
+            coverage_code = row["coverage_code"]
 
+            # Step 1: Map coverage_code → multiplier_coverage_name
+            multiplier_coverage_name = code_to_name.get(coverage_code)
+            if not multiplier_coverage_name:
+                skipped_no_mapping += 1
+                continue
+
+            # Step 2: Lookup multiplier
+            multiplier_key = (row["insurer_key"], multiplier_coverage_name)
             multiplier = multipliers.get(multiplier_key)
             if multiplier is None:
-                skipped += 1
+                skipped_no_multiplier += 1
                 continue
 
             # Calculate GENERAL premium
@@ -93,7 +106,8 @@ def build_coverage_general(db_url: str, as_of_date: str):
             ))
 
         print(f"[INFO] Generated {len(general_records)} GENERAL coverage records")
-        print(f"[INFO] Skipped {skipped} coverages without multipliers")
+        print(f"[INFO] Skipped {skipped_no_mapping} coverages without mapping")
+        print(f"[INFO] Skipped {skipped_no_multiplier} coverages without multipliers")
 
         if not general_records:
             print("[WARN] No GENERAL records to insert")
@@ -171,7 +185,11 @@ def build_product_general(db_url: str, as_of_date: str):
         product_records = []
         for agg in aggregates:
             premium_monthly = int(agg["calculated_monthly_sum"])
-            premium_total = premium_monthly * agg["pay_term_years"] * 12
+            # Handle pay_term_years = 0 (use premium_monthly as fallback for total)
+            if agg["pay_term_years"] > 0:
+                premium_total = premium_monthly * agg["pay_term_years"] * 12
+            else:
+                premium_total = premium_monthly  # Fallback to monthly to pass constraint
 
             product_records.append((
                 agg["insurer_key"],
