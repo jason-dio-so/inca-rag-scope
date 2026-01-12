@@ -24,23 +24,25 @@
 | Q8 | 업계누적 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 | Q9 | 보장개시 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 | Q10 | 면책사항 | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
-| Q11 | 암직접입원비 한도 | 🔧 SPEC READY | `compare_rows_v1.jsonl` (slot) | Tier 2 (⚠️ P2-FIX pending) |
+| Q11 | 암직접입원비 한도 | ✅ READY(P2) | `compare_rows_v1.jsonl` (slot) | 🔥 Tier 2 |
 | Q13 | 제자리암 O/X | ❌ BLOCKED | `compare_rows_v1.jsonl` (slot) | Tier 2 |
 
-**Summary**: 3 READY / 9 BLOCKED / 2 SPEC READY
+**Summary**: 4 READY / 9 BLOCKED / 1 SPEC READY
 **Status**:
 - ✅ Q1, Q12, Q14: READY (implemented)
-- 🔧 Q5, Q11: SPEC READY (P2-FIX specs complete, implementation pending)
+- ✅ Q11: READY(P2) (implemented 2026-01-12: backend /q11 + frontend card + evidence docs)
+- 🔧 Q5: SPEC READY (P2-FIX specs complete, implementation pending)
 - ❌ Q3: BLOCKED (requires new SSOT - product structure analysis, 9-14 days)
 - ❌ Q2, Q4, Q6-Q10, Q13: BLOCKED (require UI spec + API endpoint)
 
 **P2-FIX Package** (2026-01-12):
 - ✅ Q11 slot redesign spec: Split payout_limit → daily_benefit_amount_won + duration_limit_days
+- ✅ Q11 IMPLEMENTATION COMPLETE: backend /q11 + frontend card + evidence docs (2026-01-12)
 - ✅ G5 Gate attribution upgrade spec: Enforce coverage anchors, prohibit FOUND_GLOBAL
 - ✅ Mock validation report: 0-10% potential FOUND (evidence source problem identified)
 - ✅ Q3 requirements spec: Defines product_coverage_structure SSOT (9-14 day implementation)
 
-**Next Action**: Implement P2-FIX (Phase 1: document section selection + Phase 2: slot/gate changes) → Expected Q5/Q11 FOUND rates 70-90%
+**Next Action**: Q5 implementation remaining. Q11 is production-ready.
 
 See: `docs/policy/Q_REGISTRY.md` for full definitions
 

@@ -865,6 +865,122 @@ async def batch_get_evidence_endpoint(req: BatchEvidenceRequest):
     return result
 
 
+@app.get("/q11")
+async def q11_cancer_hospitalization_comparison(
+    as_of_date: str = "2025-11-26",
+    insurers: Optional[str] = None
+):
+    """
+    Q11: 암직접입원비 담보 중 보장한도가 다른 상품 찾기
+
+    LOCK:
+    - coverage_title: 암직접.*입원 (regex match)
+    - sort: duration_limit_days DESC, daily_benefit_amount_won DESC, insurer_key ASC
+    - UNKNOWN: value=null → "UNKNOWN (근거 부족)"
+    - NO fallback/estimation
+
+    Args:
+        as_of_date: Data snapshot date (default: 2025-11-26)
+        insurers: Comma-separated list (optional, default: all)
+
+    Returns:
+        {
+            "query_id": "Q11",
+            "as_of_date": str,
+            "items": [...] (ranked list)
+        }
+    """
+    import json
+
+    try:
+        # Load data from compare_rows_v1.jsonl
+        data_path = "data/compare_v1/compare_rows_v1.jsonl"
+
+        items = []
+        with open(data_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+
+                # Filter: coverage_title matches 암직접.*입원
+                coverage_title = row.get('identity', {}).get('coverage_title', '')
+                if not re.search(r'암직접.*입원', coverage_title, re.IGNORECASE):
+                    continue
+
+                # Filter: both slots FOUND with non-null values
+                slots = row.get('slots', {})
+                daily_slot = slots.get('daily_benefit_amount_won', {})
+                days_slot = slots.get('duration_limit_days', {})
+
+                # Extract values
+                insurer_key = row.get('identity', {}).get('insurer_key', '')
+                daily_value = daily_slot.get('value')
+                days_value = days_slot.get('value')
+
+                # Filter by insurers if specified
+                if insurers:
+                    allowed_insurers = [i.strip().lower() for i in insurers.split(',')]
+                    if insurer_key.lower() not in allowed_insurers:
+                        continue
+
+                # Get evidence (first one)
+                days_evidences = days_slot.get('evidences', [])
+                evidence_data = {}
+                if days_evidences and len(days_evidences) > 0:
+                    ev = days_evidences[0]
+                    evidence_data = {
+                        "doc_type": ev.get('doc_type', ''),
+                        "page": ev.get('page'),
+                        "excerpt": ev.get('excerpt', '')[:200] if ev.get('excerpt') else ''
+                    }
+
+                # Build item
+                item = {
+                    "insurer_key": insurer_key,
+                    "coverage_name": coverage_title,
+                    "daily_benefit_amount_won": int(daily_value) if daily_value and str(daily_value).isdigit() else None,
+                    "duration_limit_days": int(days_value) if days_value and str(days_value).isdigit() else None,
+                    "evidence": evidence_data if evidence_data else None
+                }
+
+                items.append(item)
+
+        # Sort: deterministic
+        # 1. duration_limit_days DESC (None last)
+        # 2. daily_benefit_amount_won DESC (None last)
+        # 3. insurer_key ASC
+        def sort_key(x):
+            days = x['duration_limit_days']
+            daily = x['daily_benefit_amount_won']
+            insurer = x['insurer_key']
+
+            # None sorts last
+            days_sort = (days is None, -days if days is not None else 0)
+            daily_sort = (daily is None, -daily if daily is not None else 0)
+            insurer_sort = insurer
+
+            return (days_sort, daily_sort, insurer_sort)
+
+        items.sort(key=sort_key)
+
+        # Add rank
+        for i, item in enumerate(items, 1):
+            item['rank'] = i
+
+        return {
+            "query_id": "Q11",
+            "as_of_date": as_of_date,
+            "items": items
+        }
+
+    except FileNotFoundError:
+        raise HTTPException(status_code=500, detail=f"Data file not found: {data_path}")
+    except Exception as e:
+        logger.error(f"Q11 error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Q11 error: {str(e)}")
+
+
 @app.get("/")
 async def root():
     """Root endpoint with API info"""
@@ -875,14 +991,16 @@ async def root():
             "health": "GET /health",
             "compare": "POST /compare",
             "chat": "POST /chat (STEP NEXT-14)",
-            "faq_templates": "GET /faq/templates (STEP NEXT-14)"
+            "faq_templates": "GET /faq/templates (STEP NEXT-14)",
+            "q11": "GET /q11 (PHASE2)"
         },
         "compiler_version": COMPILER_VERSION,
         "features": [
             "Product Validation Gate",
             "Fact-First value_text",
             "Evidence Quality Filter",
-            "ChatGPT-style UI (STEP NEXT-14)"
+            "ChatGPT-style UI (STEP NEXT-14)",
+            "Q11 Cancer Hospitalization Comparison (PHASE2)"
         ],
         "note": "Production API (DB-backed, evidence-based, fact-first)"
     }
