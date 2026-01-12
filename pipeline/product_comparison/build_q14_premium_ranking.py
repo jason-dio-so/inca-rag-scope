@@ -52,6 +52,7 @@ from typing import Dict, List, Optional
 DEFAULT_JSONL_PATH = "data/compare_v1/compare_rows_v1.jsonl"
 CANCER_CODE = "A4200_1"  # 암진단비 (유사암 제외)
 TARGET_AGES = [30, 40, 50]
+TARGET_SEXES = ["M", "F"]  # STEP NEXT-Q14-DB-CLEAN: Rank M and F separately
 TARGET_PLAN_VARIANTS = ["NO_REFUND"]  # DB has NO_REFUND only (as_of_date=2025-11-26)
 TOP_N = 3
 
@@ -214,44 +215,48 @@ class Q14RankingBuilder:
         """
         Build Q14 rankings using locked formula.
 
-        Returns: List of ranking records (18 rows)
+        STEP NEXT-Q14-DB-CLEAN: Rank M and F separately (18 rows total)
+
+        Returns: List of ranking records (18 rows = 3 ages × 2 sexes × 1 variant × 3 ranks)
         """
         print("[INFO] Building Q14 rankings...")
 
         all_rankings = []
 
         for age in TARGET_AGES:
-            for plan_variant in TARGET_PLAN_VARIANTS:
-                segment_rankings = []
+            for sex in TARGET_SEXES:
+                for plan_variant in TARGET_PLAN_VARIANTS:
+                    segment_rankings = []
 
-                for rec in premium_records:
-                    if rec["age"] != age or rec["plan_variant"] != plan_variant:
-                        continue
+                    for rec in premium_records:
+                        if rec["age"] != age or rec["sex"] != sex or rec["plan_variant"] != plan_variant:
+                            continue
 
-                    insurer_key = rec["insurer_key"]
+                        insurer_key = rec["insurer_key"]
 
-                    # Lookup cancer_amt
-                    cancer_amt = self.cancer_amounts.get(insurer_key)
+                        # Lookup cancer_amt
+                        cancer_amt = self.cancer_amounts.get(insurer_key)
 
-                    if cancer_amt is None or cancer_amt == 0:
-                        # Exclude insurer (no cancer_amt)
-                        continue
+                        if cancer_amt is None or cancer_amt == 0:
+                            # Exclude insurer (no cancer_amt)
+                            continue
 
-                    # Calculate premium_per_10m
-                    # cancer_amt is in 만원 (e.g., 3000 = 30,000,000원)
-                    cancer_amt_won = cancer_amt * 10000
-                    premium_per_10m = rec["premium_monthly_total"] / (cancer_amt_won / 10_000_000)
+                        # Calculate premium_per_10m
+                        # cancer_amt is in 만원 (e.g., 3000 = 30,000,000원)
+                        cancer_amt_won = cancer_amt * 10000
+                        premium_per_10m = rec["premium_monthly_total"] / (cancer_amt_won / 10_000_000)
 
-                    segment_rankings.append({
-                        "insurer_key": insurer_key,
-                        "product_id": rec["product_id"],
-                        "age": age,
-                        "plan_variant": plan_variant,
-                        "cancer_amt": cancer_amt,
-                        "premium_monthly_total": rec["premium_monthly_total"],
-                        "premium_per_10m": premium_per_10m,
-                        "as_of_date": self.as_of_date
-                    })
+                        segment_rankings.append({
+                            "insurer_key": insurer_key,
+                            "product_id": rec["product_id"],
+                            "age": age,
+                            "sex": sex,  # STEP NEXT-Q14-DB-CLEAN: Add sex field
+                            "plan_variant": plan_variant,
+                            "cancer_amt": cancer_amt,
+                            "premium_monthly_total": rec["premium_monthly_total"],
+                            "premium_per_10m": premium_per_10m,
+                            "as_of_date": self.as_of_date
+                        })
 
                 # Sort by: premium_per_10m ASC, premium_monthly_total ASC, insurer_key ASC
                 segment_rankings.sort(key=lambda x: (
@@ -271,14 +276,27 @@ class Q14RankingBuilder:
 
     def upsert_rankings(self, rankings: List[Dict]) -> None:
         """
-        Upsert rankings to q14_premium_ranking_v1 table.
+        STEP NEXT-Q14-DB-CLEAN: DELETE+INSERT pattern (snapshot regeneration)
 
-        UNIQUE key: (age, plan_variant, rank, as_of_date)
+        Policy:
+        1. DELETE all rows for target as_of_date
+        2. INSERT new rankings (Top3 per age×sex×variant)
+
+        UNIQUE key: (age, sex, plan_variant, rank, as_of_date)
         """
-        print("[INFO] Upserting rankings to q14_premium_ranking_v1...")
+        print("[INFO] Regenerating Q14 rankings (DELETE+INSERT)...")
 
         cursor = self.db_conn.cursor()
 
+        # Step 1: DELETE all rows for this as_of_date
+        cursor.execute("""
+            DELETE FROM q14_premium_ranking_v1
+            WHERE as_of_date = %s
+        """, (self.as_of_date,))
+        deleted_count = cursor.rowcount
+        print(f"[INFO] Deleted {deleted_count} existing rows for as_of_date={self.as_of_date}")
+
+        # Step 2: INSERT new rankings
         for rec in rankings:
             # Build source JSONB
             source = {
@@ -289,22 +307,15 @@ class Q14RankingBuilder:
 
             cursor.execute("""
                 INSERT INTO q14_premium_ranking_v1 (
-                    insurer_key, product_id, age, plan_variant, rank,
+                    insurer_key, product_id, age, sex, plan_variant, rank,
                     cancer_amt, premium_monthly, premium_per_10m, source, as_of_date
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (age, plan_variant, rank, as_of_date)
-                DO UPDATE SET
-                    insurer_key = EXCLUDED.insurer_key,
-                    product_id = EXCLUDED.product_id,
-                    cancer_amt = EXCLUDED.cancer_amt,
-                    premium_monthly = EXCLUDED.premium_monthly,
-                    premium_per_10m = EXCLUDED.premium_per_10m,
-                    source = EXCLUDED.source
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 rec["insurer_key"],
                 rec["product_id"],
                 rec["age"],
+                rec["sex"],
                 rec["plan_variant"],
                 rec["rank"],
                 rec["cancer_amt"],
@@ -317,7 +328,7 @@ class Q14RankingBuilder:
         self.db_conn.commit()
         cursor.close()
 
-        print(f"[INFO] Upserted {len(rankings)} rankings to DB")
+        print(f"[INFO] Inserted {len(rankings)} new rankings to DB")
 
     def verify_output(self) -> int:
         """
@@ -344,11 +355,11 @@ class Q14RankingBuilder:
         cursor = self.db_conn.cursor()
 
         cursor.execute("""
-            SELECT age, plan_variant, rank, insurer_key,
+            SELECT age, sex, plan_variant, rank, insurer_key,
                    premium_monthly, cancer_amt, premium_per_10m
             FROM q14_premium_ranking_v1
             WHERE as_of_date = %s
-            ORDER BY age, plan_variant, rank
+            ORDER BY age, sex, plan_variant, rank
         """, (self.as_of_date,))
 
         rows = cursor.fetchall()
@@ -360,9 +371,9 @@ class Q14RankingBuilder:
 
         current_segment = None
         for row in rows:
-            age, plan_variant, rank, insurer, premium, cancer_amt, p_per_10m = row
+            age, sex, plan_variant, rank, insurer, premium, cancer_amt, p_per_10m = row
 
-            segment = f"Age {age} | {plan_variant}"
+            segment = f"Age {age} | Sex {sex} | {plan_variant}"
             if segment != current_segment:
                 print(f"\n## {segment}")
                 print("-" * 80)
@@ -426,8 +437,9 @@ def main():
         # Print summary
         builder.print_summary()
 
-        # Check DoD (9 rows: 3 ages × 1 variant × 3 ranks)
-        expected_rows = len(TARGET_AGES) * len(TARGET_PLAN_VARIANTS) * TOP_N
+        # Check DoD (18 rows: 3 ages × 2 sexes × 1 variant × 3 ranks)
+        # STEP NEXT-Q14-DB-CLEAN: Updated to include sex dimension
+        expected_rows = len(TARGET_AGES) * len(TARGET_SEXES) * len(TARGET_PLAN_VARIANTS) * TOP_N
         if count == expected_rows:
             print(f"\n✅ DoD PASS: {expected_rows} ranking rows generated")
             exit_code = 0
