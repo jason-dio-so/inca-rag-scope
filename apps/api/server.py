@@ -1027,6 +1027,82 @@ async def q7_waiver_policy(
         raise HTTPException(status_code=500, detail=f"Q7 error: {str(e)}")
 
 
+@app.get("/q8")
+async def q8_surgery_repeat_policy(
+    insurers: Optional[str] = None
+):
+    """
+    Q8: 질병수술비(1~5종) 반복 지급 조건 정책 (Contract-level Overlay)
+
+    FROZEN (TYPE B Overlay):
+    - Data source: q8_surgery_repeat_policy_v1.jsonl (Overlay SSOT)
+    - repeat_payment_policy: PER_EVENT | ANNUAL_LIMIT | UNKNOWN
+    - NO Core Model dependency (pure overlay)
+    - Evidence-based only (no inference, no interpretation)
+    - UNKNOWN is acceptable (document limitations)
+    - Scope: 질병수술비(1~5종) payment frequency ONLY (no specific surgery interpretation)
+
+    Policy: docs/policy/Q8_SURGERY_REPEAT_POLICY_OVERLAY.md
+
+    Args:
+        insurers: Comma-separated list (optional, default: all)
+
+    Returns:
+        {
+            "query_id": "Q8",
+            "items": [...]
+        }
+    """
+    from apps.api.overlays.q8.loader import load_q8_surgery_repeat_policy
+    from apps.api.overlays.q8.model import POLICY_DISPLAY
+
+    try:
+        # Parse insurer filter
+        insurers_filter = None
+        if insurers:
+            insurers_filter = [i.strip() for i in insurers.split(',')]
+
+        # Load from overlay SSOT
+        policies = load_q8_surgery_repeat_policy(insurers_filter=insurers_filter)
+
+        # Build response items
+        items = []
+        for policy in policies:
+            # Get first evidence (if available)
+            evidence_data = None
+            if policy.evidence_refs and len(policy.evidence_refs) > 0:
+                ev = policy.evidence_refs[0]
+                evidence_data = {
+                    "doc_type": ev.get('doc_type', ''),
+                    "page": ev.get('page'),
+                    "excerpt": ev.get('excerpt', '')[:200] if ev.get('excerpt') else ''
+                }
+
+            item = {
+                "insurer_key": policy.insurer_key,
+                "repeat_payment_policy": policy.repeat_payment_policy,
+                "display_text": policy.display_text,
+                "evidence_count": len(policy.evidence_refs),
+                "evidence": evidence_data
+            }
+
+            items.append(item)
+
+        # Sort by insurer_key (alphabetical)
+        items.sort(key=lambda x: x['insurer_key'])
+
+        return {
+            "query_id": "Q8",
+            "items": items
+        }
+
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=500, detail=f"Q8 SSOT not found: {str(e)}")
+    except Exception as e:
+        logger.error(f"Q8 error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Q8 error: {str(e)}")
+
+
 @app.get("/q11")
 async def q11_cancer_hospitalization_comparison(
     as_of_date: str = "2025-11-26",
@@ -1397,6 +1473,7 @@ async def root():
             "faq_templates": "GET /faq/templates (STEP NEXT-14)",
             "q5": "GET /q5 (OVERLAY)",
             "q7": "GET /q7 (OVERLAY)",
+            "q8": "GET /q8 (OVERLAY)",
             "q11": "GET /q11 (PHASE2)",
             "q13": "GET /q13 (PHASE2-LIMITED)"
         },

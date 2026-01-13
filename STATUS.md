@@ -3841,3 +3841,4 @@ AssistantMessageVM {
 - `docs/audit/STEP_NEXT_66_VECTOR_FILEBASE_PROOF.md` (Stage A/B complete)
 
 ---
+- 2026-01-13: ✅ Q8 Surgery Repeat Payment Policy Overlay (TYPE B) - FROZEN (GET /q8 endpoint, 10 insurers, SHA256 verified)
