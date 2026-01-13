@@ -258,3 +258,20 @@ export interface UIConfig {
     enable_forbidden_phrase_check: boolean;
   };
 }
+
+// STEP NEXT-P2-Q11-REF-β: Q11 Reference Block Types
+export interface Q11ReferenceEvidence {
+  doc_type: string;
+  page: number;
+  excerpt: string;
+}
+
+export interface Q11ReferenceItem {
+  insurer_key: string;
+  coverage_title: string;
+  duration_limit_days: number | null;
+  daily_benefit_amount_won: number | null;
+  evidence: Q11ReferenceEvidence;
+  badge: string;
+  note: string;
+}

@@ -7,16 +7,19 @@
  * - Daily benefit amount (일당)
  * - Duration limit days (보장일수)
  * - Evidence attribution
+ * - References block (STEP NEXT-P2-Q11-REF-β): Business method references below items
  *
  * Rules (IMMUTABLE):
  * - Sort: duration_limit_days DESC, daily_benefit_amount_won DESC, insurer_key ASC
  * - null values → "UNKNOWN (근거 부족)"
  * - Evidence: doc_type + page, with excerpt on hover
+ * - References: NEVER affect ranking/sorting/premium calculation
  */
 
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Q11ReferenceItem } from '@/lib/types';
 
 // Insurer code to display name mapping
 const INSURER_NAMES: Record<string, string> = {
@@ -51,6 +54,7 @@ interface Q11Response {
   query_id: string;
   as_of_date: string;
   items: Q11Item[];
+  references: Q11ReferenceItem[];
 }
 
 export function Q11CancerHospitalizationCard() {
@@ -201,6 +205,96 @@ export function Q11CancerHospitalizationCard() {
           ℹ️ 정렬: 보장일수(DESC) → 일당 금액(DESC) → 보험사명(ASC) 순으로 정렬됩니다.
         </p>
       </div>
+
+      {/* STEP NEXT-P2-Q11-REF-β: Reference Block (Business Method Only) */}
+      {data.references && data.references.length > 0 && (
+        <div className="bg-amber-50 border-t-2 border-amber-200">
+          <div className="p-4">
+            <h4 className="text-md font-semibold text-gray-900 mb-2">참고 (Reference)</h4>
+            <p className="text-sm text-amber-800 mb-4">
+              ※ 아래 정보는 가입설계서 기준 산출 대상이 아니며, 사업방법서/약관에 존재하는 것으로 확인되었습니다(보험료/순위 미반영).
+            </p>
+
+            {/* Reference Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full bg-white rounded border border-amber-200">
+                <thead className="bg-amber-100 border-b border-amber-200">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[15%]">
+                      보험사
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[25%]">
+                      담보명
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[15%]">
+                      보장일수
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[15%]">
+                      일당
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[20%]">
+                      근거
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[10%]">
+                      배지
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-amber-100">
+                  {data.references.map((ref, idx) => (
+                    <tr key={`ref-${ref.insurer_key}-${idx}`} className="hover:bg-amber-50">
+                      <td className="px-4 py-2 text-sm font-medium text-gray-900">
+                        {getInsurerDisplay(ref.insurer_key)}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-700">
+                        <div className="group relative">
+                          <span className="line-clamp-2">{ref.coverage_title}</span>
+                          {/* Full text on hover */}
+                          <div className="absolute z-10 invisible group-hover:visible bg-gray-800 text-white text-xs rounded p-2 w-80 -left-2 top-8 shadow-lg">
+                            {ref.coverage_title}
+                            <div className="absolute -top-1 left-4 w-2 h-2 bg-gray-800 transform rotate-45"></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-900">
+                        {ref.duration_limit_days !== null
+                          ? `최대 ${ref.duration_limit_days}일`
+                          : <span className="text-gray-400">-</span>}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-900">
+                        {ref.daily_benefit_amount_won !== null
+                          ? `${ref.daily_benefit_amount_won.toLocaleString()}원/일`
+                          : <span className="text-gray-400">-</span>}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-600">
+                        <div className="group relative">
+                          <span className="cursor-help border-b border-dotted border-gray-400">
+                            {ref.evidence.doc_type} p.{ref.evidence.page}
+                          </span>
+                          {/* Excerpt tooltip */}
+                          {ref.evidence.excerpt && (
+                            <div className="absolute z-10 invisible group-hover:visible bg-gray-800 text-white text-xs rounded p-2 w-64 -left-2 top-6 shadow-lg">
+                              <div className="max-h-32 overflow-y-auto whitespace-pre-wrap">
+                                {ref.evidence.excerpt}
+                              </div>
+                              <div className="absolute -top-1 left-4 w-2 h-2 bg-gray-800 transform rotate-45"></div>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 text-xs">
+                        <span className="inline-block px-2 py-1 bg-amber-200 text-amber-900 rounded font-mono">
+                          {ref.badge}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
