@@ -924,6 +924,14 @@ async def q11_cancer_hospitalization_comparison(
                     daily_slot = slots.get('daily_benefit_amount_won', {})
                     days_slot = slots.get('duration_limit_days', {})
 
+                    # SSOT Normalization: FOUND + NULL → UNKNOWN
+                    # Enforce semantic integrity (FOUND = value confirmed)
+                    if days_slot.get('status') == 'FOUND' and days_slot.get('value') is None:
+                        days_slot = {'status': 'UNKNOWN', 'evidences': []}
+
+                    if daily_slot.get('status') == 'FOUND' and daily_slot.get('value') is None:
+                        daily_slot = {'status': 'UNKNOWN', 'evidences': []}
+
                     # Extract values
                     insurer_key = identity.get('insurer_key', '')
                     coverage_title = identity.get('coverage_title', '')
@@ -936,8 +944,11 @@ async def q11_cancer_hospitalization_comparison(
                         if insurer_key.lower() not in allowed_insurers:
                             continue
 
-                    # Get evidence (first one from duration_limit_days)
+                    # Get evidence (with fallback enhancement)
+                    # Priority: duration_limit_days evidence → daily_benefit_amount_won evidence
                     days_evidences = days_slot.get('evidences', [])
+                    daily_evidences = daily_slot.get('evidences', [])
+
                     evidence_data = {}
                     if days_evidences and len(days_evidences) > 0:
                         ev = days_evidences[0]
@@ -946,26 +957,43 @@ async def q11_cancer_hospitalization_comparison(
                             "page": ev.get('page'),
                             "excerpt": ev.get('excerpt', '')[:200] if ev.get('excerpt') else ''
                         }
+                    elif daily_evidences and len(daily_evidences) > 0 and daily_slot.get('status') == 'FOUND':
+                        # Fallback: Use daily evidence if duration has no evidence but daily is FOUND
+                        ev = daily_evidences[0]
+                        evidence_data = {
+                            "doc_type": ev.get('doc_type', ''),
+                            "page": ev.get('page'),
+                            "excerpt": ev.get('excerpt', '')[:200] if ev.get('excerpt') else '',
+                            "source_slot": "daily_benefit_amount_won"  # Mark fallback source
+                        }
 
-                    # Build item
+                    # Build item with slot-level status (NEW: return status for UI)
                     item = {
                         "insurer_key": insurer_key,
                         "coverage_code": coverage_code,
                         "coverage_name": coverage_title,
-                        "daily_benefit_amount_won": int(daily_value) if daily_value and str(daily_value).isdigit() else None,
-                        "duration_limit_days": int(days_value) if days_value and str(days_value).isdigit() else None,
+                        "duration_limit_days": {
+                            "status": days_slot.get('status', 'UNKNOWN'),
+                            "value": int(days_value) if days_value and str(days_value).isdigit() else None,
+                            "evidences": days_evidences
+                        },
+                        "daily_benefit_amount_won": {
+                            "status": daily_slot.get('status', 'UNKNOWN'),
+                            "value": int(daily_value) if daily_value and str(daily_value).isdigit() else None,
+                            "evidences": daily_evidences
+                        },
                         "evidence": evidence_data if evidence_data else None
                     }
 
                     items.append(item)
 
         # Sort: deterministic (NULLS LAST)
-        # 1. duration_limit_days DESC (None sorts LAST)
-        # 2. daily_benefit_amount_won DESC (None sorts LAST)
+        # 1. duration_limit_days.value DESC (None sorts LAST)
+        # 2. daily_benefit_amount_won.value DESC (None sorts LAST)
         # 3. insurer_key ASC (tie-break)
         def sort_key(x):
-            days = x['duration_limit_days']
-            daily = x['daily_benefit_amount_won']
+            days = x['duration_limit_days']['value']
+            daily = x['daily_benefit_amount_won']['value']
             insurer = x['insurer_key']
 
             # NULLS LAST: (is_null, -value) ensures None sorts after all numbers
@@ -981,11 +1009,33 @@ async def q11_cancer_hospitalization_comparison(
         for i, item in enumerate(items, 1):
             item['rank'] = i
 
+        # Load references from q11_references_v1.jsonl (SSOT: business method only)
+        references = []
+        references_path = "data/compare_v1/q11_references_v1.jsonl"
+        try:
+            with open(references_path, 'r', encoding='utf-8') as ref_file:
+                for line in ref_file:
+                    if not line.strip():
+                        continue
+                    ref_data = json.loads(line)
+
+                    # Filter by insurers if specified
+                    if insurers:
+                        allowed_insurers = [i.strip().lower() for i in insurers.split(',')]
+                        if ref_data.get('insurer_key', '').lower() not in allowed_insurers:
+                            continue
+
+                    references.append(ref_data)
+        except FileNotFoundError:
+            logger.warning(f"References file not found: {references_path}")
+            references = []
+
         return {
             "query_id": "Q11",
             "as_of_date": as_of_date,
             "coverage_code": "A6200",
-            "items": items
+            "items": items,
+            "references": references
         }
 
     except FileNotFoundError:
