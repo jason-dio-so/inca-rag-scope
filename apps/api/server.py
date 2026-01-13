@@ -1045,6 +1045,169 @@ async def q11_cancer_hospitalization_comparison(
         raise HTTPException(status_code=500, detail=f"Q11 error: {str(e)}")
 
 
+@app.get("/q13")
+async def q13_subtype_coverage_matrix(
+    insurers: Optional[str] = None
+):
+    """
+    Q13: 제자리암/경계성종양 보장 O/X 매트릭스
+
+    LOCK (SSOT):
+    - Data source: docs/audit/step_next_81c_subtype_coverage_locked.jsonl
+    - Subtypes: in_situ (제자리암), borderline (경계성종양)
+    - Output rules:
+      - diagnosis_benefit → "O" (✅, usable=true)
+      - treatment_trigger → "⚠️" (usable=false, "진단비 아님(치료비 트리거)")
+      - definition_only → "ℹ️"
+      - excluded → "X" (❌)
+      - NO_DATA → "—" (NO SSOT record, NOT excluded)
+    - NO estimation, NO pattern matching
+    - treatment_trigger MUST NOT be shown as "O"
+
+    Policy: docs/audit/STEP_NEXT_82_Q13_OUTPUT_LOCK.md
+
+    Args:
+        insurers: Comma-separated list (optional, default: Phase1 8 insurers)
+
+    Returns:
+        {
+            "query_id": "Q13",
+            "ssot_source": str,
+            "data_completeness": {"insurers_with_data": int, "n_total": int},
+            "matrix": [
+                {
+                    "insurer_key": str,
+                    "in_situ": {...},
+                    "borderline": {...}
+                }
+            ]
+        }
+    """
+    import json
+    from pathlib import Path
+
+    # Phase1 default insurers
+    PHASE1_INSURERS = ["samsung", "meritz", "db", "kb", "hanwha", "hyundai", "lotte", "heungkuk"]
+
+    try:
+        # Determine target insurers
+        if insurers:
+            target_insurers = [i.strip().lower() for i in insurers.split(',')]
+        else:
+            target_insurers = PHASE1_INSURERS
+
+        # Load SSOT
+        ssot_path = Path("docs/audit/step_next_81c_subtype_coverage_locked.jsonl")
+
+        # Load all records into dict
+        ssot_data = {}  # {insurer_key: record}
+        if ssot_path.exists():
+            with open(ssot_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    record = json.loads(line)
+                    insurer = record.get('insurer_key')
+                    if insurer:
+                        ssot_data[insurer] = record
+
+        # Build matrix for target insurers
+        matrix = []
+        insurers_with_data = 0
+
+        for insurer_key in target_insurers:
+            record = ssot_data.get(insurer_key)
+
+            if record:
+                insurers_with_data += 1
+                locked = record.get('subtype_coverage_locked', {})
+
+                # Build cells for in_situ and borderline
+                cells = {}
+                for subtype in ['in_situ', 'borderline']:
+                    subtype_data = locked.get(subtype, {})
+                    coverage_kind = subtype_data.get('coverage_kind')
+                    usable = subtype_data.get('usable_as_coverage', False)
+                    evidence_refs = subtype_data.get('evidence_refs', [])
+
+                    # Determine display per coverage_kind
+                    if coverage_kind == 'diagnosis_benefit':
+                        status_icon = "✅"
+                        display = "O"
+                        color = "green"
+                    elif coverage_kind == 'treatment_trigger':
+                        status_icon = "⚠️"
+                        display = "진단비 아님(치료비 트리거)"
+                        color = "orange"
+                    elif coverage_kind == 'definition_only':
+                        status_icon = "ℹ️"
+                        display = "정의 문맥 언급"
+                        color = "gray"
+                    elif coverage_kind == 'excluded':
+                        status_icon = "❌"
+                        display = "X"
+                        color = "red"
+                    else:
+                        # Unknown coverage_kind
+                        status_icon = "—"
+                        display = "UNKNOWN"
+                        color = "gray"
+
+                    cells[subtype] = {
+                        "status_icon": status_icon,
+                        "coverage_kind": coverage_kind,
+                        "usable_as_coverage": usable,
+                        "display": display,
+                        "color": color,
+                        "evidence_refs": evidence_refs,
+                        "coverage_name": record.get('coverage_name', ''),
+                        "coverage_type": record.get('coverage_type', '')
+                    }
+
+                matrix.append({
+                    "insurer_key": insurer_key,
+                    **cells
+                })
+
+            else:
+                # NO_DATA case
+                matrix.append({
+                    "insurer_key": insurer_key,
+                    "in_situ": {
+                        "status_icon": "—",
+                        "coverage_kind": None,
+                        "usable_as_coverage": False,
+                        "display": "NO_DATA",
+                        "color": "gray",
+                        "evidence_refs": [],
+                        "reason": "SSOT 레코드 없음"
+                    },
+                    "borderline": {
+                        "status_icon": "—",
+                        "coverage_kind": None,
+                        "usable_as_coverage": False,
+                        "display": "NO_DATA",
+                        "color": "gray",
+                        "evidence_refs": [],
+                        "reason": "SSOT 레코드 없음"
+                    }
+                })
+
+        return {
+            "query_id": "Q13",
+            "ssot_source": str(ssot_path),
+            "data_completeness": {
+                "insurers_with_data": insurers_with_data,
+                "n_total": len(target_insurers)
+            },
+            "matrix": matrix
+        }
+
+    except Exception as e:
+        logger.error(f"Q13 error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/")
 async def root():
     """Root endpoint with API info"""
@@ -1056,7 +1219,8 @@ async def root():
             "compare": "POST /compare",
             "chat": "POST /chat (STEP NEXT-14)",
             "faq_templates": "GET /faq/templates (STEP NEXT-14)",
-            "q11": "GET /q11 (PHASE2)"
+            "q11": "GET /q11 (PHASE2)",
+            "q13": "GET /q13 (PHASE2-LIMITED)"
         },
         "compiler_version": COMPILER_VERSION,
         "features": [
@@ -1064,7 +1228,8 @@ async def root():
             "Fact-First value_text",
             "Evidence Quality Filter",
             "ChatGPT-style UI (STEP NEXT-14)",
-            "Q11 Cancer Hospitalization Comparison (PHASE2)"
+            "Q11 Cancer Hospitalization Comparison (PHASE2)",
+            "Q13 Subtype Coverage Matrix (PHASE2-LIMITED)"
         ],
         "note": "Production API (DB-backed, evidence-based, fact-first)"
     }
