@@ -865,6 +865,168 @@ async def batch_get_evidence_endpoint(req: BatchEvidenceRequest):
     return result
 
 
+@app.get("/q5")
+async def q5_waiting_period_policy(
+    insurers: Optional[str] = None
+):
+    """
+    Q5: 면책/감액 기간 정책 (Contract-level Overlay)
+
+    FROZEN (Q5 Pattern):
+    - Data source: q5_waiting_policy_v1.jsonl (Overlay SSOT)
+    - Policy values: IMMEDIATE_100 | REDUCTION_1Y | REDUCTION_2Y | UNKNOWN
+    - NO Core Model dependency (pure overlay)
+    - Evidence-based only (no inference)
+    - UNKNOWN is acceptable (document limitations)
+
+    Policy: docs/policy/Q5_WAITING_PERIOD_DECISION.md
+
+    Args:
+        insurers: Comma-separated list (optional, default: all)
+
+    Returns:
+        {
+            "query_id": "Q5",
+            "items": [...]
+        }
+    """
+    from apps.api.overlays.q5.loader import load_q5_waiting_policy
+    from apps.api.overlays.q5.model import POLICY_DISPLAY
+
+    try:
+        # Parse insurer filter
+        insurers_filter = None
+        if insurers:
+            insurers_filter = [i.strip() for i in insurers.split(',')]
+
+        # Load from overlay SSOT
+        policies = load_q5_waiting_policy(insurers_filter=insurers_filter)
+
+        # Build response items
+        items = []
+        for policy in policies:
+            # Get first evidence (if available)
+            evidence_data = None
+            if policy.evidence_refs and len(policy.evidence_refs) > 0:
+                ev = policy.evidence_refs[0]
+                evidence_data = {
+                    "doc_type": ev.get('doc_type', ''),
+                    "page": ev.get('page'),
+                    "excerpt": ev.get('excerpt', '')[:200] if ev.get('excerpt') else '',
+                    "pattern": ev.get('pattern', '')
+                }
+
+            item = {
+                "insurer_key": policy.insurer_key,
+                "waiting_period_policy": policy.waiting_period_policy,
+                "policy_display": POLICY_DISPLAY.get(policy.waiting_period_policy, policy.waiting_period_policy),
+                "evidence_count": len(policy.evidence_refs),
+                "evidence": evidence_data
+            }
+
+            items.append(item)
+
+        # Sort by policy (most restrictive first), then insurer_key
+        # Order: REDUCTION_2Y > REDUCTION_1Y > IMMEDIATE_100 > UNKNOWN
+        policy_rank = {
+            "REDUCTION_2Y": 0,
+            "REDUCTION_1Y": 1,
+            "IMMEDIATE_100": 2,
+            "UNKNOWN": 3
+        }
+
+        items.sort(key=lambda x: (policy_rank.get(x['waiting_period_policy'], 99), x['insurer_key']))
+
+        return {
+            "query_id": "Q5",
+            "items": items
+        }
+
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=500, detail=f"Q5 SSOT not found: {str(e)}")
+    except Exception as e:
+        logger.error(f"Q5 error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Q5 error: {str(e)}")
+
+
+@app.get("/q7")
+async def q7_waiver_policy(
+    insurers: Optional[str] = None
+):
+    """
+    Q7: 납입면제 사유 정책 (Contract-level Overlay)
+
+    FROZEN (TYPE B Overlay):
+    - Data source: q7_waiver_policy_v1.jsonl (Overlay SSOT)
+    - waiver_triggers: List of conditions that trigger premium waiver
+    - has_sanjeong_teukrye: YES | NO | UNKNOWN (산정특례가 납입면제 사유인지 여부)
+    - NO Core Model dependency (pure overlay)
+    - Evidence-based only (no inference)
+    - UNKNOWN is acceptable (document limitations)
+
+    Policy: docs/policy/Q7_WAIVER_POLICY_OVERLAY.md
+
+    Args:
+        insurers: Comma-separated list (optional, default: all)
+
+    Returns:
+        {
+            "query_id": "Q7",
+            "items": [...]
+        }
+    """
+    from apps.api.overlays.q7.loader import load_q7_waiver_policy
+    from apps.api.overlays.q7.model import SANJEONG_TEUKRYE_DISPLAY
+
+    try:
+        # Parse insurer filter
+        insurers_filter = None
+        if insurers:
+            insurers_filter = [i.strip() for i in insurers.split(',')]
+
+        # Load from overlay SSOT
+        policies = load_q7_waiver_policy(insurers_filter=insurers_filter)
+
+        # Build response items
+        items = []
+        for policy in policies:
+            # Get first evidence (if available)
+            evidence_data = None
+            if policy.evidence_refs and len(policy.evidence_refs) > 0:
+                ev = policy.evidence_refs[0]
+                evidence_data = {
+                    "doc_type": ev.get('doc_type', ''),
+                    "page": ev.get('page'),
+                    "excerpt": ev.get('excerpt', '')[:200] if ev.get('excerpt') else '',
+                    "locator": ev.get('locator', '')
+                }
+
+            item = {
+                "insurer_key": policy.insurer_key,
+                "waiver_triggers": policy.waiver_triggers,
+                "has_sanjeong_teukrye": policy.has_sanjeong_teukrye,
+                "sanjeong_teukrye_display": SANJEONG_TEUKRYE_DISPLAY.get(policy.has_sanjeong_teukrye, policy.has_sanjeong_teukrye),
+                "evidence_count": len(policy.evidence_refs),
+                "evidence": evidence_data
+            }
+
+            items.append(item)
+
+        # Sort by insurer_key (alphabetical)
+        items.sort(key=lambda x: x['insurer_key'])
+
+        return {
+            "query_id": "Q7",
+            "items": items
+        }
+
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=500, detail=f"Q7 SSOT not found: {str(e)}")
+    except Exception as e:
+        logger.error(f"Q7 error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Q7 error: {str(e)}")
+
+
 @app.get("/q11")
 async def q11_cancer_hospitalization_comparison(
     as_of_date: str = "2025-11-26",
@@ -1122,10 +1284,24 @@ async def q13_subtype_coverage_matrix(
                 insurers_with_data += 1
                 locked = record.get('subtype_coverage_locked', {})
 
-                # Build cells for in_situ and borderline
+                # Build cells for in_situ and borderline (unwrap from SSOT)
                 cells = {}
                 for subtype in ['in_situ', 'borderline']:
-                    subtype_data = locked.get(subtype, {})
+                    subtype_data = locked.get(subtype)
+
+                    # If subtype not in SSOT, create NO_DATA cell
+                    if not subtype_data:
+                        cells[subtype] = {
+                            "status_icon": "—",
+                            "coverage_kind": None,
+                            "usable_as_coverage": False,
+                            "display": "NO_DATA",
+                            "color": "gray",
+                            "evidence_refs": [],
+                            "reason": f"SSOT에 {subtype} 없음"
+                        }
+                        continue
+
                     coverage_kind = subtype_data.get('coverage_kind')
                     usable = subtype_data.get('usable_as_coverage', False)
                     evidence_refs = subtype_data.get('evidence_refs', [])
@@ -1148,7 +1324,7 @@ async def q13_subtype_coverage_matrix(
                         display = "X"
                         color = "red"
                     else:
-                        # Unknown coverage_kind
+                        # Unknown coverage_kind (should not happen with valid SSOT)
                         status_icon = "—"
                         display = "UNKNOWN"
                         color = "gray"
@@ -1159,14 +1335,14 @@ async def q13_subtype_coverage_matrix(
                         "usable_as_coverage": usable,
                         "display": display,
                         "color": color,
-                        "evidence_refs": evidence_refs,
-                        "coverage_name": record.get('coverage_name', ''),
-                        "coverage_type": record.get('coverage_type', '')
+                        "evidence_refs": evidence_refs
                     }
 
+                # Unwrap: ensure top-level in_situ and borderline
                 matrix.append({
                     "insurer_key": insurer_key,
-                    **cells
+                    "in_situ": cells['in_situ'],
+                    "borderline": cells['borderline']
                 })
 
             else:
@@ -1219,6 +1395,8 @@ async def root():
             "compare": "POST /compare",
             "chat": "POST /chat (STEP NEXT-14)",
             "faq_templates": "GET /faq/templates (STEP NEXT-14)",
+            "q5": "GET /q5 (OVERLAY)",
+            "q7": "GET /q7 (OVERLAY)",
             "q11": "GET /q11 (PHASE2)",
             "q13": "GET /q13 (PHASE2-LIMITED)"
         },
