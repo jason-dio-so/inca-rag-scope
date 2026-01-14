@@ -318,7 +318,8 @@ class TestExcelIntegrity:
         """Excel should have 328 rows after patching (287 + 41)"""
         import pandas as pd
 
-        excel_path = Path('data/sources/mapping/담보명mapping자료.xlsx')
+        # STEP PIPELINE-V2-BLOCK-STEP2B-01: Use correct SSOT path
+        excel_path = Path('data/sources/insurers/담보명mapping자료.xlsx')
         df = pd.read_excel(excel_path)
 
         # After STEP NEXT-51 patching, should be 328
@@ -336,7 +337,8 @@ class TestExcelIntegrity:
         """Excel should have no duplicate (ins_cd, 담보명) pairs"""
         import pandas as pd
 
-        excel_path = Path('data/sources/mapping/담보명mapping자료.xlsx')
+        # STEP PIPELINE-V2-BLOCK-STEP2B-01: Use correct SSOT path
+        excel_path = Path('data/sources/insurers/담보명mapping자료.xlsx')
         df = pd.read_excel(excel_path)
 
         duplicates = df[df.duplicated(subset=['ins_cd', '담보명(가입설계서)'], keep=False)]
@@ -350,7 +352,8 @@ class TestExcelIntegrity:
         """Excel should still have exactly 5 columns"""
         import pandas as pd
 
-        excel_path = Path('data/sources/mapping/담보명mapping자료.xlsx')
+        # STEP PIPELINE-V2-BLOCK-STEP2B-01: Use correct SSOT path
+        excel_path = Path('data/sources/insurers/담보명mapping자료.xlsx')
         df = pd.read_excel(excel_path)
 
         expected_columns = ['ins_cd', '보험사명', 'cre_cvr_cd', '신정원코드명', '담보명(가입설계서)']

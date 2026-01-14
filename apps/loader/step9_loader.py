@@ -831,7 +831,8 @@ class Step9Loader:
                 logger.info("✅ UPSERT mode: fact tables will be updated idempotently (no truncate)")
 
             # Step 3: Load coverage_canonical from Excel
-            excel_path = self.project_root / 'data/sources/mapping/담보명mapping자료.xlsx'
+            # STEP PIPELINE-V2-BLOCK-STEP2B-01: Use correct SSOT path
+            excel_path = self.project_root / 'data/sources/insurers/담보명mapping자료.xlsx'
             self.load_coverage_canonical(excel_path)
 
             # Step 4-7: Load facts for each insurer

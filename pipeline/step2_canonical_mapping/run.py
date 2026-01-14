@@ -1,5 +1,22 @@
 #!/usr/bin/env python3
 """
+⚠️⚠️⚠️ STEP2-B DISABLED ⚠️⚠️⚠️
+
+This module is DISABLED as of STEP PIPELINE-V2-BLOCK-STEP2B-01.
+
+REASON:
+- coverage_code must come from SSOT input (Step1 V2), not from string-based assignment
+- Contaminated path (data/sources/mapping/) is FORBIDDEN
+- String matching for coverage_code generation is a CONSTITUTIONAL VIOLATION
+
+Use Step1 V2 (pipeline.step1_targeted_v2) instead.
+
+⚠️⚠️⚠️ STEP2-B DISABLED ⚠️⚠️⚠️
+
+---
+
+HISTORICAL DOCUMENTATION (DO NOT USE):
+
 STEP NEXT-73: Step2-b Canonical Mapping Runner (SSOT Gate Enforcement)
 ========================================================================
 
@@ -71,6 +88,24 @@ def parse_step2a_filename(filename: str) -> tuple[str, str | None]:
 
 
 def main():
+    print("=" * 80)
+    print("⚠️⚠️⚠️ STEP2-B DISABLED ⚠️⚠️⚠️")
+    print("=" * 80)
+    print()
+    print("REASON:")
+    print("  - coverage_code must come from SSOT input (Step1 V2)")
+    print("  - String-based coverage_code generation is a CONSTITUTIONAL VIOLATION")
+    print("  - Contaminated path (data/sources/mapping/) is FORBIDDEN")
+    print()
+    print("ACTION REQUIRED:")
+    print("  Use Step1 V2 (pipeline.step1_targeted_v2) instead")
+    print("  Step1 V2 provides coverage_code from SSOT as INPUT")
+    print()
+    print("[STEP PIPELINE-V2-BLOCK-STEP2B-01]")
+    print("=" * 80)
+    sys.exit(2)
+
+    # DEAD CODE BELOW (never executed)
     # Parse arguments
     parser = argparse.ArgumentParser(
         description='Step2-b Canonical Mapping with SSOT Gate Enforcement'

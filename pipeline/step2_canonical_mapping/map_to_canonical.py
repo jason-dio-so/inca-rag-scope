@@ -1,16 +1,20 @@
 """
 Step 2: Canonical Mapping (CanonicalMapper Class)
 
-⚠️ DEPRECATED AS ENTRYPOINT: Use `pipeline.step2_canonical_mapping.run` instead
+⚠️⚠️⚠️ STEP2-B DISABLED ⚠️⚠️⚠️
 
-This file contains CanonicalMapper class (still used by run.py).
-DO NOT execute this file directly as `python -m ...`.
+This module is DISABLED as of STEP PIPELINE-V2-BLOCK-STEP2B-01.
 
-입력: data/scope_v3/{INSURER}_{VARIANT?}_step2_sanitized_scope_v1.jsonl
-출력: data/scope_v3/{INSURER}_{VARIANT?}_step2_canonical_scope_v1.jsonl
+REASON: coverage_code must come from SSOT input (Step1 V2), not from string-based assignment.
 
-Mapping source: data/sources/mapping/담보명mapping자료.xlsx ONLY
-LLM 금지 - exact/normalized matching만 사용
+DO NOT USE THIS MODULE. It will raise an exception if instantiated.
+
+CONSTITUTIONAL VIOLATION:
+- coverage_code generation via string matching is FORBIDDEN
+- Contaminated path (data/sources/mapping/) is FORBIDDEN
+- Use Step1 V2 (pipeline.step1_targeted_v2) instead
+
+⚠️⚠️⚠️ STEP2-B DISABLED ⚠️⚠️⚠️
 """
 
 import csv
@@ -21,9 +25,21 @@ import openpyxl
 
 
 class CanonicalMapper:
-    """담보명 mapping 엑셀 기반 canonical 매핑"""
+    """
+    담보명 mapping 엑셀 기반 canonical 매핑
+
+    ⚠️⚠️⚠️ DISABLED - DO NOT USE ⚠️⚠️⚠️
+    """
 
     def __init__(self, mapping_excel_path: str):
+        raise RuntimeError(
+            "STEP2-B DISABLED: coverage_code must come from SSOT input. "
+            "String-based assignment is forbidden. "
+            "Use Step1 V2 (pipeline.step1_targeted_v2) instead. "
+            "[STEP PIPELINE-V2-BLOCK-STEP2B-01]"
+        )
+
+        # DEAD CODE BELOW (never executed)
         self.mapping_excel_path = Path(mapping_excel_path)
         self.mapping_dict: Dict[str, Dict] = {}
         self._load_mapping()

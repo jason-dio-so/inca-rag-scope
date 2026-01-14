@@ -184,9 +184,29 @@ class PipelineRunner:
         """
         Run Step2-b canonical mapping with SSOT gate enforcement.
 
+        ⚠️⚠️⚠️ DISABLED - DO NOT USE ⚠️⚠️⚠️
+
         Args:
             mapping_source: "approved" (SSOT only) or "local" (with overrides)
         """
+        print("=" * 80)
+        print("⚠️⚠️⚠️ STEP2-B DISABLED ⚠️⚠️⚠️")
+        print("=" * 80)
+        print()
+        print("REASON:")
+        print("  - coverage_code must come from SSOT input (Step1 V2)")
+        print("  - String-based coverage_code generation is a CONSTITUTIONAL VIOLATION")
+        print("  - Contaminated path (data/sources/mapping/) is FORBIDDEN")
+        print()
+        print("ACTION REQUIRED:")
+        print("  Use Step1 V2 (pipeline.step1_targeted_v2) instead")
+        print("  Step1 V2 provides coverage_code from SSOT as INPUT")
+        print()
+        print("[STEP PIPELINE-V2-BLOCK-STEP2B-01]")
+        print("=" * 80)
+        sys.exit(2)
+
+        # DEAD CODE BELOW (never executed)
         print("=" * 80)
         print("STAGE: Step2-b (Canonical Mapping - STEP NEXT-73)")
         print("=" * 80)

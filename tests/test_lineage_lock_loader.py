@@ -115,11 +115,12 @@ def test_loader_allowed_inputs_only():
     path_pattern = r'Path\s*\([\'"]([^\'"]+)[\'"]'
 
     violations = []
+    # STEP PIPELINE-V2-BLOCK-STEP2B-01: Updated SSOT path
     allowed_prefixes = [
         "data/scope/",
         "data/evidence_pack/",
         "data/compare/",
-        "data/sources/mapping/",
+        "data/sources/insurers/",  # Correct SSOT path (was data/sources/mapping/)
         "apps/metadata/",
     ]
 

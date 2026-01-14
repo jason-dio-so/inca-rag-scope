@@ -66,7 +66,8 @@ class SimpleLoader:
         """Load coverage_canonical from Excel - the ONLY source of truth"""
         logger.info("Loading coverage_canonical from Excel...")
 
-        excel_path = self.project_root / 'data/sources/mapping/담보명mapping자료.xlsx'
+        # STEP PIPELINE-V2-BLOCK-STEP2B-01: Use correct SSOT path
+        excel_path = self.project_root / 'data/sources/insurers/담보명mapping자료.xlsx'
         wb = openpyxl.load_workbook(excel_path, data_only=True)
         sheet = wb.active
 

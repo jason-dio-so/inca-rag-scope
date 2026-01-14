@@ -405,7 +405,8 @@ def format_candidates(candidates: List[Dict]) -> str:
 def main():
     # Paths
     backlog_v1_path = Path('docs/audit/unanchored_backlog_v1.csv')
-    excel_path = Path('data/sources/mapping/담보명mapping자료.xlsx')
+    # STEP PIPELINE-V2-BLOCK-STEP2B-01: Use correct SSOT path
+    excel_path = Path('data/sources/insurers/담보명mapping자료.xlsx')
     output_path = Path('docs/audit/unanchored_backlog_v2.csv')
 
     print("=" * 80)

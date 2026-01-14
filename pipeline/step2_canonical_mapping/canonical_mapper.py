@@ -1,5 +1,22 @@
 #!/usr/bin/env python3
 """
+⚠️⚠️⚠️ STEP2-B DISABLED ⚠️⚠️⚠️
+
+This module is DISABLED as of STEP PIPELINE-V2-BLOCK-STEP2B-01.
+
+REASON:
+- coverage_code must come from SSOT input (Step1 V2), not from string-based assignment
+- Contaminated path (data/sources/mapping/) is FORBIDDEN
+- String matching for coverage_code generation is a CONSTITUTIONAL VIOLATION
+
+Use Step1 V2 (pipeline.step1_targeted_v2) instead.
+
+⚠️⚠️⚠️ STEP2-B DISABLED ⚠️⚠️⚠️
+
+---
+
+HISTORICAL DOCUMENTATION (DO NOT USE):
+
 STEP NEXT-47: Canonical Mapping Logic
 =======================================
 
@@ -39,9 +56,21 @@ INSURER_CODE_MAP = {
 
 
 class CanonicalMapper:
-    """신정원 canonical coverage mapper (deterministic only)"""
+    """
+    신정원 canonical coverage mapper (deterministic only)
+
+    ⚠️⚠️⚠️ DISABLED - DO NOT USE ⚠️⚠️⚠️
+    """
 
     def __init__(self, mapping_excel_path: Path):
+        raise RuntimeError(
+            "STEP2-B DISABLED: coverage_code must come from SSOT input. "
+            "String-based assignment is forbidden. "
+            "Use Step1 V2 (pipeline.step1_targeted_v2) instead. "
+            "[STEP PIPELINE-V2-BLOCK-STEP2B-01]"
+        )
+
+        # DEAD CODE BELOW (never executed)
         self.mapping_excel_path = mapping_excel_path
         self.canonical_df = self._load_canonical_mapping()
         self.insurer_mappings = self._build_insurer_mappings()
@@ -314,6 +343,8 @@ def map_sanitized_scope(
     """
     Map sanitized scope to canonical coverage codes.
 
+    ⚠️⚠️⚠️ DISABLED - DO NOT USE ⚠️⚠️⚠️
+
     STEP NEXT-62-B: Preserves product/variant identity fields from Step2-a.
 
     Args:
@@ -325,6 +356,14 @@ def map_sanitized_scope(
     Returns:
         Statistics dict
     """
+    raise RuntimeError(
+        "STEP2-B DISABLED: coverage_code must come from SSOT input. "
+        "String-based assignment is forbidden. "
+        "Use Step1 V2 (pipeline.step1_targeted_v2) instead. "
+        "[STEP PIPELINE-V2-BLOCK-STEP2B-01]"
+    )
+
+    # DEAD CODE BELOW (never executed)
     if not input_jsonl.exists():
         return {'error': 'INPUT_NOT_FOUND'}
 
