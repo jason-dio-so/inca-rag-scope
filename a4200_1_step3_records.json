@@ -1,0 +1,118 @@
+{
+  "N13": [
+    {
+      "file": "db_over41_step3_evidence_enriched_v1.jsonl",
+      "line": 9,
+      "ins_cd": "D01",
+      "normalized_ins": "N13",
+      "coverage_code": "A4200_1",
+      "coverage_name": "암진단비Ⅱ(유사암제외)",
+      "canonical_name": "암진단비(유사암제외)",
+      "has_evidence": true
+    },
+    {
+      "file": "db_under40_step3_evidence_enriched_v1.jsonl",
+      "line": 9,
+      "ins_cd": "D01",
+      "normalized_ins": "N13",
+      "coverage_code": "A4200_1",
+      "coverage_name": "암진단비Ⅱ(유사암제외)",
+      "canonical_name": "암진단비(유사암제외)",
+      "has_evidence": true
+    }
+  ],
+  "N02": [
+    {
+      "file": "hanwha_step3_evidence_enriched_v1.jsonl",
+      "line": 7,
+      "ins_cd": "H01",
+      "normalized_ins": "N02",
+      "coverage_code": "A4200_1",
+      "coverage_name": "암(4대유사암제외)진단비",
+      "canonical_name": "암진단비(유사암제외)",
+      "has_evidence": true
+    }
+  ],
+  "N05": [
+    {
+      "file": "heungkuk_step3_evidence_enriched_v1.jsonl",
+      "line": 20,
+      "ins_cd": "E01",
+      "normalized_ins": "N05",
+      "coverage_code": "A4200_1",
+      "coverage_name": "암진단비(유사암제외)",
+      "canonical_name": "암진단비(유사암제외)",
+      "has_evidence": true
+    }
+  ],
+  "N09": [
+    {
+      "file": "hyundai_step3_evidence_enriched_v1.jsonl",
+      "line": 9,
+      "ins_cd": "Y01",
+      "normalized_ins": "N09",
+      "coverage_code": "A4200_1",
+      "coverage_name": "암진단Ⅱ(유사암제외)담보",
+      "canonical_name": "암진단비(유사암제외)",
+      "has_evidence": true
+    }
+  ],
+  "N10": [
+    {
+      "file": "kb_step3_evidence_enriched_v1.jsonl",
+      "line": 6,
+      "ins_cd": "K01",
+      "normalized_ins": "N10",
+      "coverage_code": "A4200_1",
+      "coverage_name": "암진단비(유사암제외)",
+      "canonical_name": "암진단비(유사암제외)",
+      "has_evidence": true
+    }
+  ],
+  "N03": [
+    {
+      "file": "lotte_female_step3_evidence_enriched_v1.jsonl",
+      "line": 4,
+      "ins_cd": "L01",
+      "normalized_ins": "N03",
+      "coverage_code": "A4200_1",
+      "coverage_name": "일반암진단비Ⅱ",
+      "canonical_name": "암진단비(유사암제외)",
+      "has_evidence": true
+    },
+    {
+      "file": "lotte_male_step3_evidence_enriched_v1.jsonl",
+      "line": 4,
+      "ins_cd": "L01",
+      "normalized_ins": "N03",
+      "coverage_code": "A4200_1",
+      "coverage_name": "일반암진단비Ⅱ",
+      "canonical_name": "암진단비(유사암제외)",
+      "has_evidence": true
+    }
+  ],
+  "N01": [
+    {
+      "file": "meritz_step3_evidence_enriched_v1.jsonl",
+      "line": 5,
+      "ins_cd": "M01",
+      "normalized_ins": "N01",
+      "coverage_code": "A4200_1",
+      "coverage_name": "암진단비(유사암제외)",
+      "canonical_name": "암진단비(유사암제외)",
+      "has_evidence": true
+    }
+  ],
+  "N08": [
+    {
+      "file": "samsung_step3_evidence_enriched_v1.jsonl",
+      "line": 2,
+      "ins_cd": "S01",
+      "normalized_ins": "N08",
+      "coverage_code": "A4200_1",
+      "coverage_name": "암 진단비(유사암 제외)",
+      "canonical_name": "암진단비(유사암제외)",
+      "has_evidence": true
+    }
+  ]
+}

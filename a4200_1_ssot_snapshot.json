@@ -1,0 +1,66 @@
+[
+  {
+    "excel_row": 9,
+    "ins_cd": "N01",
+    "insurer_name": "메리츠",
+    "coverage_code": "A4200_1",
+    "canonical_name": "암진단비(유사암제외)",
+    "insurer_display_name": "암진단비(유사암제외)"
+  },
+  {
+    "excel_row": 39,
+    "ins_cd": "N02",
+    "insurer_name": "한화",
+    "coverage_code": "A4200_1",
+    "canonical_name": "암진단비(유사암제외)",
+    "insurer_display_name": "암(4대유사암제외)진단비"
+  },
+  {
+    "excel_row": 69,
+    "ins_cd": "N03",
+    "insurer_name": "롯데",
+    "coverage_code": "A4200_1",
+    "canonical_name": "암진단비(유사암제외)",
+    "insurer_display_name": "일반암진단비Ⅱ"
+  },
+  {
+    "excel_row": 109,
+    "ins_cd": "N05",
+    "insurer_name": "흥국",
+    "coverage_code": "A4200_1",
+    "canonical_name": "암진단비(유사암제외)",
+    "insurer_display_name": "암진단비(유사암제외)"
+  },
+  {
+    "excel_row": 140,
+    "ins_cd": "N08",
+    "insurer_name": "삼성",
+    "coverage_code": "A4200_1",
+    "canonical_name": "암진단비(유사암제외)",
+    "insurer_display_name": "암진단비(유사암제외)"
+  },
+  {
+    "excel_row": 179,
+    "ins_cd": "N09",
+    "insurer_name": "현대",
+    "coverage_code": "A4200_1",
+    "canonical_name": "암진단비(유사암제외)",
+    "insurer_display_name": "암진단Ⅱ(유사암제외)담보"
+  },
+  {
+    "excel_row": 210,
+    "ins_cd": "N10",
+    "insurer_name": "KB",
+    "coverage_code": "A4200_1",
+    "canonical_name": "암진단비(유사암제외)",
+    "insurer_display_name": "암진단비(유사암제외)"
+  },
+  {
+    "excel_row": 246,
+    "ins_cd": "N13",
+    "insurer_name": "DB",
+    "coverage_code": "A4200_1",
+    "canonical_name": "암진단비(유사암제외)",
+    "insurer_display_name": "암진단비Ⅱ(유사암제외)"
+  }
+]

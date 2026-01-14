@@ -1,0 +1,408 @@
+[
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 72,
+    "line_content": "if coverage_name.endswith(suffix):",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 72,
+    "line_content": "if coverage_name.endswith(suffix):",
+    "pattern": "coverage_name.*endswith",
+    "description": "coverage_name endswith check"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 77,
+    "line_content": "if '진단비' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 79,
+    "line_content": "elif '진단' in coverage_name and '진단비' not in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 112,
+    "line_content": "if coverage_name.endswith(suffix):",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 112,
+    "line_content": "if coverage_name.endswith(suffix):",
+    "pattern": "coverage_name.*endswith",
+    "description": "coverage_name endswith check"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 117,
+    "line_content": "if '진단비' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 119,
+    "line_content": "elif '진단' in coverage_name and '진단비' not in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 124,
+    "line_content": "if '유사암(4대)' in coverage_name or '유사암(8대)' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 129,
+    "line_content": "if '4대유사암' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 132,
+    "line_content": "if '8대유사암' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 137,
+    "line_content": "if '통합암(4대유사암제외)' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 143,
+    "line_content": "if '4대유사암제외' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 148,
+    "line_content": "if '4대특정암' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 153,
+    "line_content": "if '치료비' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 155,
+    "line_content": "elif '치료' in coverage_name and '치료비' not in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 159,
+    "line_content": "if '입원일당' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 161,
+    "line_content": "elif '입원' in coverage_name and '입원일당' not in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 165,
+    "line_content": "if '수술비' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 167,
+    "line_content": "elif '수술' in coverage_name and '수술비' not in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 171,
+    "line_content": "if '항암치료' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 173,
+    "line_content": "elif '항암' in coverage_name and '항암치료' not in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 177,
+    "line_content": "if '표적항암' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 179,
+    "line_content": "elif '표적' in coverage_name and '표적항암' not in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 183,
+    "line_content": "if '재진단암' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 185,
+    "line_content": "elif '재진단' in coverage_name and '재진단암' not in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 190,
+    "line_content": "if '(' in coverage_name and ')' in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 202,
+    "line_content": "if coverage_name.endswith(suffix):",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 202,
+    "line_content": "if coverage_name.endswith(suffix):",
+    "pattern": "coverage_name.*endswith",
+    "description": "coverage_name endswith check"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 461,
+    "line_content": "search_raw = coverage_name_search_key if coverage_name_search_key else coverage_name_raw",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step4_evidence_search/search_evidence.py",
+    "line_num": 674,
+    "line_content": "coverage_name_canonical=coverage_name_canonical if coverage_name_canonical else None,",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step5_build_cards/build_cards_slim.py",
+    "line_num": 540,
+    "line_content": "coverage_name_canonical=coverage_name_canonical if coverage_name_canonical else None,",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step5_build_cards/build_cards.py",
+    "line_num": 263,
+    "line_content": "join_hits = sum(1 for coverage_name_raw in scope_data if coverage_name_raw in evidence_data)",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step8_render_deterministic/example4_subtype_eligibility.py",
+    "line_num": 85,
+    "line_content": "if subtype_keyword in coverage_name_raw:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step8_render_deterministic/example4_subtype_eligibility.py",
+    "line_num": 96,
+    "line_content": "# STEP NEXT-84: If found in coverage_name, it's COVERED (not excluded)",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step8_render_deterministic/example4_subtype_eligibility.py",
+    "line_num": 172,
+    "line_content": "# Check snippet if coverage_name is ambiguous",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step8_render_deterministic/example4_subtype_eligibility.py",
+    "line_num": 193,
+    "line_content": "STEP NEXT-85: Classify evidence type when subtype is in coverage_name (already covered)",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/premium_ssot/multiplier_loader.py",
+    "line_num": 127,
+    "line_content": "record[\"coverage_name\"] == coverage_name):",
+    "pattern": "==\\s*coverage_name",
+    "description": "equality comparison with coverage_name"
+  },
+  {
+    "file": "pipeline/step3_evidence_resolver/validate.py",
+    "line_num": 141,
+    "line_content": "if \"다빈치\" in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step3_evidence_resolver/resolver.py",
+    "line_num": 189,
+    "line_content": "coverage_code_match = re.match(r'^(\\d+)\\.', coverage_name)",
+    "pattern": "re\\.match.*coverage_name",
+    "description": "regex matching coverage_name"
+  },
+  {
+    "file": "pipeline/step1_summary_first/coverage_semantics.py",
+    "line_num": 299,
+    "line_content": "if any(kw in coverage_name_raw for kw in keywords):",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step1_summary_first/profile_builder_v3.py",
+    "line_num": 791,
+    "line_content": "# STEP NEXT-55A: Fallback - if coverage_name not found via header keywords,",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step1_summary_first/profile_builder_v3.py",
+    "line_num": 800,
+    "line_content": "if coverage_name_col is not None:",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step1_summary_first/profile_builder_v3.py",
+    "line_num": 918,
+    "line_content": "if coverage_name_scores[j] == max_score:",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step1_summary_first/coverage_validity.py",
+    "line_num": 113,
+    "line_content": "return [name for name in coverage_names if is_valid_coverage_name(name)]",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step1_summary_first/coverage_validity.py",
+    "line_num": 133,
+    "line_content": "for name in coverage_names:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step1_summary_first/hybrid_layout.py",
+    "line_num": 158,
+    "line_content": "if \"보장명\" in coverage_name or \"가입금액\" in coverage_name:",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step1_summary_first/hybrid_layout.py",
+    "line_num": 167,
+    "line_content": "if any(kw in coverage_name for kw in noise_keywords):",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step1_summary_first/hybrid_layout.py",
+    "line_num": 270,
+    "line_content": "elif coverage_name_merged:",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step1_summary_first/hybrid_layout.py",
+    "line_num": 270,
+    "line_content": "elif coverage_name_merged:",
+    "pattern": "elif\\s+coverage_name",
+    "description": "elif statement with coverage_name"
+  },
+  {
+    "file": "pipeline/step1_summary_first/hybrid_layout.py",
+    "line_num": 282,
+    "line_content": "if len(final_coverage_name) < 10 and not re.search(r\"[가-힣a-zA-Z]{2,}\", final_coverage_name):",
+    "pattern": "re\\.search.*coverage_name",
+    "description": "regex search coverage_name"
+  },
+  {
+    "file": "pipeline/step2_sanitize_scope/sanitize.py",
+    "line_num": 172,
+    "line_content": "if re.search(pattern, coverage_name_raw):",
+    "pattern": "re\\.search.*coverage_name",
+    "description": "regex search coverage_name"
+  },
+  {
+    "file": "pipeline/step2_sanitize_scope/sanitize.py",
+    "line_num": 177,
+    "line_content": "has_keyword = any(kw in coverage_name_raw for kw in COVERAGE_KEYWORDS)",
+    "pattern": "in\\s+coverage_name",
+    "description": "substring check in coverage_name"
+  },
+  {
+    "file": "pipeline/step2_sanitize_scope/sanitize.py",
+    "line_num": 481,
+    "line_content": "if re.search(pattern, coverage_name):",
+    "pattern": "re\\.search.*coverage_name",
+    "description": "regex search coverage_name"
+  },
+  {
+    "file": "pipeline/step4_compare_model/model.py",
+    "line_num": 232,
+    "line_content": "match = re.match(r'^(\\d+)(?:\\.|[\\s]{2,})', coverage_name_raw)",
+    "pattern": "re\\.match.*coverage_name",
+    "description": "regex matching coverage_name"
+  },
+  {
+    "file": "pipeline/step2_canonical_mapping/map_to_canonical.py",
+    "line_num": 99,
+    "line_content": "if coverage_name_insurer:",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step2_canonical_mapping/map_to_canonical.py",
+    "line_num": 183,
+    "line_content": "if coverage_name_raw in self.mapping_dict:",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  },
+  {
+    "file": "pipeline/step2_canonical_mapping/canonical_mapper.py",
+    "line_num": 240,
+    "line_content": "if coverage_name_normalized in exact_map:",
+    "pattern": "if\\s+coverage_name",
+    "description": "if statement with coverage_name (decision)"
+  }
+]

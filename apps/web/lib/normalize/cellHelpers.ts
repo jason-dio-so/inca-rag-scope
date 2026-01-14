@@ -6,13 +6,18 @@
  */
 
 import { NormalizedCell } from "./table";
+import { renderCellValue } from "@/lib/renderers/valueRenderer";
 
 /**
  * Extract display text from a normalized cell (string or NormalizedCell)
+ * STEP RENDER-CONTRACT-V2: ALWAYS use renderCellValue for object → string conversion
  */
 export function getCellText(cell: string | NormalizedCell): string {
   if (typeof cell === "string") return cell;
-  return cell.text;
+
+  // RENDER CONTRACT V2: Use renderCellValue as single source of truth
+  // Pass slotName for SlotValue suffix handling (e.g., "180일", "100,000원")
+  return renderCellValue(cell.text, cell.slotName);
 }
 
 /**

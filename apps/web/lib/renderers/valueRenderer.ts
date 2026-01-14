@@ -1,17 +1,20 @@
 /**
  * STEP NEXT-UI-02-FIX6: Complete Cell Value Renderer
+ * STEP RENDER-CONTRACT-V2: Single source of truth for cell → string conversion
  *
  * Purpose: Convert ANY cell value (primitives, objects, arrays) to displayable strings
  * to eliminate [object Object] rendering in React tables.
  *
  * Constitutional: NO LLM, NO OCR, NO Embedding - pure deterministic string conversion
  *
- * STEP NEXT-139A/B: View-layer formatting for EXAM3
- * - 139A: LIMIT + AMOUNT → "{한도 설명} (일당 {금액})"
- * - 139B: 일당형 amount → "일당 {금액}" (한글만), 정액형 → "{금액}" (한글만)
+ * RENDER CONTRACT V2 RULES:
+ * - RULE 1: All cell values MUST be string before JSX rendering
+ * - RULE 2: This function is the ONLY rendering gateway
+ * - RULE 3: SlotValue { value, status } → string with slotName suffix
+ * - RULE 4: [object Object] in output = VIOLATION (dev mode error)
  */
 
-export function renderCellValue(cell: unknown): string {
+export function renderCellValue(cell: unknown, slotName?: string): string {
   if (cell === null || cell === undefined) return "-";
 
   // primitives
@@ -30,6 +33,30 @@ export function renderCellValue(cell: unknown): string {
   // objects
   if (typeof cell === "object") {
     const o = cell as Record<string, any>;
+
+    // STEP RENDER-CONTRACT-V2: SlotValue handling with slotName-based suffix
+    // SlotValue structure: { value, status, evidences }
+    if ("value" in o && "status" in o) {
+      const value = o.value;
+
+      // If value is null/undefined → "확인 불가"
+      if (value === null || value === undefined) {
+        return "확인 불가";
+      }
+
+      // Apply slotName-based suffix
+      if (slotName) {
+        if (slotName.includes("days") || slotName.includes("duration")) {
+          return `${value}일`;
+        }
+        if (slotName.includes("amount") || slotName.includes("won")) {
+          return `${Number(value).toLocaleString()}원`;
+        }
+      }
+
+      // Default: stringify value
+      return String(value);
+    }
 
     // 1) most common display fields
     const display =
@@ -88,7 +115,23 @@ export function renderCellValue(cell: unknown): string {
   }
 
   // fallback
-  return String(cell);
+  const result = String(cell);
+
+  // STEP RENDER-CONTRACT-V2: Contract violation detection (dev mode only)
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === "development") {
+    if (result.includes("[object Object]")) {
+      console.error("[RENDER CONTRACT V2 VIOLATION] Object leaked to UI", {
+        cell,
+        slotName,
+        result,
+      });
+      throw new Error(
+        `[RENDER CONTRACT V2 VIOLATION] Object leaked to UI: ${result.substring(0, 100)}`
+      );
+    }
+  }
+
+  return result;
 }
 
 function safeStringify(o: Record<string, any>): string {

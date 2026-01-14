@@ -1,0 +1,212 @@
+{
+  "N01_meritz_step3_evidence_enriched_v1.jsonl": {
+    "ins_cd": "N01",
+    "status": "PASS",
+    "evidence_count": 40,
+    "found_evidence_count": 40,
+    "slots": {
+      "start_date": {
+        "status": "FOUND",
+        "match_count": 3039
+      },
+      "exclusions": {
+        "status": "FOUND",
+        "match_count": 4850
+      },
+      "payout_limit": {
+        "status": "FOUND",
+        "match_count": 907
+      }
+    },
+    "file": "meritz_step3_evidence_enriched_v1.jsonl"
+  },
+  "N02_hanwha_step3_evidence_enriched_v1.jsonl": {
+    "ins_cd": "N02",
+    "status": "PASS",
+    "evidence_count": 40,
+    "found_evidence_count": 40,
+    "slots": {
+      "start_date": {
+        "status": "FOUND",
+        "match_count": 1713
+      },
+      "exclusions": {
+        "status": "FOUND",
+        "match_count": 2270
+      },
+      "payout_limit": {
+        "status": "FOUND",
+        "match_count": 841
+      }
+    },
+    "file": "hanwha_step3_evidence_enriched_v1.jsonl"
+  },
+  "N03_lotte_female_step3_evidence_enriched_v1.jsonl": {
+    "ins_cd": "N03",
+    "status": "PASS",
+    "evidence_count": 39,
+    "found_evidence_count": 39,
+    "slots": {
+      "start_date": {
+        "status": "FOUND",
+        "match_count": 786
+      },
+      "exclusions": {
+        "status": "FOUND",
+        "match_count": 1761
+      },
+      "payout_limit": {
+        "status": "FOUND",
+        "match_count": 468
+      }
+    },
+    "file": "lotte_female_step3_evidence_enriched_v1.jsonl"
+  },
+  "N03_lotte_male_step3_evidence_enriched_v1.jsonl": {
+    "ins_cd": "N03",
+    "status": "PASS",
+    "evidence_count": 39,
+    "found_evidence_count": 39,
+    "slots": {
+      "start_date": {
+        "status": "FOUND",
+        "match_count": 765
+      },
+      "exclusions": {
+        "status": "FOUND",
+        "match_count": 1703
+      },
+      "payout_limit": {
+        "status": "FOUND",
+        "match_count": 457
+      }
+    },
+    "file": "lotte_male_step3_evidence_enriched_v1.jsonl"
+  },
+  "N05_heungkuk_step3_evidence_enriched_v1.jsonl": {
+    "ins_cd": "N05",
+    "status": "PASS",
+    "evidence_count": 40,
+    "found_evidence_count": 40,
+    "slots": {
+      "start_date": {
+        "status": "FOUND",
+        "match_count": 1294
+      },
+      "exclusions": {
+        "status": "FOUND",
+        "match_count": 2773
+      },
+      "payout_limit": {
+        "status": "FOUND",
+        "match_count": 1089
+      }
+    },
+    "file": "heungkuk_step3_evidence_enriched_v1.jsonl"
+  },
+  "N08_samsung_step3_evidence_enriched_v1.jsonl": {
+    "ins_cd": "N08",
+    "status": "PASS",
+    "evidence_count": 39,
+    "found_evidence_count": 39,
+    "slots": {
+      "start_date": {
+        "status": "FOUND",
+        "match_count": 2080
+      },
+      "exclusions": {
+        "status": "FOUND",
+        "match_count": 2476
+      },
+      "payout_limit": {
+        "status": "FOUND",
+        "match_count": 906
+      }
+    },
+    "file": "samsung_step3_evidence_enriched_v1.jsonl"
+  },
+  "N09_hyundai_step3_evidence_enriched_v1.jsonl": {
+    "ins_cd": "N09",
+    "status": "PASS",
+    "evidence_count": 39,
+    "found_evidence_count": 39,
+    "slots": {
+      "start_date": {
+        "status": "FOUND",
+        "match_count": 2047
+      },
+      "exclusions": {
+        "status": "FOUND",
+        "match_count": 4159
+      },
+      "payout_limit": {
+        "status": "FOUND",
+        "match_count": 1608
+      }
+    },
+    "file": "hyundai_step3_evidence_enriched_v1.jsonl"
+  },
+  "N10_kb_step3_evidence_enriched_v1.jsonl": {
+    "ins_cd": "N10",
+    "status": "PASS",
+    "evidence_count": 41,
+    "found_evidence_count": 41,
+    "slots": {
+      "start_date": {
+        "status": "FOUND",
+        "match_count": 1365
+      },
+      "exclusions": {
+        "status": "FOUND",
+        "match_count": 2574
+      },
+      "payout_limit": {
+        "status": "FOUND",
+        "match_count": 703
+      }
+    },
+    "file": "kb_step3_evidence_enriched_v1.jsonl"
+  },
+  "N13_db_over41_step3_evidence_enriched_v1.jsonl": {
+    "ins_cd": "N13",
+    "status": "PASS",
+    "evidence_count": 38,
+    "found_evidence_count": 38,
+    "slots": {
+      "start_date": {
+        "status": "FOUND",
+        "match_count": 1735
+      },
+      "exclusions": {
+        "status": "FOUND",
+        "match_count": 3217
+      },
+      "payout_limit": {
+        "status": "FOUND",
+        "match_count": 2074
+      }
+    },
+    "file": "db_over41_step3_evidence_enriched_v1.jsonl"
+  },
+  "N13_db_under40_step3_evidence_enriched_v1.jsonl": {
+    "ins_cd": "N13",
+    "status": "PASS",
+    "evidence_count": 38,
+    "found_evidence_count": 38,
+    "slots": {
+      "start_date": {
+        "status": "FOUND",
+        "match_count": 1733
+      },
+      "exclusions": {
+        "status": "FOUND",
+        "match_count": 3217
+      },
+      "payout_limit": {
+        "status": "FOUND",
+        "match_count": 2073
+      }
+    },
+    "file": "db_under40_step3_evidence_enriched_v1.jsonl"
+  }
+}
