@@ -16,15 +16,27 @@
 
 import { renderCellValue } from "@/lib/renderers/valueRenderer";
 
+// EVIDENCE-FIRST: Cell-level evidence support
+export interface NormalizedCell {
+  text: string;
+  evidence_ref_id?: string;
+  evidences?: any[];  // STEP DEMO-EVIDENCE-RELEVANCE-01: Slot-specific evidence objects
+  slotName?: string;  // STEP DEMO-EVIDENCE-RELEVANCE-01: Slot identifier (e.g., "duration_limit_days")
+}
+
 export interface NormalizedTable {
   title: string;
   columns: string[];
   rows: Array<{
     label: string;
-    values: string[];
+    values: (string | NormalizedCell)[];  // EVIDENCE-FIRST: Support cell-level evidence
     meta?: {
       proposal_detail_ref?: string;
       evidence_refs?: string[];
+      evidences?: any[];  // STEP DEMO-EVIDENCE-VIS-01: Direct evidence objects for overlay responses (DEPRECATED - use cell.evidences)
+      productName?: string;  // STEP DEMO-Q11-POLISH-01: Product name for insurer
+      note?: string;  // STEP DEMO-Q11-POLISH-01: Reference note
+      productEvidences?: any[];  // STEP DEMO-EVIDENCE-RELEVANCE-01: Product name evidence
       kpi_summary?: {
         payment_type: string;
         limit_summary?: string | null;
@@ -93,10 +105,40 @@ function normalizeColumns(cols: unknown): string[] {
   });
 }
 
+/**
+ * EVIDENCE-FIRST: Normalize a cell while preserving evidence metadata
+ * Backend contract: cell.meta.doc_ref (NOT evidence_ref_id)
+ */
+function normalizeCell(cell: unknown): string | NormalizedCell {
+  if (cell === null || cell === undefined) return "-";
+  if (typeof cell === "string") return cell;
+  if (typeof cell === "number" || typeof cell === "boolean") return renderCellValue(cell);
+
+  if (typeof cell === "object" && !Array.isArray(cell)) {
+    const cellObj = cell as Record<string, any>;
+    const text = renderCellValue(cell);
+
+    // Preserve doc_ref (backend evidence reference) as evidence_ref_id (frontend contract)
+    // Backend field: cell.meta.doc_ref
+    // Frontend field: NormalizedCell.evidence_ref_id
+    const docRef = cellObj.meta?.doc_ref || cellObj.meta?.evidence_ref_id;
+    if (docRef) {
+      return {
+        text,
+        evidence_ref_id: docRef,
+      };
+    }
+
+    return text;
+  }
+
+  return renderCellValue(cell);
+}
+
 function normalizeRows(
   rows: unknown,
   expectedColumnCount: number
-): Array<{ label: string; values: string[]; meta?: { proposal_detail_ref?: string; evidence_refs?: string[] } }> {
+): Array<{ label: string; values: (string | NormalizedCell)[]; meta?: { proposal_detail_ref?: string; evidence_refs?: string[]; evidences?: any[]; productName?: string; note?: string; kpi_summary?: any; kpi_condition?: any } }> {
   if (!Array.isArray(rows)) return [];
 
   return rows.map((row, rowIdx) => {
@@ -123,14 +165,15 @@ function normalizeRows(
 
     // Extract label and values
     let label: string;
-    let values: string[];
+    let values: (string | NormalizedCell)[];
 
     // Pattern 1: row.cells exists (EX2_DETAIL pattern)
     // First cell is label, rest are values
     if (Array.isArray(rowObj.cells)) {
-      // STEP NEXT-139C: Backend now handles formatting, frontend just renders
-      const allCells = rowObj.cells.map((cell: unknown) => renderCellValue(cell));
-      label = allCells[0] || `Row ${rowIdx + 1}`;
+      // EVIDENCE-FIRST: Use normalizeCell to preserve evidence
+      const allCells = rowObj.cells.map((cell: unknown) => normalizeCell(cell));
+      const firstCell = allCells[0];
+      label = (typeof firstCell === "string" ? firstCell : firstCell.text) || `Row ${rowIdx + 1}`;
       values = allCells.slice(1);
 
       if (rowIdx === 0) {
@@ -146,13 +189,14 @@ function normalizeRows(
       label = typeof rowObj.label === "string"
         ? rowObj.label
         : renderCellValue(rowObj.label);
-      values = rowObj.values.map((cell: unknown) => renderCellValue(cell));
+      // EVIDENCE-FIRST: Use normalizeCell to preserve evidence
+      values = rowObj.values.map((cell: unknown) => normalizeCell(cell));
     }
     // Pattern 3: row is an array itself
     else if (Array.isArray(row)) {
       const arr = row as unknown[];
       label = renderCellValue(arr[0]);
-      values = arr.slice(1).map((cell) => renderCellValue(cell));
+      values = arr.slice(1).map((cell) => normalizeCell(cell));
     }
     // Pattern 4: only row.label exists
     else if (rowObj.label !== undefined) {
@@ -181,7 +225,11 @@ function normalizeRows(
       ? {
           proposal_detail_ref: rowObj.meta.proposal_detail_ref,
           evidence_refs: Array.isArray(rowObj.meta.evidence_refs) ? rowObj.meta.evidence_refs : undefined,
+          evidences: Array.isArray(rowObj.meta.evidences) ? rowObj.meta.evidences : undefined,  // STEP DEMO-EVIDENCE-VIS-01
+          productName: rowObj.meta.productName,  // STEP DEMO-Q11-POLISH-01
+          note: rowObj.meta.note,  // STEP DEMO-Q11-POLISH-01
           kpi_summary: rowObj.meta.kpi_summary,  // STEP NEXT-75
+          kpi_condition: rowObj.meta.kpi_condition,  // STEP NEXT-76
         }
       : undefined;
 

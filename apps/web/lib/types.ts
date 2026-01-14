@@ -14,7 +14,13 @@ export type MessageKind =
   | "EX3_INTEGRATED"
   | "EX3_COMPARE"          // STEP NEXT-77
   | "EX4_ELIGIBILITY"
-  | "KNOWLEDGE_BASE";
+  | "KNOWLEDGE_BASE"
+  | "Q11_OVERLAY"         // STEP DEMO-LAUNCHER-FIX-01: Overlay adapters
+  | "Q13_OVERLAY"
+  | "Q5_OVERLAY"
+  | "Q7_OVERLAY"
+  | "Q8_OVERLAY"
+  | "OVERLAY_GENERIC";
 
 // EXAM ISOLATION: Explicit exam type for cross-contamination prevention
 export type ExamType = "EXAM1" | "EXAM2" | "EXAM3" | "EXAM4";
@@ -32,6 +38,8 @@ export interface ChatRequest {
 export interface CellMeta {
   evidence_ref_id?: string;
   highlight?: boolean;
+  evidences?: any[];  // STEP DEMO-EVIDENCE-RELEVANCE-01: Slot-specific evidence
+  slotName?: string;  // STEP DEMO-EVIDENCE-RELEVANCE-01: Slot identifier (e.g., "duration_limit_days")
 }
 
 export interface TableCell {
@@ -62,6 +70,9 @@ export interface KPIConditionMeta {
 export interface TableRowMeta {
   proposal_detail_ref?: string;
   evidence_refs?: string[];
+  evidences?: any[];  // STEP DEMO-EVIDENCE-VIS-01: Direct evidence objects for overlay responses
+  productName?: string;  // STEP DEMO-Q11-POLISH-01: Product name for insurer
+  note?: string;  // STEP DEMO-Q11-POLISH-01: Reference note
   kpi_summary?: KPISummaryMeta;  // STEP NEXT-75
   kpi_condition?: KPIConditionMeta;  // STEP NEXT-76
 }
@@ -147,7 +158,7 @@ export interface Lineage {
 
 export interface AssistantMessageVM {
   kind: MessageKind;
-  exam_type: ExamType;  // EXAM ISOLATION: Explicit exam type (MANDATORY)
+  exam_type?: ExamType;  // EXAM ISOLATION: Explicit exam type (OPTIONAL for overlays)
   title?: string;
   summary_bullets?: string[];
   sections?: Section[];

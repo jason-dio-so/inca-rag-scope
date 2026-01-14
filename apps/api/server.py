@@ -1103,6 +1103,42 @@ async def q8_surgery_repeat_policy(
         raise HTTPException(status_code=500, detail=f"Q8 error: {str(e)}")
 
 
+def extract_duration_from_evidence_text(text: str) -> Optional[int]:
+    """
+    STEP DEMO-Q11-EVIDENCE-TRUST-02: Extract duration limit from evidence text
+
+    Patterns supported:
+    - "1일-180일" (hyphen range)
+    - "1~180일" (tilde range)
+    - "180일 한도"
+    - "1일이상180일한도"
+
+    Returns:
+        Duration in days, or None if not found
+    """
+    import re
+
+    if not text:
+        return None
+
+    patterns = [
+        r'(\d+)\s*일\s*한도',  # "180일한도", "90일 한도"
+        r'1\s*일?\s*-\s*(\d+)\s*일',  # "1일-180일", "1-180일" (hyphen)
+        r'1\s*~\s*(\d+)\s*일',  # "1~180일" (tilde)
+        r'1\s*일\s*이상\s*(\d+)\s*일\s*한도',  # "1일이상180일한도"
+        r'최대\s*(\d+)\s*일',  # "최대180일"
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            try:
+                return int(match.group(1))
+            except (ValueError, IndexError):
+                continue
+
+    return None
+
 @app.get("/q11")
 async def q11_cancer_hospitalization_comparison(
     as_of_date: str = "2025-11-26",
@@ -1116,7 +1152,7 @@ async def q11_cancer_hospitalization_comparison(
     - Data source: compare_tables_v1.jsonl (has coverage_code)
     - Sort: duration_limit_days DESC NULLS LAST, daily_benefit_amount_won DESC NULLS LAST, insurer_key ASC
     - UNKNOWN: value=null → UI displays "UNKNOWN (근거 부족)"
-    - NO text pattern matching, NO fallback/estimation
+    - STEP DEMO-Q11-EVIDENCE-TRUST-02: Evidence-based fallback extraction
 
     Policy: docs/policy/Q11_COVERAGE_CODE_LOCK.md
 
@@ -1138,6 +1174,24 @@ async def q11_cancer_hospitalization_comparison(
     Q11_COVERAGE_CODES = ["A6200"]
 
     try:
+        # STEP Q11-PRODUCT-NAME-FIX-01: Load contract metadata for product names with evidence
+        contract_meta_path = "data/compare_v1/contract_meta_v1.jsonl"
+        contract_meta_map = {}
+        try:
+            with open(contract_meta_path, 'r', encoding='utf-8') as meta_file:
+                for line in meta_file:
+                    if not line.strip():
+                        continue
+                    meta_data = json.loads(line)
+                    insurer_key = meta_data.get('insurer_key')
+                    if insurer_key:
+                        contract_meta_map[insurer_key] = {
+                            "product_name_display": meta_data.get('product_name_display', ''),
+                            "evidence": meta_data.get('evidence', {})
+                        }
+        except FileNotFoundError:
+            logger.warning(f"Contract metadata file not found: {contract_meta_path}")
+
         # Load data from compare_tables_v1.jsonl (has coverage_code)
         data_path = "data/compare_v1/compare_tables_v1.jsonl"
 
@@ -1205,11 +1259,19 @@ async def q11_cancer_hospitalization_comparison(
                             "source_slot": "daily_benefit_amount_won"  # Mark fallback source
                         }
 
+                    # STEP Q11-PRODUCT-NAME-FIX-01: Get product name with evidence
+                    product_meta = contract_meta_map.get(insurer_key, {})
+                    product_full_name = {
+                        "value": product_meta.get('product_name_display', '상품명 확인 불가'),
+                        "evidence": product_meta.get('evidence', {})
+                    }
+
                     # Build item with slot-level status (NEW: return status for UI)
                     item = {
                         "insurer_key": insurer_key,
                         "coverage_code": coverage_code,
                         "coverage_name": coverage_title,
+                        "product_full_name": product_full_name,  # STEP Q11-PRODUCT-NAME-FIX-01
                         "duration_limit_days": {
                             "status": days_slot.get('status', 'UNKNOWN'),
                             "value": int(days_value) if days_value and str(days_value).isdigit() else None,
@@ -1222,6 +1284,45 @@ async def q11_cancer_hospitalization_comparison(
                         },
                         "evidence": evidence_data if evidence_data else None
                     }
+
+                    # STEP DEMO-Q11-EVIDENCE-TRUST-02: Evidence-based fallback for duration
+                    if item['duration_limit_days']['value'] is None:
+                        # Try extracting from multiple evidence sources (priority order)
+                        duration_extracted = None
+                        matched_evidence = None
+
+                        # Source 1: duration_limit_days.evidences (highest priority)
+                        for ev in days_evidences:
+                            excerpt = ev.get('excerpt', '')
+                            extracted = extract_duration_from_evidence_text(excerpt)
+                            if extracted:
+                                duration_extracted = extracted
+                                matched_evidence = ev
+                                break
+
+                        # Source 2: item.evidence (global evidence)
+                        if not duration_extracted and evidence_data:
+                            excerpt = evidence_data.get('excerpt', '')
+                            extracted = extract_duration_from_evidence_text(excerpt)
+                            if extracted:
+                                duration_extracted = extracted
+                                matched_evidence = evidence_data
+
+                        # Source 3: daily_benefit_amount_won.evidences (fallback)
+                        if not duration_extracted:
+                            for ev in daily_evidences:
+                                excerpt = ev.get('excerpt', '')
+                                extracted = extract_duration_from_evidence_text(excerpt)
+                                if extracted:
+                                    duration_extracted = extracted
+                                    matched_evidence = ev
+                                    break
+
+                        # Apply extracted duration if found
+                        if duration_extracted and matched_evidence:
+                            item['duration_limit_days']['status'] = 'FOUND'
+                            item['duration_limit_days']['value'] = duration_extracted
+                            item['duration_limit_days']['evidences'] = [matched_evidence]
 
                     items.append(item)
 
@@ -1241,7 +1342,76 @@ async def q11_cancer_hospitalization_comparison(
 
             return (days_sort, daily_sort, insurer_sort)
 
+        # STEP DEMO-Q11-EVIDENCE-TRUST-02: Deduplicate items by insurer_key
+        # (e.g., db_over41 and db_under40 both map to "db")
+        # Priority: FOUND status > evidence exists > higher benefit value
+        items_by_insurer = {}
+        for item in items:
+            key = item['insurer_key']
+            if key not in items_by_insurer:
+                items_by_insurer[key] = item
+            else:
+                existing = items_by_insurer[key]
+                # Compare priority: FOUND duration > FOUND benefit > higher benefit value
+                item_dur_found = item['duration_limit_days']['status'] == 'FOUND'
+                existing_dur_found = existing['duration_limit_days']['status'] == 'FOUND'
+                item_ben_found = item['daily_benefit_amount_won']['status'] == 'FOUND'
+                existing_ben_found = existing['daily_benefit_amount_won']['status'] == 'FOUND'
+
+                if item_dur_found and not existing_dur_found:
+                    items_by_insurer[key] = item
+                elif item_dur_found == existing_dur_found and item_ben_found and not existing_ben_found:
+                    items_by_insurer[key] = item
+                elif item_dur_found == existing_dur_found and item_ben_found == existing_ben_found:
+                    # Both have same status, compare values
+                    item_ben_val = item['daily_benefit_amount_won']['value'] or 0
+                    existing_ben_val = existing['daily_benefit_amount_won']['value'] or 0
+                    if item_ben_val > existing_ben_val:
+                        items_by_insurer[key] = item
+
+        items = list(items_by_insurer.values())
         items.sort(key=sort_key)
+
+        # STEP DEMO-Q11-EVIDENCE-TRUST-02: Ensure Phase-1 8 insurers always visible
+        PHASE1_INSURERS = ['kb', 'samsung', 'hyundai', 'db', 'meritz', 'hanwha', 'heungkuk', 'lotte']
+
+        # Check which insurers are missing from items
+        present_insurers = {item['insurer_key'] for item in items}
+        missing_insurers = [ins for ins in PHASE1_INSURERS if ins not in present_insurers]
+
+        # Add placeholder items for missing insurers (only if no insurer filter specified)
+        if not insurers and missing_insurers:
+            for insurer_key in missing_insurers:
+                # Get product metadata if available
+                product_meta = contract_meta_map.get(insurer_key, {})
+                product_full_name = {
+                    "value": product_meta.get('product_name_display', '상품명 확인 불가'),
+                    "evidence": product_meta.get('evidence', {})
+                }
+
+                placeholder_item = {
+                    "insurer_key": insurer_key,
+                    "coverage_code": "A6200",
+                    "coverage_name": "암직접치료입원비",
+                    "product_full_name": product_full_name,
+                    "duration_limit_days": {
+                        "status": "UNKNOWN",
+                        "value": None,
+                        "evidences": []
+                    },
+                    "daily_benefit_amount_won": {
+                        "status": "UNKNOWN",
+                        "value": None,
+                        "evidences": []
+                    },
+                    "evidence": None,
+                    "badge": "NOT_IN_PROPOSAL",
+                    "note": "가입설계서에 미포함"
+                }
+                items.append(placeholder_item)
+
+            # Re-sort after adding placeholders
+            items.sort(key=sort_key)
 
         # Add rank
         for i, item in enumerate(items, 1):
