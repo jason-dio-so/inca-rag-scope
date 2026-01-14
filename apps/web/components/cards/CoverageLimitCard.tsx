@@ -2,7 +2,7 @@
 
 import React from "react";
 import { NormalizedTable } from "@/lib/normalize/table";
-import { getCellText, cellHasEvidence } from "@/lib/normalize/cellHelpers";
+import { getCellText, cellHasEvidence, cellHasRenderableEvidence } from "@/lib/normalize/cellHelpers";
 import EvidenceViewer from "@/components/EvidenceViewer";
 
 interface CoverageLimitCardProps {
@@ -67,14 +67,30 @@ export default function CoverageLimitCard({
                   ))}
                 </tr>
                 {/* STEP DEMO-EVIDENCE-RELEVANCE-01: Per-cell evidence grid */}
+                {/* STEP DEMO-RENDER-CONTRACT-BLOCK-01: Rendering Contract Enforcement */}
                 {(() => {
-                  // Check if ANY cell or row meta has evidence
-                  const hasCellEvidence = row.values.some((cell) => {
-                    if (typeof cell === "string") return false;
-                    return cell.evidences && cell.evidences.length > 0;
-                  });
+                  // RENDERING CONTRACT: Single source of truth for evidence existence
+                  const hasCellEvidence = row.values.some((cell) => cellHasRenderableEvidence(cell));
                   const hasProductEvidence = row.meta?.productEvidences && row.meta.productEvidences.length > 0;
                   const hasNote = !!row.meta?.note;
+
+                  // Contract violation detection
+                  if ((hasCellEvidence || hasProductEvidence) && typeof window !== 'undefined') {
+                    const evidenceCount = row.values.filter((cell) => cellHasRenderableEvidence(cell)).length;
+                    const totalEvidences = row.values.reduce((count, cell) => {
+                      if (typeof cell === "string") return count;
+                      return count + (cell.evidences?.length || 0);
+                    }, 0) + (row.meta?.productEvidences?.length || 0);
+
+                    if (totalEvidences > 0) {
+                      console.log("[RENDER CONTRACT] Evidence detected:", {
+                        row_label: row.label,
+                        cell_evidence_count: evidenceCount,
+                        total_evidence_objects: totalEvidences,
+                        will_render: true,
+                      });
+                    }
+                  }
 
                   if (!hasCellEvidence && !hasProductEvidence && !hasNote) {
                     return null;
@@ -107,22 +123,33 @@ export default function CoverageLimitCard({
                               </div>
                             )}
                           </div>
-                          {/* Columns 1+: Value cells */}
+                          {/* Columns 1+: Value cells with slot-specific evidence */}
+                          {/* STEP DEMO-RENDER-CONTRACT-BLOCK-01: Always render evidence if exists */}
                           {row.values.map((cell, cellIdx) => {
-                            if (typeof cell === "string" || !cell.evidences || cell.evidences.length === 0) {
+                            // RENDERING CONTRACT: If evidence exists, MUST render UI area
+                            const hasEvidence = cellHasRenderableEvidence(cell);
+
+                            if (!hasEvidence) {
+                              return <div key={cellIdx} className="px-4 py-3 border-r border-gray-200 last:border-r-0"></div>;
+                            }
+
+                            if (typeof cell === "string") {
+                              // Contract violation: evidence should not exist on string cells
+                              console.error("[RENDER CONTRACT VIOLATION] Cell is string but hasEvidence=true", { cell, cellIdx });
                               return <div key={cellIdx} className="px-4 py-3 border-r border-gray-200 last:border-r-0"></div>;
                             }
 
                             const slotLabel = cell.slotName === "duration_limit_days" ? "보장 한도 근거" :
                                               cell.slotName === "daily_benefit_amount_won" ? "1일당 지급액 근거" : "근거";
 
+                            // MANDATORY: Render evidence area (Demo Mode always expanded)
                             return (
                               <div key={cellIdx} className="px-4 py-3 border-r border-gray-200 last:border-r-0">
                                 <div className="text-xs font-medium text-gray-500 mb-1">{slotLabel}</div>
-                                {cell.evidences.map((ev: any, idx: number) => (
-                                  <div key={idx} className="text-xs text-gray-600 bg-white border border-gray-200 rounded px-2 py-1.5">
+                                {cell.evidences && cell.evidences.map((ev: any, idx: number) => (
+                                  <div key={idx} className="text-xs text-gray-600 bg-white border border-gray-200 rounded px-2 py-1.5 mb-1.5 last:mb-0">
                                     <div className="font-medium">{ev.doc_type} p.{ev.page}</div>
-                                    <div className="mt-0.5 text-gray-500 line-clamp-2">{ev.excerpt}</div>
+                                    <div className="mt-0.5 text-gray-500 line-clamp-3">{ev.excerpt}</div>
                                   </div>
                                 ))}
                               </div>

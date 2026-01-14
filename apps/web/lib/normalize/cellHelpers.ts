@@ -31,3 +31,30 @@ export function getCellEvidenceRefId(cell: string | NormalizedCell): string | un
   if (typeof cell === "string") return undefined;
   return cell.evidence_ref_id;
 }
+
+/**
+ * STEP DEMO-RENDER-CONTRACT-BLOCK-01: Single Source of Truth for Evidence Rendering
+ *
+ * RENDERING CONTRACT:
+ * - If evidences exist (length > 0), UI MUST render evidence area
+ * - "Hidden by default" is allowed, but NO rendering is forbidden
+ * - This function is the ONLY authority on whether evidence should be rendered
+ */
+export function hasRenderableEvidence(meta: {
+  evidences?: any[];
+  evidence_refs?: any[];
+  productEvidences?: any[];
+}): boolean {
+  return (
+    (Array.isArray(meta?.evidences) && meta.evidences.length > 0) ||
+    (Array.isArray(meta?.productEvidences) && meta.productEvidences.length > 0)
+  );
+}
+
+/**
+ * STEP DEMO-RENDER-CONTRACT-BLOCK-01: Check if cell has renderable evidence
+ */
+export function cellHasRenderableEvidence(cell: string | NormalizedCell): boolean {
+  if (typeof cell === "string") return false;
+  return Array.isArray(cell.evidences) && cell.evidences.length > 0;
+}

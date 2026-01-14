@@ -108,6 +108,7 @@ function normalizeColumns(cols: unknown): string[] {
 /**
  * EVIDENCE-FIRST: Normalize a cell while preserving evidence metadata
  * Backend contract: cell.meta.doc_ref (NOT evidence_ref_id)
+ * STEP DEMO-RENDER-CONTRACT-BLOCK-01: Preserve evidences/slotName from overlayToVm
  */
 function normalizeCell(cell: unknown): string | NormalizedCell {
   if (cell === null || cell === undefined) return "-";
@@ -116,6 +117,18 @@ function normalizeCell(cell: unknown): string | NormalizedCell {
 
   if (typeof cell === "object" && !Array.isArray(cell)) {
     const cellObj = cell as Record<string, any>;
+
+    // STEP DEMO-RENDER-CONTRACT-BLOCK-01: Check if already a NormalizedCell from overlayToVm
+    if (cellObj.text !== undefined) {
+      // This is already a NormalizedCell object - preserve ALL fields
+      return {
+        text: String(cellObj.text),
+        evidence_ref_id: cellObj.evidence_ref_id,
+        evidences: cellObj.evidences,  // Preserve evidences array
+        slotName: cellObj.slotName,    // Preserve slot identifier
+      } as NormalizedCell;
+    }
+
     const text = renderCellValue(cell);
 
     // Preserve doc_ref (backend evidence reference) as evidence_ref_id (frontend contract)
