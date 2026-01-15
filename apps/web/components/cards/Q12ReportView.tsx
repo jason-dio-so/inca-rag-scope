@@ -76,6 +76,7 @@ interface Q12ReportViewProps {
 
 export function Q12ReportView({ report }: Q12ReportViewProps) {
   const [expandedEvidence, setExpandedEvidence] = useState<string | null>(null);
+  const [debugMode, setDebugMode] = useState(false);
 
   if (!report || !report.insurers || report.insurers.length === 0) {
     return (
@@ -85,26 +86,134 @@ export function Q12ReportView({ report }: Q12ReportViewProps) {
     );
   }
 
-  const allItemKeys = Array.from(
-    new Set(
-      report.insurers.flatMap(ins => Object.keys(ins.items))
-    )
-  );
-
   const toggleEvidence = (cellId: string) => {
     setExpandedEvidence(expandedEvidence === cellId ? null : cellId);
+  };
+
+  // Fixed rows for Q12 report (고정 순서)
+  const FIXED_ROWS = [
+    { key: 'monthly_premium', label: '월보험료' },
+    { key: 'total_premium', label: '총납입보험료' },
+    { key: 'waiting_period', label: '보장개시일(면책/감액)', itemKey: '보장개시일(면책/감액)' },
+    { key: 'coverage_amount', label: '암진단비(일반암)', itemKey: '보장금액' },
+    { key: 'minor_cancer', label: '소액암/유사암(감액/면책/지급률)', itemKey: '유사암 제외 항목' },
+    { key: 'exclusions', label: '유사암 제외 항목', itemKey: '유사암 제외 항목' },
+    { key: 'features', label: '특징', itemKey: '보장 제외 사항' }
+  ];
+
+  const renderCell = (insurer: InsurerReport, row: typeof FIXED_ROWS[0]) => {
+    const cellId = `${insurer.ins_cd}-${row.key}`;
+    const isExpanded = expandedEvidence === cellId;
+
+    // Handle premium fields
+    if (row.key === 'monthly_premium') {
+      if (insurer.monthly_premium) {
+        return (
+          <div>
+            <div className="text-base font-bold text-gray-900">
+              {insurer.monthly_premium.toLocaleString()}원
+            </div>
+          </div>
+        );
+      }
+      return <div className="text-sm text-gray-400">약관에서 근거를 찾지 못했습니다(정보 없음)</div>;
+    }
+
+    if (row.key === 'total_premium') {
+      if (insurer.total_premium) {
+        return (
+          <div>
+            <div className="text-base font-bold text-gray-900">
+              {insurer.total_premium.toLocaleString()}원
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              {report.scenario.pay_term_years}년 납입 기준
+            </div>
+          </div>
+        );
+      }
+      return <div className="text-sm text-gray-400">약관에서 근거를 찾지 못했습니다(정보 없음)</div>;
+    }
+
+    // Handle items fields
+    const itemKey = row.itemKey;
+    if (!itemKey) {
+      return <div className="text-sm text-gray-400">약관에서 근거를 찾지 못했습니다(정보 없음)</div>;
+    }
+
+    const item = insurer.items[itemKey];
+    if (!item) {
+      return <div className="text-sm text-gray-400">약관에서 근거를 찾지 못했습니다(정보 없음)</div>;
+    }
+
+    const value = item.value;
+    const evidenceRef = item.evidence_ref;
+
+    return (
+      <div>
+        <div className="text-gray-800">
+          {Array.isArray(value) ? (
+            <ul className="list-disc list-inside">
+              {value.map((v, idx) => (
+                <li key={idx}>{v}</li>
+              ))}
+            </ul>
+          ) : (
+            <div>{value}</div>
+          )}
+        </div>
+
+        {/* Evidence link */}
+        {evidenceRef && (
+          <div className="mt-2">
+            <button
+              onClick={() => toggleEvidence(cellId)}
+              className="text-xs text-blue-600 hover:text-blue-800 hover:underline focus:outline-none"
+            >
+              {isExpanded ? '▼ 근거 숨기기' : '▶ 근거 보기'}
+            </button>
+            {isExpanded && (
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+                <div className="font-semibold text-blue-900 mb-1">
+                  📄 {evidenceRef.doc_type} | {evidenceRef.page_range}
+                </div>
+                {debugMode && (
+                  <div className="text-gray-700 mt-2">
+                    {evidenceRef.excerpt.substring(0, 200)}{evidenceRef.excerpt.length > 200 ? '...' : ''}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       {/* Header */}
       <div className="bg-blue-50 border-b border-blue-100 p-4">
-        <h2 className="text-xl font-bold text-gray-900 mb-1">
-          {report.title}
-        </h2>
-        <p className="text-xs text-gray-600">
-          {report.scenario.note}
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">
+              {report.title}
+            </h2>
+            <p className="text-xs text-gray-600">
+              {report.scenario.note}
+            </p>
+          </div>
+          <button
+            onClick={() => setDebugMode(!debugMode)}
+            className={`px-3 py-1 text-xs font-medium rounded border transition-colors ${
+              debugMode
+                ? 'bg-gray-600 text-white border-gray-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            {debugMode ? '🔧 Debug ON' : '🔧 Debug OFF'}
+          </button>
+        </div>
       </div>
 
       {/* Block 1: Comparison Table */}
@@ -123,106 +232,17 @@ export function Q12ReportView({ report }: Q12ReportViewProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {/* Row: 월보험료 */}
-            <tr className="hover:bg-gray-50">
-              <td className="px-4 py-3 text-sm font-semibold text-gray-700">
-                월보험료
-              </td>
-              {report.insurers.map((insurer) => (
-                <td key={insurer.ins_cd} className="px-4 py-3 text-center">
-                  {insurer.monthly_premium ? (
-                    <div className="text-base font-bold text-gray-900">
-                      {insurer.monthly_premium.toLocaleString()}원
-                    </div>
-                  ) : (
-                    <div className="text-sm text-gray-400">약관에서 근거를 찾지 못했습니다(정보 없음)</div>
-                  )}
-                </td>
-              ))}
-            </tr>
-
-            {/* Row: 총납입보험료 */}
-            <tr className="hover:bg-gray-50">
-              <td className="px-4 py-3 text-sm font-semibold text-gray-700">
-                총납입보험료
-              </td>
-              {report.insurers.map((insurer) => (
-                <td key={insurer.ins_cd} className="px-4 py-3 text-center">
-                  {insurer.total_premium ? (
-                    <div>
-                      <div className="text-base font-bold text-gray-900">
-                        {insurer.total_premium.toLocaleString()}원
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {report.scenario.pay_term_years}년 납입 기준
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-sm text-gray-400">약관에서 근거를 찾지 못했습니다(정보 없음)</div>
-                  )}
-                </td>
-              ))}
-            </tr>
-
-            {/* Dynamic rows from items */}
-            {allItemKeys.map((itemKey) => (
-              <tr key={itemKey} className="hover:bg-gray-50">
+            {/* Fixed rows (고정 순서) */}
+            {FIXED_ROWS.map((row) => (
+              <tr key={row.key} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm font-semibold text-gray-700">
-                  {itemKey}
+                  {row.label}
                 </td>
-                {report.insurers.map((insurer) => {
-                  const item = insurer.items[itemKey];
-                  if (!item) {
-                    return (
-                      <td key={insurer.ins_cd} className="px-4 py-3 text-center">
-                        <div className="text-sm text-gray-400">약관에서 근거를 찾지 못했습니다(정보 없음)</div>
-                      </td>
-                    );
-                  }
-
-                  const value = item.value;
-                  const evidenceRef = item.evidence_ref;
-                  const cellId = `${insurer.ins_cd}-${itemKey}`;
-                  const isExpanded = expandedEvidence === cellId;
-
-                  return (
-                    <td key={insurer.ins_cd} className="px-4 py-3 text-sm">
-                      <div className="text-gray-800">
-                        {Array.isArray(value) ? (
-                          <ul className="list-disc list-inside">
-                            {value.map((v, idx) => (
-                              <li key={idx}>{v}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <div>{value}</div>
-                        )}
-                      </div>
-
-                      {/* Evidence toggle */}
-                      {evidenceRef && (
-                        <div className="mt-2">
-                          <button
-                            onClick={() => toggleEvidence(cellId)}
-                            className="text-xs text-blue-600 hover:text-blue-800 hover:underline focus:outline-none"
-                          >
-                            {isExpanded ? '▼ 근거 숨기기' : '▶ 근거 보기'}
-                          </button>
-                          {isExpanded && (
-                            <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-                              <div className="font-semibold text-blue-900 mb-1">
-                                📄 {evidenceRef.doc_type} | {evidenceRef.page_range}
-                              </div>
-                              <div className="text-gray-700">
-                                {evidenceRef.excerpt.substring(0, 200)}{evidenceRef.excerpt.length > 200 ? '...' : ''}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                  );
-                })}
+                {report.insurers.map((insurer) => (
+                  <td key={insurer.ins_cd} className="px-4 py-3 text-sm">
+                    {renderCell(insurer, row)}
+                  </td>
+                ))}
               </tr>
             ))}
           </tbody>
@@ -296,22 +316,22 @@ export function Q12ReportView({ report }: Q12ReportViewProps) {
           </div>
         )}
 
-        {/* Rule trace (debug info) */}
-        <details className="mt-4">
-          <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
-            규칙 적용 내역 (디버그)
-          </summary>
-          <div className="mt-2 p-3 bg-gray-100 rounded text-xs text-gray-700">
-            <div className="font-semibold mb-1">Rules Fired:</div>
-            <ul className="list-disc list-inside mb-2">
-              {report.summary.recommendation.rule_trace.rules_fired.map((rule, idx) => (
-                <li key={idx}>{rule}</li>
-              ))}
-            </ul>
-            <div className="font-semibold mb-1">Inputs Used:</div>
-            <div>{report.summary.recommendation.rule_trace.inputs_used.join(', ')}</div>
+        {/* Rule trace (debug mode only) */}
+        {debugMode && (
+          <div className="mt-4 p-3 bg-gray-100 rounded border border-gray-300">
+            <div className="text-xs font-bold text-gray-700 mb-2">규칙 적용 내역 (디버그)</div>
+            <div className="text-xs text-gray-700">
+              <div className="font-semibold mb-1">Rules Fired:</div>
+              <ul className="list-disc list-inside mb-2">
+                {report.summary.recommendation.rule_trace.rules_fired.map((rule, idx) => (
+                  <li key={idx}>{rule}</li>
+                ))}
+              </ul>
+              <div className="font-semibold mb-1">Inputs Used:</div>
+              <div>{report.summary.recommendation.rule_trace.inputs_used.join(', ')}</div>
+            </div>
           </div>
-        </details>
+        )}
       </div>
 
       {/* Footer */}
