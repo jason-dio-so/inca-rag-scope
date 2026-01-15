@@ -3921,3 +3921,50 @@ AssistantMessageVM {
 
 - 5c0b22f: fix(ui): replace technical labels with customer-friendly source labels in Q12ReportView
 
+
+---
+
+## 2026-01-15: Q12 SSOT Lock - Evidence Toggle + Internal Terms Removal
+
+### 완료 사항
+
+✅ **Evidence Toggle 구현 ("근거 보기", default OFF)**
+- 각 테이블 셀에 evidence_ref가 있으면 "▶ 근거 보기" 버튼 표시
+- 클릭 시 doc_type, page_range, excerpt (200자 truncate) 표시
+- Default OFF로 raw evidence 숨김 유지
+
+✅ **Internal Terms 제거**
+- 테이블 헤더: ins_cd (N01, N08 등) 코드 제거
+- 종합판단 카드: ins_cd 라벨 제거
+- 고객 화면에서 보험사 코드 완전 제거
+
+✅ **SSOT 문서 업데이트**
+- docs/ui/Q12_Q13_CUSTOMER_COPY_SSOT.md 업데이트
+- Evidence refs mapping 규칙 추가
+- Footer 고객용 표기 정의
+- 기술적 용어 금지 명시
+
+### SSOT Contract 준수 확인
+
+- ✅ comparison_table + overall_judgement + final_recommendation 구조
+- ✅ Raw evidence는 toggle 뒤에만 (default OFF)
+- ✅ FOUND/NOT_FOUND badges 없음
+- ✅ gate_version / gate_passed 없음
+- ✅ "Subtype Coverage Map" 같은 내부 용어 없음
+- ✅ 고객 친화적 라벨만 사용
+
+### 남은 작업
+
+⏳ **Q13ReportView.tsx 구현**
+- O/X matrix layout
+- 제자리암/경계성종양 보장 가능 여부 매트릭스
+- Overall summary + recommendation
+
+⏳ **2/4/8 insurer layouts 테스트**
+- 다양한 보험사 조합 렌더링 확인
+- Horizontal scroll 동작 확인
+
+### 커밋
+
+- f19517e: feat(ui): Q12 SSOT lock - add evidence toggle, remove internal terms
+
