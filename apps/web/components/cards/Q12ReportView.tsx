@@ -124,13 +124,8 @@ export function Q12ReportView({ report }: Q12ReportViewProps) {
               {report.insurers.map((insurer) => (
                 <td key={insurer.ins_cd} className="px-4 py-3 text-center">
                   {insurer.monthly_premium ? (
-                    <div>
-                      <div className="text-base font-bold text-gray-900">
-                        {insurer.monthly_premium.toLocaleString()}원
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        Premium SSOT DB (2025-11-26)
-                      </div>
+                    <div className="text-base font-bold text-gray-900">
+                      {insurer.monthly_premium.toLocaleString()}원
                     </div>
                   ) : (
                     <div className="text-sm text-gray-400">약관에서 근거를 찾지 못했습니다(정보 없음)</div>
@@ -290,16 +285,13 @@ export function Q12ReportView({ report }: Q12ReportViewProps) {
       {/* Footer */}
       <div className="bg-gray-100 border-t border-gray-200 p-4">
         <p className="text-xs text-gray-600">
-          ℹ️ 모든 값은 DB SSOT에서 추출 (compare_table_v2 + product_premium_quote_v2)
+          본 리포트는 약관 근거 기반으로 정리되며, 근거 미확인 항목은 "정보 없음"으로 표기됩니다.
         </p>
         <p className="text-xs text-gray-600 mt-1">
-          ℹ️ 보험료: Premium SSOT DB (2025-11-26) (NO JSON reads)
-        </p>
-        <p className="text-xs text-gray-600 mt-1">
-          ℹ️ 추천은 rule-based 결정적 로직 (LLM 사용 안 함)
+          보험료: premium_raw JSON (2025-11-26)
         </p>
         <p className="text-xs text-gray-500 mt-1">
-          as_of_date: {report.scenario.as_of_date}
+          기준일: {report.scenario.as_of_date}
         </p>
       </div>
     </div>
