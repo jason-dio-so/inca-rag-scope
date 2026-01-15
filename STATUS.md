@@ -3842,3 +3842,57 @@ AssistantMessageVM {
 
 ---
 - 2026-01-13: ✅ Q8 Surgery Repeat Payment Policy Overlay (TYPE B) - FROZEN (GET /q8 endpoint, 10 insurers, SHA256 verified)
+
+---
+
+## 2026-01-15: Q12 Report View UI 전면 교체 (SSOT LOCKED)
+
+### 완료 사항
+
+✅ **Q12 Debug Table 제거 + Report View 고정 레이아웃 적용**
+- Debug View 토글 기능 완전 제거 (page.tsx)
+- Q12SubtypeCoverageMapV2 (Debug View) 사용 제거
+- 고객용 Report View만 표시 (4블록 구조: Header, Comparison Table, Summary, Recommendation)
+
+✅ **Step3 Gate LOCKED 유지 (변경 없음)**
+- GATE_SSOT_V1 수정 0건
+- 파이프라인 코드 변경 0건
+- 순수 UI 레이어만 수정
+
+✅ **raw excerpt UI 노출 금지 준수**
+- 테이블 셀에서 evidence excerpt 펼치기 기능 제거
+- Evidence reference 버튼 및 팝업 제거
+- 고객 화면에서 약관 원문 노출 완전 차단
+
+✅ **NOT_FOUND 표준 문구 적용**
+- 모든 "정보 없음" → "약관에서 근거를 찾지 못했습니다(정보 없음)" 통일
+- 월보험료, 총납입보험료, 동적 항목 전체 적용
+
+### 남은 작업
+
+⏳ **Step4 Derived semantics layer**
+- customer_sentence 생성 로직 (P1)
+- source_ref 연결 메커니즘 (P1)
+
+⏳ **P1 Premium SSOT DB 연동**
+- product_premium_quote_v2 테이블 연동
+- JSON 직접 읽기 제거 완료 (UI에서 premium_raw 참조 0건)
+
+### 변경된 파일
+
+- `apps/web/app/demo-q12/page.tsx` (생성)
+- `apps/web/components/cards/Q12ReportView.tsx` (생성)
+
+### 커밋
+
+- d3dfe19: feat(ui): replace Q12 debug view with report view (SSOT locked)
+
+### DoD 달성 여부
+
+- ✅ Q12 화면에서 Debug Table/Debug 섹션 완전 제거
+- ✅ 고정 레이아웃(4블록)으로 렌더링
+- ✅ NOT_FOUND 문구 전역 적용
+- ✅ 종합판단/추천 deterministic 동작 (기존 구조 유지)
+- ✅ Step3 Gate 변경 0건
+- ✅ 커밋 완료 + STATUS.md 업데이트 완료
+
