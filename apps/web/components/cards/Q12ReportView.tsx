@@ -15,6 +15,8 @@
 
 'use client';
 
+import { useState } from 'react';
+
 interface EvidenceRef {
   doc_type: string;
   page_range: string;
@@ -73,6 +75,8 @@ interface Q12ReportViewProps {
 }
 
 export function Q12ReportView({ report }: Q12ReportViewProps) {
+  const [expandedEvidence, setExpandedEvidence] = useState<string | null>(null);
+
   if (!report || !report.insurers || report.insurers.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -86,6 +90,10 @@ export function Q12ReportView({ report }: Q12ReportViewProps) {
       report.insurers.flatMap(ins => Object.keys(ins.items))
     )
   );
+
+  const toggleEvidence = (cellId: string) => {
+    setExpandedEvidence(expandedEvidence === cellId ? null : cellId);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -110,7 +118,6 @@ export function Q12ReportView({ report }: Q12ReportViewProps) {
               {report.insurers.map((insurer) => (
                 <th key={insurer.ins_cd} className="px-4 py-3 text-center text-sm font-bold text-gray-700">
                   {insurer.insurer_name_ko}
-                  <div className="text-xs font-normal text-gray-500">{insurer.ins_cd}</div>
                 </th>
               ))}
             </tr>
@@ -174,6 +181,9 @@ export function Q12ReportView({ report }: Q12ReportViewProps) {
                   }
 
                   const value = item.value;
+                  const evidenceRef = item.evidence_ref;
+                  const cellId = `${insurer.ins_cd}-${itemKey}`;
+                  const isExpanded = expandedEvidence === cellId;
 
                   return (
                     <td key={insurer.ins_cd} className="px-4 py-3 text-sm">
@@ -188,6 +198,28 @@ export function Q12ReportView({ report }: Q12ReportViewProps) {
                           <div>{value}</div>
                         )}
                       </div>
+
+                      {/* Evidence toggle */}
+                      {evidenceRef && (
+                        <div className="mt-2">
+                          <button
+                            onClick={() => toggleEvidence(cellId)}
+                            className="text-xs text-blue-600 hover:text-blue-800 hover:underline focus:outline-none"
+                          >
+                            {isExpanded ? '▼ 근거 숨기기' : '▶ 근거 보기'}
+                          </button>
+                          {isExpanded && (
+                            <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+                              <div className="font-semibold text-blue-900 mb-1">
+                                📄 {evidenceRef.doc_type} | {evidenceRef.page_range}
+                              </div>
+                              <div className="text-gray-700">
+                                {evidenceRef.excerpt.substring(0, 200)}{evidenceRef.excerpt.length > 200 ? '...' : ''}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </td>
                   );
                 })}
@@ -206,7 +238,7 @@ export function Q12ReportView({ report }: Q12ReportViewProps) {
           {report.summary.pros_cons.map((pc) => (
             <div key={pc.ins_cd} className="bg-white rounded-lg border border-gray-200 p-4">
               <h4 className="font-bold text-gray-900 mb-2">
-                {pc.insurer_name_ko} ({pc.ins_cd})
+                {pc.insurer_name_ko}
               </h4>
 
               <div className="mb-3">
