@@ -3896,3 +3896,28 @@ AssistantMessageVM {
 - ✅ Step3 Gate 변경 0건
 - ✅ 커밋 완료 + STATUS.md 업데이트 완료
 
+
+---
+
+## 2026-01-15: Q12 UI Label 수정 (고객 친화적 표기)
+
+### 수정 사항
+
+✅ **기술적 라벨 제거, 원천 표기로 변경**
+- 월보험료 셀: "Premium SSOT DB (2025-11-26)" 제거
+- Footer:
+  - "모든 값은 DB SSOT에서 추출" → "본 리포트는 약관 근거 기반으로 정리"
+  - "보험료: Premium SSOT DB (NO JSON reads)" → "보험료: premium_raw JSON (2025-11-26)"
+  - "추천은 rule-based 결정적 로직 (LLM 사용 안 함)" 제거
+  - "as_of_date:" → "기준일:"
+
+### 원칙
+
+- ✅ 고객 UI는 원천(SSOT source) 표기, 저장소(DB) 표기 금지
+- ✅ P1 Premium SSOT DB는 존재하지만, 고객에게는 "premium_raw JSON (2025-11-26)" 표기
+- ✅ 기술적 용어("SSOT DB", "NO JSON reads", "LLM") 고객 UI에서 제거
+
+### 커밋
+
+- 5c0b22f: fix(ui): replace technical labels with customer-friendly source labels in Q12ReportView
+
