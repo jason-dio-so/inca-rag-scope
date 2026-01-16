@@ -9,7 +9,7 @@ Exit Codes:
   2 - FAIL (one or more checks failed)
 
 Usage:
-  export DATABASE_URL="postgresql://inca_admin:inca_secure_prod_2025_db_key@127.0.0.1:5432/inca_rag_scope"
+  export SSOT_DB_URL="postgresql://postgres:postgres@localhost:5433/inca_ssot"
   python3 tools/audit/validate_final_q1_q12_q14.py --as-of-date 2025-11-26
 """
 
@@ -29,12 +29,12 @@ class FinalSmokeGate:
         self.failed_checks = []
 
     def connect(self):
-        """Connect to database using DATABASE_URL environment variable."""
-        database_url = os.getenv("DATABASE_URL")
+        """Connect to database using SSOT_DB_URL environment variable."""
+        database_url = os.getenv("SSOT_DB_URL", "postgresql://postgres:postgres@localhost:5433/inca_ssot")
 
         if not database_url:
-            print("❌ ERROR: DATABASE_URL environment variable not set")
-            print("   Please set: export DATABASE_URL='postgresql://...'")
+            print("❌ ERROR: SSOT_DB_URL environment variable not set")
+            print("   Please set: export SSOT_DB_URL='postgresql://postgres:postgres@localhost:5433/inca_ssot'")
             sys.exit(2)
 
         try:

@@ -45,8 +45,8 @@ class DB2LoadRunner:
 
     # Database URL
     DATABASE_URL = os.getenv(
-        "DATABASE_URL",
-        "postgresql://inca_admin:inca_secure_prod_2025_db_key@localhost:5432/inca_rag_scope"
+        "SSOT_DB_URL",
+        "postgresql://postgres:postgres@localhost:5433/inca_ssot"
     )
 
     # Required tables (G11 gate)

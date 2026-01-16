@@ -372,7 +372,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--db-url',
-        default='postgresql://inca_admin:inca_secure_prod_2025_db_key@localhost:5432/inca_rag_scope'
+        default='postgresql://postgres:postgres@localhost:5433/inca_ssot'
     )
     parser.add_argument(
         '--project-root',

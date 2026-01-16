@@ -17,13 +17,13 @@ from core.vector_search_file import ChunkHit, get_model
 
 
 def get_db_connection():
-    """Get Postgres connection (from env vars or defaults)"""
+    """Get Postgres connection (from env vars or SSOT defaults)"""
     conn = psycopg2.connect(
-        host=os.getenv('PGHOST', 'localhost'),
-        port=os.getenv('PGPORT', '5432'),
-        database=os.getenv('PGDATABASE', 'inca_rag_scope'),
-        user=os.getenv('PGUSER', 'postgres'),
-        password=os.getenv('PGPASSWORD', '')
+        host=os.getenv('SSOT_DB_HOST', 'localhost'),
+        port=os.getenv('SSOT_DB_PORT', '5433'),
+        database=os.getenv('SSOT_DB_NAME', 'inca_ssot'),
+        user=os.getenv('SSOT_DB_USER', 'postgres'),
+        password=os.getenv('SSOT_DB_PASSWORD', 'postgres')
     )
     return conn
 

@@ -802,9 +802,9 @@ async def startup_event():
     """Initialize store cache on startup"""
     from apps.api.store_loader import init_store_cache
 
-    # STEP-NEXT: SSOT DB Lock - Log DB connection details
+    # DB ID CHECK (MANDATORY) - Enforce SSOT: inca_ssot@5433
     logger.info("=" * 80)
-    logger.info("SSOT DB CONNECTION (SINGLE SOURCE OF TRUTH)")
+    logger.info("DB ID CHECK — SSOT Enforcement")
     logger.info(f"  Database URL: {DB_URL}")
     try:
         test_conn = psycopg2.connect(DB_URL)
@@ -816,12 +816,16 @@ async def startup_event():
         test_cur.close()
         test_conn.close()
 
-        if db_name != 'inca_ssot' or db_port != 5432:
-            logger.error(f"❌ DB MISMATCH: Expected inca_ssot:5433, got {db_name}:{db_port}")
+        if db_name != 'inca_ssot' or db_port != 5433:
+            error_msg = f"SSOT_DB_MISMATCH: expected inca_ssot@5433, got {db_name}@{db_port}"
+            logger.error(f"❌ {error_msg}")
+            logger.error("See: docs/policy/DB_SSOT_LOCK.md")
+            raise RuntimeError(error_msg)
         else:
-            logger.info("✅ SSOT DB connection verified")
-    except Exception as e:
-        logger.error(f"❌ DB connection test failed: {e}")
+            logger.info("✅ DB ID CHECK PASS: inca_ssot@5433")
+    except psycopg2.Error as e:
+        logger.error(f"❌ DB connection failed: {e}")
+        raise RuntimeError(f"DB connection failed: {e}")
     logger.info("=" * 80)
 
     logger.info("[STEP NEXT-73R] Initializing store cache...")
@@ -1875,11 +1879,11 @@ async def premium_ranking(
         if top_n < 1 or top_n > 20:
             raise HTTPException(status_code=400, detail="top_n must be between 1 and 20")
 
-        # Premium DB URL (POLICY: product_premium_quote_v2 is in inca_rag_scope database)
-        # Note: If premium tables are in inca_ssot, adjust this URL
+        # Premium DB URL (SSOT: product_premium_quote_v2 is in inca_ssot database)
+        # Load from .env.ssot: SSOT_DB_URL
         premium_db_url = os.getenv(
-            "PREMIUM_DB_URL",
-            "postgresql://inca_admin:inca_secure_prod_2025_db_key@localhost:5432/inca_rag_scope"
+            "SSOT_DB_URL",
+            "postgresql://postgres:postgres@localhost:5433/inca_ssot"
         )
 
         conn = psycopg2.connect(premium_db_url)
