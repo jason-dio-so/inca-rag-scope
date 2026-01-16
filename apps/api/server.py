@@ -1831,6 +1831,251 @@ async def compare_v2(
 
 
 # ============================================================================
+# Q1 Premium Ranking Endpoint (STEP NEXT Chat UI v2)
+# ============================================================================
+
+@app.get("/premium/ranking")
+async def premium_ranking(
+    age: int,
+    sex: str,
+    plan_variant: str = "BOTH",
+    sort_by: str = "monthly_total",
+    top_n: int = 4,
+    as_of_date: str = "2025-11-26"
+):
+    """
+    GET /premium/ranking - Q1 Premium Ranking (DB2 SSOT Only)
+
+    Query params:
+    - age (required): int, 20-80
+    - sex (required): M|F
+    - plan_variant (optional): NO_REFUND | GENERAL | BOTH (default: BOTH)
+    - sort_by (optional): monthly_total | total (default: monthly_total)
+    - top_n (optional): int (default: 4)
+    - as_of_date (optional): YYYY-MM-DD (default: 2025-11-26)
+
+    Returns: Q1ViewModel with evidence payload (Evidence-Mandatory, Rail-Only)
+
+    SSOT: product_premium_quote_v2 ONLY (premium_quote is DEPRECATED)
+    """
+    try:
+        # Validate inputs
+        if sex not in ["M", "F"]:
+            raise HTTPException(status_code=400, detail="sex must be 'M' or 'F'")
+
+        if plan_variant not in ["NO_REFUND", "GENERAL", "BOTH"]:
+            raise HTTPException(status_code=400, detail="plan_variant must be 'NO_REFUND', 'GENERAL', or 'BOTH'")
+
+        if sort_by not in ["monthly_total", "total"]:
+            raise HTTPException(status_code=400, detail="sort_by must be 'monthly_total' or 'total'")
+
+        if age < 20 or age > 80:
+            raise HTTPException(status_code=400, detail="age must be between 20 and 80")
+
+        if top_n < 1 or top_n > 20:
+            raise HTTPException(status_code=400, detail="top_n must be between 1 and 20")
+
+        # Premium DB URL (POLICY: product_premium_quote_v2 is in inca_rag_scope database)
+        # Note: If premium tables are in inca_ssot, adjust this URL
+        premium_db_url = os.getenv(
+            "PREMIUM_DB_URL",
+            "postgresql://inca_admin:inca_secure_prod_2025_db_key@localhost:5432/inca_rag_scope"
+        )
+
+        conn = psycopg2.connect(premium_db_url)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        # Determine which variants to query
+        if plan_variant == "BOTH":
+            variant_filter = ("NO_REFUND", "GENERAL")
+        else:
+            variant_filter = (plan_variant,)
+
+        # Query product_premium_quote_v2 (DB2 SSOT)
+        cursor.execute("""
+            SELECT
+                ins_cd,
+                product_id,
+                product_full_name,
+                plan_variant,
+                age,
+                sex,
+                premium_monthly_total,
+                premium_total_total,
+                as_of_date,
+                source,
+                source_table_id,
+                source_row_id
+            FROM product_premium_quote_v2
+            WHERE age = %s
+              AND sex = %s
+              AND as_of_date = %s
+              AND plan_variant = ANY(%s)
+            ORDER BY
+                CASE WHEN %s = 'monthly_total' THEN premium_monthly_total END ASC,
+                CASE WHEN %s = 'total' THEN premium_total_total END ASC,
+                ins_cd ASC
+        """, (age, sex, as_of_date, variant_filter, sort_by, sort_by))
+
+        rows = cursor.fetchall()
+
+        # For GENERAL variant rows, fetch multiplier evidence from coverage_premium_quote
+        multiplier_evidence_map = {}
+        if "GENERAL" in variant_filter:
+            for row in rows:
+                if row['plan_variant'] == 'GENERAL':
+                    ins_cd = row['ins_cd']
+                    product_id = row['product_id']
+
+                    # Query coverage_premium_quote for multiplier_percent (sample any coverage for this product)
+                    cursor.execute("""
+                        SELECT DISTINCT multiplier_percent, coverage_code
+                        FROM coverage_premium_quote
+                        WHERE ins_cd = %s
+                          AND product_id = %s
+                          AND plan_variant = 'GENERAL'
+                          AND age = %s
+                          AND sex = %s
+                          AND as_of_date = %s
+                        LIMIT 1
+                    """, (ins_cd, product_id, age, sex, as_of_date))
+
+                    mult_row = cursor.fetchone()
+                    if mult_row:
+                        key = f"{ins_cd}_{product_id}"
+                        multiplier_evidence_map[key] = {
+                            "multiplier_percent": mult_row['multiplier_percent'],
+                            "coverage_code": mult_row['coverage_code']
+                        }
+
+        conn.close()
+
+        # Build Q1 result rows
+        insurer_map = {
+            "N01": "DB손해보험",
+            "N02": "롯데손해보험",
+            "N03": "메리츠화재",
+            "N05": "삼성화재",
+            "N08": "현대해상",
+            "N09": "흥국화재",
+            "N10": "KB손해보험",
+            "N13": "한화손해보험"
+        }
+
+        # Group by insurer+product (merge NO_REFUND and GENERAL into single row if BOTH)
+        product_map = {}
+        for row in rows:
+            key = f"{row['ins_cd']}_{row['product_id']}"
+            if key not in product_map:
+                product_map[key] = {
+                    "ins_cd": row['ins_cd'],
+                    "insurer_name": insurer_map.get(row['ins_cd'], row['ins_cd']),
+                    "product_id": row['product_id'],
+                    "product_name": row['product_full_name'],
+                    "no_refund": None,
+                    "general": None
+                }
+
+            variant = row['plan_variant']
+            premium_data = {
+                "premium_monthly": row['premium_monthly_total'],
+                "premium_total": row['premium_total_total'],
+                "as_of_date": row['as_of_date'],
+                "source": row['source'],
+                "source_table_id": row['source_table_id'],
+                "source_row_id": row['source_row_id']
+            }
+
+            if variant == "NO_REFUND":
+                product_map[key]["no_refund"] = premium_data
+            elif variant == "GENERAL":
+                product_map[key]["general"] = premium_data
+
+        # Convert to list and sort
+        result_rows = []
+        for key, data in product_map.items():
+            # Determine sort key
+            if sort_by == "monthly_total":
+                # Use NO_REFUND monthly as primary sort key
+                sort_key = data["no_refund"]["premium_monthly"] if data["no_refund"] else float('inf')
+            else:
+                sort_key = data["no_refund"]["premium_total"] if data["no_refund"] else float('inf')
+
+            # Build evidence payload
+            evidence = {
+                "base_premium": {
+                    "source_table": "product_premium_quote_v2",
+                    "ins_cd": data["ins_cd"],
+                    "product_id": data["product_id"],
+                    "age": age,
+                    "sex": sex,
+                    "as_of_date": as_of_date,
+                    "no_refund": data["no_refund"],
+                    "general": data["general"]
+                }
+            }
+
+            # Add rate_multiplier evidence if GENERAL variant exists
+            if data["general"]:
+                mult_key = f"{data['ins_cd']}_{data['product_id']}"
+                if mult_key in multiplier_evidence_map:
+                    evidence["rate_multiplier"] = {
+                        "source_table": "coverage_premium_quote",
+                        "ins_cd": data["ins_cd"],
+                        "product_id": data["product_id"],
+                        "multiplier_percent": multiplier_evidence_map[mult_key]["multiplier_percent"],
+                        "coverage_code": multiplier_evidence_map[mult_key]["coverage_code"],
+                        "as_of_date": as_of_date
+                    }
+
+            result_rows.append({
+                "ins_cd": data["ins_cd"],
+                "insurer_name": data["insurer_name"],
+                "product_id": data["product_id"],
+                "product_name": data["product_name"],
+                "premium_monthly_no_refund": data["no_refund"]["premium_monthly"] if data["no_refund"] else None,
+                "premium_total_no_refund": data["no_refund"]["premium_total"] if data["no_refund"] else None,
+                "premium_monthly_general": data["general"]["premium_monthly"] if data["general"] else None,
+                "premium_total_general": data["general"]["premium_total"] if data["general"] else None,
+                "sort_key": sort_key,
+                "evidence": evidence
+            })
+
+        # Sort and take top_n
+        result_rows.sort(key=lambda x: x["sort_key"])
+        top_rows = result_rows[:top_n]
+
+        # Add rank
+        for i, row in enumerate(top_rows):
+            row["rank"] = i + 1
+            del row["sort_key"]  # Remove internal sort key
+
+        # Build Q1ViewModel response
+        response = {
+            "kind": "Q1",
+            "query_params": {
+                "age": age,
+                "sex": sex,
+                "plan_variant": plan_variant,
+                "sort_by": sort_by,
+                "top_n": top_n,
+                "as_of_date": as_of_date
+            },
+            "rows": top_rows
+        }
+
+        return response
+
+    except psycopg2.Error as e:
+        logger.error(f"Database error in /premium/ranking: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    except Exception as e:
+        logger.error(f"Error in /premium/ranking: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
 # STEP-NEXT: Health Check & DB Debug Endpoints
 # ============================================================================
 
