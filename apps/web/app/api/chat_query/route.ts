@@ -201,11 +201,38 @@ async function handleQ4(request: ChatQueryRequest): Promise<any> {
  * Handle Q1: Premium ranking (Top 4)
  */
 async function handleQ1(request: ChatQueryRequest): Promise<any> {
-  // Q1 is not yet implemented in backend
-  return {
-    error: '보험료 비교 기능은 현재 준비 중입니다.',
-    note: 'Premium data source is not yet connected to SSOT.',
-  };
+  try {
+    // Extract age and gender from filters
+    const age = request.filters?.age || 40;
+    const gender = request.filters?.gender || 'M';
+    const sort_by = request.filters?.sort_by === 'monthly' ? 'monthly_total' : 'total';
+    const plan_variant = request.filters?.product_type === 'no_refund' ? 'NO_REFUND' :
+                         request.filters?.product_type === 'standard' ? 'GENERAL' : 'BOTH';
+
+    // Call Python backend /premium/ranking
+    const url = `${API_BASE}/premium/ranking?age=${age}&sex=${gender}&plan_variant=${plan_variant}&sort_by=${sort_by}&top_n=4&as_of_date=${AS_OF_DATE}`;
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      if (response.status === 404) {
+        return {
+          error: '해당 조건에 대한 보험료 데이터가 없습니다.',
+          note: `age=${age}, sex=${gender}, as_of_date=${AS_OF_DATE}`
+        };
+      }
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+
+  } catch (error) {
+    console.error('Q1 handler error:', error);
+    return {
+      error: '보험료 데이터를 불러오는 중 오류가 발생했습니다.',
+      note: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
 }
 
 /**

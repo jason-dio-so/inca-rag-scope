@@ -12,6 +12,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Q1PremiumView } from '@/components/chat/Q1PremiumView';
 import { Q2LimitDiffView } from '@/components/chat/Q2LimitDiffView';
 import { Q3ThreePartView } from '@/components/chat/Q3ThreePartView';
 import { Q4SupportMatrixView } from '@/components/chat/Q4SupportMatrixView';
@@ -319,14 +320,10 @@ export default function ChatPage() {
             </div>
 
             {/* Render based on kind */}
+            {result.kind === 'Q1' && <Q1PremiumView data={result.viewModel} />}
             {result.kind === 'Q2' && <Q2LimitDiffView data={result.viewModel} />}
             {result.kind === 'Q3' && <Q3ThreePartView data={result.viewModel} />}
             {result.kind === 'Q4' && <Q4SupportMatrixView data={result.viewModel} />}
-            {result.kind === 'Q1' && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                <p className="text-yellow-800">Q1 보험료 비교는 아직 구현 중입니다.</p>
-              </div>
-            )}
             {result.kind === 'UNKNOWN' && result.viewModel?.error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-6">
                 <p className="font-semibold text-red-800 mb-2">{result.viewModel.error}</p>
