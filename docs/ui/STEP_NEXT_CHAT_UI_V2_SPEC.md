@@ -124,6 +124,144 @@ interface ChatQueryResponse {
 
 ---
 
+## 2a. Q1 Premium Comparison — Evidence Mandatory & Rail-Only
+
+### Q1 Role Definition
+
+**Q1PremiumView** is a formal Result View that displays premium comparison results based on user-provided age and gender inputs.
+
+- **Input**: `age`, `gender`, `filters` (sort_by, product_type)
+- **Output**: Product (row) level premium comparison results
+- **Scope**: Compares both GENERAL (일반) and NO_REFUND (무해지) products simultaneously
+- **Evidence Requirement**: All displayed numbers MUST be evidence-backed
+
+**Q1 is NOT a coverage comparison view (Q2~Q4).** Q1 presents premium calculation/retrieval results to the user.
+
+---
+
+### Premium Calculation Rules (Design Lock)
+
+#### Base Rule
+
+1. **NO_REFUND Premium** = Base premium (baseline)
+2. **GENERAL Premium** = NO_REFUND Premium × Rate Multiplier
+
+#### Multiplier Source
+
+- Rate multipliers are retrieved from a fixed reference table (e.g., `일반보험요율예시.xlsx`)
+- **UI does NOT calculate multipliers**
+- Multiplier source and application logic are explained **only via Evidence**
+
+---
+
+### Evidence Mandatory — Q1 (Core Rule)
+
+#### Evidence Unit
+
+**Row-level Evidence Mandatory**: Each product (row) must have complete evidence backing its displayed premium values.
+
+#### Required Evidence Groups
+
+Each product (row) must include at least the following two evidence groups:
+
+1. **Base Premium Evidence**
+   - Source: 가입설계서 / premium data table
+   - Conditions: age, gender
+   - Purpose: Supports NO_REFUND premium display
+
+2. **Rate Multiplier Evidence**
+   - Source: 일반보험요율예시.xlsx (or equivalent fixed table)
+   - Conditions: age, gender
+   - Purpose: Supports GENERAL premium calculation
+   - Description: "일반보험료 산출에 사용됨"
+
+#### Evidence Absence Rule
+
+When evidence is incomplete or missing for a row:
+- ❌ **Do NOT display numeric values**
+- Display "—" in place of missing values
+- Show warning: "근거 미확보"
+- **Exclude row from ranking calculation**
+
+---
+
+### Evidence Exposure Rules — Rail-Only (Final Decision)
+
+#### Main Table (Body)
+
+**Display:**
+- Total premium (총납) / Monthly premium (월납) for GENERAL and NO_REFUND
+- Product name, insurer name, rank
+
+**Do NOT Display:**
+- Rate multiplier values
+- Calculation formulas
+- Reference table source descriptions
+
+#### Evidence Rail (Side Panel)
+
+When a product (row) is selected, display the following evidence groups **in separate sections**:
+
+1. **Base Premium Evidence**
+   - Source reference
+   - Input conditions (age, gender)
+   - Retrieved value
+
+2. **Rate Multiplier Evidence**
+   - Source table reference (e.g., "일반보험요율예시.xlsx")
+   - Applied conditions (age, gender)
+   - Multiplier value
+   - Explanation: "일반보험료 산출에 사용됨"
+
+**Evidence Rail is the ONLY location where multipliers and calculation basis are shown.**
+
+---
+
+### UI Guidelines — Q1
+
+#### Allowed Text (Single Line Guidance)
+
+The following single-line notice is allowed in the main view:
+
+> 일반 보험료는 무해지 기준 보험료와 요율표를 기반으로 산출되며,
+> 근거는 우측 Evidence에서 확인할 수 있습니다.
+
+#### Prohibited Text
+
+❌ Do NOT include:
+- Calculation formulas in the main table
+- Multiplier numeric values in the main table
+- Inference-style explanations like "계산했다", "산출했다"
+
+---
+
+### ViewModel Semantics (Q1 Contract)
+
+**Do NOT modify type definitions.** The following semantic contract applies to `Q1ViewModel`:
+
+```
+- Each row represents a single (insurer, product) combination.
+- Each numeric premium cell MUST be evidence-backed.
+- Evidence must match input conditions (age, gender).
+- Rows without evidence MUST NOT display numeric values.
+- Ranking MUST only include evidence-backed rows.
+```
+
+---
+
+### DoD — Q1 Specific Checklist
+
+- [ ] Q1 results change based on age/gender input
+- [ ] NO_REFUND premium is linked to Base Premium Evidence
+- [ ] GENERAL premium is linked to Rate Multiplier Evidence
+- [ ] Rate multipliers and formulas are ONLY visible in Evidence Rail
+- [ ] Numeric values without evidence are replaced with "—"
+- [ ] Rankings include ONLY evidence-backed rows
+- [ ] Main table does NOT display calculation formulas or multiplier values
+- [ ] Evidence Rail displays both Base Premium Evidence and Rate Multiplier Evidence separately
+
+---
+
 ## 3. /api/chat_query Contract
 
 ### Request
