@@ -15,7 +15,7 @@ A4210 (유사암진단비) baseline successfully established with **7 insurers**
 - **FOUND**: 21/21 (7 insurers × 3 slots)
 - **Contamination**: 0
 - **API**: ✅ 200 OK, returns 7 insurers
-- **N09 Status**: DEPRECATED (not a diagnosis benefit, see decision doc)
+- **N09 Status**: DEPRECATED (약관 SSOT incomplete, see data issue proof)
 
 ---
 
@@ -24,22 +24,29 @@ A4210 (유사암진단비) baseline successfully established with **7 insurers**
 ### Original Plan
 Expand A4210 to 8 insurers (N01,N02,N03,N05,N08,N09,N10,N13)
 
-### N09 Failure
-**Result**: FOUND=0/3 (complete failure)
+### N09 Investigation Timeline
 
-**Root Cause**: N09 "유사암진단Ⅱ(양성뇌종양포함)담보" is NOT a diagnosis benefit (진단비), but a **premium waiver benefit** (보험료납입지원).
+**Phase 1: Initial Failure** (2026-01-16 AM)
+- Evidence generation: FOUND=0/3
+- Initial analysis: Concluded premium support benefit based on약관 analysis
+- Action: Marked as DEPRECATED
 
-**Evidence**:
-- 349 chunks with "유사암"
-- 148 chunks (42%) contain "유사암납입" (premium support)
-- 326 chunks (93%) contain "유사암 제외" (exclusion context)
-- Only 4 chunks (1%) mention "유사암진단비", all in "(유사암제외)" exclusion phrases
+**Phase 2: CASE A Verification** (2026-01-16 PM)
+- User requested verification using proposal document (가입설계서)
+- Found clear evidence: Benefit #10 "유사암진단Ⅱ담보" is cash diagnosis benefit
+- Attempted restoration: Evidence generation still FAILED (FOUND=0/3)
 
-**Action Taken**: Marked N09-A4210 mapping as `status='DEPRECATED'` in coverage_mapping_ssot
+**Phase 3: Root Cause Identified**
+- ✅ Benefit EXISTS (confirmed by proposal page 5)
+- ❌ Evidence FAILS (약관 SSOT incomplete)
+- 🔍 Root cause: document_page_ssot missing "유사암진단Ⅱ담보" special terms (특별약관)
+
+**Final Status**: DEPRECATED with reason "약관 SSOT incomplete - requires document re-parsing"
 
 **References**:
-- `docs/audit/A4210_N09_MAPPING_FAIL_PROOF.md` — Failure evidence
-- `docs/audit/A4210_N09_MAPPING_DECISION.md` — Decision rationale
+- `docs/audit/A4210_N09_SSOT_DATA_ISSUE_PROOF.md` — Complete investigation
+- `docs/audit/A4210_N09_MAPPING_FAIL_PROOF.md` — Initial failure evidence
+- `docs/audit/A4210_N09_MAPPING_DECISION.md` — Phase 1 analysis
 
 ---
 
@@ -151,9 +158,11 @@ WHERE coverage_code = 'A4210' AND as_of_date = '2025-11-26';
 
 | table_id | coverage_code | as_of_date | insurer_count | chunk_count |
 |----------|---------------|------------|---------------|-------------|
-| 18 | A4210 | 2025-11-26 | 7 | 7,537 |
+| 20 | A4210 | 2025-11-26 | 7 | 7,537 |
 
 **Verification**: ✅ 1 row exists with 7 insurers
+
+**Note**: table_id=18 was previous 7-insurer baseline (Phase 1). table_id=20 is current baseline (Phase 3).
 
 ---
 
@@ -229,8 +238,21 @@ python3 tools/run_db_only_coverage.py \
 
 ---
 
-### Stage 2: Evidence (7 insurers only)
+### Stage 2: Evidence
 
+**Phase 1 attempt** (8 insurers including N09):
+```bash
+python3 tools/run_db_only_coverage.py \
+  --coverage_code A4210 --as_of_date 2025-11-26 \
+  --ins_cds N01,N02,N03,N05,N08,N09,N10,N13 \
+  --stage evidence
+```
+**Result**: FOUND=21, NOT_FOUND=3 (N09 failed) ⚠️
+**Log**: `/tmp/a4210_8ins_evidence.log`
+
+---
+
+**Phase 3 final** (7 insurers excluding N09):
 ```bash
 python3 tools/run_db_only_coverage.py \
   --coverage_code A4210 --as_of_date 2025-11-26 \
@@ -240,7 +262,7 @@ python3 tools/run_db_only_coverage.py \
 
 **Result**: FOUND=21, NOT_FOUND=0, DROPPED=0 ✅
 
-**Log**: `/tmp/a4210_7ins_evidence.log`
+**Log**: `/tmp/a4210_7ins_final_evidence.log`
 
 **Summary**:
 - N01: 2321/3433 anchor-matched → 3/3 FOUND
@@ -262,7 +284,7 @@ python3 tools/run_db_only_coverage.py \
   --stage compare
 ```
 
-**Result**: table_id=18 created ✅
+**Result**: table_id=20 created ✅
 
 **Log**: `/tmp/a4210_7ins_compare.log`
 
@@ -279,39 +301,74 @@ python3 tools/run_db_only_coverage.py \
 2. **DB state locked**:
    - coverage_chunk: 7,537 rows (DO NOT regenerate)
    - evidence_slot: 21 rows (FOUND=21)
-   - compare_table_v2: table_id=18
+   - compare_table_v2: table_id=20
    - coverage_mapping_ssot: N09 status=DEPRECATED
 
 3. **N09 Status**:
    - Mapping marked as DEPRECATED (not deleted)
+   - Reason: "약관 SSOT incomplete - requires document re-parsing"
+   - Benefit EXISTS (proven by proposal), but약관 clauses missing from SSOT
    - Chunks remain in coverage_chunk but not used
-   - Can be reactivated if new evidence found
+   - Can be reactivated if document_page_ssot updated with complete약관
 
 ---
 
 ## Change Log
 
-### 2026-01-16: Initial 7-Insurer Baseline
+### 2026-01-16 Phase 1: Initial 7-Insurer Baseline (AM)
 
 **Actions**:
 1. Generated chunks for 8 insurers (N01-N13 including N09)
 2. N09 failed evidence generation (FOUND=0/3)
-3. Investigated N09 failure → confirmed not a diagnosis benefit
+3. Investigated N09 failure → incorrectly concluded premium support benefit
 4. Marked N09-A4210 mapping as DEPRECATED
-5. Re-ran evidence/compare for 7 insurers (excluding N09)
+5. Re-ran evidence/compare for 7 insurers (excluding N09) → table_id=18
 6. Achieved FOUND=21/21, contamination=0
 
-**Files Modified**:
-- `tools/coverage_profiles.py`: Added whitespace variants to A4210 anchor keywords
-- `coverage_mapping_ssot`: N09-A4210 status='DEPRECATED'
-
 **Files Created**:
-- `docs/audit/A4210_N09_MAPPING_FAIL_PROOF.md`
-- `docs/audit/A4210_N09_MAPPING_DECISION.md`
+- `docs/audit/A4210_N09_MAPPING_FAIL_PROOF.md` (Phase 1 analysis)
+- `docs/audit/A4210_N09_MAPPING_DECISION.md` (Phase 1 decision)
 - `docs/audit/RUN_RECEIPT_A4210_7INS_FREEZE.md` (this file)
 
+---
+
+### 2026-01-16 Phase 2: CASE A Verification (PM)
+
+**Trigger**: User requested verification using proposal document only
+
+**Actions**:
+1. Queried document_page_ssot for N09 proposal (가입설계서)
+2. Found clear evidence: Benefit #10 "유사암진단Ⅱ담보" is cash diagnosis benefit
+3. Restored N09-A4210 mapping to ACTIVE status
+4. Attempted evidence generation for 8 insurers
+
+**Result**: Evidence generation FAILED again (FOUND=0/3 for N09)
+
+---
+
+### 2026-01-16 Phase 3: Root Cause Identification (PM)
+
+**Investigation**:
+1. Confirmed benefit EXISTS (proposal page 5 proof)
+2. Analyzed약관 SSOT content → detailed clauses MISSING
+3. Compared with other 7 insurers → all have complete약관
+4. Identified root cause: DATA ISSUE (약관 SSOT incomplete)
+
+**Actions**:
+1. Marked N09-A4210 as DEPRECATED with reason "약관 SSOT incomplete"
+2. Regenerated evidence/compare for 7 insurers → table_id=20
+3. Achieved FOUND=21/21, contamination=0
+
+**Files Modified**:
+- `tools/coverage_profiles.py`: Added whitespace variants to A4210 anchor keywords (Phase 1)
+- `coverage_mapping_ssot`: N09-A4210 status='DEPRECATED' with updated reason
+
+**Files Created**:
+- `docs/audit/A4210_N09_SSOT_DATA_ISSUE_PROOF.md` (Phase 3 complete investigation)
+
 **Commits**:
-- `fix(a4210): freeze 7-insurer baseline (exclude N09 mapping anomaly)`
+- Phase 1: `fix(a4210): freeze 7-insurer baseline (exclude N09 mapping anomaly)`
+- Phase 3: `fix(a4210): confirm N09 SSOT data issue and finalize 7-insurer baseline`
 
 ---
 
@@ -330,4 +387,4 @@ python3 tools/run_db_only_coverage.py \
 
 **STATUS**: A4210 7-insurer baseline frozen ✅
 
-**Last Verified**: 2026-01-16 17:13
+**Last Verified**: 2026-01-16 17:57 (Phase 3 complete)
