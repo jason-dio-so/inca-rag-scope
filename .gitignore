@@ -45,3 +45,4 @@ test_*.py
 
 # Ad-hoc scratch files (STEP B-2)
 tools/scratch/
+data/scope_v3/*.jsonl
