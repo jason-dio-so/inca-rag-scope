@@ -807,22 +807,37 @@ async def startup_event():
     logger.info("DB ID CHECK — SSOT Enforcement")
     logger.info(f"  Database URL: {DB_URL}")
     try:
+        # Parse URL to get host port (client perspective)
+        from urllib.parse import urlparse
+        parsed_url = urlparse(DB_URL)
+        expected_port = parsed_url.port or 5432
+
+        # Connect and check database name + container port (for logging only)
         test_conn = psycopg2.connect(DB_URL)
         test_cur = test_conn.cursor()
         test_cur.execute("SELECT current_database(), inet_server_port()")
-        db_name, db_port = test_cur.fetchone()
-        logger.info(f"  Connected DB: {db_name}")
-        logger.info(f"  Connected Port: {db_port}")
+        db_name, container_port = test_cur.fetchone()
         test_cur.close()
         test_conn.close()
 
-        if db_name != 'inca_ssot' or db_port != 5433:
-            error_msg = f"SSOT_DB_MISMATCH: expected inca_ssot@5433, got {db_name}@{db_port}"
+        logger.info(f"  Connected DB: {db_name}")
+        logger.info(f"  Host Port (from URL): {expected_port}")
+        logger.info(f"  Container Port (from DB): {container_port} (informational only)")
+
+        # Validate: DB name + host port only (not container port due to NAT)
+        if db_name != 'inca_ssot':
+            error_msg = f"SSOT_DB_MISMATCH: expected DB inca_ssot, got {db_name}"
             logger.error(f"❌ {error_msg}")
             logger.error("See: docs/policy/DB_SSOT_LOCK.md")
             raise RuntimeError(error_msg)
-        else:
-            logger.info("✅ DB ID CHECK PASS: inca_ssot@5433")
+
+        if expected_port != 5433:
+            error_msg = f"SSOT_DB_MISMATCH: expected host port 5433, got {expected_port}"
+            logger.error(f"❌ {error_msg}")
+            logger.error("See: docs/policy/DB_SSOT_LOCK.md")
+            raise RuntimeError(error_msg)
+
+        logger.info("✅ DB ID CHECK PASS: inca_ssot@5433 (host port)")
     except psycopg2.Error as e:
         logger.error(f"❌ DB connection failed: {e}")
         raise RuntimeError(f"DB connection failed: {e}")

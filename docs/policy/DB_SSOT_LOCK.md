@@ -52,21 +52,42 @@ SSOT_DB_PASSWORD=postgres
 
 **All database entry points MUST perform DB ID CHECK before proceeding.**
 
-### SQL Query:
+### Validation Rules
+
+**Two-stage validation**:
+
+1. **Database Name Check** (SQL):
+   ```sql
+   SELECT current_database() AS db;
+   ```
+   - **Expected**: `inca_ssot`
+   - **Mandatory**: MUST match exactly
+
+2. **Port Check** (Client-side):
+   - Parse `SSOT_DB_URL` environment variable
+   - Extract port from connection string
+   - **Expected**: `5433` (host port)
+   - **Mandatory**: MUST match exactly
+
+### Important: NAT Port Mapping
+
+⚠️ **DO NOT validate port using `inet_server_port()`**
+
+`inet_server_port()` returns the container's **internal listening port** (typically 5432), which may differ from the **host port** (5433) due to Docker port mapping (NAT).
+
+Example:
 ```sql
-SELECT current_database() AS db, inet_server_port() AS port;
+SELECT current_database(), inet_server_port();
+-- Result: inca_ssot | 5432  ← Container internal port
 ```
 
-### Expected Result:
-```
-db    | port
-------+------
-inca_ssot | 5433
-```
+This is **correct behavior** for Docker containers. The SSOT validation must check:
+- Database name = `inca_ssot` (from SQL)
+- Host port = `5433` (from SSOT_DB_URL)
 
 ### Failure Behavior:
 - **Immediate exit** with `exit 1`
-- **Error message**: `SSOT_DB_MISMATCH: expected inca_ssot@5433, got {actual_db}@{actual_port}`
+- **Error message**: `SSOT_DB_MISMATCH: expected inca_ssot@5433 (host port), got {actual_db}@{actual_port}`
 
 ### Entry Points Requiring DB ID CHECK:
 1. `apps/api/server.py` — FastAPI startup (1 check at boot)
@@ -133,23 +154,35 @@ const SSOT_DB_URL = process.env.SSOT_DB_URL ||
 **Python**:
 ```python
 import psycopg2
+from urllib.parse import urlparse
 
 def check_db_identity(db_url: str):
     """Validate we're connected to the correct SSOT database."""
+    # Parse URL to get host port (client perspective)
+    parsed = urlparse(db_url)
+    expected_port = parsed.port or 5432
+
+    # Connect and check database name
     conn = psycopg2.connect(db_url)
     cursor = conn.cursor()
-    cursor.execute("SELECT current_database() AS db, inet_server_port() AS port")
-    row = cursor.fetchone()
-    actual_db, actual_port = row[0], row[1]
+    cursor.execute("SELECT current_database()")
+    actual_db = cursor.fetchone()[0]
 
-    if actual_db != 'inca_ssot' or actual_port != 5433:
+    # Validate database name and host port
+    if actual_db != 'inca_ssot':
         raise RuntimeError(
-            f"SSOT_DB_MISMATCH: expected inca_ssot@5433, got {actual_db}@{actual_port}"
+            f"SSOT_DB_MISMATCH: expected inca_ssot@{expected_port} (host port), "
+            f"got {actual_db}@{expected_port}"
+        )
+
+    if expected_port != 5433:
+        raise RuntimeError(
+            f"SSOT_DB_MISMATCH: expected host port 5433, got {expected_port}"
         )
 
     cursor.close()
     conn.close()
-    print(f"✓ DB ID CHECK PASS: {actual_db}@{actual_port}")
+    print(f"✓ DB ID CHECK PASS: {actual_db}@{expected_port} (host port)")
 ```
 
 **Usage**:
