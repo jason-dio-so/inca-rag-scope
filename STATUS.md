@@ -1,7 +1,7 @@
 # inca-rag-scope - 작업 현황 보고서
 
 **프로젝트**: 가입설계서 담보 scope 기반 보험사 비교 시스템
-**최종 업데이트**: 2026-01-12
+**최종 업데이트**: 2026-01-17
 **현재 상태**: 🔒 **Q_REGISTRY: Q1-Q14 Locked (3 READY, 11 BLOCKED)**
 
 ---
@@ -52,6 +52,7 @@ See: `docs/policy/Q_REGISTRY.md` for full definitions
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **🔒 Global DB SSOT Lock (inca_ssot@5433 only)** | GLOBAL DB SSOT LOCK | 🔒 LOCKED | 2026-01-17 |
 | **🔒 Q_REGISTRY: Q1-Q14 Registry Lock** | STEP NEXT-QREG | 🔒 LOCKED | 2026-01-12 |
 | **🔒 FINAL-LOCK: ViewModel + Smoke Gate** | STEP NEXT-FINAL-LOCK | 🔒 LOCKED | 2026-01-12 |
 | **✅ Q1/Q14 GENERAL Extension (36+48 rows)** | STEP NEXT-GENERAL-Q1Q14 | ✅ 완료 | 2026-01-12 |
