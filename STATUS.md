@@ -52,6 +52,7 @@ See: `docs/policy/Q_REGISTRY.md` for full definitions
 
 | Phase | 단계 | 상태 | 완료일 |
 |-------|------|------|--------|
+| **✅ GENERAL Variant Reproducibility + Port Check Fixed** | DB SSOT FIX | ✅ 완료 | 2026-01-17 |
 | **🔒 Global DB SSOT Lock (inca_ssot@5433 only)** | GLOBAL DB SSOT LOCK | 🔒 LOCKED | 2026-01-17 |
 | **🔒 Q_REGISTRY: Q1-Q14 Registry Lock** | STEP NEXT-QREG | 🔒 LOCKED | 2026-01-12 |
 | **🔒 FINAL-LOCK: ViewModel + Smoke Gate** | STEP NEXT-FINAL-LOCK | 🔒 LOCKED | 2026-01-12 |
