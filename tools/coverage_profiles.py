@@ -62,7 +62,7 @@ A5200_PROFILE = {
     "canonical_name": "암수술비",
     "gate_version": "GATE_SSOT_V2_CONTEXT_GUARD",
 
-    "anchor_keywords": ["암", "암수술", "수술비", "암수술비"],
+    "anchor_keywords": ["암", "암수술", "수술비", "암수술비", "암 수술", "암 수술비"],
 
     "required_terms_by_slot": {
         "waiting_period": ["면책", "보장개시", "책임개시", "90일", r"\d+일", "감액", "지급률"],
