@@ -22,6 +22,7 @@ Database Tables:
 import os
 import logging
 import re
+import json
 from datetime import datetime
 from typing import List, Optional, Dict, Any, Set
 import uuid
@@ -62,10 +63,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Database connection configuration
+# Database connection configuration (SSOT: port 5433 ONLY)
 DB_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://inca_admin:inca_secure_prod_2025_db_key@localhost:5432/inca_rag_scope"
+    "postgresql://postgres:postgres@localhost:5433/inca_ssot"
 )
 
 # Compiler version (deterministic query generation)
@@ -800,6 +801,29 @@ async def get_faq_templates():
 async def startup_event():
     """Initialize store cache on startup"""
     from apps.api.store_loader import init_store_cache
+
+    # STEP-NEXT: SSOT DB Lock - Log DB connection details
+    logger.info("=" * 80)
+    logger.info("SSOT DB CONNECTION (SINGLE SOURCE OF TRUTH)")
+    logger.info(f"  Database URL: {DB_URL}")
+    try:
+        test_conn = psycopg2.connect(DB_URL)
+        test_cur = test_conn.cursor()
+        test_cur.execute("SELECT current_database(), inet_server_port()")
+        db_name, db_port = test_cur.fetchone()
+        logger.info(f"  Connected DB: {db_name}")
+        logger.info(f"  Connected Port: {db_port}")
+        test_cur.close()
+        test_conn.close()
+
+        if db_name != 'inca_ssot' or db_port != 5432:
+            logger.error(f"❌ DB MISMATCH: Expected inca_ssot:5433, got {db_name}:{db_port}")
+        else:
+            logger.info("✅ SSOT DB connection verified")
+    except Exception as e:
+        logger.error(f"❌ DB connection test failed: {e}")
+    logger.info("=" * 80)
+
     logger.info("[STEP NEXT-73R] Initializing store cache...")
     init_store_cache()
 
@@ -1174,23 +1198,46 @@ async def q11_cancer_hospitalization_comparison(
     Q11_COVERAGE_CODES = ["A6200"]
 
     try:
-        # STEP Q11-PRODUCT-NAME-FIX-01: Load contract metadata for product names with evidence
-        contract_meta_path = "data/compare_v1/contract_meta_v1.jsonl"
-        contract_meta_map = {}
+        # HOTFIX-INSURER-PRODUCT-MISMATCH: Load product names from product table (SSOT)
+        # Map insurer_key to ins_cd (CORRECTED from insurer table)
+        INSURER_KEY_TO_INS_CD = {
+            'meritz': 'N01',     # 메리츠
+            'hanwha': 'N02',     # 한화
+            'db': 'N03',         # DB
+            'heungkuk': 'N05',   # 흥국
+            'samsung': 'N08',    # 삼성
+            'hyundai': 'N09',    # 현대
+            'kb': 'N10',         # KB
+            'lotte': 'N13'       # 롯데
+        }
+
+        # Connect to SSOT DB
+        ssot_db_url = "postgresql://postgres:postgres@localhost:5433/inca_ssot"
+        conn = psycopg2.connect(ssot_db_url)
+
+        # Load product names from product table (SSOT)
+        # RULE: product table is SSOT for product names, NOT product_premium_quote_v2
+        product_name_map = {}
         try:
-            with open(contract_meta_path, 'r', encoding='utf-8') as meta_file:
-                for line in meta_file:
-                    if not line.strip():
-                        continue
-                    meta_data = json.loads(line)
-                    insurer_key = meta_data.get('insurer_key')
-                    if insurer_key:
-                        contract_meta_map[insurer_key] = {
-                            "product_name_display": meta_data.get('product_name_display', ''),
-                            "evidence": meta_data.get('evidence', {})
-                        }
-        except FileNotFoundError:
-            logger.warning(f"Contract metadata file not found: {contract_meta_path}")
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            cursor.execute("""
+                SELECT DISTINCT ins_cd, product_full_name
+                FROM product
+                WHERE as_of_date = %s
+                ORDER BY ins_cd
+            """, (as_of_date,))
+
+            rows = cursor.fetchall()
+            for row in rows:
+                ins_cd = row['ins_cd']
+                product_name = row['product_full_name']
+                # Map back from ins_cd to insurer_key
+                for key, code in INSURER_KEY_TO_INS_CD.items():
+                    if code == ins_cd:
+                        product_name_map[key] = product_name
+                        break
+        except Exception as e:
+            logger.warning(f"Failed to load product names from product table: {e}")
 
         # Load data from compare_tables_v1.jsonl (has coverage_code)
         data_path = "data/compare_v1/compare_tables_v1.jsonl"
@@ -1259,11 +1306,11 @@ async def q11_cancer_hospitalization_comparison(
                             "source_slot": "daily_benefit_amount_won"  # Mark fallback source
                         }
 
-                    # STEP Q11-PRODUCT-NAME-FIX-01: Get product name with evidence
-                    product_meta = contract_meta_map.get(insurer_key, {})
+                    # STEP Q11-PRODUCT-NAME-FIX-02: Get product name from DB SSOT
+                    product_name_value = product_name_map.get(insurer_key, '상품명 정보 없음(DB 미등록)')
                     product_full_name = {
-                        "value": product_meta.get('product_name_display', '상품명 확인 불가'),
-                        "evidence": product_meta.get('evidence', {})
+                        "value": product_name_value,
+                        "evidence": {}  # No evidence tracking for product names from DB
                     }
 
                     # Build item with slot-level status (NEW: return status for UI)
@@ -1382,11 +1429,11 @@ async def q11_cancer_hospitalization_comparison(
         # Add placeholder items for missing insurers (only if no insurer filter specified)
         if not insurers and missing_insurers:
             for insurer_key in missing_insurers:
-                # Get product metadata if available
-                product_meta = contract_meta_map.get(insurer_key, {})
+                # STEP Q11-PRODUCT-NAME-FIX-02: Get product name from DB SSOT
+                product_name_value = product_name_map.get(insurer_key, '상품명 정보 없음(DB 미등록)')
                 product_full_name = {
-                    "value": product_meta.get('product_name_display', '상품명 확인 불가'),
-                    "evidence": product_meta.get('evidence', {})
+                    "value": product_name_value,
+                    "evidence": {}
                 }
 
                 placeholder_item = {
@@ -1451,6 +1498,13 @@ async def q11_cancer_hospitalization_comparison(
     except Exception as e:
         logger.error(f"Q11 error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Q11 error: {str(e)}")
+    finally:
+        # Close DB connection
+        if 'conn' in locals():
+            try:
+                conn.close()
+            except Exception:
+                pass
 
 
 @app.get("/q13")
@@ -1659,4 +1713,179 @@ async def root():
         "note": "Production API (DB-backed, evidence-based, fact-first)"
     }
 
-# Run with: uvicorn apps.api.server_v2:app --host 0.0.0.1 --port 8001 --reload
+
+@app.get("/coverage_status")
+async def coverage_status(
+    coverage_code: str,
+    as_of_date: str = "2025-11-26"
+):
+    """
+    GET /coverage_status - Get available insurers for a coverage
+
+    Query params:
+    - coverage_code: A4200_1, etc.
+    - as_of_date: YYYY-MM-DD (default: 2025-11-26)
+
+    Returns: {"coverage_code": str, "as_of_date": str, "available_insurers": [str]}
+    """
+    try:
+        # Connect to SSOT DB (port 5433)
+        ssot_db_url = "postgresql://postgres:postgres@localhost:5433/inca_ssot"
+        conn = psycopg2.connect(ssot_db_url)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        # Query coverage_mapping_ssot for ACTIVE insurers
+        cursor.execute("""
+            SELECT ins_cd
+            FROM coverage_mapping_ssot
+            WHERE coverage_code = %s
+              AND as_of_date = %s
+              AND status = 'ACTIVE'
+            ORDER BY ins_cd
+        """, (coverage_code, as_of_date))
+
+        rows = cursor.fetchall()
+        conn.close()
+
+        if not rows:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No active insurers found for coverage_code={coverage_code}, as_of_date={as_of_date}"
+            )
+
+        available_insurers = [row['ins_cd'] for row in rows]
+
+        return {
+            "coverage_code": coverage_code,
+            "as_of_date": as_of_date,
+            "available_insurers": available_insurers
+        }
+
+    except psycopg2.Error as e:
+        logger.error(f"Database error in /coverage_status: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    except Exception as e:
+        logger.error(f"Error in /coverage_status: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/compare_v2")
+async def compare_v2(
+    coverage_code: str,
+    as_of_date: str = "2025-11-26",
+    ins_cds: Optional[str] = None
+):
+    """
+    GET /compare_v2 - Read compare_table_v2 from SSOT DB
+
+    Query params:
+    - coverage_code: A4200_1, etc.
+    - as_of_date: YYYY-MM-DD (default: 2025-11-26)
+    - ins_cds: Comma-separated insurer codes (e.g., N01,N08)
+
+    Returns: compare_table_v2.payload (includes q12_report if exists)
+    """
+    try:
+        # Parse insurer codes
+        if not ins_cds:
+            raise HTTPException(status_code=400, detail="ins_cds parameter required")
+
+        insurer_list = [code.strip() for code in ins_cds.split(",")]
+        insurer_set = sorted(insurer_list)  # Normalize order for exact match
+
+        # Connect to SSOT DB (port 5433)
+        ssot_db_url = "postgresql://postgres:postgres@localhost:5433/inca_ssot"
+        conn = psycopg2.connect(ssot_db_url)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        # Query compare_table_v2 by exact insurer_set match
+        cursor.execute("""
+            SELECT table_id, payload
+            FROM compare_table_v2
+            WHERE coverage_code = %s
+              AND as_of_date = %s
+              AND insurer_set = %s::jsonb
+        """, (coverage_code, as_of_date, json.dumps(insurer_set)))
+
+        row = cursor.fetchone()
+        conn.close()
+
+        if not row:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No compare_table_v2 row found for coverage_code={coverage_code}, as_of_date={as_of_date}, insurer_set={insurer_set}"
+            )
+
+        # Return payload as-is (includes q12_report if it exists)
+        payload = row['payload']
+        return payload
+
+    except psycopg2.Error as e:
+        logger.error(f"Database error in /compare_v2: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    except Exception as e:
+        logger.error(f"Error in /compare_v2: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# STEP-NEXT: Health Check & DB Debug Endpoints
+# ============================================================================
+
+@app.get("/healthz")
+async def healthz():
+    """
+    Health check endpoint
+    Returns 200 if API is running
+    """
+    return {"status": "ok", "service": "inca-rag-scope-api"}
+
+
+@app.get("/debug/db")
+async def debug_db():
+    """
+    Debug endpoint: Verify DB connection and SSOT enforcement
+
+    Returns 500 if DB is not inca_ssot:5433
+    Returns 200 with DB details if correct
+    """
+    try:
+        conn = psycopg2.connect(DB_URL)
+        cur = conn.cursor()
+        cur.execute("SELECT current_database(), inet_server_port()")
+        db_name, db_port = cur.fetchone()
+        cur.close()
+        conn.close()
+
+        # Enforce SSOT: must be inca_ssot on internal port 5432 (container)
+        # (Host port 5433 maps to container port 5432)
+        if db_name != 'inca_ssot':
+            return {
+                "status": "error",
+                "message": f"❌ DB MISMATCH: Expected inca_ssot, got {db_name}",
+                "db_name": db_name,
+                "db_port": db_port,
+                "db_url": DB_URL.replace('postgres:postgres', '***:***')
+            }, 500
+
+        return {
+            "status": "ok",
+            "message": "✅ SSOT DB connection verified",
+            "db_name": db_name,
+            "db_port": db_port,
+            "db_url": DB_URL.replace('postgres:postgres', '***:***'),
+            "note": "Host port 5433 → Container port 5432"
+        }
+
+    except Exception as e:
+        logger.error(f"DB debug check failed: {e}")
+        return {
+            "status": "error",
+            "message": f"❌ DB connection failed: {str(e)}",
+            "db_url": DB_URL.replace('postgres:postgres', '***:***')
+        }, 500
+
+
+# Run with: uvicorn apps.api.server:app --host 0.0.0.0 --port 8000 --reload
