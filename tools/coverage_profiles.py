@@ -159,10 +159,37 @@ A4102_PROFILE = {
     }
 }
 
+# A5298_001: 유사암수술비 (Similar Cancer Surgery)
+A5298_001_PROFILE = {
+    "profile_id": "A5298_001_PROFILE_V1",
+    "coverage_code": "A5298_001",
+    "canonical_name": "유사암수술비",
+    "gate_version": "GATE_SSOT_V2_CONTEXT_GUARD",
+
+    "anchor_keywords": ["유사암", "제자리암", "경계성종양", "갑상선암", "기타피부암", "수술", "수술비", "유사암수술", "유사암수술비", "유사 암", "유사암 수술"],
+
+    "required_terms_by_slot": {
+        "waiting_period": ["면책", "보장개시", "책임개시", "90일", r"\d+일", "감액", "지급률"],
+        "exclusions": ["제외", "보장하지", "지급하지", "보상하지", "면책", r"보험금을\s*지급하지"],
+        "subtype_coverage_map": ["제자리암", "상피내암", "전암", "경계성", "경계성종양", "유사암", "소액암", "기타피부암", "갑상선암", "대장점막내암", "정의", "범위"]
+    },
+
+    "hard_negative_terms_global": ["통원일당", "입원일당", "치료일당", "일당", "상급종합병원", r"연간\s*\d+\s*회한", r"\d+\s*회\s*한", "100세만기", "90세만기"],
+
+    "section_negative_terms_global": ["납입면제", r"보험료\s*납입면제", "보장보험료", r"차회\s*이후", r"면제\s*사유", r"납입을\s*면제"],
+
+    "diagnosis_signal_terms_global": ["유사암수술비", "수술비", "수술", "치료", "보험금", "보험가입금액", "지급합니다", "지급함", "지급사유"],
+
+    "slot_specific_negatives": {
+        "subtype_coverage_map": ["납입면제", r"면제\s*사유", "보장보험료"]
+    }
+}
+
 COVERAGE_PROFILES = {
     "A4200_1": A4200_1_PROFILE,
     "A4210": A4210_PROFILE,
     "A5200": A5200_PROFILE,
+    "A5298_001": A5298_001_PROFILE,
     "A4104_1A": A4104_1A_PROFILE,
     "A4104_1B": A4104_1B_PROFILE,
     "A4102": A4102_PROFILE
