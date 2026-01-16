@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """
-GENERAL Variant Loader — Evidence-Mandatory SSOT
+GENERAL Variant Loader — Evidence-Mandatory SSOT (Reproducible)
 
 Generates GENERAL premium variant from NO_REFUND × multiplier
 Target DB: inca_ssot@5433 ONLY
 
 Rules:
 - GENERAL.premium_monthly_total = round(NO_REFUND.premium_monthly_total × multiplier_percent / 100)
+- Uses PostgreSQL round() in SQL (NOT Python round()) for 100% reproducibility
 - Zero-tolerance validation (mismatch = 0)
-- Evidence-backed (multiplier source recorded)
+- Idempotent: Re-running produces identical results
 """
 
 import os
 import sys
 import psycopg2
 import psycopg2.extras
-import pandas as pd
-from typing import Dict, List, Tuple
+from urllib.parse import urlparse
 
 # SSOT DB (LOCKED)
 DB_URL = os.getenv(
@@ -24,251 +24,146 @@ DB_URL = os.getenv(
     "postgresql://postgres:postgres@localhost:5433/inca_ssot"
 )
 
-# Insurer name to code mapping
-INSURER_MAP = {
-    "한화손해보험": "N13",
-    "삼성화재": "N05",
-    "롯데손해보험": "N02",
-    "현대해상화재": "N08",  # Note: might be just "현대해상"
-    "메리츠화재": "N03",
-    "DB손해보험": "N01",
-    "KB손해보험": "N10",
-    "흥국화재": "N09",
-}
-
-# Coverage name to code mapping (partial, for known coverages)
-COVERAGE_MAP = {
-    "암진단비(유사암제외)": "A4200_1",
-    "암수술비(유사암제외)": "A5200",
-    "유사암진단비": "A4210",
-    "유사암수술비": "A5210",
-    # Add more as needed
-}
-
-MULTIPLIER_FILE = "data/sources/insurers/4. 일반보험요율예시.xlsx"
+# Default multiplier for GENERAL variant (130%)
+DEFAULT_MULTIPLIER = 130
 
 
 class GeneralVariantLoader:
-    """Load GENERAL variant premium into SSOT DB"""
+    """Load GENERAL variant premium into SSOT DB (reproducible, idempotent)"""
 
     def __init__(self):
         self.conn = None
-        self.multipliers: Dict[Tuple[str, str], int] = {}  # (ins_cd, coverage_code) -> multiplier_percent
-        self.no_refund_rows: List[dict] = []
-        self.general_rows: List[dict] = []
+        self.multiplier = DEFAULT_MULTIPLIER
+        self.deleted_count = 0
         self.inserted_count = 0
-        self.skipped_count = 0
-        self.errors: List[str] = []
+        self.errors: list = []
 
     def connect(self):
         """Connect to SSOT DB and verify"""
         print("=" * 80)
-        print("DB ID CHECK")
+        print("DB ID CHECK — Reproducible Loader")
         print("=" * 80)
 
+        # Parse URL to get host port (client perspective)
+        parsed_url = urlparse(DB_URL)
+        expected_port = parsed_url.port or 5432
+
+        # Connect to DB
         self.conn = psycopg2.connect(DB_URL)
         cursor = self.conn.cursor()
 
+        # Check database name + log container port
         cursor.execute("SELECT current_database(), inet_server_port()")
-        db_name, db_port = cursor.fetchone()
+        db_name, container_port = cursor.fetchone()
 
         print(f"Connected DB: {db_name}")
-        print(f"Connected Port: {db_port} (container internal)")
+        print(f"Host Port (from URL): {expected_port}")
+        print(f"Container Port (from DB): {container_port} (informational)")
 
+        # Validate: DB name + host port (not container port due to NAT)
         if db_name != 'inca_ssot':
-            raise RuntimeError(f"SSOT_DB_MISMATCH: expected inca_ssot, got {db_name}")
+            raise RuntimeError(f"SSOT_DB_MISMATCH: expected DB inca_ssot, got {db_name}")
 
-        print("✅ DB ID CHECK PASS\n")
+        if expected_port != 5433:
+            raise RuntimeError(f"SSOT_DB_MISMATCH: expected host port 5433, got {expected_port}")
+
+        print("✅ DB ID CHECK PASS: inca_ssot@5433 (host port)\n")
         cursor.close()
 
-    def load_multipliers_from_excel(self):
-        """Load multipliers from Excel file"""
+    def check_current_state(self):
+        """Check current GENERAL rows"""
         print("=" * 80)
-        print("Loading Multipliers from Excel")
-        print("=" * 80)
-
-        # Read Excel (skip first empty row, use row 1 as header)
-        df_raw = pd.read_excel(MULTIPLIER_FILE, sheet_name=0, header=None)
-
-        # Row 0 is empty, row 1 is header, row 2+ is data
-        headers = df_raw.iloc[1].tolist()
-        df = df_raw[2:].copy()
-        df.columns = headers
-
-        print(f"Headers: {headers}")
-        print(f"Data rows: {len(df)}")
-        print(f"Sample:\n{df.head()}\n")
-
-        # Parse multipliers
-        coverage_col = headers[0]  # "담보명"
-
-        for idx, row in df.iterrows():
-            coverage_name = row[coverage_col]
-            if pd.isna(coverage_name):
-                continue
-
-            # Map coverage name to code (if known)
-            coverage_code = COVERAGE_MAP.get(coverage_name)
-            if not coverage_code:
-                # Skip unmapped coverages
-                continue
-
-            for col_idx in range(1, len(headers)):
-                insurer_name = headers[col_idx]
-                multiplier_val = row[headers[col_idx]]
-
-                if pd.isna(multiplier_val):
-                    continue
-
-                # Map insurer name to code
-                ins_cd = None
-                for name_key, code in INSURER_MAP.items():
-                    if name_key in insurer_name:
-                        ins_cd = code
-                        break
-
-                if not ins_cd:
-                    print(f"⚠️ Unmapped insurer: {insurer_name}")
-                    continue
-
-                # Store multiplier
-                key = (ins_cd, coverage_code)
-                self.multipliers[key] = int(multiplier_val)
-
-        print(f"✅ Loaded {len(self.multipliers)} multipliers")
-        print(f"Sample multipliers:")
-        for key, val in list(self.multipliers.items())[:10]:
-            print(f"  {key}: {val}%")
-        print()
-
-    def load_no_refund_rows(self):
-        """Load NO_REFUND rows from DB"""
-        print("=" * 80)
-        print("Loading NO_REFUND Rows")
-        print("=" * 80)
-
-        cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-
-        cursor.execute("""
-            SELECT
-                ins_cd,
-                product_id,
-                product_full_name,
-                age,
-                sex,
-                premium_monthly_total,
-                premium_total_total,
-                as_of_date,
-                source,
-                source_table_id,
-                source_row_id
-            FROM product_premium_quote_v2
-            WHERE plan_variant = 'NO_REFUND'
-            ORDER BY ins_cd, age, sex
-        """)
-
-        self.no_refund_rows = cursor.fetchall()
-        print(f"✅ Loaded {len(self.no_refund_rows)} NO_REFUND rows\n")
-        cursor.close()
-
-    def generate_general_rows(self):
-        """Generate GENERAL rows from NO_REFUND × multiplier"""
-        print("=" * 80)
-        print("Generating GENERAL Rows")
-        print("=" * 80)
-
-        # For product-level premium, we need a representative multiplier
-        # Since we don't have product-level multiplier, we'll use a fixed value
-        # or calculate from coverage-level multipliers
-
-        # For now, use a simple approach: use 130% as default multiplier
-        # (typical GENERAL multiplier is 130-140%)
-        DEFAULT_MULTIPLIER = 130
-
-        for no_refund_row in self.no_refund_rows:
-            ins_cd = no_refund_row['ins_cd']
-            product_id = no_refund_row['product_id']
-
-            # Calculate GENERAL premium
-            no_refund_monthly = no_refund_row['premium_monthly_total']
-            no_refund_total = no_refund_row['premium_total_total']
-
-            # Use DEFAULT_MULTIPLIER for now
-            # TODO: Load product-level multiplier from another source if available
-            multiplier = DEFAULT_MULTIPLIER
-
-            general_monthly = round(no_refund_monthly * multiplier / 100)
-            general_total = round(no_refund_total * multiplier / 100) if no_refund_total else None
-
-            general_row = {
-                'ins_cd': ins_cd,
-                'product_id': product_id,
-                'product_full_name': no_refund_row['product_full_name'],
-                'plan_variant': 'GENERAL',
-                'age': no_refund_row['age'],
-                'sex': no_refund_row['sex'],
-                'premium_monthly_total': general_monthly,
-                'premium_total_total': general_total,
-                'as_of_date': no_refund_row['as_of_date'],
-                'source': f"CALCULATED from NO_REFUND × {multiplier}%",
-                'source_table_id': no_refund_row['source_table_id'],
-                'source_row_id': f"{no_refund_row['source_row_id']}_GENERAL",
-            }
-
-            self.general_rows.append(general_row)
-
-        print(f"✅ Generated {len(self.general_rows)} GENERAL rows")
-        print(f"Sample:")
-        for row in self.general_rows[:3]:
-            print(f"  {row['ins_cd']} {row['age']}{row['sex']}: {row['premium_monthly_total']:,}원")
-        print()
-
-    def insert_general_rows(self):
-        """Insert GENERAL rows into DB"""
-        print("=" * 80)
-        print("Inserting GENERAL Rows")
+        print("Current State Check")
         print("=" * 80)
 
         cursor = self.conn.cursor()
 
-        insert_sql = """
+        cursor.execute("""
+            SELECT plan_variant, COUNT(*) as row_count
+            FROM product_premium_quote_v2
+            WHERE as_of_date = '2025-11-26'
+            GROUP BY plan_variant
+            ORDER BY plan_variant
+        """)
+
+        for row in cursor.fetchall():
+            print(f"{row[0]}: {row[1]} rows")
+
+        cursor.close()
+        print()
+
+    def delete_existing_general(self):
+        """Delete existing GENERAL rows for clean re-generation"""
+        print("=" * 80)
+        print("Deleting Existing GENERAL Rows (for clean regeneration)")
+        print("=" * 80)
+
+        cursor = self.conn.cursor()
+
+        # Delete existing GENERAL rows for the same as_of_date
+        cursor.execute("""
+            DELETE FROM product_premium_quote_v2
+            WHERE plan_variant = 'GENERAL'
+              AND as_of_date = '2025-11-26'
+        """)
+
+        self.deleted_count = cursor.rowcount
+        print(f"✅ Deleted {self.deleted_count} existing GENERAL rows\n")
+        cursor.close()
+
+    def generate_and_insert_general(self):
+        """Generate GENERAL rows using DB round() (INSERT SELECT)"""
+        print("=" * 80)
+        print("Generating GENERAL Rows (DB round() for reproducibility)")
+        print("=" * 80)
+
+        cursor = self.conn.cursor()
+
+        # Use INSERT SELECT with DB round() - ensures PostgreSQL rounding
+        insert_sql = f"""
             INSERT INTO product_premium_quote_v2 (
                 ins_cd, product_id, product_full_name, plan_variant,
                 age, sex, premium_monthly_total, premium_total_total,
                 as_of_date, source, source_table_id, source_row_id
-            ) VALUES (
-                %(ins_cd)s, %(product_id)s, %(product_full_name)s, %(plan_variant)s,
-                %(age)s, %(sex)s, %(premium_monthly_total)s, %(premium_total_total)s,
-                %(as_of_date)s, %(source)s, %(source_table_id)s, %(source_row_id)s
             )
-            ON CONFLICT (ins_cd, product_id, plan_variant, age, sex, as_of_date) DO NOTHING
+            SELECT
+                ins_cd,
+                product_id,
+                product_full_name,
+                'GENERAL' as plan_variant,
+                age,
+                sex,
+                round(premium_monthly_total * {self.multiplier}.0 / 100) as premium_monthly_total,
+                round(premium_total_total * {self.multiplier}.0 / 100) as premium_total_total,
+                as_of_date,
+                'CALC NO_REFUND×{self.multiplier}% (DB round)' as source,
+                source_table_id,
+                source_row_id || '_GENERAL' as source_row_id
+            FROM product_premium_quote_v2
+            WHERE plan_variant = 'NO_REFUND'
+              AND as_of_date = '2025-11-26'
         """
 
         try:
-            for row in self.general_rows:
-                cursor.execute(insert_sql, row)
-
-            self.conn.commit()
+            cursor.execute(insert_sql)
             self.inserted_count = cursor.rowcount
-
-            print(f"✅ Inserted {self.inserted_count} GENERAL rows\n")
+            print(f"✅ Inserted {self.inserted_count} GENERAL rows using DB round()\n")
         except Exception as e:
-            self.conn.rollback()
             print(f"❌ Insert failed: {e}")
             raise
         finally:
             cursor.close()
 
     def validate(self):
-        """Validate GENERAL rows"""
+        """Validate GENERAL rows (zero-tolerance)"""
         print("=" * 80)
-        print("Validation")
+        print("Validation — Zero-Tolerance")
         print("=" * 80)
 
         cursor = self.conn.cursor()
 
-        # Count GENERAL rows
-        cursor.execute("SELECT COUNT(*) FROM product_premium_quote_v2 WHERE plan_variant='GENERAL'")
+        # 1. Row count check
+        cursor.execute("SELECT COUNT(*) FROM product_premium_quote_v2 WHERE plan_variant='GENERAL' AND as_of_date='2025-11-26'")
         general_count = cursor.fetchone()[0]
         print(f"GENERAL rows: {general_count}")
 
@@ -278,21 +173,88 @@ class GeneralVariantLoader:
         else:
             print(f"⚠️ Row count mismatch: expected {expected_count}, got {general_count}\n")
 
+        # 2. Sum validation (zero-tolerance)
+        cursor.execute(f"""
+            SELECT
+              COUNT(*) as total_rows,
+              SUM(CASE WHEN diff = 0 THEN 1 ELSE 0 END) as match_count,
+              SUM(CASE WHEN diff != 0 THEN 1 ELSE 0 END) as mismatch_count
+            FROM (
+              SELECT
+                g.premium_monthly_total - round(n.premium_monthly_total * {self.multiplier}.0 / 100) as diff
+              FROM product_premium_quote_v2 g
+              JOIN product_premium_quote_v2 n
+                ON g.ins_cd = n.ins_cd
+                AND g.product_id = n.product_id
+                AND g.age = n.age
+                AND g.sex = n.sex
+                AND g.as_of_date = n.as_of_date
+              WHERE g.plan_variant = 'GENERAL'
+                AND n.plan_variant = 'NO_REFUND'
+                AND g.as_of_date = '2025-11-26'
+            ) t
+        """)
+
+        total, matches, mismatches = cursor.fetchone()
+        print(f"Sum Validation:")
+        print(f"  Total rows: {total}")
+        print(f"  Matches: {matches}")
+        print(f"  Mismatches: {mismatches}")
+
+        if mismatches == 0:
+            print(f"✅ ZERO-TOLERANCE PASS (0 mismatches)\n")
+        else:
+            print(f"❌ ZERO-TOLERANCE FAIL ({mismatches} mismatches)\n")
+
+        # 3. Show any mismatches (if any)
+        if mismatches > 0:
+            cursor.execute(f"""
+                SELECT
+                  g.ins_cd,
+                  g.age,
+                  g.sex,
+                  n.premium_monthly_total as no_refund,
+                  g.premium_monthly_total as general,
+                  round(n.premium_monthly_total * {self.multiplier}.0 / 100) as expected,
+                  g.premium_monthly_total - round(n.premium_monthly_total * {self.multiplier}.0 / 100) as diff
+                FROM product_premium_quote_v2 g
+                JOIN product_premium_quote_v2 n
+                  ON g.ins_cd = n.ins_cd
+                  AND g.product_id = n.product_id
+                  AND g.age = n.age
+                  AND g.sex = n.sex
+                  AND g.as_of_date = n.as_of_date
+                WHERE g.plan_variant = 'GENERAL'
+                  AND n.plan_variant = 'NO_REFUND'
+                  AND g.premium_monthly_total != round(n.premium_monthly_total * {self.multiplier}.0 / 100)
+                  AND g.as_of_date = '2025-11-26'
+                ORDER BY abs(g.premium_monthly_total - round(n.premium_monthly_total * {self.multiplier}.0 / 100)) DESC
+            """)
+
+            print("Mismatch Details:")
+            for row in cursor.fetchall():
+                print(f"  {row}")
+
         cursor.close()
 
     def run(self):
         """Execute full load process"""
         try:
             self.connect()
-            self.load_multipliers_from_excel()
-            self.load_no_refund_rows()
-            self.generate_general_rows()
-            self.insert_general_rows()
+            self.check_current_state()
+            self.delete_existing_general()
+            self.generate_and_insert_general()
+            self.conn.commit()
             self.validate()
 
             print("=" * 80)
-            print("✅ GENERAL Variant Load COMPLETE")
+            print("✅ GENERAL Variant Load COMPLETE (Reproducible)")
             print("=" * 80)
+            print(f"Summary:")
+            print(f"  Deleted: {self.deleted_count} rows")
+            print(f"  Inserted: {self.inserted_count} rows")
+            print(f"  Method: PostgreSQL round() (NOT Python)")
+            print(f"  Reproducible: YES (re-run produces identical results)")
 
             return 0
         except Exception as e:

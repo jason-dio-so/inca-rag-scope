@@ -310,3 +310,136 @@ N01    | 50  | M   |   172,300 | 223,990 |     130.00
 **Status**: ✅ **GENERAL Variant Load COMPLETE (Product-Level)**
 **Evidence Quality**: ZERO-TOLERANCE (0 mismatches)
 **Reproducibility**: 100% (formula + script committed)
+
+---
+
+## 13. FIXES APPLIED (2026-01-17)
+
+### 13.1 Port Check Fix — NAT Clarification
+
+**Issue**: DB ID CHECK used `inet_server_port()` which returns container internal port (5432), causing confusion with SSOT policy requiring host port 5433.
+
+**Root Cause**: Docker port mapping (NAT) means:
+- Container listens on port 5432 (internal)
+- Host maps to port 5433 (external)
+- `inet_server_port()` returns container port, not host port
+
+**Resolution**:
+1. **Policy Updated** (`docs/policy/DB_SSOT_LOCK.md`):
+   - Added NAT warning: ⚠️ DO NOT validate port using `inet_server_port()`
+   - Clarified two-stage validation:
+     - Stage 1: Database name check (SQL)
+     - Stage 2: Host port check (parse `SSOT_DB_URL`)
+
+2. **Runtime Guard Updated** (`apps/api/server.py`):
+   ```python
+   # OLD (incorrect):
+   if db_name != 'inca_ssot' or db_port != 5433:  # db_port from inet_server_port()
+
+   # NEW (correct):
+   parsed_url = urlparse(DB_URL)
+   expected_port = parsed_url.port or 5432
+
+   if db_name != 'inca_ssot':  # Check DB name
+       raise RuntimeError(...)
+
+   if expected_port != 5433:  # Check host port from URL
+       raise RuntimeError(...)
+   ```
+
+3. **Loader Updated** (`tools/premium/load_general_variant.py`):
+   - Uses same URL parsing approach
+   - Logs container port for information only
+   - Validates DB name + host port only
+
+**Result**: Port check now correctly validates SSOT policy without NAT confusion.
+
+---
+
+### 13.2 Rounding Reproducibility Fix — Eliminate Manual Updates
+
+**Issue**: Python `round()` vs PostgreSQL `round()` produced 1-won differences in 2 rows, requiring manual UPDATE to fix.
+
+**Root Cause**:
+- Python `round()` uses "round half to even" (Banker's rounding)
+- PostgreSQL `round()` uses "round half up" (traditional rounding)
+- For values like `159325 × 1.3 = 207122.5`:
+  - Python: `round(207122.5) = 207122` (even)
+  - PostgreSQL: `round(207122.5) = 207123` (up)
+
+**Failed Rows** (original load):
+```
+ins_cd | age | sex | no_refund | python_result | pg_result | diff
+-------+-----+-----+-----------+---------------+-----------+------
+N03    | 40  | M   |    159325 |        207122 |    207123 |   -1
+N08    | 30  | M   |    132685 |        172490 |    172491 |   -1
+```
+
+**Resolution**:
+1. **Rewrite Loader** to use PostgreSQL `round()` in SQL:
+   ```python
+   # OLD (Python rounding - NOT reproducible):
+   general_monthly = round(no_refund_monthly * multiplier / 100)
+
+   # NEW (PostgreSQL rounding - 100% reproducible):
+   insert_sql = """
+       INSERT INTO product_premium_quote_v2 (...)
+       SELECT
+           ...,
+           round(premium_monthly_total * 130.0 / 100) as premium_monthly_total,
+           ...
+       FROM product_premium_quote_v2
+       WHERE plan_variant = 'NO_REFUND'
+   """
+   ```
+
+2. **Idempotent Strategy**:
+   - Delete existing GENERAL rows for `as_of_date`
+   - Re-insert using DB `round()` in single transaction
+   - Validation shows 0 mismatches
+
+3. **Manual UPDATE Eliminated**:
+   - No longer needed
+   - Script alone produces correct results
+   - Re-running produces identical results
+
+**Verification** (post-fix):
+```
+Run 1:
+  Deleted: 48 rows
+  Inserted: 48 rows
+  Mismatches: 0 ✅
+
+Run 2:
+  Deleted: 48 rows
+  Inserted: 48 rows
+  Mismatches: 0 ✅
+```
+
+**Result**:
+- ✅ Zero-tolerance achieved (0/48 mismatches)
+- ✅ Fully reproducible (no manual steps)
+- ✅ Idempotent (re-run → identical results)
+
+---
+
+## 14. Updated Completion Checklist
+
+- [x] DB ID CHECK performed (inca_ssot verified)
+- [x] **Port check uses host port from URL (not inet_server_port)**
+- [x] 48 GENERAL rows inserted into product_premium_quote_v2
+- [x] Row count validation PASS (48 rows)
+- [x] Sum validation PASS (0 mismatches)
+- [x] **Rounding uses PostgreSQL round() (no Python rounding)**
+- [x] **No manual UPDATE required**
+- [x] **Idempotent: re-run produces identical results**
+- [x] Summary statistics verified (avg multiplier = 130%)
+- [x] Audit evidence documented
+- [x] Script committed (tools/premium/load_general_variant.py)
+- [x] **Policy updated (DB_SSOT_LOCK.md with NAT clarification)**
+
+---
+
+**Final Status**: ✅ **GENERAL Variant Load COMPLETE + REPRODUCIBLE**
+**Evidence Quality**: ZERO-TOLERANCE (0 mismatches)
+**Reproducibility**: 100% (DB rounding, no manual updates, idempotent)
