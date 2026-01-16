@@ -125,15 +125,42 @@ def apply_gates(slot_key: str, chunk_text: str, excerpt: str, ctx: GateContext) 
     else:
         # Extract core tokens from coverage_name (2+ chars, exclude parentheses content)
         base_name = re.sub(r'\([^)]*\)', '', ctx.coverage_name)  # Remove (유사암제외) etc
+        # Strip Roman numerals (Ⅰ, Ⅱ, Ⅲ, etc)
+        base_name = re.sub(r'[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]', '', base_name)
+
+        # Strip generic suffixes from the end of base_name before tokenization
+        generic_suffixes = ['담보', '보장', '특약', '특별약관']
+        for suffix in generic_suffixes:
+            if base_name.endswith(suffix):
+                base_name = base_name[:-len(suffix)]
+                break
+
         core_tokens = [t for t in re.findall(r'[가-힣]{2,}', base_name) if len(t) >= 2]
 
-        # Require at least 2 tokens to match (or all if less than 2)
-        required_count = min(2, len(core_tokens))
-        matched_count = sum(1 for token in core_tokens if token in chunk_text)
+        # If no tokens remain, skip this gate (too generic to validate)
+        if not core_tokens:
+            pass  # Skip validation
+        elif len(core_tokens) == 1 and len(core_tokens[0]) >= 6:
+            # Single long compound token (e.g., "일반암진단비"): require substring match
+            # Check if any 4+ char substring is present
+            token = core_tokens[0]
+            found_match = False
+            for i in range(len(token) - 3):
+                substr = token[i:i+4]
+                if substr in chunk_text:
+                    found_match = True
+                    break
+            if not found_match:
+                reasons.append(f"coverage_name_lock_failed:no_4char_substr_of_{token}")
+                return False, reasons
+        else:
+            # Multiple tokens or single short token: require at least 1 to match
+            required_count = 1  # Relaxed from min(2, len(core_tokens))
+            matched_count = sum(1 for token in core_tokens if token in chunk_text)
 
-        if matched_count < required_count:
-            reasons.append(f"coverage_name_lock_failed:req_{required_count}_matched_{matched_count}")
-            return False, reasons
+            if matched_count < required_count:
+                reasons.append(f"coverage_name_lock_failed:req_{required_count}_matched_{matched_count}")
+                return False, reasons
 
     # GATE 6: Slot-specific keywords
     required_terms = ctx.get_required_terms(slot_key)
@@ -200,8 +227,8 @@ class DBOnlyCoveragePipeline:
         return anchors
 
     def generate_chunks(self) -> Dict[str, int]:
-        """Generate coverage_chunk from PDF sources"""
-        logger.info(f"📄 Generating chunks for {self.coverage_code}...")
+        """Generate coverage_chunk from document_page_ssot (NO PDF re-parsing)"""
+        logger.info(f"📄 Generating chunks for {self.coverage_code} from document_page_ssot...")
         profile = get_profile(self.coverage_code)
 
         total_created = 0
@@ -209,96 +236,69 @@ class DBOnlyCoveragePipeline:
 
         for ins_cd in self.ins_cds:
             logger.info(f"Processing {ins_cd}...")
-            insurer_dir = INSURER_DIR_MAP.get(ins_cd)
-            if not insurer_dir:
-                logger.warning(f"  ⚠️  No directory mapping for {ins_cd}, skipping")
-                continue
 
             # Get anchors and coverage name for filtering
             coverage_name = self.get_coverage_name(ins_cd)
             anchors = self.get_anchor_keywords(ins_cd, profile)
-            logger.info(f"  Anchors: {anchors[:3]}...")  # First 3 for brevity
+            logger.info(f"  Coverage name: {coverage_name}")
+            logger.info(f"  Anchors: {anchors[:5]}...")  # First 5 for visibility
 
-            ins_stats = {"pages_extracted": 0, "chunks_created": 0}
+            ins_stats = {"paragraphs_scanned": 0, "chunks_created": 0}
 
-            # Process each doc_type
-            for doc_key, doc_config in PDF_SOURCE_REGISTRY.items():
-                doc_type = doc_config["doc_type"]
-                insurer_name_ko = {
-                    "meritz": "메리츠", "hanwha": "한화", "db": "DB", "heungkuk": "흥국",
-                    "samsung": "삼성", "hyundai": "현대", "kb": "KB", "lotte": "롯데"
-                }.get(insurer_dir, insurer_dir.title())
+            # Fetch all paragraphs for this insurer from document_page_ssot
+            self.cur.execute("""
+                SELECT id, doc_type, source_pdf, page_start, page_end,
+                       section_title, raw_text, content_hash
+                FROM document_page_ssot
+                WHERE ins_cd = %s
+                ORDER BY source_pdf, page_start
+            """, (ins_cd,))
 
-                # Find PDF file
-                pdf_filename = f"{insurer_name_ko}{doc_config['suffix']}"
-                pdf_path = PROJECT_ROOT / "data" / "sources" / "insurers" / insurer_dir / doc_key / pdf_filename
+            all_paragraphs = self.cur.fetchall()
+            logger.info(f"  Fetched {len(all_paragraphs)} paragraphs from document_page_ssot")
 
-                # Try alternative suffix if not found
-                if not pdf_path.exists() and "alt_suffix" in doc_config:
-                    pdf_filename = f"{insurer_name_ko}{doc_config['alt_suffix']}"
-                    pdf_path = PROJECT_ROOT / "data" / "sources" / "insurers" / insurer_dir / doc_key / pdf_filename
+            for para in all_paragraphs:
+                ins_stats["paragraphs_scanned"] += 1
 
-                if not pdf_path.exists():
-                    logger.info(f"  ⏭️  {doc_type} PDF not found: {pdf_path.name}")
+                raw_text = para['raw_text']
+                if not raw_text or len(raw_text) < 50:
                     continue
 
-                logger.info(f"  📖 Processing {doc_type}: {pdf_path.name}")
-
-                # Extract text from PDF
-                try:
-                    with pdfplumber.open(pdf_path) as pdf:
-                        total_pages = len(pdf.pages)
-                        logger.info(f"    Total pages: {total_pages}")
-
-                        for page_num, page in enumerate(pdf.pages, start=1):
-                            # Progress logging every 100 pages
-                            if page_num % 100 == 0:
-                                logger.info(f"    Progress: {page_num}/{total_pages} pages, {ins_stats['chunks_created']} chunks created")
-                                self.conn.commit()  # Batch commit every 100 pages
-
-                            text = page.extract_text()
-                            if not text or len(text) < 50:
-                                continue
-
-                            ins_stats["pages_extracted"] += 1
-
-                            # Filter: check if page contains any anchor
-                            if not any(anchor in text for anchor in anchors):
-                                continue
-
-                            # Create chunk
-                            excerpt = text[:500]  # First 500 chars as excerpt
-                            content_hash = hashlib.md5(text.encode('utf-8')).hexdigest()
-
-                            # Normalize doc_type before INSERT
-                            normalized_doc_type = doc_type
-                            if doc_type in ["상품요약서", "쉬운요약서"]:
-                                normalized_doc_type = "요약서"
-
-                            # UPSERT chunk
-                            self.cur.execute("""
-                                INSERT INTO coverage_chunk
-                                (ins_cd, coverage_code, as_of_date, doc_type, source_pdf,
-                                 page_start, page_end, excerpt, chunk_text, content_hash)
-                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                                ON CONFLICT (ins_cd, coverage_code, as_of_date, doc_type, source_pdf, page_start, page_end, content_hash)
-                                DO NOTHING
-                            """, (ins_cd, self.coverage_code, self.as_of_date, normalized_doc_type, pdf_filename,
-                                  page_num, page_num, excerpt, text, content_hash))
-
-                            if self.cur.rowcount > 0:
-                                ins_stats["chunks_created"] += 1
-
-                        logger.info(f"    Final: {total_pages}/{total_pages} pages, {ins_stats['chunks_created']} chunks created")
-
-                except Exception as e:
-                    logger.error(f"  ❌ Error processing {pdf_path.name}: {e}")
+                # Filter: check if paragraph contains any anchor
+                if not any(anchor in raw_text for anchor in anchors):
                     continue
+
+                # Create chunk
+                excerpt = raw_text[:500]  # First 500 chars as excerpt
+                doc_type = para['doc_type']
+                source_pdf = para['source_pdf']
+                page_start = para['page_start']
+                page_end = para['page_end']
+                content_hash = para['content_hash']  # Use existing SHA256 hash from SSOT
+
+                # UPSERT chunk (use content_hash for deduplication)
+                self.cur.execute("""
+                    INSERT INTO coverage_chunk
+                    (ins_cd, coverage_code, as_of_date, doc_type, source_pdf,
+                     page_start, page_end, excerpt, chunk_text, content_hash)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (ins_cd, coverage_code, as_of_date, doc_type, source_pdf, page_start, page_end, content_hash)
+                    DO NOTHING
+                """, (ins_cd, self.coverage_code, self.as_of_date, doc_type, source_pdf,
+                      page_start, page_end, excerpt, raw_text, content_hash))
+
+                if self.cur.rowcount > 0:
+                    ins_stats["chunks_created"] += 1
+
+                # Progress logging every 1000 paragraphs
+                if ins_stats["paragraphs_scanned"] % 1000 == 0:
+                    logger.info(f"    Progress: {ins_stats['paragraphs_scanned']}/{len(all_paragraphs)} paragraphs, {ins_stats['chunks_created']} chunks created")
+                    self.conn.commit()  # Batch commit
 
             self.conn.commit()
             total_created += ins_stats["chunks_created"]
             stats[ins_cd] = ins_stats
-            logger.info(f"  ✅ {ins_cd}: {ins_stats['chunks_created']} chunks from {ins_stats['pages_extracted']} pages")
+            logger.info(f"  ✅ {ins_cd}: {ins_stats['chunks_created']} chunks from {ins_stats['paragraphs_scanned']} paragraphs")
 
         logger.info(f"✅ Chunk generation complete: {total_created} total chunks")
         return stats
