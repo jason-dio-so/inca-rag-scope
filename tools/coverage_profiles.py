@@ -55,26 +55,52 @@ A5200_PROFILE = {
     }
 }
 
-# A4104_1: 심장질환진단비
-A4104_1_PROFILE = {
-    "profile_id": "A4104_1_PROFILE_V1",
-    "coverage_code": "A4104_1",
-    "canonical_name": "심장질환진단비",
+# A4104_1A: 특정심장질환진단비 (급성심근경색, 관상동맥질환 등)
+A4104_1A_PROFILE = {
+    "profile_id": "A4104_1A_PROFILE_V1",
+    "coverage_code": "A4104_1A",
+    "canonical_name": "특정심장질환진단비",
     "gate_version": "GATE_SSOT_V2_CONTEXT_GUARD",
 
-    "anchor_keywords": ["심장", "심장질환", "급성심근경색", "심근경색", "심장질환진단"],
+    "anchor_keywords": ["심장질환", "급성심근경색", "심근경색", "관상동맥", "허혈성", "심혈관"],
 
     "required_terms_by_slot": {
         "waiting_period": ["면책", "보장개시", "책임개시", "90일", r"\d+일", "감액", "지급률", "진단확정"],
         "exclusions": ["제외", "보장하지", "지급하지", "보상하지", "면책", r"보험금을\s*지급하지"],
-        "subtype_coverage_map": ["급성심근경색", "심근경색", "심장질환", "허혈", "관상동맥", "정의", "범위"]
+        "subtype_coverage_map": ["급성심근경색", "심근경색", "심장질환", "허혈", "관상동맥", "심혈관", "정의", "범위"]
     },
 
     "hard_negative_terms_global": ["통원일당", "입원일당", "치료일당", "일당", "상급종합병원", r"연간\s*\d+\s*회한", r"\d+\s*회\s*한", "100세만기", "90세만기"],
 
     "section_negative_terms_global": ["납입면제", r"보험료\s*납입면제", "보장보험료", r"차회\s*이후", r"면제\s*사유", r"납입을\s*면제"],
 
-    "diagnosis_signal_terms_global": ["심장질환진단비", "진단비", "진단확정", r"진단\s*확정", "지급사유", "보험금", "보험가입금액", "지급합니다", "지급함"],
+    "diagnosis_signal_terms_global": ["심장질환", "진단비", "진단확정", r"진단\s*확정", "지급사유", "보험금", "보험가입금액", "지급합니다", "지급함"],
+
+    "slot_specific_negatives": {
+        "subtype_coverage_map": ["납입면제", r"면제\s*사유", "보장보험료"]
+    }
+}
+
+# A4104_1B: 부정맥진단비 (I49 부정맥)
+A4104_1B_PROFILE = {
+    "profile_id": "A4104_1B_PROFILE_V1",
+    "coverage_code": "A4104_1B",
+    "canonical_name": "부정맥진단비",
+    "gate_version": "GATE_SSOT_V2_CONTEXT_GUARD",
+
+    "anchor_keywords": ["부정맥", "I49", "심장리듬", "빈맥", "서맥", "심방세동"],
+
+    "required_terms_by_slot": {
+        "waiting_period": ["면책", "보장개시", "책임개시", "90일", r"\d+일", "감액", "지급률", "진단확정"],
+        "exclusions": ["제외", "보장하지", "지급하지", "보상하지", "면책", r"보험금을\s*지급하지"],
+        "subtype_coverage_map": ["부정맥", "I49", "심방세동", "심실세동", "빈맥", "서맥", "정의", "범위"]
+    },
+
+    "hard_negative_terms_global": ["통원일당", "입원일당", "치료일당", "일당", "상급종합병원", r"연간\s*\d+\s*회한", r"\d+\s*회\s*한", "100세만기", "90세만기"],
+
+    "section_negative_terms_global": ["납입면제", r"보험료\s*납입면제", "보장보험료", r"차회\s*이후", r"면제\s*사유", r"납입을\s*면제"],
+
+    "diagnosis_signal_terms_global": ["부정맥", "진단비", "진단확정", r"진단\s*확정", "지급사유", "보험금", "보험가입금액", "지급합니다", "지급함"],
 
     "slot_specific_negatives": {
         "subtype_coverage_map": ["납입면제", r"면제\s*사유", "보장보험료"]
@@ -110,7 +136,8 @@ A4102_PROFILE = {
 COVERAGE_PROFILES = {
     "A4210": A4210_PROFILE,
     "A5200": A5200_PROFILE,
-    "A4104_1": A4104_1_PROFILE,
+    "A4104_1A": A4104_1A_PROFILE,
+    "A4104_1B": A4104_1B_PROFILE,
     "A4102": A4102_PROFILE
 }
 
