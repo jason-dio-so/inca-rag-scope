@@ -1,0 +1,63 @@
+{
+  "meta": {
+    "response_type": "comparison",
+    "confidence_level": "document-based",
+    "premium_notice": true,
+    "generated_at": "2025-12-28T10:00:00+09:00"
+  },
+  "query_summary": {
+    "original_query": "삼성생명 건강보험 보험료 얼마인가요?",
+    "interpreted_intent": "보험료 비교",
+    "target_insurers": ["삼성생명"],
+    "target_products": [
+      {
+        "insurer": "삼성생명",
+        "product_name": "삼성생명 건강보험"
+      }
+    ]
+  },
+  "comparison": {
+    "dimensions": [
+      {
+        "key": "monthly_premium",
+        "label": "월 보험료 (참고)",
+        "type": "amount"
+      },
+      {
+        "key": "premium_conditions",
+        "label": "보험료 산출 조건",
+        "type": "text"
+      }
+    ],
+    "products": [
+      {
+        "insurer": "삼성생명",
+        "product_name": "삼성생명 건강보험",
+        "rows": {
+          "monthly_premium": {
+            "value": "약 50,000원 (예시)",
+            "evidence": "가입설계서 p.1 (특정 조건 기준)"
+          },
+          "premium_conditions": {
+            "value": "30세 남성, 표준체, 20년 납입 기준",
+            "evidence": "가입설계서 p.1"
+          }
+        }
+      }
+    ]
+  },
+  "notes": {
+    "summary": "보험료는 개인별 조건에 따라 크게 달라집니다.",
+    "details": [
+      "표시된 보험료는 특정 조건 (30세 남성, 표준체, 20년 납입) 기준 예시입니다.",
+      "실제 보험료는 나이, 성별, 건강상태, 납입기간, 특약 구성 등에 따라 달라집니다.",
+      "정확한 보험료는 보험사 또는 설계사를 통해 직접 확인하시기 바랍니다."
+    ]
+  },
+  "limitations": [
+    "⚠️ 본 시스템은 개인별 보험료 계산 기능을 제공하지 않습니다.",
+    "⚠️ 표시된 보험료는 문서상 예시이며, 실제 가입 보험료와 다를 수 있습니다.",
+    "본 비교는 약관 및 가입설계서에 기반한 정보 제공입니다.",
+    "상품 추천이나 가입 판단을 대신하지 않습니다."
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "meta": {
+    "query_id": "550e8400-e29b-41d4-a716-446655440004",
+    "timestamp": "2025-12-28T10:00:00Z",
+    "intent": "COVERAGE_AVAILABILITY",
+    "compiler_version": "v1.0.0"
+  },
+  "query_summary": {
+    "targets": [
+      {
+        "insurer": "SAMSUNG",
+        "product_name": "삼성화재 무배당 New 원더풀 암보험",
+        "source": "user_specified"
+      },
+      {
+        "insurer": "HANWHA",
+        "product_name": "한화생명 무배당 암보험",
+        "source": "user_specified"
+      }
+    ],
+    "coverage_scope": {
+      "type": "MULTI_COVERAGE",
+      "count": 2
+    },
+    "premium_notice": false
+  },
+  "comparison": {
+    "type": "OX_TABLE",
+    "columns": ["SAMSUNG", "HANWHA"],
+    "rows": [
+      {
+        "coverage_name": "제자리암 보장",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "O",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.28",
+              "snippet": "제자리암 진단 시 200만원 지급"
+            }
+          },
+          "HANWHA": {
+            "value_text": "O",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.32",
+              "snippet": "제자리암 보장(유사암 포함)"
+            }
+          }
+        }
+      },
+      {
+        "coverage_name": "제자리암 보장 금액",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "200만원",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.28, 가입설계서 p.3",
+              "snippet": "제자리암 진단금 200만원"
+            }
+          },
+          "HANWHA": {
+            "value_text": "150만원",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.32, 가입설계서 p.2",
+              "snippet": "제자리암 진단 시 150만원 지급"
+            }
+          }
+        }
+      },
+      {
+        "coverage_name": "경계성종양 보장",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "O",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.28",
+              "snippet": "경계성종양 진단 시 200만원 지급"
+            }
+          },
+          "HANWHA": {
+            "value_text": "O",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.32",
+              "snippet": "경계성종양 보장(유사암)"
+            }
+          }
+        }
+      },
+      {
+        "coverage_name": "경계성종양 보장 금액",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "200만원",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.28, 가입설계서 p.3",
+              "snippet": "경계성종양 진단금 200만원"
+            }
+          },
+          "HANWHA": {
+            "value_text": "150만원",
+            "evidence": {
+              "status": "found",
+              "source": "약관 p.32, 가입설계서 p.2",
+              "snippet": "경계성종양 진단 시 150만원 지급"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "notes": [
+    {
+      "title": "제자리암 및 경계성종양 보장",
+      "content": "두 상품 모두 제자리암과 경계성종양을 보장합니다.",
+      "evidence_refs": ["약관 p.28", "약관 p.32"]
+    },
+    {
+      "title": "보장 금액",
+      "content": "삼성화재는 각 200만원, 한화생명은 각 150만원 지급합니다.",
+      "evidence_refs": ["가입설계서 p.3", "가입설계서 p.2"]
+    },
+    {
+      "title": "보장 조건",
+      "content": "대기기간 및 감액기간이 적용될 수 있습니다. 약관 전문을 확인하시기 바랍니다.",
+      "evidence_refs": ["약관 전문"]
+    }
+  ],
+  "limitations": [
+    "본 정보는 약관 및 가입설계서에 기반한 사실 확인입니다.",
+    "대기기간, 감액기간, 면책사항 등 세부 조건은 약관을 직접 확인하시기 바랍니다."
+  ]
+}

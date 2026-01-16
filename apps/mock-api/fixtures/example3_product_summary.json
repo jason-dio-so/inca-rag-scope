@@ -1,0 +1,275 @@
+{
+  "meta": {
+    "query_id": "550e8400-e29b-41d4-a716-446655440003",
+    "timestamp": "2025-12-28T10:00:00Z",
+    "intent": "PRODUCT_SUMMARY",
+    "compiler_version": "v1.0.0"
+  },
+  "query_summary": {
+    "targets": [
+      {
+        "insurer": "SAMSUNG",
+        "product_name": "삼성화재 무배당 New 원더풀 암보험",
+        "source": "user_specified"
+      },
+      {
+        "insurer": "HANWHA",
+        "product_name": "한화생명 무배당 암보험",
+        "source": "user_specified"
+      }
+    ],
+    "coverage_scope": {
+      "type": "CANONICAL_SET",
+      "canonical_set_id": "EXAMPLE3_CORE_9",
+      "count": 9
+    },
+    "premium_notice": false
+  },
+  "comparison": {
+    "type": "COVERAGE_TABLE",
+    "columns": ["SAMSUNG", "HANWHA"],
+    "rows": [
+      {
+        "coverage_code": "A4200_1",
+        "coverage_name": "암 진단비(유사암 제외)",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "3,000만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.3, 약관 p.27",
+              "snippet": "암(유사암 제외) 진단 시 3,000만원 지급"
+            }
+          },
+          "HANWHA": {
+            "value_text": "5,000만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.2, 약관 p.31",
+              "snippet": "일반암 진단 시 5,000만원 지급"
+            }
+          }
+        }
+      },
+      {
+        "coverage_code": "A4210",
+        "coverage_name": "유사암 진단비",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "기타피부암 300만원, 갑상선암 600만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.3, 약관 p.28",
+              "snippet": "기타피부암 진단 시 300만원, 갑상선암 진단 시 600만원 지급"
+            }
+          },
+          "HANWHA": {
+            "value_text": "500만원 (유사암 통합)",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.2, 약관 p.32",
+              "snippet": "유사암 진단 시 500만원 지급(기타피부암, 갑상선암 등 통합)"
+            }
+          }
+        }
+      },
+      {
+        "coverage_code": "A5200",
+        "coverage_name": "암 수술비",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "수술 1회당 200만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.4, 약관 p.30",
+              "snippet": "암 수술 시 1회당 200만원 지급"
+            }
+          },
+          "HANWHA": {
+            "value_text": "수술 1회당 150만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.3, 약관 p.35",
+              "snippet": "암 수술비 150만원 지급"
+            }
+          }
+        }
+      },
+      {
+        "coverage_code": "A5100",
+        "coverage_name": "질병 수술비",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "수술 종류별 10만원~500만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.4, 약관 p.45",
+              "snippet": "질병 수술 시 수술 종류에 따라 10만원에서 500만원까지 차등 지급"
+            }
+          },
+          "HANWHA": {
+            "value_text": "수술 종류별 20만원~300만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.3, 약관 p.42",
+              "snippet": "질병 수술비는 수술 종류에 따라 20만원부터 300만원까지 지급"
+            }
+          }
+        }
+      },
+      {
+        "coverage_code": "A6100_1",
+        "coverage_name": "질병 입원일당",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "1일당 5만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.4, 약관 p.48",
+              "snippet": "질병으로 인한 입원 시 1일당 5만원 지급"
+            }
+          },
+          "HANWHA": {
+            "value_text": "1일당 3만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.3, 약관 p.40",
+              "snippet": "질병 입원일당 3만원 지급"
+            }
+          }
+        }
+      },
+      {
+        "coverage_code": "A6300_1",
+        "coverage_name": "암 직접치료 입원일당",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "1일당 10만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.4, 약관 p.32",
+              "snippet": "암 직접치료 목적 입원 시 1일당 10만원 지급"
+            }
+          },
+          "HANWHA": {
+            "value_text": "1일당 7만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.3, 약관 p.36",
+              "snippet": "암 치료 입원 시 하루당 7만원 지급"
+            }
+          }
+        }
+      },
+      {
+        "coverage_code": "A9617_1",
+        "coverage_name": "항암방사선약물치료비",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "회당 10만원 (통원), 일당 20만원 (입원)",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.4, 약관 p.34",
+              "snippet": "항암 방사선 치료 시 통원 1회당 10만원, 입원 1일당 20만원 지급"
+            }
+          },
+          "HANWHA": {
+            "value_text": "회당 8만원 (통원), 일당 15만원 (입원)",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.3, 약관 p.38",
+              "snippet": "항암 방사선 약물치료비: 통원 8만원/회, 입원 15만원/일"
+            }
+          }
+        }
+      },
+      {
+        "coverage_code": "A9640_1",
+        "coverage_name": "항암약물허가치료비",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "1,000만원 (최초 1회)",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.4, 약관 p.35",
+              "snippet": "표적항암약물 치료 시 최초 1회 1,000만원 지급"
+            }
+          },
+          "HANWHA": {
+            "value_text": "800만원 (최초 1회)",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.3, 약관 p.39",
+              "snippet": "항암약물허가치료비 최초 1회 800만원 지급"
+            }
+          }
+        }
+      },
+      {
+        "coverage_code": "A4102",
+        "coverage_name": "뇌출혈 진단비",
+        "values": {
+          "SAMSUNG": {
+            "value_text": "1,000만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.3, 약관 p.40",
+              "snippet": "뇌출혈 진단 시 1,000만원 지급"
+            }
+          },
+          "HANWHA": {
+            "value_text": "1,500만원",
+            "evidence": {
+              "status": "found",
+              "source": "가입설계서 p.2, 약관 p.45",
+              "snippet": "뇌출혈 진단비 1,500만원 지급"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "notes": [
+    {
+      "title": "암 진단비",
+      "content": "삼성화재 3,000만원, 한화생명 5,000만원입니다.",
+      "evidence_refs": ["가입설계서 p.3", "가입설계서 p.2"]
+    },
+    {
+      "title": "유사암 진단비",
+      "content": "삼성화재는 암종별 차등 지급(기타피부암 300만원, 갑상선암 600만원), 한화생명은 통합 500만원 지급합니다.",
+      "evidence_refs": ["약관 p.28", "약관 p.32"]
+    },
+    {
+      "title": "입원일당",
+      "content": "질병 입원일당은 삼성화재 5만원, 한화생명 3만원이며, 암 직접치료 입원일당은 삼성화재 10만원, 한화생명 7만원입니다.",
+      "evidence_refs": ["약관 p.48", "약관 p.40", "약관 p.32", "약관 p.36"]
+    },
+    {
+      "title": "수술비",
+      "content": "암 수술비는 삼성화재 200만원, 한화생명 150만원입니다. 질병 수술비는 두 상품 모두 수술 종류별 차등 지급하며, 범위가 다릅니다.",
+      "evidence_refs": ["약관 p.30", "약관 p.35", "약관 p.45", "약관 p.42"]
+    },
+    {
+      "title": "항암치료비",
+      "content": "항암방사선약물치료비는 삼성화재가 통원 10만원/입원 20만원, 한화생명이 통원 8만원/입원 15만원입니다. 항암약물허가치료비는 삼성화재 1,000만원, 한화생명 800만원입니다.",
+      "evidence_refs": ["약관 p.34", "약관 p.38", "약관 p.35", "약관 p.39"]
+    },
+    {
+      "title": "뇌출혈 진단비",
+      "content": "삼성화재 1,000만원, 한화생명 1,500만원입니다.",
+      "evidence_refs": ["약관 p.40", "약관 p.45"]
+    },
+    {
+      "title": "보장 조건",
+      "content": "대기기간, 감액기간, 면책사항 등 세부 조건은 약관을 직접 확인하시기 바랍니다.",
+      "evidence_refs": ["약관 전문"]
+    }
+  ],
+  "limitations": [
+    "본 비교는 약관 및 가입설계서에 기반한 정보 제공입니다.",
+    "대기기간, 감액기간, 면책사항 등 세부 조건은 약관을 직접 확인하시기 바랍니다.",
+    "개인 조건에 따른 보험료 계산은 포함되지 않습니다.",
+    "보장 내용은 가입 시점 및 특약 구성에 따라 달라질 수 있습니다."
+  ]
+}
