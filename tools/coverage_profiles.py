@@ -36,7 +36,7 @@ A4210_PROFILE = {
     "canonical_name": "유사암진단비",
     "gate_version": "GATE_SSOT_V2_CONTEXT_GUARD",
 
-    "anchor_keywords": ["유사암", "유사암진단", "유사암진단비"],
+    "anchor_keywords": ["유사암", "유사암진단", "유사암진단비", "유사 암", "유사암 진단", "유사암 진단비"],
 
     "required_terms_by_slot": {
         "waiting_period": ["면책", "보장개시", "책임개시", "90일", r"\d+일", "감액", "지급률", "진단확정"],
