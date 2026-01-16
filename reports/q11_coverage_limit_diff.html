@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q11: 암직접입원비 보장한도 차이 비교</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .summary-card {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .summary-card.has-difference {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .summary-card.no-difference {
+            border-left-color: #28a745;
+            background: #f0fff4;
+        }
+
+        .summary-card h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .summary-card p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .difference-item {
+            background: #fff9e6;
+            border-left: 3px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .difference-item strong {
+            color: #d32f2f;
+        }
+
+        .common-item {
+            background: #f0f7ff;
+            border-left: 3px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        th {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .highlight-diff {
+            background: #fff3cd;
+            font-weight: 600;
+            color: #856404;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .meta-info {
+            font-size: 12px;
+            color: #999;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 3px;
+            margin-left: 8px;
+        }
+
+        .badge-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-info {
+            background: #17a2b8;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Q11: 암직접입원비 담보 중 보장한도가 다른 상품 찾기</h1>
+        <div class="subtitle">A6200 (암직접치료입원비) - 7개 보험사 비교 (SSOT 기준, table_id: 22)</div>
+
+        <div id="loading" class="loading">
+            데이터 로딩 중...
+        </div>
+
+        <div id="error" class="error" style="display:none;"></div>
+
+        <div id="content" style="display:none;">
+            <!-- Summary Card -->
+            <div id="summaryCard" class="summary-card">
+                <h2>요약</h2>
+                <p id="summaryText">데이터 분석 중...</p>
+            </div>
+
+            <!-- Difference Section -->
+            <div class="section" id="differenceSection" style="display:none;">
+                <h3>🔴 차이 포인트 (Differences Only)</h3>
+                <div id="differenceContent"></div>
+            </div>
+
+            <!-- Common Section -->
+            <div class="section">
+                <h3>🔵 공통 조건 (Common Rules)</h3>
+                <div id="commonContent"></div>
+            </div>
+
+            <!-- Comparison Table -->
+            <div class="section">
+                <h3>📊 보험사별 비교 테이블</h3>
+                <table id="comparisonTable">
+                    <thead>
+                        <tr>
+                            <th>보험사</th>
+                            <th>상품명</th>
+                            <th>최대 입원일수</th>
+                            <th>요양병원</th>
+                            <th>최소 입원일수</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Meta Info -->
+            <div class="meta-info">
+                <strong>데이터 출처:</strong> document_page_ssot (as_of_date: 2025-11-26)<br>
+                <strong>검증:</strong> FOUND=21/21, contamination=0<br>
+                <strong>API:</strong> /compare_v2?coverage_code=A6200&as_of_date=2025-11-26&ins_cds=N01,N03,N05,N08,N09,N10,N13<br>
+                <strong>생성 시각:</strong> <span id="timestamp"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL
+        const API_BASE = 'http://localhost:8000';
+        const COVERAGE_CODE = 'A6200';
+        const AS_OF_DATE = '2025-11-26';
+        const INS_CDS = 'N01,N03,N05,N08,N09,N10,N13';
+
+        // Insurer coverage name mapping (from coverage_mapping_ssot)
+        const INSURER_COVERAGE_NAMES = {
+            'N01': '암직접치료입원일당(Ⅱ)(요양병원제외,1일이상)',
+            'N03': '암직접치료입원비(요양병원제외)(1-120일)',
+            'N05': '암직접치료입원비(요양병원제외)(1일-180일)',
+            'N08': '암 직접치료 입원일당Ⅱ(1일이상)(요양병원 제외)',
+            'N09': '암직접치료입원일당(1-180일,요양병원제외)담보',
+            'N10': '암직접치료입원일당(요양제외,1일이상180일한도)',
+            'N13': '암직접치료입원일당Ⅱ(요양병원제외)(1일이상180일한도)'
+        };
+
+        // Parse limit days from coverage name or excerpt
+        function parseLimitDays(coverageName, excerpt) {
+            // Priority 1: Coverage name patterns
+            const patterns = [
+                /\(1-(\d+)일\)/,  // (1-120일), (1-180일)
+                /\((\d+)일\)/,    // (180일)
+                /(\d+)일한도/,    // 180일한도
+                /1일이상(\d+)일한도/  // 1일이상180일한도
+            ];
+
+            for (const pattern of patterns) {
+                const match = coverageName.match(pattern);
+                if (match) {
+                    return match[1] + '일';
+                }
+            }
+
+            // Check for "1일이상" without explicit limit
+            if (coverageName.includes('1일이상') && !coverageName.match(/\d+일한도/)) {
+                return '1일이상 (한도 미명시)';
+            }
+
+            return '정보 없음';
+        }
+
+        // Parse nursing hospital rule
+        function parseNursingHospital(coverageName, excerpt) {
+            if (coverageName.includes('요양병원제외') || coverageName.includes('요양제외')) {
+                return '제외';
+            }
+            if (coverageName.includes('요양병원포함') || coverageName.includes('요양포함')) {
+                return '포함';
+            }
+            return '정보 없음';
+        }
+
+        // Parse min admission days
+        function parseMinAdmission(coverageName, excerpt) {
+            const patterns = [
+                /(\d+)일이상/,  // 1일이상, 2일이상, etc.
+            ];
+
+            for (const pattern of patterns) {
+                const match = coverageName.match(pattern);
+                if (match) {
+                    return match[1] + '일 이상';
+                }
+            }
+
+            // Check excerpt for waiting period (면책, 보장개시, etc.)
+            if (excerpt && (excerpt.includes('90일') || excerpt.includes('면책') || excerpt.includes('보장개시'))) {
+                return '1일 이상 (면책기간 있음)';
+            }
+
+            return '정보 없음';
+        }
+
+        // Detect differences
+        function detectDifferences(insurers) {
+            const limitDays = [...new Set(insurers.map(ins => ins.limitDays))];
+            const nursingRules = [...new Set(insurers.map(ins => ins.nursingHospital))];
+            const minAdmissions = [...new Set(insurers.map(ins => ins.minAdmission))];
+
+            return {
+                limitDaysDiff: limitDays.length > 1,
+                nursingRuleDiff: nursingRules.length > 1,
+                minAdmissionDiff: minAdmissions.length > 1,
+                limitDaysValues: limitDays,
+                nursingRulesValues: nursingRules,
+                minAdmissionsValues: minAdmissions
+            };
+        }
+
+        // Fetch and render data
+        async function fetchAndRender() {
+            try {
+                const response = await fetch(`${API_BASE}/compare_v2?coverage_code=${COVERAGE_CODE}&as_of_date=${AS_OF_DATE}&ins_cds=${INS_CDS}`);
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (!data.insurer_rows || data.insurer_rows.length === 0) {
+                    throw new Error('No insurer data found');
+                }
+
+                // Parse insurer data
+                const insurers = data.insurer_rows.map(row => {
+                    const coverageName = INSURER_COVERAGE_NAMES[row.ins_cd] || 'Unknown';
+                    const excerpt = row.slots?.waiting_period?.excerpt || row.slots?.exclusions?.excerpt || '';
+
+                    return {
+                        ins_cd: row.ins_cd,
+                        coverageName: coverageName,
+                        limitDays: parseLimitDays(coverageName, excerpt),
+                        nursingHospital: parseNursingHospital(coverageName, excerpt),
+                        minAdmission: parseMinAdmission(coverageName, excerpt),
+                        hasAllSlots: row.slots?.waiting_period?.status === 'FOUND' &&
+                                    row.slots?.exclusions?.status === 'FOUND' &&
+                                    row.slots?.subtype_coverage_map?.status === 'FOUND'
+                    };
+                });
+
+                // Detect differences
+                const diff = detectDifferences(insurers);
+
+                // Render summary card
+                const summaryCard = document.getElementById('summaryCard');
+                const summaryText = document.getElementById('summaryText');
+
+                if (diff.limitDaysDiff || diff.nursingRuleDiff || diff.minAdmissionDiff) {
+                    summaryCard.classList.add('has-difference');
+                    summaryText.innerHTML = `
+                        <strong>보장한도 차이 있음</strong>
+                        <span class="badge badge-danger">DIFFERENCE FOUND</span><br>
+                        ${insurers.length}개 보험사 중 보장한도 조건이 다릅니다.
+                    `;
+                } else {
+                    summaryCard.classList.add('no-difference');
+                    summaryText.innerHTML = `
+                        <strong>보장한도 차이 없음</strong>
+                        <span class="badge badge-success">UNIFORM</span><br>
+                        ${insurers.length}개 보험사 모두 동일한 보장한도 조건입니다.
+                    `;
+                }
+
+                // Render difference section
+                if (diff.limitDaysDiff || diff.nursingRuleDiff || diff.minAdmissionDiff) {
+                    document.getElementById('differenceSection').style.display = 'block';
+                    const diffContent = document.getElementById('differenceContent');
+                    let diffHTML = '';
+
+                    if (diff.limitDaysDiff) {
+                        diffHTML += `
+                            <div class="difference-item">
+                                <strong>입원일수 한도 차이:</strong><br>
+                                ${diff.limitDaysValues.map(val => {
+                                    const count = insurers.filter(ins => ins.limitDays === val).length;
+                                    const insList = insurers.filter(ins => ins.limitDays === val).map(ins => ins.ins_cd).join(', ');
+                                    return `${val}: ${count}개 보험사 (${insList})`;
+                                }).join('<br>')}
+                            </div>
+                        `;
+                    }
+
+                    if (diff.nursingRuleDiff) {
+                        diffHTML += `
+                            <div class="difference-item">
+                                <strong>요양병원 규칙 차이:</strong><br>
+                                ${diff.nursingRulesValues.map(val => {
+                                    const count = insurers.filter(ins => ins.nursingHospital === val).length;
+                                    return `${val}: ${count}개 보험사`;
+                                }).join('<br>')}
+                            </div>
+                        `;
+                    }
+
+                    if (diff.minAdmissionDiff) {
+                        diffHTML += `
+                            <div class="difference-item">
+                                <strong>최소 입원일수 차이:</strong><br>
+                                ${diff.minAdmissionsValues.map(val => {
+                                    const count = insurers.filter(ins => ins.minAdmission === val).length;
+                                    return `${val}: ${count}개 보험사`;
+                                }).join('<br>')}
+                            </div>
+                        `;
+                    }
+
+                    diffContent.innerHTML = diffHTML;
+                }
+
+                // Render common section
+                const commonContent = document.getElementById('commonContent');
+                let commonHTML = '';
+
+                if (!diff.nursingRuleDiff) {
+                    commonHTML += `
+                        <div class="common-item">
+                            <strong>요양병원 제외 여부:</strong> ${diff.nursingRulesValues[0]}
+                            <span class="badge badge-info">UNIFORM</span>
+                        </div>
+                    `;
+                }
+
+                if (!diff.minAdmissionDiff) {
+                    commonHTML += `
+                        <div class="common-item">
+                            <strong>최소 입원일수:</strong> ${diff.minAdmissionsValues[0]}
+                            <span class="badge badge-info">UNIFORM</span>
+                        </div>
+                    `;
+                }
+
+                if (!diff.limitDaysDiff) {
+                    commonHTML += `
+                        <div class="common-item">
+                            <strong>최대 입원일수:</strong> ${diff.limitDaysValues[0]}
+                            <span class="badge badge-info">UNIFORM</span>
+                        </div>
+                    `;
+                }
+
+                if (commonHTML === '') {
+                    commonHTML = `
+                        <div class="common-item">
+                            모든 조건에서 차이가 있습니다. 위 "차이 포인트" 섹션을 참고하세요.
+                        </div>
+                    `;
+                }
+
+                commonContent.innerHTML = commonHTML;
+
+                // Render comparison table
+                const tableBody = document.getElementById('tableBody');
+                insurers.forEach(ins => {
+                    const row = document.createElement('tr');
+
+                    // Highlight differences
+                    const limitDaysClass = diff.limitDaysDiff ? 'highlight-diff' : '';
+                    const nursingClass = diff.nursingRuleDiff ? 'highlight-diff' : '';
+                    const minAdmissionClass = diff.minAdmissionDiff ? 'highlight-diff' : '';
+
+                    row.innerHTML = `
+                        <td>${ins.ins_cd}</td>
+                        <td>${ins.coverageName}</td>
+                        <td class="${limitDaysClass}">${ins.limitDays}</td>
+                        <td class="${nursingClass}">${ins.nursingHospital}</td>
+                        <td class="${minAdmissionClass}">${ins.minAdmission}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // Update timestamp
+                document.getElementById('timestamp').textContent = new Date().toLocaleString('ko-KR');
+
+                // Show content, hide loading
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('loading').style.display = 'none';
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = `오류 발생: ${error.message}`;
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', fetchAndRender);
+    </script>
+</body>
+</html>
