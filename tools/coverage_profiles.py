@@ -29,7 +29,90 @@ A4210_PROFILE = {
     }
 }
 
-COVERAGE_PROFILES = {"A4210": A4210_PROFILE}
+# A5200: 암수술비(유사암제외)
+A5200_PROFILE = {
+    "profile_id": "A5200_PROFILE_V1",
+    "coverage_code": "A5200",
+    "canonical_name": "암수술비",
+    "gate_version": "GATE_SSOT_V2_CONTEXT_GUARD",
+
+    "anchor_keywords": ["암", "암수술", "수술비", "암수술비"],
+
+    "required_terms_by_slot": {
+        "waiting_period": ["면책", "보장개시", "책임개시", "90일", r"\d+일", "감액", "지급률"],
+        "exclusions": ["제외", "보장하지", "지급하지", "보상하지", "면책", r"보험금을\s*지급하지"],
+        "subtype_coverage_map": ["제자리암", "상피내암", "전암", "경계성", "유사암", "소액암", "기타피부암", "갑상선암", "정의", "범위"]
+    },
+
+    "hard_negative_terms_global": ["통원일당", "입원일당", "치료일당", "일당", "상급종합병원", r"연간\s*\d+\s*회한", r"\d+\s*회\s*한", "100세만기", "90세만기"],
+
+    "section_negative_terms_global": ["납입면제", r"보험료\s*납입면제", "보장보험료", r"차회\s*이후", r"면제\s*사유", r"납입을\s*면제"],
+
+    "diagnosis_signal_terms_global": ["암수술비", "수술비", "수술", "치료", "보험금", "보험가입금액", "지급합니다", "지급함", "지급사유"],
+
+    "slot_specific_negatives": {
+        "subtype_coverage_map": ["납입면제", r"면제\s*사유", "보장보험료"]
+    }
+}
+
+# A4104_1: 심장질환진단비
+A4104_1_PROFILE = {
+    "profile_id": "A4104_1_PROFILE_V1",
+    "coverage_code": "A4104_1",
+    "canonical_name": "심장질환진단비",
+    "gate_version": "GATE_SSOT_V2_CONTEXT_GUARD",
+
+    "anchor_keywords": ["심장", "심장질환", "급성심근경색", "심근경색", "심장질환진단"],
+
+    "required_terms_by_slot": {
+        "waiting_period": ["면책", "보장개시", "책임개시", "90일", r"\d+일", "감액", "지급률", "진단확정"],
+        "exclusions": ["제외", "보장하지", "지급하지", "보상하지", "면책", r"보험금을\s*지급하지"],
+        "subtype_coverage_map": ["급성심근경색", "심근경색", "심장질환", "허혈", "관상동맥", "정의", "범위"]
+    },
+
+    "hard_negative_terms_global": ["통원일당", "입원일당", "치료일당", "일당", "상급종합병원", r"연간\s*\d+\s*회한", r"\d+\s*회\s*한", "100세만기", "90세만기"],
+
+    "section_negative_terms_global": ["납입면제", r"보험료\s*납입면제", "보장보험료", r"차회\s*이후", r"면제\s*사유", r"납입을\s*면제"],
+
+    "diagnosis_signal_terms_global": ["심장질환진단비", "진단비", "진단확정", r"진단\s*확정", "지급사유", "보험금", "보험가입금액", "지급합니다", "지급함"],
+
+    "slot_specific_negatives": {
+        "subtype_coverage_map": ["납입면제", r"면제\s*사유", "보장보험료"]
+    }
+}
+
+# A4102: 뇌출혈진단비
+A4102_PROFILE = {
+    "profile_id": "A4102_PROFILE_V1",
+    "coverage_code": "A4102",
+    "canonical_name": "뇌출혈진단비",
+    "gate_version": "GATE_SSOT_V2_CONTEXT_GUARD",
+
+    "anchor_keywords": ["뇌출혈", "뇌졸중", "뇌혈관", "뇌출혈진단"],
+
+    "required_terms_by_slot": {
+        "waiting_period": ["면책", "보장개시", "책임개시", "90일", r"\d+일", "감액", "지급률", "진단확정"],
+        "exclusions": ["제외", "보장하지", "지급하지", "보상하지", "면책", r"보험금을\s*지급하지"],
+        "subtype_coverage_map": ["뇌출혈", "뇌졸중", "뇌경색", "뇌혈관", "허혈", "정의", "범위"]
+    },
+
+    "hard_negative_terms_global": ["통원일당", "입원일당", "치료일당", "일당", "상급종합병원", r"연간\s*\d+\s*회한", r"\d+\s*회\s*한", "100세만기", "90세만기"],
+
+    "section_negative_terms_global": ["납입면제", r"보험료\s*납입면제", "보장보험료", r"차회\s*이후", r"면제\s*사유", r"납입을\s*면제"],
+
+    "diagnosis_signal_terms_global": ["뇌출혈진단비", "진단비", "진단확정", r"진단\s*확정", "지급사유", "보험금", "보험가입금액", "지급합니다", "지급함"],
+
+    "slot_specific_negatives": {
+        "subtype_coverage_map": ["납입면제", r"면제\s*사유", "보장보험료"]
+    }
+}
+
+COVERAGE_PROFILES = {
+    "A4210": A4210_PROFILE,
+    "A5200": A5200_PROFILE,
+    "A4104_1": A4104_1_PROFILE,
+    "A4102": A4102_PROFILE
+}
 
 def get_profile(coverage_code: str) -> dict:
     return COVERAGE_PROFILES.get(coverage_code)

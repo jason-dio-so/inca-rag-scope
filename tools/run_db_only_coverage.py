@@ -12,6 +12,7 @@ Usage:
 """
 
 import argparse
+import hashlib
 import json
 import logging
 import re
@@ -20,6 +21,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+import pdfplumber
 import psycopg2
 import psycopg2.extras
 
@@ -30,6 +32,25 @@ from tools.coverage_profiles import get_profile
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
+
+# Insurer code to directory mapping
+INSURER_DIR_MAP = {
+    "N01": "meritz",
+    "N02": "hanwha",
+    "N03": "db",
+    "N05": "heungkuk",
+    "N08": "samsung",
+    "N09": "hyundai",
+    "N10": "kb",
+    "N13": "lotte"
+}
+
+# PDF Source Registry (hard-coded for now)
+PDF_SOURCE_REGISTRY = {
+    "약관": {"suffix": "_약관.pdf", "doc_type": "약관"},
+    "사업방법서": {"suffix": "_사업방법서.pdf", "doc_type": "사업방법서", "alt_suffix": "_사업설명서.pdf"},
+    "상품요약서": {"suffix": "_상품요약서.pdf", "doc_type": "상품요약서"}
+}
 
 DB_CONFIG = {
     "host": "localhost",
@@ -94,22 +115,24 @@ def apply_gates(slot_key: str, chunk_text: str, excerpt: str, ctx: GateContext) 
         reasons.append("no_diagnosis_signal")
         return False, reasons
 
-    # GATE 5: Coverage name lock
+    # GATE 5: Coverage name lock (dynamic token extraction)
     normalized_name = re.sub(r'\s+', '', ctx.coverage_name)
     normalized_text = re.sub(r'\s+', '', chunk_text)
-    if normalized_name not in normalized_text:
-        core_tokens = []
-        if "유사암" in ctx.coverage_name:
-            core_tokens.append("유사암")
-        if "진단비" in ctx.coverage_name:
-            core_tokens.append("진단비")
-        if "경계성종양" in ctx.coverage_name:
-            core_tokens.append("경계성종양")
 
+    # First check: exact match (normalized)
+    if normalized_name in normalized_text:
+        pass  # Perfect match, proceed
+    else:
+        # Extract core tokens from coverage_name (2+ chars, exclude parentheses content)
+        base_name = re.sub(r'\([^)]*\)', '', ctx.coverage_name)  # Remove (유사암제외) etc
+        core_tokens = [t for t in re.findall(r'[가-힣]{2,}', base_name) if len(t) >= 2]
+
+        # Require at least 2 tokens to match (or all if less than 2)
         required_count = min(2, len(core_tokens))
         matched_count = sum(1 for token in core_tokens if token in chunk_text)
+
         if matched_count < required_count:
-            reasons.append("coverage_name_lock_failed")
+            reasons.append(f"coverage_name_lock_failed:req_{required_count}_matched_{matched_count}")
             return False, reasons
 
     # GATE 6: Slot-specific keywords
@@ -130,10 +153,11 @@ def apply_gates(slot_key: str, chunk_text: str, excerpt: str, ctx: GateContext) 
 
 
 class DBOnlyCoveragePipeline:
-    def __init__(self, coverage_code: str, as_of_date: str, ins_cds: List[str], skip_chunks: bool = False):
+    def __init__(self, coverage_code: str, as_of_date: str, ins_cds: List[str], stage: str = "all", skip_chunks: bool = False):
         self.coverage_code = coverage_code
         self.as_of_date = as_of_date
         self.ins_cds = ins_cds
+        self.stage = stage
         self.skip_chunks = skip_chunks
         self.conn = None
         self.cur = None
@@ -151,21 +175,133 @@ class DBOnlyCoveragePipeline:
         if self.conn:
             self.conn.close()
 
-    def get_anchor_keywords(self, ins_cd: str) -> List[str]:
-        self.cur.execute("""
-            SELECT anchor_keywords FROM coverage_mapping_ssot
-            WHERE coverage_code = %s AND ins_cd = %s
-        """, (self.coverage_code, ins_cd))
-        row = self.cur.fetchone()
-        return row['anchor_keywords'] if row else []
-
     def get_coverage_name(self, ins_cd: str) -> str:
+        """Get insurer_coverage_name from DB"""
         self.cur.execute("""
             SELECT insurer_coverage_name FROM coverage_mapping_ssot
-            WHERE coverage_code = %s AND ins_cd = %s
-        """, (self.coverage_code, ins_cd))
+            WHERE coverage_code = %s AND ins_cd = %s AND as_of_date = %s
+        """, (self.coverage_code, ins_cd, self.as_of_date))
         row = self.cur.fetchone()
         return row['insurer_coverage_name'] if row else ""
+
+    def get_anchor_keywords(self, ins_cd: str, profile: dict = None) -> List[str]:
+        """Get anchor keywords from profile + insurer_coverage_name"""
+        anchors = []
+
+        # Get profile anchors
+        if profile:
+            anchors.extend(profile.get("anchor_keywords", []))
+
+        # Add insurer_coverage_name as anchor
+        coverage_name = self.get_coverage_name(ins_cd)
+        if coverage_name and coverage_name not in anchors:
+            anchors.append(coverage_name)
+
+        return anchors
+
+    def generate_chunks(self) -> Dict[str, int]:
+        """Generate coverage_chunk from PDF sources"""
+        logger.info(f"📄 Generating chunks for {self.coverage_code}...")
+        profile = get_profile(self.coverage_code)
+
+        total_created = 0
+        stats = {}
+
+        for ins_cd in self.ins_cds:
+            logger.info(f"Processing {ins_cd}...")
+            insurer_dir = INSURER_DIR_MAP.get(ins_cd)
+            if not insurer_dir:
+                logger.warning(f"  ⚠️  No directory mapping for {ins_cd}, skipping")
+                continue
+
+            # Get anchors and coverage name for filtering
+            coverage_name = self.get_coverage_name(ins_cd)
+            anchors = self.get_anchor_keywords(ins_cd, profile)
+            logger.info(f"  Anchors: {anchors[:3]}...")  # First 3 for brevity
+
+            ins_stats = {"pages_extracted": 0, "chunks_created": 0}
+
+            # Process each doc_type
+            for doc_key, doc_config in PDF_SOURCE_REGISTRY.items():
+                doc_type = doc_config["doc_type"]
+                insurer_name_ko = {
+                    "meritz": "메리츠", "hanwha": "한화", "db": "DB", "heungkuk": "흥국",
+                    "samsung": "삼성", "hyundai": "현대", "kb": "KB", "lotte": "롯데"
+                }.get(insurer_dir, insurer_dir.title())
+
+                # Find PDF file
+                pdf_filename = f"{insurer_name_ko}{doc_config['suffix']}"
+                pdf_path = PROJECT_ROOT / "data" / "sources" / "insurers" / insurer_dir / doc_key / pdf_filename
+
+                # Try alternative suffix if not found
+                if not pdf_path.exists() and "alt_suffix" in doc_config:
+                    pdf_filename = f"{insurer_name_ko}{doc_config['alt_suffix']}"
+                    pdf_path = PROJECT_ROOT / "data" / "sources" / "insurers" / insurer_dir / doc_key / pdf_filename
+
+                if not pdf_path.exists():
+                    logger.info(f"  ⏭️  {doc_type} PDF not found: {pdf_path.name}")
+                    continue
+
+                logger.info(f"  📖 Processing {doc_type}: {pdf_path.name}")
+
+                # Extract text from PDF
+                try:
+                    with pdfplumber.open(pdf_path) as pdf:
+                        total_pages = len(pdf.pages)
+                        logger.info(f"    Total pages: {total_pages}")
+
+                        for page_num, page in enumerate(pdf.pages, start=1):
+                            # Progress logging every 100 pages
+                            if page_num % 100 == 0:
+                                logger.info(f"    Progress: {page_num}/{total_pages} pages, {ins_stats['chunks_created']} chunks created")
+                                self.conn.commit()  # Batch commit every 100 pages
+
+                            text = page.extract_text()
+                            if not text or len(text) < 50:
+                                continue
+
+                            ins_stats["pages_extracted"] += 1
+
+                            # Filter: check if page contains any anchor
+                            if not any(anchor in text for anchor in anchors):
+                                continue
+
+                            # Create chunk
+                            excerpt = text[:500]  # First 500 chars as excerpt
+                            content_hash = hashlib.md5(text.encode('utf-8')).hexdigest()
+
+                            # Normalize doc_type before INSERT
+                            normalized_doc_type = doc_type
+                            if doc_type in ["상품요약서", "쉬운요약서"]:
+                                normalized_doc_type = "요약서"
+
+                            # UPSERT chunk
+                            self.cur.execute("""
+                                INSERT INTO coverage_chunk
+                                (ins_cd, coverage_code, as_of_date, doc_type, source_pdf,
+                                 page_start, page_end, excerpt, chunk_text, content_hash)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                ON CONFLICT (ins_cd, coverage_code, as_of_date, doc_type, source_pdf, page_start, page_end, content_hash)
+                                DO NOTHING
+                            """, (ins_cd, self.coverage_code, self.as_of_date, normalized_doc_type, pdf_filename,
+                                  page_num, page_num, excerpt, text, content_hash))
+
+                            if self.cur.rowcount > 0:
+                                ins_stats["chunks_created"] += 1
+
+                        logger.info(f"    Final: {total_pages}/{total_pages} pages, {ins_stats['chunks_created']} chunks created")
+
+                except Exception as e:
+                    logger.error(f"  ❌ Error processing {pdf_path.name}: {e}")
+                    continue
+
+            self.conn.commit()
+            total_created += ins_stats["chunks_created"]
+            stats[ins_cd] = ins_stats
+            logger.info(f"  ✅ {ins_cd}: {ins_stats['chunks_created']} chunks from {ins_stats['pages_extracted']} pages")
+
+        logger.info(f"✅ Chunk generation complete: {total_created} total chunks")
+        return stats
 
     def get_chunk_count(self) -> int:
         self.cur.execute("""
@@ -199,13 +335,13 @@ class DBOnlyCoveragePipeline:
 
         for ins_cd in self.ins_cds:
             logger.info(f"Processing {ins_cd}...")
-            anchors = self.get_anchor_keywords(ins_cd)
             coverage_name = self.get_coverage_name(ins_cd)
-            logger.info(f"  Anchors: {anchors}")
+            anchors = self.get_anchor_keywords(ins_cd, profile)
             logger.info(f"  Coverage name: {coverage_name}")
+            logger.info(f"  Anchors: {anchors}")
 
             self.cur.execute("""
-                SELECT chunk_id, chunk_text, excerpt, page_number
+                SELECT chunk_id, chunk_text, excerpt, page_start, page_end, doc_type, source_pdf
                 FROM coverage_chunk
                 WHERE coverage_code = %s AND as_of_date = %s AND ins_cd = %s
             """, (self.coverage_code, self.as_of_date, ins_cd))
@@ -231,11 +367,14 @@ class DBOnlyCoveragePipeline:
                         break
 
                 if found_chunk:
+                    page_range = f"{found_chunk['page_start']}-{found_chunk['page_end']}"
                     self.cur.execute("""
-                        INSERT INTO evidence_slot (coverage_code, as_of_date, ins_cd, slot_key, chunk_id, excerpt, page_number, status, gate_version)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, 'FOUND', %s)
-                    """, (self.coverage_code, self.as_of_date, ins_cd, slot_key, found_chunk['chunk_id'],
-                          found_chunk['excerpt'], found_chunk['page_number'], gate_version))
+                        INSERT INTO evidence_slot (coverage_code, as_of_date, ins_cd, slot_key,
+                                                  doc_type, source_pdf, page_range, excerpt, status, gate_version)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'FOUND', %s)
+                    """, (self.coverage_code, self.as_of_date, ins_cd, slot_key,
+                          found_chunk['doc_type'], found_chunk['source_pdf'], page_range,
+                          found_chunk['excerpt'], gate_version))
                     stats["FOUND"] += 1
                 else:
                     stats["NOT_FOUND"] += 1
@@ -246,6 +385,11 @@ class DBOnlyCoveragePipeline:
 
     def generate_compare_table(self) -> int:
         logger.info(f"📊 Generating compare_table_v2 for {self.coverage_code}...")
+
+        # Get canonical name from coverage_canonical
+        self.cur.execute("SELECT canonical_name FROM coverage_canonical WHERE coverage_code = %s", (self.coverage_code,))
+        canonical_row = self.cur.fetchone()
+        canonical_name = canonical_row['canonical_name'] if canonical_row else self.coverage_code
 
         profile = get_profile(self.coverage_code)
         gate_version = profile.get("gate_version", "GATE_SSOT_V2_CONTEXT_GUARD") if profile else "GATE_SSOT_V2_CONTEXT_GUARD"
@@ -269,6 +413,7 @@ class DBOnlyCoveragePipeline:
             }
 
         insurer_rows = [{"ins_cd": ins_cd, "slots": slots} for ins_cd, slots in slots_by_insurer.items()]
+        insurer_set = json.dumps(sorted(self.ins_cds))  # JSON array of ins_cds
 
         payload = {
             "insurer_rows": insurer_rows,
@@ -283,10 +428,10 @@ class DBOnlyCoveragePipeline:
         }
 
         self.cur.execute("""
-            INSERT INTO compare_table_v2 (coverage_code, as_of_date, payload)
-            VALUES (%s, %s, %s)
+            INSERT INTO compare_table_v2 (coverage_code, as_of_date, canonical_name, insurer_set, payload)
+            VALUES (%s, %s, %s, %s, %s)
             RETURNING table_id
-        """, (self.coverage_code, self.as_of_date, json.dumps(payload)))
+        """, (self.coverage_code, self.as_of_date, canonical_name, insurer_set, json.dumps(payload)))
 
         table_id = self.cur.fetchone()['table_id']
         self.conn.commit()
@@ -317,13 +462,21 @@ class DBOnlyCoveragePipeline:
         try:
             self.connect()
 
-            if self.skip_chunks:
-                logger.info("⏭️  Skipping chunk generation (--skip-chunks)")
+            if self.stage in ["chunks", "all"]:
+                if not self.skip_chunks:
+                    self.generate_chunks()
+                else:
+                    logger.info("⏭️  Skipping chunk generation (--skip-chunks)")
 
-            self.delete_existing_slots()
-            self.generate_evidence_slots()
-            self.generate_compare_table()
-            self.verify()
+            if self.stage in ["evidence", "all"]:
+                self.delete_existing_slots()
+                self.generate_evidence_slots()
+
+            if self.stage in ["compare", "all"]:
+                self.generate_compare_table()
+
+            if self.stage == "all":
+                self.verify()
 
             logger.info("✅ PIPELINE COMPLETED")
         finally:
@@ -335,6 +488,8 @@ def main():
     parser.add_argument("--coverage_code", required=True, help="Coverage code (e.g., A4210)")
     parser.add_argument("--as_of_date", required=True, help="As-of date (YYYY-MM-DD)")
     parser.add_argument("--ins_cds", required=True, help="Comma-separated insurer codes (e.g., N01,N08)")
+    parser.add_argument("--stage", choices=["chunks", "evidence", "compare", "all"], default="all",
+                       help="Pipeline stage to run (default: all)")
     parser.add_argument("--skip-chunks", action="store_true", help="Skip chunk generation")
     args = parser.parse_args()
 
@@ -344,6 +499,7 @@ def main():
         coverage_code=args.coverage_code,
         as_of_date=args.as_of_date,
         ins_cds=ins_cds,
+        stage=args.stage,
         skip_chunks=args.skip_chunks
     )
     pipeline.run()
