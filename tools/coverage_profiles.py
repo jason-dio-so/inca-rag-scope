@@ -185,6 +185,34 @@ A5298_001_PROFILE = {
     }
 }
 
+# A6200: 암직접치료입원비 (Q11 전용 - 보장한도 차이 탐색)
+A6200_Q11_PROFILE = {
+    "profile_id": "A6200_Q11_PROFILE_V1",
+    "coverage_code": "A6200",
+    "canonical_name": "암직접치료입원비",
+    "gate_version": "GATE_SSOT_V2_CONTEXT_GUARD",
+
+    "anchor_keywords": ["암직접", "암 직접", "직접치료", "직접 치료", "입원일당", "입원 일당", "요양병원", "요양 병원"],
+
+    "required_terms_by_slot": {
+        "q11_limit_days": [r"1\s*[-~]\s*\d+", r"\d+\s*일\s*한도", r"최대\s*\d+\s*일", "1-180", "180일", "연간", "통산", "회한", "한도"],
+        "q11_nursing_hospital_rule": ["요양병원 제외", "요양 병원 제외", "요양병원 포함", "요양 병원 포함", "요양병원제외", "요양제외"],
+        "q11_min_admission_or_waiting": ["1일이상", "2일이상", "3일이상", "면책", "보장개시", "책임개시", "90일", "감액", "지급률"]
+    },
+
+    "hard_negative_terms_global": ["수술비", "진단비", "통원일당", "납입면제", "보험료납입지원", "상급종합병원", r"연간\s*\d+\s*회한", "100세만기", "90세만기"],
+
+    "section_negative_terms_global": ["납입면제", r"보험료\s*납입면제", "보장보험료", r"차회\s*이후", r"면제\s*사유", r"납입을\s*면제"],
+
+    "diagnosis_signal_terms_global": ["입원일당", "입원비", "직접치료", "보험금", "보험가입금액", "지급합니다", "지급함", "지급사유"],
+
+    "slot_specific_negatives": {
+        "q11_limit_days": ["납입면제", r"면제\s*사유", "보장보험료"],
+        "q11_nursing_hospital_rule": ["납입면제", r"면제\s*사유", "보장보험료"],
+        "q11_min_admission_or_waiting": ["납입면제", r"면제\s*사유", "보장보험료"]
+    }
+}
+
 COVERAGE_PROFILES = {
     "A4200_1": A4200_1_PROFILE,
     "A4210": A4210_PROFILE,
@@ -192,7 +220,8 @@ COVERAGE_PROFILES = {
     "A5298_001": A5298_001_PROFILE,
     "A4104_1A": A4104_1A_PROFILE,
     "A4104_1B": A4104_1B_PROFILE,
-    "A4102": A4102_PROFILE
+    "A4102": A4102_PROFILE,
+    "A6200": A6200_Q11_PROFILE
 }
 
 def get_profile(coverage_code: str) -> dict:
