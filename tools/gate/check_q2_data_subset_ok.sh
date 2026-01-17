@@ -125,6 +125,44 @@ else
   echo "✅ PASS: insurer_codes match returned_insurer_set"
 fi
 
+# Test 7: Verify canonical_name is present (UI requirement)
+echo ""
+echo "[CHECK 7] Verify canonical_name is present in payload..."
+
+HAS_CANONICAL=$(echo "$BODY" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+name = data.get('canonical_name', '')
+print('1' if name and len(name) > 0 else '0')
+" 2>/dev/null || echo "0")
+
+if [ "$HAS_CANONICAL" != "1" ]; then
+  echo "❌ FAIL: canonical_name is missing or empty (UI will show 'undefined')"
+  FAIL=1
+else
+  CANONICAL_NAME=$(echo "$BODY" | python3 -c "import sys, json; print(json.load(sys.stdin).get('canonical_name', 'N/A'))")
+  echo "✅ PASS: canonical_name present: $CANONICAL_NAME"
+fi
+
+# Test 8: Verify coverage_code is present
+echo ""
+echo "[CHECK 8] Verify coverage_code is present in payload..."
+
+HAS_CODE=$(echo "$BODY" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+code = data.get('coverage_code', '')
+print('1' if code and len(code) > 0 else '0')
+" 2>/dev/null || echo "0")
+
+if [ "$HAS_CODE" != "1" ]; then
+  echo "❌ FAIL: coverage_code is missing or empty"
+  FAIL=1
+else
+  COVERAGE_CODE=$(echo "$BODY" | python3 -c "import sys, json; print(json.load(sys.stdin).get('coverage_code', 'N/A'))")
+  echo "✅ PASS: coverage_code present: $COVERAGE_CODE"
+fi
+
 echo "========================================="
 if [ $FAIL -eq 0 ]; then
   echo "✅ Q2 DATA SUBSET MATCHING GATE: ALL CHECKS PASSED"

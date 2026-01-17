@@ -814,6 +814,20 @@ class Q2CoverageLimitCompareHandler(IntentHandler):
             available_insurer_set = row['insurer_set']
             payload = dict(row['payload'])
 
+            # Fetch canonical_name from coverage_canonical table
+            self.cursor.execute("""
+                SELECT canonical_name
+                FROM coverage_canonical
+                WHERE coverage_code = %s
+            """, (coverage_code,))
+
+            canonical_row = self.cursor.fetchone()
+            canonical_name = canonical_row['canonical_name'] if canonical_row else coverage_code
+
+            # Add coverage metadata to payload
+            payload['coverage_code'] = coverage_code
+            payload['canonical_name'] = canonical_name
+
             # Calculate intersection: requested ∩ available
             returned_insurer_set = sorted(list(set(requested_insurer_set) & set(available_insurer_set)))
 
