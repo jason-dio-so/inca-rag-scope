@@ -24,12 +24,13 @@ import logging
 import re
 import json
 from datetime import datetime
-from typing import List, Optional, Dict, Any, Set
+from typing import List, Optional, Dict, Any, Set, Literal
 import uuid
+from enum import Enum
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 import psycopg2
 import psycopg2.extras
 
@@ -109,13 +110,79 @@ class DebugOptions(BaseModel):
     force_example: Optional[str] = None
     compiler_version: Optional[str] = "v1.1.0-beta"
 
+class CompareIntent(str, Enum):
+    """
+    Allowed intent values for CompareRequest.
+    Q2_COVERAGE_LIMIT_COMPARE added for Q2 Chat flow (coverage limit comparison).
+    """
+    PRODUCT_SUMMARY = "PRODUCT_SUMMARY"
+    COVERAGE_CONDITION_DIFF = "COVERAGE_CONDITION_DIFF"
+    COVERAGE_AVAILABILITY = "COVERAGE_AVAILABILITY"
+    PREMIUM_REFERENCE = "PREMIUM_REFERENCE"
+    Q2_COVERAGE_LIMIT_COMPARE = "Q2_COVERAGE_LIMIT_COMPARE"
+
 class CompareRequest(BaseModel):
-    intent: str = Field(..., pattern="^(PRODUCT_SUMMARY|COVERAGE_CONDITION_DIFF|COVERAGE_AVAILABILITY|PREMIUM_REFERENCE)$")
+    """
+    CompareRequest with conditional validation:
+    - intent: Must be one of CompareIntent enum values
+    - products: Required (min_items=1) for all intents EXCEPT Q2_COVERAGE_LIMIT_COMPARE
+    - For Q2_COVERAGE_LIMIT_COMPARE: products can be empty, coverage_codes required
+    """
+    intent: Literal[
+        "PRODUCT_SUMMARY",
+        "COVERAGE_CONDITION_DIFF",
+        "COVERAGE_AVAILABILITY",
+        "PREMIUM_REFERENCE",
+        "Q2_COVERAGE_LIMIT_COMPARE"
+    ]
     insurers: List[str] = Field(..., min_items=1)
-    products: List[ProductInfo] = Field(..., min_items=1)
+    products: List[ProductInfo] = Field(default_factory=list)
     target_coverages: List[TargetCoverage] = []
     options: Optional[RequestOptions] = RequestOptions()
     debug: Optional[DebugOptions] = DebugOptions()
+
+    # Q2-specific fields (optional for backward compatibility)
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    coverage_codes: Optional[List[str]] = None
+    sort_by: Optional[str] = None
+    plan_variant_scope: Optional[str] = None
+    as_of_date: Optional[str] = None
+    query: Optional[str] = None
+
+    @model_validator(mode='after')
+    def validate_intent_requirements(self):
+        """
+        Conditional validation based on intent:
+        - For non-Q2 intents: products must have at least 1 item
+        - For Q2_COVERAGE_LIMIT_COMPARE: coverage_codes required, products optional
+        """
+        intent = self.intent
+
+        # Rule 1: Non-Q2 intents require products
+        if intent in ["PRODUCT_SUMMARY", "COVERAGE_CONDITION_DIFF", "COVERAGE_AVAILABILITY", "PREMIUM_REFERENCE"]:
+            if not self.products or len(self.products) < 1:
+                raise ValueError(
+                    f"Intent '{intent}' requires at least 1 product. "
+                    f"Received {len(self.products)} products."
+                )
+
+        # Rule 2: Q2 intent requires coverage_codes
+        if intent == "Q2_COVERAGE_LIMIT_COMPARE":
+            if not self.coverage_codes or len(self.coverage_codes) < 1:
+                raise ValueError(
+                    "Intent 'Q2_COVERAGE_LIMIT_COMPARE' requires at least 1 coverage_code. "
+                    f"Received: {self.coverage_codes}"
+                )
+            # Filter out null/empty coverage_codes
+            valid_codes = [c for c in self.coverage_codes if c and str(c).strip()]
+            if not valid_codes:
+                raise ValueError(
+                    "Intent 'Q2_COVERAGE_LIMIT_COMPARE' requires at least 1 non-empty coverage_code. "
+                    f"All codes are null/empty: {self.coverage_codes}"
+                )
+
+        return self
 
 # ============================================================================
 # Database Connection Pool
@@ -329,6 +396,8 @@ class QueryCompiler:
             return self._compile_coverage_availability()
         elif self.intent == "PREMIUM_REFERENCE":
             return self._compile_premium_reference()
+        elif self.intent == "Q2_COVERAGE_LIMIT_COMPARE":
+            return self._compile_q2_coverage_limit_compare()
         else:
             raise HTTPException(status_code=400, detail=f"Unknown intent: {self.intent}")
 
@@ -400,6 +469,22 @@ class QueryCompiler:
             "coverage_codes": [],
             "insurer_filters": self.insurers,
             "premium_notice": True
+        }
+
+    def _compile_q2_coverage_limit_compare(self) -> Dict[str, Any]:
+        """
+        Q2_COVERAGE_LIMIT_COMPARE: Coverage limit comparison (Q2 Chat flow)
+
+        Uses coverage_codes from request (no products needed)
+        Returns query plan for Q2 handler to process
+        """
+        # Get coverage_codes from request (validated in CompareRequest)
+        coverage_codes = self.request.coverage_codes if hasattr(self.request, 'coverage_codes') else []
+
+        return {
+            "intent": "Q2_COVERAGE_LIMIT_COMPARE",
+            "coverage_codes": coverage_codes,
+            "insurer_filters": self.insurers
         }
 
 # ============================================================================
@@ -652,6 +737,127 @@ class PremiumReferenceHandler(IntentHandler):
             "limitations": ["⚠️ 본 시스템은 개인별 보험료 계산 기능을 제공하지 않습니다.", "⚠️ 표시된 보험료는 참고용이며, 실제 가입 보험료와 다를 수 있습니다.", "정확한 보험료는 보험사 또는 설계사를 통해 직접 확인하시기 바랍니다.", "본 비교는 약관 및 가입설계서에 기반한 정보 제공입니다."]
         }
 
+class Q2CoverageLimitCompareHandler(IntentHandler):
+    """
+    Handler for Q2_COVERAGE_LIMIT_COMPARE intent
+
+    Reads pre-computed comparison data from compare_table_v2 table
+    Uses coverage_codes from request (no products required)
+
+    Subset Matching Policy:
+    - Query by (coverage_code, as_of_date) only
+    - Return intersection of requested insurers and available insurers
+    - 404 only if no row exists or intersection is empty
+    - Inject insurer_code into insurer_rows (using insurer_set order as SSOT)
+    """
+    def handle(self) -> Dict[str, Any]:
+        """
+        Fetch Q2 coverage limit comparison data from compare_table_v2
+
+        Supports subset matching: returns available insurers even if requested set is larger
+
+        Returns: Pre-computed comparison payload with:
+            - insurer_rows: filtered to requested insurers ∩ available insurers
+            - insurer_code: injected into each row
+            - debug: requested_insurer_set, available_insurer_set, returned_insurer_set, missing_insurers
+        """
+        try:
+            # Get coverage_code (first one from list)
+            coverage_codes = self.query_plan.get("coverage_codes", [])
+            if not coverage_codes:
+                raise HTTPException(status_code=400, detail="Q2 requires at least one coverage_code")
+
+            coverage_code = coverage_codes[0]
+
+            # Get as_of_date from request (default: 2025-11-26)
+            as_of_date = getattr(self.request, 'as_of_date', "2025-11-26")
+
+            # Get insurers from request
+            insurers = self.request.insurers
+
+            # Map insurers back to insurer codes (reverse mapping)
+            INSURER_ENUM_TO_CODE = {
+                "MERITZ": "N01",
+                "DB": "N02",
+                "HANWHA": "N03",
+                "LOTTE": "N05",
+                "KB": "N08",
+                "HYUNDAI": "N09",
+                "SAMSUNG": "N10",
+                "HEUNGKUK": "N13"
+            }
+
+            requested_insurer_codes = [INSURER_ENUM_TO_CODE.get(ins, ins) for ins in insurers]
+            requested_insurer_set = sorted(requested_insurer_codes)
+
+            # Query compare_table_v2 by (coverage_code, as_of_date) ONLY
+            # Tie-breaker: largest insurer_set first, then most recent generated_at
+            self.cursor.execute("""
+                SELECT table_id, payload, insurer_set
+                FROM compare_table_v2
+                WHERE coverage_code = %s
+                  AND as_of_date = %s
+                ORDER BY jsonb_array_length(insurer_set) DESC,
+                         (payload->'debug'->>'generated_at') DESC
+                LIMIT 1
+            """, (coverage_code, as_of_date))
+
+            row = self.cursor.fetchone()
+
+            if not row:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"No Q2 data found for coverage_code={coverage_code}, as_of_date={as_of_date}"
+                )
+
+            # Extract available insurers from DB row
+            available_insurer_set = row['insurer_set']
+            payload = dict(row['payload'])
+
+            # Calculate intersection: requested ∩ available
+            returned_insurer_set = sorted(list(set(requested_insurer_set) & set(available_insurer_set)))
+
+            if not returned_insurer_set:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"No matching insurers for coverage_code={coverage_code}. "
+                           f"Requested: {requested_insurer_set}, Available: {available_insurer_set}"
+                )
+
+            # Calculate missing insurers
+            missing_insurers = sorted(list(set(requested_insurer_set) - set(available_insurer_set)))
+
+            # Filter insurer_rows to returned_insurer_set and inject insurer_code
+            # SSOT: insurer_set order = insurer_rows order
+            insurer_rows = payload.get('insurer_rows', [])
+            filtered_rows = []
+
+            for idx, ins_cd in enumerate(available_insurer_set):
+                if ins_cd in returned_insurer_set:
+                    row_data = insurer_rows[idx] if idx < len(insurer_rows) else {}
+                    # Inject insurer_code
+                    row_data['insurer_code'] = ins_cd
+                    filtered_rows.append(row_data)
+
+            payload['insurer_rows'] = filtered_rows
+
+            # Add debug info
+            if 'debug' not in payload:
+                payload['debug'] = {}
+
+            payload['debug']['requested_insurer_set'] = requested_insurer_set
+            payload['debug']['available_insurer_set'] = available_insurer_set
+            payload['debug']['returned_insurer_set'] = returned_insurer_set
+            payload['debug']['missing_insurers'] = missing_insurers
+
+            return payload
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error in Q2CoverageLimitCompareHandler: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+
 # ============================================================================
 # API Endpoints
 # ============================================================================
@@ -719,7 +925,8 @@ async def compare(request: CompareRequest):
                 "PRODUCT_SUMMARY": ProductSummaryHandler,
                 "COVERAGE_CONDITION_DIFF": CoverageConditionDiffHandler,
                 "COVERAGE_AVAILABILITY": CoverageAvailabilityHandler,
-                "PREMIUM_REFERENCE": PremiumReferenceHandler
+                "PREMIUM_REFERENCE": PremiumReferenceHandler,
+                "Q2_COVERAGE_LIMIT_COMPARE": Q2CoverageLimitCompareHandler
             }
 
             handler_class = handler_map.get(request.intent)
