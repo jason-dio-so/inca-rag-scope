@@ -107,6 +107,27 @@ if [ -f "$Q1_PAGE" ]; then
   fi
 fi
 
+# Check 9: BY_COVERAGE proxy route must exist
+echo "[CHECK 9] BY_COVERAGE proxy route must exist..."
+COVERAGE_ROUTE="$WEB_ROOT/app/api/q1/coverage_ranking/route.ts"
+if [ -f "$COVERAGE_ROUTE" ]; then
+  echo "✅ PASS: BY_COVERAGE proxy route exists"
+else
+  echo "❌ FAIL: BY_COVERAGE proxy route not found"
+  FAIL=1
+fi
+
+# Check 10: Q1 page must call coverage_ranking endpoint
+echo "[CHECK 10] Q1 page must call coverage_ranking endpoint..."
+if [ -f "$Q1_PAGE" ]; then
+  if grep -q "/api/q1/coverage_ranking\|executeCoverageRanking" "$Q1_PAGE"; then
+    echo "✅ PASS: Q1 page calls coverage_ranking"
+  else
+    echo "❌ FAIL: Q1 page does not call coverage_ranking"
+    FAIL=1
+  fi
+fi
+
 echo "========================================="
 if [ $FAIL -eq 0 ]; then
   echo "✅ Q1 CHAT GATE: ALL CHECKS PASSED"
