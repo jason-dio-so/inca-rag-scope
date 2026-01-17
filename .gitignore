@@ -46,3 +46,6 @@ test_*.py
 # Ad-hoc scratch files (STEP B-2)
 tools/scratch/
 data/scope_v3/*.jsonl
+
+# Local-only big artifacts (DO NOT COMMIT)
+/data/scope_v3/*_step3_diagnosis_partial_*.jsonl
