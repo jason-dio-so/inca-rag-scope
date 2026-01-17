@@ -170,7 +170,106 @@ Manual smoke tests to verify Q2 chat-driven coverage limit comparison works corr
 
 ---
 
+## TC11: Demographics Together - Complete Input
+
+### Steps
+1. Navigate to `/q2`
+2. First message should ask for age+sex together
+3. In chat: "40대 남성"
+4. Wait for response
+
+### Expected Results
+- ✅ Bot responds: "비교할 담보를 입력해 주세요.\n예) 암진단비, 암직접입원비, 뇌졸중진단비"
+- ✅ Demographics confirmed
+- ✅ State transitions to 'collect_coverage_query'
+- ✅ NO coverage_candidates API call yet
+
+---
+
+## TC12: Demographics Partial - Age Only
+
+### Steps
+1. Navigate to `/q2`
+2. In chat: "40대"
+3. Wait for response
+
+### Expected Results
+- ✅ Bot responds: "연령은 확인되었습니다. 성별을 함께 입력해주세요.\n예) 40대 남성"
+- ✅ State remains 'collect_demographics'
+- ✅ NO coverage_candidates API call yet
+- ✅ NO state transition
+
+---
+
+## TC13: Demographics Partial - Sex Only
+
+### Steps
+1. Navigate to `/q2`
+2. In chat: "남성"
+3. Wait for response
+
+### Expected Results
+- ✅ Bot responds: "성별은 확인되었습니다. 연령대를 함께 입력해주세요.\n예) 40대 남성"
+- ✅ State remains 'collect_demographics'
+- ✅ NO coverage_candidates API call yet
+- ✅ NO state transition
+
+---
+
+## TC14: Demographics + Coverage Together
+
+### Steps
+1. Navigate to `/q2`
+2. In chat: "40대 남성 암진단비"
+3. Wait for response
+
+### Expected Results
+- ✅ Demographics confirmed
+- ✅ Coverage_candidates API called immediately
+- ✅ If 1 candidate: Auto-executes Q2 compare
+- ✅ If 2~3 candidates: Shows numbered list
+- ✅ State flow: collect_demographics → executing → (selecting_candidate or completed)
+
+---
+
+## TC15: Pending Coverage Then Demographics
+
+### Steps
+1. Navigate to `/q2`
+2. In chat: "암진단비"
+3. Bot stores as pending
+4. In chat: "40대 남성"
+5. Wait for response
+
+### Expected Results
+- ✅ Coverage stored as pending (NO API call on step 2)
+- ✅ After demographics confirmed: Auto-proceeds with pending coverage
+- ✅ Coverage_candidates API called after demographics
+- ✅ Result displays correctly
+
+---
+
+## TC16: Demographics Flow - Result Area NO Forbidden Terms
+
+### Steps
+1. Complete any demographics flow (TC11-TC15)
+2. Inspect result table carefully
+
+### Expected Results
+- ✅ Table shows ONLY: 순위, 보험사, 상품명, 보장한도, 일일보장금액
+- ✅ NO forbidden terms in result area: 근거|출처|사유|기준|산출|공식|배수|multiplier|formula|%
+- ✅ Evidence Rail (when row clicked) CAN show forbidden terms
+- ✅ Gate check_q234_result_no_evidence.sh passes
+
+---
+
 ## Regression Checks
+
+### Demographics Together Enforcement
+- [ ] First prompt always asks for age+sex together
+- [ ] Partial input (age only or sex only) stays in collect_demographics
+- [ ] NO API calls until demographics_confirmed = true
+- [ ] Coverage mentioned early is stored as pending
 
 ### NO Preset Buttons
 - [ ] Q2 page has NO "2개/4개/8개" preset UI
@@ -181,8 +280,9 @@ Manual smoke tests to verify Q2 chat-driven coverage limit comparison works corr
 - [ ] Evidence Rail: ONLY explanations/sources, NO in-table mixing
 
 ### Chat State Machine
-- [ ] idle → collecting_slots (when slots incomplete)
-- [ ] collecting_slots → selecting_candidate (when 2~3 candidates)
+- [ ] collect_demographics → collect_coverage_query (when demographics confirmed, no pending coverage)
+- [ ] collect_demographics → executing (when demographics confirmed, with pending/provided coverage)
+- [ ] executing → selecting_candidate (when 2~3 candidates)
 - [ ] selecting_candidate → executing (when choice made)
 - [ ] executing → completed (when result received)
 
@@ -194,11 +294,12 @@ Manual smoke tests to verify Q2 chat-driven coverage limit comparison works corr
 ---
 
 ## Pass Criteria
-- ✅ All TCs (TC1-TC10) pass
-- ✅ All regression checks pass
-- ✅ Gate script passes (8/8 checks)
+- ✅ All TCs (TC1-TC16) pass
+- ✅ All regression checks pass (including demographics together enforcement)
+- ✅ Gate script passes (updated with demographics checks)
 - ✅ NO console errors in browser DevTools
 - ✅ Evidence Rail works independently
+- ✅ Demographics together enforced: age+sex → coverage → result
 
 ---
 

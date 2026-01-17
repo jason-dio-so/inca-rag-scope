@@ -24,7 +24,7 @@ import {
   Q2Slots
 } from '@/lib/q2/slotParser';
 
-type ChatState = 'idle' | 'collecting_slots' | 'selecting_candidate' | 'executing' | 'completed' | 'error';
+type ChatState = 'collect_demographics' | 'collect_coverage_query' | 'selecting_candidate' | 'executing' | 'completed' | 'error';
 
 interface CoverageCandidate {
   coverage_code: string;
@@ -36,16 +36,18 @@ export default function Q2Page() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: '비교하고 싶은 담보를 말씀해 주세요. 예) "암직접입원비 40대 남자"',
+      content: '연령과 성별을 함께 입력해주세요.\n예) 40대 남성, 50대 여성',
       timestamp: new Date()
     }
   ]);
 
-  const [state, setState] = useState<ChatState>('idle');
+  const [state, setState] = useState<ChatState>('collect_demographics');
   const [slots, setSlots] = useState<Q2Slots>({
     sort_by: 'monthly',
     plan_variant_scope: 'all'
   });
+
+  const [pendingCoverageQuery, setPendingCoverageQuery] = useState<string | null>(null);
 
   const [candidates, setCandidates] = useState<CoverageCandidate[]>([]);
   const [selectedCoverageCode, setSelectedCoverageCode] = useState<string | null>(null);
@@ -148,47 +150,126 @@ export default function Q2Page() {
         }
       }
 
-      // Check if slots are complete
-      if (!areSlotsComplete(updatedSlots)) {
-        const prompt = generateClarificationPrompt(updatedSlots);
-        addMessage('assistant', prompt);
-        setState('collecting_slots');
-        setLoading(false);
-        return;
+      // State machine: demographics → coverage → execute
+
+      // State: collect_demographics (age + sex together)
+      if (state === 'collect_demographics') {
+        // Check if coverage_query was provided (store as pending)
+        if (updatedSlots.coverage_query && !pendingCoverageQuery) {
+          setPendingCoverageQuery(updatedSlots.coverage_query);
+        }
+
+        const demographics_confirmed = Boolean(updatedSlots.age_band && updatedSlots.sex);
+
+        if (!demographics_confirmed) {
+          // Partial input handling - stay in collect_demographics state
+          if (updatedSlots.age_band && !updatedSlots.sex) {
+            addMessage('assistant', '연령은 확인되었습니다. 성별을 함께 입력해주세요.\n예) 40대 남성');
+            setLoading(false);
+            return;
+          } else if (updatedSlots.sex && !updatedSlots.age_band) {
+            addMessage('assistant', '성별은 확인되었습니다. 연령대를 함께 입력해주세요.\n예) 40대 남성');
+            setLoading(false);
+            return;
+          } else {
+            addMessage('assistant', '연령과 성별을 함께 입력해주세요.\n예) 40대 남성, 50대 여성');
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Demographics confirmed → Proceed to coverage
+        if (pendingCoverageQuery || updatedSlots.coverage_query) {
+          // Auto-proceed with pending or newly provided coverage
+          const queryToUse = updatedSlots.coverage_query || pendingCoverageQuery!;
+
+          setState('executing');
+          const candidateList = await fetchCoverageCandidates(queryToUse);
+
+          if (candidateList.length === 0) {
+            addMessage('assistant', '해당 담보를 찾지 못했습니다. 담보명을 다시 입력해 주세요.\n예) 암진단비, 입원일당');
+            setState('collect_coverage_query');
+            setPendingCoverageQuery(null);
+            setLoading(false);
+            return;
+          }
+
+          if (candidateList.length === 1) {
+            // Auto-select
+            const selected = candidateList[0];
+            setSelectedCoverageCode(selected.coverage_code);
+            addMessage('assistant', `"${selected.canonical_name}" 담보로 비교를 시작합니다...`);
+
+            await executeQ2Compare(selected.coverage_code, updatedSlots.age_band!, updatedSlots.sex!);
+            return;
+          }
+
+          // 2~3 candidates → Ask user to choose
+          setCandidates(candidateList);
+          setState('selecting_candidate');
+
+          let candidateMessage = '다음 중 어떤 담보를 비교할까요?\n\n';
+          candidateList.forEach((c, idx) => {
+            candidateMessage += `(${idx + 1}) ${c.canonical_name}\n`;
+          });
+          candidateMessage += '\n번호를 입력해 주세요.';
+
+          addMessage('assistant', candidateMessage);
+          setLoading(false);
+          return;
+        } else {
+          // No coverage yet → Ask for coverage
+          setState('collect_coverage_query');
+          addMessage('assistant', '비교할 담보를 입력해 주세요.\n예) 암진단비, 암직접입원비, 뇌졸중진단비');
+          setLoading(false);
+          return;
+        }
       }
 
-      // Slots complete → Fetch coverage candidates
-      setState('executing');
-      const candidateList = await fetchCoverageCandidates(updatedSlots.coverage_query!);
+      // State: collect_coverage_query
+      if (state === 'collect_coverage_query') {
+        if (updatedSlots.coverage_query) {
+          // Coverage confirmed → Fetch candidates
+          setState('executing');
+          const candidateList = await fetchCoverageCandidates(updatedSlots.coverage_query);
 
-      if (candidateList.length === 0) {
-        addMessage('assistant', '해당 담보를 찾지 못했습니다. 다른 표현으로 다시 입력해 주세요.');
-        setState('idle');
-        setLoading(false);
-        return;
+          if (candidateList.length === 0) {
+            addMessage('assistant', '해당 담보를 찾지 못했습니다. 다른 표현으로 다시 입력해 주세요.');
+            setState('collect_coverage_query');
+            setLoading(false);
+            return;
+          }
+
+          if (candidateList.length === 1) {
+            // Auto-select
+            const selected = candidateList[0];
+            setSelectedCoverageCode(selected.coverage_code);
+            addMessage('assistant', `"${selected.canonical_name}" 담보로 비교를 시작합니다...`);
+
+            await executeQ2Compare(selected.coverage_code, updatedSlots.age_band!, updatedSlots.sex!);
+            return;
+          }
+
+          // 2~3 candidates → Ask user to choose
+          setCandidates(candidateList);
+          setState('selecting_candidate');
+
+          let candidateMessage = '다음 중 어떤 담보를 비교할까요?\n\n';
+          candidateList.forEach((c, idx) => {
+            candidateMessage += `(${idx + 1}) ${c.canonical_name}\n`;
+          });
+          candidateMessage += '\n번호를 입력해 주세요.';
+
+          addMessage('assistant', candidateMessage);
+          setLoading(false);
+          return;
+        } else {
+          // Coverage still missing
+          addMessage('assistant', '비교할 담보를 입력해 주세요.\n예) 암진단비, 암직접입원비, 뇌졸중진단비');
+          setLoading(false);
+          return;
+        }
       }
-
-      if (candidateList.length === 1) {
-        // Auto-select
-        const selected = candidateList[0];
-        setSelectedCoverageCode(selected.coverage_code);
-        addMessage('assistant', `"${selected.canonical_name}" 담보로 비교를 시작합니다...`);
-
-        await executeQ2Compare(selected.coverage_code, updatedSlots.age_band!, updatedSlots.sex!);
-        return;
-      }
-
-      // 2~3 candidates → Ask user to choose
-      setCandidates(candidateList);
-      setState('selecting_candidate');
-
-      let candidateMessage = '다음 중 어떤 담보를 비교할까요?\n\n';
-      candidateList.forEach((c, idx) => {
-        candidateMessage += `(${idx + 1}) ${c.canonical_name}\n`;
-      });
-      candidateMessage += '\n번호를 입력해 주세요.';
-
-      addMessage('assistant', candidateMessage);
 
     } catch (error) {
       console.error('handleSendMessage error:', error);
@@ -197,7 +278,7 @@ export default function Q2Page() {
     } finally {
       setLoading(false);
     }
-  }, [state, slots, candidates, addMessage, fetchCoverageCandidates, executeQ2Compare]);
+  }, [state, slots, pendingCoverageQuery, candidates, addMessage, fetchCoverageCandidates, executeQ2Compare]);
 
   return (
     <div className="min-h-screen bg-gray-50">

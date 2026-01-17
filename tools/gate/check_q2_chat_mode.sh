@@ -1,6 +1,6 @@
 #!/bin/bash
 # Q2 Chat Mode Gate Check
-# Ensures Q2 chat mode is properly implemented
+# Ensures Q2 chat mode is properly implemented with demographics-together enforcement
 
 set -e
 
@@ -113,6 +113,50 @@ if [ -f "$Q2_PAGE" ]; then
     FAIL=1
   else
     echo "✅ PASS: Q2 page has NO legacy UI imports"
+  fi
+fi
+
+# Check 9: Demographics pattern - Must have 'collect_demographics' state
+echo "[CHECK 9] Q2 page must have 'collect_demographics' state..."
+if [ -f "$Q2_PAGE" ]; then
+  if grep -q "'collect_demographics'" "$Q2_PAGE"; then
+    echo "✅ PASS: Q2 page has 'collect_demographics' state"
+  else
+    echo "❌ FAIL: Q2 page missing 'collect_demographics' state"
+    FAIL=1
+  fi
+fi
+
+# Check 10: Regression check - MUST NOT have old sequential states
+echo "[CHECK 10] Q2 page MUST NOT have old sequential states (collect_age/collect_sex)..."
+if [ -f "$Q2_PAGE" ]; then
+  if grep -q "'collect_age'" "$Q2_PAGE" || grep -q "'collect_sex'" "$Q2_PAGE"; then
+    echo "❌ FAIL: Q2 page contains old sequential states (collect_age/collect_sex) - REGRESSION"
+    FAIL=1
+  else
+    echo "✅ PASS: Q2 page has NO old sequential states"
+  fi
+fi
+
+# Check 11: Demographics pattern - Initial message asks for age+sex together
+echo "[CHECK 11] Q2 page initial message must ask for age+sex together..."
+if [ -f "$Q2_PAGE" ]; then
+  if grep -q "연령과 성별을 함께 입력해주세요" "$Q2_PAGE"; then
+    echo "✅ PASS: Q2 page initial message asks for age+sex together"
+  else
+    echo "❌ FAIL: Q2 page initial message does not ask for age+sex together"
+    FAIL=1
+  fi
+fi
+
+# Check 12: Demographics pattern - demographics_confirmed check exists
+echo "[CHECK 12] Q2 page must check demographics_confirmed..."
+if [ -f "$Q2_PAGE" ]; then
+  if grep -q "demographics_confirmed" "$Q2_PAGE"; then
+    echo "✅ PASS: Q2 page checks demographics_confirmed"
+  else
+    echo "❌ FAIL: Q2 page missing demographics_confirmed check"
+    FAIL=1
   fi
 fi
 
