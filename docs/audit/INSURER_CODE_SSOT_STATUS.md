@@ -331,7 +331,7 @@ SELECT coverage_code, COUNT(*) FROM compare_table_v2 GROUP BY coverage_code;
 
 1. ✅ Complete: All fixes applied and verified
 2. 🔲 **Test Q2 end-to-end in browser** (user should verify)
-3. 🔲 **Commit changes to git** (if test passes)
+3. ✅ **Commit changes to git** — Done (commit 60357af, pushed to origin)
 
 ### Short-term
 
