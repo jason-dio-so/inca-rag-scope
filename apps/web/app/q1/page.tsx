@@ -237,8 +237,8 @@ export default function Q1Page() {
       // Free text: resolve to candidates
       try {
         setLoading(true);
-        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3000';
-        const response = await fetch(`${API_BASE}/api/q1/coverage_candidates`, {
+        // Hardcoded to Next.js server (not backend)
+        const response = await fetch('http://localhost:3000/api/q1/coverage_candidates', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
