@@ -128,6 +128,27 @@ if [ -f "$Q1_PAGE" ]; then
   fi
 fi
 
+# Check 11: coverage_candidates proxy route must exist
+echo "[CHECK 11] coverage_candidates proxy route must exist..."
+CANDIDATES_ROUTE="$WEB_ROOT/app/api/q1/coverage_candidates/route.ts"
+if [ -f "$CANDIDATES_ROUTE" ]; then
+  echo "✅ PASS: coverage_candidates proxy route exists"
+else
+  echo "❌ FAIL: coverage_candidates proxy route not found"
+  FAIL=1
+fi
+
+# Check 12: Q1 page must call coverage_candidates endpoint
+echo "[CHECK 12] Q1 page must call coverage_candidates endpoint..."
+if [ -f "$Q1_PAGE" ]; then
+  if grep -q "/api/q1/coverage_candidates" "$Q1_PAGE"; then
+    echo "✅ PASS: Q1 page calls coverage_candidates"
+  else
+    echo "❌ FAIL: Q1 page does not call coverage_candidates"
+    FAIL=1
+  fi
+fi
+
 echo "========================================="
 if [ $FAIL -eq 0 ]; then
   echo "✅ Q1 CHAT GATE: ALL CHECKS PASSED"
