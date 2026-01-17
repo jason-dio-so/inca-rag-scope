@@ -8,6 +8,24 @@
 
 ---
 
+## 🔒 Q1 Product Name Join Key FACT (0순위)
+
+**Q1 product_name join key** = `product_id` (evidence: apps/api/q1_endpoints.py:200)
+```sql
+LEFT JOIN product p ON c.product_id = p.product_id
+-- product_name = p.product_full_name
+```
+
+**Q2 adaptation** = `ins_cd + as_of_date` (compare_table_v2 payload has no product_id)
+```sql
+SELECT product_full_name FROM product WHERE ins_cd = %s AND as_of_date = %s
+-- Same SSOT source (product.product_full_name), different join key due to data availability
+```
+
+**Rule**: Both Q1 and Q2 MUST use `product.product_full_name` as SSOT. NO regex/text extraction allowed.
+
+---
+
 ## Executive Summary
 
 **Conclusion**: ✅ **Use A안 (재사용)** - Product SSOT already exists in DB

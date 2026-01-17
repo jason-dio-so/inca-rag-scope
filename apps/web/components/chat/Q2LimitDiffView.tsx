@@ -40,15 +40,17 @@ export function Q2LimitDiffView({ data, onRowClick, selectedRow }: Q2ViewProps) 
     );
   }
 
+  // CRITICAL: ins_cd → 회사명 매핑 (SSOT)
+  // Fixed to match SSOT Excel (data/sources/insurers/담보명mapping자료.xlsx)
   const INSURER_NAMES: Record<string, string> = {
-    N01: 'DB손해보험',
-    N02: '롯데손해보험',
-    N03: '메리츠화재',
-    N05: '삼성화재',
-    N08: '현대해상',
-    N09: '흥국화재',
-    N10: 'KB손해보험',
-    N13: '한화손해보험',
+    N01: '메리츠화재',        // (무)알파Plus
+    N02: '한화손해보험',      // 한화
+    N03: '롯데손해보험',      // let:smile
+    N05: '흥국화재',          // 흥Good 행복한 파워
+    N08: '삼성화재',          // 삼성화재 건강보험
+    N09: '현대해상',          // 현대해상퍼펙트플러스
+    N10: 'KB손해보험',        // KB닥터플러스
+    N13: 'DB손해보험',        // 프로미라이프
   };
 
   return (

@@ -776,15 +776,16 @@ class Q2CoverageLimitCompareHandler(IntentHandler):
             insurers = self.request.insurers
 
             # Map insurers back to insurer codes (reverse mapping)
+            # Fixed to match SSOT Excel (data/sources/insurers/담보명mapping자료.xlsx)
             INSURER_ENUM_TO_CODE = {
                 "MERITZ": "N01",
-                "DB": "N02",
-                "HANWHA": "N03",
-                "LOTTE": "N05",
-                "KB": "N08",
+                "HANWHA": "N02",
+                "LOTTE": "N03",
+                "HEUNGKUK": "N05",
+                "SAMSUNG": "N08",
                 "HYUNDAI": "N09",
-                "SAMSUNG": "N10",
-                "HEUNGKUK": "N13"
+                "KB": "N10",
+                "DB": "N13"
             }
 
             requested_insurer_codes = [INSURER_ENUM_TO_CODE.get(ins, ins) for ins in insurers]
@@ -842,107 +843,122 @@ class Q2CoverageLimitCompareHandler(IntentHandler):
             missing_insurers = sorted(list(set(requested_insurer_set) - set(available_insurer_set)))
 
             # Filter insurer_rows to returned_insurer_set and inject insurer_code + Q2 fields
-            # SSOT: insurer_set order = insurer_rows order
+            # CRITICAL: insurer_set order MUST match insurer_rows order (DB generation contract)
             insurer_rows = payload.get('insurer_rows', [])
             filtered_rows = []
 
             import re
 
+            # STEP 0: Build insurer_rows map by index (preserve DB order)
+            # Assumption: insurer_rows[i] corresponds to available_insurer_set[i]
+            insurer_rows_map = {}
             for idx, ins_cd in enumerate(available_insurer_set):
-                if ins_cd in returned_insurer_set:
-                    row_data = insurer_rows[idx] if idx < len(insurer_rows) else {}
+                if idx < len(insurer_rows):
+                    insurer_rows_map[ins_cd] = insurer_rows[idx]
+                    # Log for debugging row integrity
+                    excerpt = insurer_rows[idx].get('slots', {}).get('exclusions', {}).get('excerpt', '')[:50]
+                    logger.debug(f"Row mapping: idx={idx}, ins_cd={ins_cd}, excerpt_preview={excerpt}")
 
-                    # Inject insurer_code + ins_cd (backward compat)
-                    row_data['insurer_code'] = ins_cd
-                    row_data['ins_cd'] = ins_cd
+            # STEP 1: Query product SSOT for all returned insurers (batch query)
+            # Following Q1 pattern: product.product_full_name as SSOT
+            # Join key: ins_cd + as_of_date (Q2 adaptation, since payload has no product_id)
+            self.cursor.execute("""
+                SELECT ins_cd, product_id, product_full_name
+                FROM product
+                WHERE ins_cd = ANY(%s)
+                  AND as_of_date = %s
+            """, (returned_insurer_set, as_of_date))
 
-                    # Q2 Adapter: Extract quantitative fields from coverage_chunk
-                    # UI expects: product_name, slots.duration_limit_days.value, slots.daily_benefit_amount_won.value
+            product_map = {row['ins_cd']: row for row in self.cursor.fetchall()}
+            product_name_missing_insurers = [ins_cd for ins_cd in returned_insurer_set if ins_cd not in product_map]
 
-                    # Query coverage_chunk for this insurer + coverage_code
-                    self.cursor.execute("""
-                        SELECT chunk_text
-                        FROM coverage_chunk
-                        WHERE ins_cd = %s
-                          AND coverage_code = %s
-                          AND as_of_date = %s
-                          AND (chunk_text ILIKE %s OR chunk_text ILIKE '%%일당%%')
-                        ORDER BY chunk_id
-                        LIMIT 10
-                    """, (ins_cd, coverage_code, as_of_date, f'%{canonical_name[:10]}%'))
+            # STEP 2: Build insurer_rows with SSOT product_name + quantitative fields
+            # CRITICAL: Use ins_cd as key, NOT index
+            for ins_cd in returned_insurer_set:
+                if ins_cd in insurer_rows_map:
+                    row_data = insurer_rows_map[ins_cd]
+                else:
+                    row_data = {}
+                    logger.warning(f"Q2 Row Integrity: Missing row for ins_cd={ins_cd}")
 
-                    chunks = self.cursor.fetchall()
+                # Inject insurer_code + ins_cd (backward compat)
+                row_data['insurer_code'] = ins_cd
+                row_data['ins_cd'] = ins_cd
 
-                    # Extract values from chunks
-                    product_name = None
-                    duration_limit = None
-                    daily_amount = None
+                # Q2 Adapter: Inject product_name from SSOT (NO regex extraction)
+                if ins_cd in product_map:
+                    row_data['product_name'] = product_map[ins_cd]['product_full_name']
+                    row_data['product_id'] = product_map[ins_cd]['product_id']
+                else:
+                    row_data['product_name'] = None  # UI will show "정보없음"
+                    row_data['product_id'] = None
 
-                    for (chunk_text,) in chunks:
-                        # Extract product_name (e.g., "알파Plus보장보험2511")
-                        if product_name is None:
-                            # Try multiple patterns
-                            product_patterns = [
-                                r'\(무\)\s*([^\s\(]+(?:보험|보장)[^\s\)]{0,20})',  # (무) prefix
-                                r'([^\s\(]+(?:보험|보장)\d{4})',  # Product with year
-                                r'계약사항[^\n]*\n([^\(]+보험[^\n]*)',  # After 계약사항 line
-                            ]
-                            for pattern in product_patterns:
-                                product_match = re.search(pattern, chunk_text)
-                                if product_match:
-                                    product_name = product_match.group(1).strip()
+                # Q2 Adapter: Extract quantitative fields from coverage_chunk
+                # UI expects: slots.duration_limit_days.value, slots.daily_benefit_amount_won.value
+                self.cursor.execute("""
+                    SELECT chunk_text
+                    FROM coverage_chunk
+                    WHERE ins_cd = %s
+                      AND coverage_code = %s
+                      AND as_of_date = %s
+                      AND (chunk_text ILIKE %s OR chunk_text ILIKE '%%일당%%')
+                    ORDER BY chunk_id
+                    LIMIT 10
+                """, (ins_cd, coverage_code, as_of_date, f'%{canonical_name[:10]}%'))
+
+                chunks = self.cursor.fetchall()
+
+                # Extract duration and amount only (NOT product_name - that's from SSOT)
+                duration_limit = None
+                daily_amount = None
+
+                for (chunk_text,) in chunks:
+                    # Extract duration limit (e.g., "1회 입원당 180일한도", "1-180일")
+                    if duration_limit is None:
+                        duration_patterns = [
+                            (r'(\d+)\s*일\s*한도', 1),  # "180일한도" (highest priority)
+                            (r'1\s*[-~]\s*(\d+)\s*일', 1),  # "1-180일"
+                            (r'\(.*?1\s*[-~]\s*(\d+)[,\s)]', 1),  # "(1-180)" in coverage name
+                        ]
+                        for pattern, group_idx in duration_patterns:
+                            duration_match = re.search(pattern, chunk_text)
+                            if duration_match:
+                                duration_limit = int(duration_match.group(group_idx))
+                                if duration_limit > 10:  # Sanity check: ignore small values like 1, 2
                                     break
+                                else:
+                                    duration_limit = None  # Reset and try next pattern
 
-                        # Extract duration limit (e.g., "1회 입원당 180일한도", "1-180일")
-                        if duration_limit is None:
-                            duration_patterns = [
-                                (r'(\d+)\s*일\s*한도', 1),  # "180일한도" (highest priority)
-                                (r'1\s*[-~]\s*(\d+)\s*일', 1),  # "1-180일"
-                                (r'\(.*?1\s*[-~]\s*(\d+)[,\s)]', 1),  # "(1-180)" in coverage name
-                            ]
-                            for pattern, group_idx in duration_patterns:
-                                duration_match = re.search(pattern, chunk_text)
-                                if duration_match:
-                                    duration_limit = int(duration_match.group(group_idx))
-                                    if duration_limit > 10:  # Sanity check: ignore small values like 1, 2
-                                        break
-                                    else:
-                                        duration_limit = None  # Reset and try next pattern
+                    # Extract daily benefit amount (e.g., "2만원" -> 20000)
+                    if daily_amount is None:
+                        coverage_pattern = canonical_name[:6] if len(canonical_name) >= 6 else canonical_name
 
-                        # Extract daily benefit amount (e.g., "2만원" -> 20000)
-                        if daily_amount is None:
-                            # Try multiple patterns
-                            coverage_pattern = canonical_name[:6] if len(canonical_name) >= 6 else canonical_name
-
-                            # Pattern 1: Coverage name + amount in same line or nearby
-                            amount_match = re.search(rf'{re.escape(coverage_pattern)}[^\n]{{0,100}}?(\d+)\s*만\s*원', chunk_text)
+                        # Pattern 1: Coverage name + amount
+                        amount_match = re.search(rf'{re.escape(coverage_pattern)}[^\n]{{0,100}}?(\d+)\s*만\s*원', chunk_text)
+                        if amount_match:
+                            daily_amount = int(amount_match.group(1)) * 10000
+                        else:
+                            # Pattern 2: "일당" + amount
+                            amount_match = re.search(r'일당[^\n]{0,50}?(\d+)\s*만\s*원', chunk_text)
                             if amount_match:
                                 daily_amount = int(amount_match.group(1)) * 10000
                             else:
-                                # Pattern 2: Look for "일당" + amount pattern
-                                amount_match = re.search(r'일당[^\n]{0,50}?(\d+)\s*만\s*원', chunk_text)
+                                # Pattern 3: Coverage code + amount
+                                amount_match = re.search(rf'(?:{re.escape(coverage_code)}|{re.escape(coverage_pattern)})[^\n]{{0,100}}?(\d+)\s*만\s*원', chunk_text)
                                 if amount_match:
                                     daily_amount = int(amount_match.group(1)) * 10000
-                                else:
-                                    # Pattern 3: Table row with coverage code or partial name
-                                    amount_match = re.search(rf'(?:{re.escape(coverage_code)}|{re.escape(coverage_pattern)})[^\n]{{0,100}}?(\d+)\s*만\s*원', chunk_text)
-                                    if amount_match:
-                                        daily_amount = int(amount_match.group(1)) * 10000
 
-                        # Break early if all values found
-                        if product_name and duration_limit and daily_amount:
-                            break
+                    # Break early if all values found
+                    if duration_limit and daily_amount:
+                        break
 
-                    # Set values or fallback to None
-                    row_data['product_name'] = product_name  # UI will show "정보없음" if None
+                # Inject quantitative fields into slots with UI contract format
+                slots = row_data.get('slots', {})
+                slots['duration_limit_days'] = {'value': duration_limit}
+                slots['daily_benefit_amount_won'] = {'value': daily_amount}
+                row_data['slots'] = slots
 
-                    # Inject quantitative fields into slots with UI contract format
-                    slots = row_data.get('slots', {})
-                    slots['duration_limit_days'] = {'value': duration_limit}
-                    slots['daily_benefit_amount_won'] = {'value': daily_amount}
-                    row_data['slots'] = slots
-
-                    filtered_rows.append(row_data)
+                filtered_rows.append(row_data)
 
             payload['insurer_rows'] = filtered_rows
 
@@ -954,6 +970,51 @@ class Q2CoverageLimitCompareHandler(IntentHandler):
             payload['debug']['available_insurer_set'] = available_insurer_set
             payload['debug']['returned_insurer_set'] = returned_insurer_set
             payload['debug']['missing_insurers'] = missing_insurers
+
+            # Q2 Product SSOT debug transparency (STEP NEXT-73: Q2 상품명 SSOT 정합화)
+            payload['debug']['product_join_key_fact'] = 'ins_cd + as_of_date'
+            payload['debug']['product_name_missing_insurers'] = product_name_missing_insurers
+            payload['debug']['product_table_as_of_date_used'] = as_of_date
+
+            # Row integrity debug (회사명-상품명 매칭 검증용)
+            payload['debug']['product_map_keys'] = sorted(list(product_map.keys()))
+            payload['debug']['row_insurer_codes'] = [row.get('insurer_code') for row in payload['insurer_rows']]
+
+            # Log row integrity for debugging
+            logger.info(f"Q2 Row Integrity: product_map={list(product_map.keys())}, rows={[r.get('insurer_code') for r in payload['insurer_rows']]}")
+
+            # CRITICAL: Final row integrity validation (enforce ins_cd → product_name match)
+            # Log each row's (insurer_code, product_name, product_id) for mismatch detection
+            logger.info("=" * 80)
+            logger.info("Q2 FINAL ROW INTEGRITY CHECK")
+            logger.info("=" * 80)
+            for idx, row in enumerate(payload['insurer_rows']):
+                ins_cd = row.get('insurer_code', '???')
+                product_name = row.get('product_name', 'None')
+                product_id = row.get('product_id', 'None')
+
+                # Get expected product from product_map
+                expected_product = product_map.get(ins_cd)
+                if expected_product:
+                    expected_name = expected_product.get('product_full_name', 'N/A')
+                    expected_id = expected_product.get('product_id', 'N/A')
+
+                    # Check for mismatch
+                    name_match = (product_name == expected_name) if product_name != 'None' else True
+                    id_match = (product_id == expected_id) if product_id != 'None' else True
+
+                    if not name_match or not id_match:
+                        logger.error(f"❌ ROW {idx}: MISMATCH DETECTED!")
+                        logger.error(f"  ins_cd={ins_cd}")
+                        logger.error(f"  product_name={product_name[:50]}...")
+                        logger.error(f"  expected_name={expected_name[:50]}...")
+                        logger.error(f"  product_id={product_id}, expected_id={expected_id}")
+                    else:
+                        logger.info(f"✅ ROW {idx}: {ins_cd} → {product_name[:40]}... (id={product_id})")
+                else:
+                    logger.warning(f"⚠️  ROW {idx}: {ins_cd} → No product_map entry (product_name={product_name[:40] if product_name != 'None' else 'None'})")
+
+            logger.info("=" * 80)
 
             return payload
 

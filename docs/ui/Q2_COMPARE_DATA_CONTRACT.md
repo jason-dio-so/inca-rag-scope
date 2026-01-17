@@ -82,7 +82,15 @@ When multiple rows match (coverage_code, as_of_date):
     {
       "insurer_code": "N01",                         // ✅ INJECTED by handler (SSOT: insurer_set order)
       "ins_cd": "N01",                               // Legacy field (for backward compatibility)
+      "product_name": "무배당 알파Plus보장보험2508...", // ✅ INJECTED by handler (SSOT: product.product_full_name)
+      "product_id": "24882",                         // ✅ INJECTED by handler (SSOT: product.product_id)
       "slots": {
+        "duration_limit_days": {
+          "value": 180                               // ✅ Extracted from coverage_chunk (quantitative)
+        },
+        "daily_benefit_amount_won": {
+          "value": 20000                             // ✅ Extracted from coverage_chunk (quantitative)
+        },
         "exclusions": {
           "status": "FOUND",
           "excerpt": "..."
@@ -107,7 +115,11 @@ When multiple rows match (coverage_code, as_of_date):
 |-------|------|----------|-------------|-------------|
 | `insurer_code` | string | ✅ | Insurer code (N01-N13) | Handler injects from insurer_set[index] |
 | `ins_cd` | string | ⚠️ Legacy | Duplicate of insurer_code | Handler injects (backward compat) |
-| `slots` | object | ✅ | Coverage slots (exclusions, waiting_period, subtype_coverage_map) | DB payload |
+| `product_name` | string | ✅ | Full product name (official) | **SSOT: product.product_full_name** (joined by ins_cd + as_of_date) |
+| `product_id` | string | ✅ | Product identifier | **SSOT: product.product_id** (joined by ins_cd + as_of_date) |
+| `slots` | object | ✅ | Coverage slots (qualitative + quantitative) | Mixed (DB payload + coverage_chunk extraction) |
+| `slots.duration_limit_days.value` | number | ⚠️ Best effort | Coverage duration limit in days | Extracted from coverage_chunk text (regex patterns) |
+| `slots.daily_benefit_amount_won.value` | number | ⚠️ Best effort | Daily benefit amount in KRW | Extracted from coverage_chunk text (regex patterns) |
 | `slots.*.status` | string | ✅ | "FOUND" or "NOT_FOUND" | DB payload |
 | `slots.*.excerpt` | string | ✅ | Evidence text excerpt | DB payload |
 
@@ -136,7 +148,77 @@ for idx, ins_cd in enumerate(available_insurer_set):
 
 ---
 
-## 5. Legacy Naming (Q11 → Q2 Migration)
+## 5. product_name SSOT Injection (STEP NEXT-73)
+
+### Problem
+- DB payload `insurer_rows` has NO `product_name` or `product_id` fields (only `ins_cd` and `slots`)
+- Previous solution: Regex extraction from `coverage_chunk` text
+- Previous issues: Unreliable (4/7 failed or messy), captured table headers, not SSOT
+
+### Solution (A안: Reuse product SSOT)
+Handler queries `product` table to inject official product names using Q1 join pattern:
+
+**Q1 Join Key**: `product_id` (apps/api/q1_endpoints.py:200)
+```python
+LEFT JOIN product p ON c.product_id = p.product_id
+-- product_name = p.product_full_name
+```
+
+**Q2 Adaptation**: `ins_cd + as_of_date` (payload lacks product_id)
+```python
+SELECT ins_cd, product_id, product_full_name
+FROM product
+WHERE ins_cd = ANY(%s) AND as_of_date = %s
+```
+
+**Rule**: Both Q1 and Q2 MUST use `product.product_full_name` as SSOT. NO regex/text extraction allowed.
+
+### Code Reference
+See `apps/api/server.py:851-946`:
+```python
+# STEP 1: Query product SSOT for all returned insurers (batch query)
+self.cursor.execute("""
+    SELECT ins_cd, product_id, product_full_name
+    FROM product
+    WHERE ins_cd = ANY(%s) AND as_of_date = %s
+""", (returned_insurer_set, as_of_date))
+
+product_map = {row['ins_cd']: row for row in self.cursor.fetchall()}
+
+# STEP 2: Inject product_name from SSOT
+for idx, ins_cd in enumerate(available_insurer_set):
+    if ins_cd in returned_insurer_set:
+        row_data = insurer_rows[idx] if idx < len(insurer_rows) else {}
+
+        # Q2 Adapter: Inject product_name from SSOT (NO regex extraction)
+        if ins_cd in product_map:
+            row_data['product_name'] = product_map[ins_cd]['product_full_name']
+            row_data['product_id'] = product_map[ins_cd]['product_id']
+        else:
+            row_data['product_name'] = None  # UI will show "정보없음"
+            row_data['product_id'] = None
+```
+
+### Debug Transparency
+Handler adds 3 debug fields for product SSOT:
+- `debug.product_join_key_fact`: 'ins_cd + as_of_date'
+- `debug.product_name_missing_insurers`: List of ins_cd without product rows
+- `debug.product_table_as_of_date_used`: as_of_date value used for query
+
+### Gate Enforcement
+Script: `tools/gate/check_q2_product_name_ssot.sh`
+
+Checks:
+- ✅ Q1 join key FACT documented in Q2_PRODUCT_DB_AUDIT.md
+- ✅ No regex product_name extraction in Q2 handler
+- ✅ Product SSOT batch query exists
+- ✅ A6200 returns non-empty product_names
+- ✅ No table header noise patterns
+- ✅ Debug transparency fields present
+
+---
+
+## 6. Legacy Naming (Q11 → Q2 Migration)
 
 ### Current State
 - `debug.profile_id`: "A6200_Q11_PROFILE_V1"
@@ -295,6 +377,19 @@ bash tools/gate/check_q2_data_subset_ok.sh
 ---
 
 ## Changelog
+
+### 2026-01-17 - Product Name SSOT Integration (STEP NEXT-73)
+- **Problem**: product_name extracted via regex from coverage_chunk (unreliable: 4/7 failed or messy)
+- **Solution**: Query product.product_full_name SSOT (A안: reuse existing product table)
+- **Changes**:
+  - Removed all regex product_name extraction from Q2 handler
+  - Added batch query to product table (ins_cd + as_of_date join)
+  - Added product_name and product_id injection to insurer_rows
+  - Added 3 debug transparency fields: product_join_key_fact, product_name_missing_insurers, product_table_as_of_date_used
+  - Created gate: tools/gate/check_q2_product_name_ssot.sh
+  - Updated docs: Q2_PRODUCT_DB_AUDIT.md (comprehensive DB audit)
+- **Result**: 7/7 insurers now have clean SSOT product names (no table headers, no None)
+- **Q1 Consistency**: Q2 now uses same SSOT source as Q1 (product.product_full_name)
 
 ### 2026-01-17 - Subset Matching Implemented
 - Changed query from exact insurer_set match to (coverage_code, as_of_date) lookup

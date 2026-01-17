@@ -1,0 +1,79 @@
+{
+  "source": "data/sources/insurers/담보명mapping자료.xlsx",
+  "generated_at": "2026-01-17T20:12:16.645801",
+  "total_insurers": 8,
+  "insurers": [
+    {
+      "ins_cd": "N01",
+      "insurer_name_ko": "메리츠",
+      "insurer_enum": "MERITZ",
+      "premium_code": "meritz",
+      "source_sheet": "Sheet1",
+      "source_file": "data/sources/insurers/담보명mapping자료.xlsx",
+      "source_hash": "c0e111e4"
+    },
+    {
+      "ins_cd": "N02",
+      "insurer_name_ko": "한화",
+      "insurer_enum": "HANWHA",
+      "premium_code": "hanwha",
+      "source_sheet": "Sheet1",
+      "source_file": "data/sources/insurers/담보명mapping자료.xlsx",
+      "source_hash": "0de44479"
+    },
+    {
+      "ins_cd": "N03",
+      "insurer_name_ko": "롯데",
+      "insurer_enum": "LOTTE",
+      "premium_code": "lotte",
+      "source_sheet": "Sheet1",
+      "source_file": "data/sources/insurers/담보명mapping자료.xlsx",
+      "source_hash": "ceb0af61"
+    },
+    {
+      "ins_cd": "N05",
+      "insurer_name_ko": "흥국",
+      "insurer_enum": "HEUNGKUK",
+      "premium_code": "heungkuk",
+      "source_sheet": "Sheet1",
+      "source_file": "data/sources/insurers/담보명mapping자료.xlsx",
+      "source_hash": "1ead173d"
+    },
+    {
+      "ins_cd": "N08",
+      "insurer_name_ko": "삼성",
+      "insurer_enum": "SAMSUNG",
+      "premium_code": "samsung",
+      "source_sheet": "Sheet1",
+      "source_file": "data/sources/insurers/담보명mapping자료.xlsx",
+      "source_hash": "04f5221f"
+    },
+    {
+      "ins_cd": "N09",
+      "insurer_name_ko": "현대",
+      "insurer_enum": "HYUNDAI",
+      "premium_code": "hyundai",
+      "source_sheet": "Sheet1",
+      "source_file": "data/sources/insurers/담보명mapping자료.xlsx",
+      "source_hash": "0f1096a8"
+    },
+    {
+      "ins_cd": "N10",
+      "insurer_name_ko": "KB",
+      "insurer_enum": "KB",
+      "premium_code": "kb",
+      "source_sheet": "Sheet1",
+      "source_file": "data/sources/insurers/담보명mapping자료.xlsx",
+      "source_hash": "568863ef"
+    },
+    {
+      "ins_cd": "N13",
+      "insurer_name_ko": "DB",
+      "insurer_enum": "DB",
+      "premium_code": "db",
+      "source_sheet": "Sheet1",
+      "source_file": "data/sources/insurers/담보명mapping자료.xlsx",
+      "source_hash": "4726f274"
+    }
+  ]
+}
