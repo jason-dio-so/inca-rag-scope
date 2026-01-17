@@ -145,7 +145,7 @@ export function Q4SupportMatrixView({ data }: Q4ViewProps) {
           <li>• <strong>✅ O</strong>: 진단비로 보장 (사용 가능)</li>
           <li>• <strong>❌ X</strong>: 명시적으로 제외됨</li>
           <li>• <strong>⚠️</strong>: 진단비 아님 (치료비 트리거로만 언급)</li>
-          <li>• <strong>—</strong>: 정보 없음 (약관에서 근거를 찾지 못함)</li>
+          <li>• <strong>—</strong>: 정보 없음 (약관에서 확인되지 않음)</li>
         </ul>
       </div>
 
