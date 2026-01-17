@@ -59,8 +59,8 @@ export default function Q1Page() {
     setError(null);
 
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3000';
-      const response = await fetch(`${API_BASE}/api/q1/coverage_ranking`, {
+      // Hardcoded to Next.js server (not backend)
+      const response = await fetch('http://localhost:3000/api/q1/coverage_ranking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -105,8 +105,8 @@ export default function Q1Page() {
     setError(null);
 
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3000';
-      const response = await fetch(`${API_BASE}/api/chat_query`, {
+      // Hardcoded to Next.js server (not backend)
+      const response = await fetch('http://localhost:3000/api/chat_query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
