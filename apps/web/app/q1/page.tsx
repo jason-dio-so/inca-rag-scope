@@ -42,6 +42,52 @@ export default function Q1Page() {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Execute BY_COVERAGE query
+  const executeCoverageRanking = async (querySlots: Q1Slots & { selected_coverage_codes: string[] }) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3000';
+      const response = await fetch(`${API_BASE}/api/q1/coverage_ranking`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ins_cds: ALL_INSURERS,
+          age: querySlots.age_band || parseInt(ageRange),
+          gender: querySlots.sex || gender,
+          sort_by: querySlots.sort_by || sortBy,
+          plan_variant_scope: querySlots.plan_variant_scope || productType,
+          coverage_codes: querySlots.selected_coverage_codes,
+          as_of_date: '2025-11-26'
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Q1 BY_COVERAGE result:', data);
+        setResult(data);
+
+        // Add success message to chat
+        const coverage_label = data.viewModel?.coverage_labels?.[0]?.canonical_name || querySlots.selected_coverage_codes[0];
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `담보별 비교 결과를 생성했습니다.\n기준: ${coverage_label}\n아래 표를 확인하세요.`,
+          timestamp: new Date(),
+        }]);
+      } else {
+        const errorText = await response.text();
+        setError(`서버 오류: ${response.status}`);
+        console.error('Q1 coverage_ranking failed:', response.status, errorText);
+      }
+    } catch (err) {
+      console.error('Q1 coverage_ranking error:', err);
+      setError('요청 처리 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Execute query (called from both chat and form)
   const executeQuery = async (querySlots: Q1Slots) => {
     setLoading(true);
@@ -118,13 +164,26 @@ export default function Q1Page() {
       return;
     }
 
-    // Check if BY_COVERAGE mode
+    // Handle BY_COVERAGE mode
     if (newSlots.premium_mode === 'BY_COVERAGE') {
-      setMessages(prev => [...prev, {
-        role: 'system',
-        content: '⚠️ 담보별 비교는 아직 지원되지 않습니다. 전체보험료 비교를 사용하세요.',
-        timestamp: new Date(),
-      }]);
+      if (!newSlots.coverage_query_text) {
+        // Need coverage code input
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: '담보 코드를 입력해 주세요.\n예시: A4200_1 (암진단비), A4103 (뇌졸중진단비)',
+          timestamp: new Date(),
+        }]);
+        return;
+      }
+
+      // Simplified: treat coverage_query_text as coverage_code directly
+      const coverage_code = newSlots.coverage_query_text.trim();
+
+      // Call BY_COVERAGE endpoint
+      await executeCoverageRanking({
+        ...newSlots,
+        selected_coverage_codes: [coverage_code]
+      });
       return;
     }
 
