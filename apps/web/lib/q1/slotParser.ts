@@ -78,6 +78,14 @@ export function extractAgeBand(text: string): 30 | 40 | 50 | null {
 export function extractPremiumMode(text: string): 'TOTAL' | 'BY_COVERAGE' | null {
   const normalized = normalize(text);
 
+  // Numeric choice patterns (for "(1)" or "(2)" responses)
+  if (/^\(?\s*1\s*\)?$/.test(normalized) || /^1$/.test(text.trim())) {
+    return 'TOTAL';
+  }
+  if (/^\(?\s*2\s*\)?$/.test(normalized) || /^2$/.test(text.trim())) {
+    return 'BY_COVERAGE';
+  }
+
   // TOTAL patterns
   if (/전체|총|total|전체보험료|총보험료/.test(normalized)) {
     return 'TOTAL';
