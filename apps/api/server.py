@@ -36,7 +36,9 @@ import psycopg2.extras
 # Q1 endpoints
 from apps.api.q1_endpoints import (
     Q1CoverageRankingRequest,
-    execute_coverage_ranking
+    Q1CoverageCandidatesRequest,
+    execute_coverage_ranking,
+    execute_coverage_candidates
 )
 
 # Setup logging
@@ -2198,6 +2200,28 @@ def q1_coverage_ranking(request: Q1CoverageRankingRequest):
 
     except Exception as e:
         logger.error(f"Q1 coverage_ranking error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/q1/coverage_candidates")
+def q1_coverage_candidates(request: Q1CoverageCandidatesRequest):
+    """
+    Q1 coverage candidates resolution endpoint
+
+    Purpose: Resolve user's free-text coverage query to canonical coverage_code candidates
+    Rules:
+    - Deterministic matching only (NO LLM)
+    - Uses 4 strategies: exact → contains → alias → token
+    - Returns max 3 candidates sorted by score desc
+    - coverage_code MUST be 신정원 canonical
+    """
+    try:
+        # Note: execute_coverage_candidates creates its own DB connection via coverage_resolver
+        result = execute_coverage_candidates(request, None)
+        return result.dict()
+
+    except Exception as e:
+        logger.error(f"Q1 coverage_candidates error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

@@ -15,6 +15,8 @@ from pydantic import BaseModel
 import psycopg2
 from psycopg2.extras import DictCursor
 
+from apps.api.utils.coverage_resolver import resolve_coverage_candidates
+
 logger = logging.getLogger(__name__)
 
 
@@ -64,6 +66,26 @@ class Q1Response(BaseModel):
     """Q1 endpoint response"""
     kind: str = "Q1"
     viewModel: Q1ViewModel
+
+
+class Q1CoverageCandidatesRequest(BaseModel):
+    """Request for coverage candidate resolution"""
+    query_text: str
+    max_candidates: int = 3
+
+
+class CoverageCandidate(BaseModel):
+    """Single coverage candidate"""
+    coverage_code: str
+    canonical_name: str
+    score: float
+    match_reason: str
+
+
+class Q1CoverageCandidatesResponse(BaseModel):
+    """Response for coverage candidates endpoint"""
+    query_text: str
+    candidates: List[CoverageCandidate]
 
 
 # ============================================================================
@@ -368,4 +390,43 @@ def execute_coverage_ranking(request: Q1CoverageRankingRequest, conn) -> Q1Respo
             coverage_labels=coverage_labels,
             rows=rows
         )
+    )
+
+
+def execute_coverage_candidates(request: Q1CoverageCandidatesRequest, conn) -> Q1CoverageCandidatesResponse:
+    """
+    Resolve coverage free text to canonical coverage_code candidates
+
+    Uses deterministic matching strategies (NO LLM):
+    1. Exact match on canonical_name
+    2. Contains match on canonical_name
+    3. Contains match on insurer_coverage_name (alias)
+    4. Token match on canonical_name
+
+    Returns max 3 candidates sorted by score desc
+    """
+    logger.info(f"Q1 coverage_candidates: query_text='{request.query_text}', max_candidates={request.max_candidates}")
+
+    # Use existing coverage_resolver utility (it creates its own connection)
+    candidates = resolve_coverage_candidates(
+        query_text=request.query_text,
+        max_candidates=request.max_candidates
+    )
+
+    logger.info(f"Q1 coverage_candidates: found {len(candidates)} candidates")
+
+    # Convert to response format
+    candidate_models = [
+        CoverageCandidate(
+            coverage_code=c.coverage_code,
+            canonical_name=c.canonical_name,
+            score=c.score,
+            match_reason=c.match_reason
+        )
+        for c in candidates
+    ]
+
+    return Q1CoverageCandidatesResponse(
+        query_text=request.query_text,
+        candidates=candidate_models
     )
