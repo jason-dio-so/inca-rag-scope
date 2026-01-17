@@ -13,7 +13,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Q1PremiumTable } from '@/components/q1/Q1PremiumTable';
+import { Q1PremiumTable, Q1PremiumRow } from '@/components/q1/Q1PremiumTable';
+import { Q1EvidenceRail } from '@/components/q1/Q1EvidenceRail';
 import { Q1ChatPanel, ChatMessage } from '@/components/q1/Q1ChatPanel';
 import {
   Q1Slots,
@@ -51,6 +52,9 @@ export default function Q1Page() {
   // Result state
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+
+  // Evidence Rail state
+  const [selectedRow, setSelectedRow] = useState<Q1PremiumRow | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Execute BY_COVERAGE query
@@ -524,12 +528,20 @@ export default function Q1Page() {
             </p>
           </div>
         ) : result.kind === 'Q1' && result.viewModel ? (
-          <Q1PremiumTable
-            rows={result.viewModel.rows || result.viewModel.top4 || []}
-            productType={productType}
-            age={parseInt(ageRange)}
-            gender={gender}
-          />
+          <>
+            <Q1PremiumTable
+              rows={result.viewModel.rows || result.viewModel.top4 || []}
+              productType={productType}
+              age={parseInt(ageRange)}
+              gender={gender}
+              onRowClick={setSelectedRow}
+              selectedRow={selectedRow}
+            />
+            <Q1EvidenceRail
+              selectedRow={selectedRow}
+              onClose={() => setSelectedRow(null)}
+            />
+          </>
         ) : (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
             <p className="text-yellow-800 font-semibold">
