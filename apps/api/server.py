@@ -841,16 +841,107 @@ class Q2CoverageLimitCompareHandler(IntentHandler):
             # Calculate missing insurers
             missing_insurers = sorted(list(set(requested_insurer_set) - set(available_insurer_set)))
 
-            # Filter insurer_rows to returned_insurer_set and inject insurer_code
+            # Filter insurer_rows to returned_insurer_set and inject insurer_code + Q2 fields
             # SSOT: insurer_set order = insurer_rows order
             insurer_rows = payload.get('insurer_rows', [])
             filtered_rows = []
 
+            import re
+
             for idx, ins_cd in enumerate(available_insurer_set):
                 if ins_cd in returned_insurer_set:
                     row_data = insurer_rows[idx] if idx < len(insurer_rows) else {}
-                    # Inject insurer_code
+
+                    # Inject insurer_code + ins_cd (backward compat)
                     row_data['insurer_code'] = ins_cd
+                    row_data['ins_cd'] = ins_cd
+
+                    # Q2 Adapter: Extract quantitative fields from coverage_chunk
+                    # UI expects: product_name, slots.duration_limit_days.value, slots.daily_benefit_amount_won.value
+
+                    # Query coverage_chunk for this insurer + coverage_code
+                    self.cursor.execute("""
+                        SELECT chunk_text
+                        FROM coverage_chunk
+                        WHERE ins_cd = %s
+                          AND coverage_code = %s
+                          AND as_of_date = %s
+                          AND (chunk_text ILIKE %s OR chunk_text ILIKE '%%일당%%')
+                        ORDER BY chunk_id
+                        LIMIT 10
+                    """, (ins_cd, coverage_code, as_of_date, f'%{canonical_name[:10]}%'))
+
+                    chunks = self.cursor.fetchall()
+
+                    # Extract values from chunks
+                    product_name = None
+                    duration_limit = None
+                    daily_amount = None
+
+                    for (chunk_text,) in chunks:
+                        # Extract product_name (e.g., "알파Plus보장보험2511")
+                        if product_name is None:
+                            # Try multiple patterns
+                            product_patterns = [
+                                r'\(무\)\s*([^\s\(]+(?:보험|보장)[^\s\)]{0,20})',  # (무) prefix
+                                r'([^\s\(]+(?:보험|보장)\d{4})',  # Product with year
+                                r'계약사항[^\n]*\n([^\(]+보험[^\n]*)',  # After 계약사항 line
+                            ]
+                            for pattern in product_patterns:
+                                product_match = re.search(pattern, chunk_text)
+                                if product_match:
+                                    product_name = product_match.group(1).strip()
+                                    break
+
+                        # Extract duration limit (e.g., "1회 입원당 180일한도", "1-180일")
+                        if duration_limit is None:
+                            duration_patterns = [
+                                (r'(\d+)\s*일\s*한도', 1),  # "180일한도" (highest priority)
+                                (r'1\s*[-~]\s*(\d+)\s*일', 1),  # "1-180일"
+                                (r'\(.*?1\s*[-~]\s*(\d+)[,\s)]', 1),  # "(1-180)" in coverage name
+                            ]
+                            for pattern, group_idx in duration_patterns:
+                                duration_match = re.search(pattern, chunk_text)
+                                if duration_match:
+                                    duration_limit = int(duration_match.group(group_idx))
+                                    if duration_limit > 10:  # Sanity check: ignore small values like 1, 2
+                                        break
+                                    else:
+                                        duration_limit = None  # Reset and try next pattern
+
+                        # Extract daily benefit amount (e.g., "2만원" -> 20000)
+                        if daily_amount is None:
+                            # Try multiple patterns
+                            coverage_pattern = canonical_name[:6] if len(canonical_name) >= 6 else canonical_name
+
+                            # Pattern 1: Coverage name + amount in same line or nearby
+                            amount_match = re.search(rf'{re.escape(coverage_pattern)}[^\n]{{0,100}}?(\d+)\s*만\s*원', chunk_text)
+                            if amount_match:
+                                daily_amount = int(amount_match.group(1)) * 10000
+                            else:
+                                # Pattern 2: Look for "일당" + amount pattern
+                                amount_match = re.search(r'일당[^\n]{0,50}?(\d+)\s*만\s*원', chunk_text)
+                                if amount_match:
+                                    daily_amount = int(amount_match.group(1)) * 10000
+                                else:
+                                    # Pattern 3: Table row with coverage code or partial name
+                                    amount_match = re.search(rf'(?:{re.escape(coverage_code)}|{re.escape(coverage_pattern)})[^\n]{{0,100}}?(\d+)\s*만\s*원', chunk_text)
+                                    if amount_match:
+                                        daily_amount = int(amount_match.group(1)) * 10000
+
+                        # Break early if all values found
+                        if product_name and duration_limit and daily_amount:
+                            break
+
+                    # Set values or fallback to None
+                    row_data['product_name'] = product_name  # UI will show "정보없음" if None
+
+                    # Inject quantitative fields into slots with UI contract format
+                    slots = row_data.get('slots', {})
+                    slots['duration_limit_days'] = {'value': duration_limit}
+                    slots['daily_benefit_amount_won'] = {'value': daily_amount}
+                    row_data['slots'] = slots
+
                     filtered_rows.append(row_data)
 
             payload['insurer_rows'] = filtered_rows
