@@ -5,29 +5,36 @@
  * Format: Support items (rows) x Insurers (columns)
  */
 
+export interface Q4CellData {
+  status_icon: string;
+  display: string;
+  color: string;
+  coverage_kind?: string;
+  evidence_refs?: string[];
+}
+
+export interface Q4SelectedCell {
+  insurer_key: string;
+  insurer_name: string;
+  cellType: 'in_situ' | 'borderline';
+  cellData: Q4CellData;
+}
+
 interface Q4ViewProps {
   data: {
     query_id?: string;
     matrix?: Array<{
       insurer_key: string;
-      in_situ: {
-        status_icon: string;
-        display: string;
-        color: string;
-        coverage_kind?: string;
-      };
-      borderline: {
-        status_icon: string;
-        display: string;
-        color: string;
-        coverage_kind?: string;
-      };
+      in_situ: Q4CellData;
+      borderline: Q4CellData;
     }>;
     error?: string;
   };
+  onCellClick?: (cell: Q4SelectedCell) => void;
+  selectedCell?: Q4SelectedCell | null;
 }
 
-export function Q4SupportMatrixView({ data }: Q4ViewProps) {
+export function Q4SupportMatrixView({ data, onCellClick, selectedCell }: Q4ViewProps) {
   if (data.error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-6">
@@ -95,12 +102,42 @@ export function Q4SupportMatrixView({ data }: Q4ViewProps) {
                   }
                 };
 
+                const isInSituSelected =
+                  selectedCell?.insurer_key === row.insurer_key &&
+                  selectedCell?.cellType === 'in_situ';
+                const isBorderlineSelected =
+                  selectedCell?.insurer_key === row.insurer_key &&
+                  selectedCell?.cellType === 'borderline';
+
+                const handleInSituClick = () => {
+                  onCellClick?.({
+                    insurer_key: row.insurer_key,
+                    insurer_name: insurerName,
+                    cellType: 'in_situ',
+                    cellData: row.in_situ
+                  });
+                };
+
+                const handleBorderlineClick = () => {
+                  onCellClick?.({
+                    insurer_key: row.insurer_key,
+                    insurer_name: insurerName,
+                    cellType: 'borderline',
+                    cellData: row.borderline
+                  });
+                };
+
                 return (
                   <tr key={idx} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-900 font-medium sticky left-0 bg-white">
                       {insurerName}
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td
+                      className={`px-4 py-3 text-center cursor-pointer transition-all ${
+                        isInSituSelected ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset' : ''
+                      }`}
+                      onClick={handleInSituClick}
+                    >
                       <div
                         className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium ${getColorClass(
                           row.in_situ.color
@@ -115,7 +152,12 @@ export function Q4SupportMatrixView({ data }: Q4ViewProps) {
                         <div className="text-xs text-orange-600 mt-1">진단비 아님</div>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td
+                      className={`px-4 py-3 text-center cursor-pointer transition-all ${
+                        isBorderlineSelected ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset' : ''
+                      }`}
+                      onClick={handleBorderlineClick}
+                    >
                       <div
                         className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium ${getColorClass(
                           row.borderline.color

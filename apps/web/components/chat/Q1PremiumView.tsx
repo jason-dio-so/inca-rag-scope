@@ -92,8 +92,8 @@ export function Q1PremiumView({ data }: Q1ViewProps) {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {data.rows.map((row, idx) => {
-                  const isSelected = selectedRow?.product_id === row.product_id &&
-                                    selectedRow?.ins_cd === row.ins_cd;
+                  const isSelected = selectedRow?.insurer_code === row.insurer_code &&
+                                    selectedRow?.product_name === row.product_name;
 
                   return (
                     <tr
@@ -113,10 +113,10 @@ export function Q1PremiumView({ data }: Q1ViewProps) {
                       {data.query_params.plan_variant !== 'GENERAL' && (
                         <>
                           <td className="px-4 py-3 text-right text-gray-900">
-                            {formatPremium(row.premium_monthly_no_refund)}
+                            {formatPremium(row.premium_monthly)}
                           </td>
                           <td className="px-4 py-3 text-right text-gray-900">
-                            {formatPremium(row.premium_total_no_refund)}
+                            {formatPremium(row.premium_total)}
                           </td>
                         </>
                       )}
@@ -173,7 +173,7 @@ export function Q1PremiumView({ data }: Q1ViewProps) {
                 근거 (Evidence)
               </h3>
               <p className="text-sm text-gray-600 mt-1">
-                {selectedRow.insurer_name} - {selectedRow.product_name || selectedRow.product_id}
+                {selectedRow.insurer_name} - {selectedRow.product_name || selectedRow.insurer_code}
               </p>
             </div>
 
@@ -201,9 +201,12 @@ export function Q1PremiumView({ data }: Q1ViewProps) {
                   <div className="mt-3 p-2 bg-gray-50 rounded">
                     <div className="font-medium text-gray-700 mb-1">NO_REFUND:</div>
                     <div className="text-xs text-gray-600">
-                      월납: {formatPremium(selectedRow.evidence.base_premium.no_refund.premium_monthly)}
+                      월납: {(selectedRow.evidence.base_premium.no_refund.premium_monthly / 10000).toLocaleString()}만원
                       {' | '}
-                      총납: {formatPremium(selectedRow.evidence.base_premium.no_refund.premium_total)}
+                      총납: {(selectedRow.evidence.base_premium.no_refund.premium_total / 10000).toLocaleString()}만원
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Source: {selectedRow.evidence.base_premium.no_refund.source}
                     </div>
                   </div>
                 )}
@@ -211,9 +214,12 @@ export function Q1PremiumView({ data }: Q1ViewProps) {
                   <div className="mt-2 p-2 bg-gray-50 rounded">
                     <div className="font-medium text-gray-700 mb-1">GENERAL:</div>
                     <div className="text-xs text-gray-600">
-                      월납: {formatPremium(selectedRow.evidence.base_premium.general.premium_monthly)}
+                      월납: {(selectedRow.evidence.base_premium.general.premium_monthly / 10000).toLocaleString()}만원
                       {' | '}
-                      총납: {formatPremium(selectedRow.evidence.base_premium.general.premium_total)}
+                      총납: {(selectedRow.evidence.base_premium.general.premium_total / 10000).toLocaleString()}만원
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Source: {selectedRow.evidence.base_premium.general.source}
                     </div>
                   </div>
                 )}
@@ -248,7 +254,13 @@ export function Q1PremiumView({ data }: Q1ViewProps) {
                   <div className="mt-3 p-2 bg-orange-50 rounded text-xs text-gray-600">
                     <strong>설명:</strong> 일반보험료 산출에 사용됨
                     <br />
-                    계산식: 일반 = 무해지 × (multiplier / 100)
+                    {selectedRow.evidence.rate_multiplier.formula || `계산식: 일반 = 무해지 × ${selectedRow.evidence.rate_multiplier.multiplier_percent}%`}
+                    {selectedRow.evidence.rate_multiplier.note && (
+                      <>
+                        <br />
+                        <span className="text-yellow-700">{selectedRow.evidence.rate_multiplier.note}</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

@@ -45,7 +45,7 @@ class IntentRouter:
 
     # STEP NEXT-UI-01: Category → Example mapping
     CATEGORY_MAPPING: Dict[str, MessageKind] = {
-        "단순보험료 비교": "EX1_PREMIUM_DISABLED",
+        "단순보험료 비교": "Q1",  # STEP NEXT: Q1 Premium Ranking enabled
         "② 상품/담보 설명": "EX2_DETAIL_DIFF",
         "상품 비교": "EX3_INTEGRATED",  # Default for category
         "보험 상식": "KNOWLEDGE_BASE"  # Future RAG
@@ -97,7 +97,18 @@ class IntentRouter:
             r"갑상선암",
             r"기타피부암"
         ],
-        "EX1_PREMIUM_DISABLED": [
+        "Q1": [  # STEP NEXT: Q1 Premium Ranking patterns
+            r"보험료",
+            r"납입",
+            r"가격",
+            r"비용",
+            r"금액.*비교",
+            r"정렬",
+            r"저렴",
+            r"비싼",
+            r"싼"
+        ],
+        "EX1_PREMIUM_DISABLED": [  # Legacy (backward compat, maps to Q1)
             r"보험료",
             r"납입",
             r"가격",
@@ -254,8 +265,9 @@ class SlotValidator:
         "EX3_INTEGRATED": ["coverage_names", "insurers"],
         "EX3_COMPARE": ["coverage_names", "insurers"],  # STEP NEXT-77
         "EX4_ELIGIBILITY": ["disease_name", "insurers"],
-        "EX1_PREMIUM_DISABLED": [],  # No slots required (immediate disabled response)
-        "PREMIUM_COMPARE": []
+        "Q1": [],  # STEP NEXT: Q1 Premium Ranking (no slots required, uses user_profile age/sex)
+        "EX1_PREMIUM_DISABLED": [],  # Legacy (backward compat)
+        "PREMIUM_COMPARE": []  # Legacy
     }
 
     @staticmethod

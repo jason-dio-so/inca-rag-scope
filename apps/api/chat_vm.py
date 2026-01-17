@@ -357,6 +357,7 @@ Section = (
 # ============================================================================
 
 MessageKind = Literal[
+    "Q1",                   # STEP NEXT: 보험료 비교 (Premium Ranking)
     "EX2_DETAIL",           # STEP NEXT-86: 단일 담보 설명 (insurers=1, NO 비교/판단)
     "EX2_DETAIL_DIFF",      # 예시2: 담보 조건 차이 탐색 (LEGACY - use EX2_LIMIT_FIND)
     "EX2_LIMIT_FIND",       # STEP NEXT-78: 보장한도/조건 값 차이 비교 (NO O/X)
@@ -364,7 +365,7 @@ MessageKind = Literal[
     "EX3_COMPARE",          # STEP NEXT-77: EX3 with locked schema (composer-based)
     "EX4_ELIGIBILITY",      # 예시4: 보장 가능 여부 (O/X/△ matrix)
     "EX1_PREMIUM_DISABLED", # 예시1: 보험료 비교 불가
-    "PREMIUM_COMPARE"       # 예시1: 보험료 비교 (활성)
+    "PREMIUM_COMPARE"       # 예시1: 보험료 비교 (활성, LEGACY)
 ]
 
 # EXAM ISOLATION: Explicit exam type for cross-contamination prevention
@@ -386,12 +387,12 @@ def get_exam_type_from_kind(kind: MessageKind) -> ExamType:
     - Cross-exam mixing is FORBIDDEN
 
     MAPPING:
-    - EXAM1: EX1_PREMIUM_DISABLED, PREMIUM_COMPARE (entry/routing)
+    - EXAM1: Q1, EX1_PREMIUM_DISABLED, PREMIUM_COMPARE (premium comparison)
     - EXAM2: EX2_DETAIL, EX2_DETAIL_DIFF, EX2_LIMIT_FIND (exploration)
     - EXAM3: EX3_INTEGRATED, EX3_COMPARE (report)
     - EXAM4: EX4_ELIGIBILITY (O/X judgment)
     """
-    if kind in ("EX1_PREMIUM_DISABLED", "PREMIUM_COMPARE"):
+    if kind in ("Q1", "EX1_PREMIUM_DISABLED", "PREMIUM_COMPARE"):
         return "EXAM1"
     elif kind in ("EX2_DETAIL", "EX2_DETAIL_DIFF", "EX2_LIMIT_FIND"):
         return "EXAM2"
@@ -417,9 +418,14 @@ class AssistantMessageVM(BaseModel):
 
     PRESENTATION:
     - ChatGPT-style card layout
-    - Title + Summary + Sections
+    - Title + Summary + Sections (legacy)
+    - OR viewModel (Chat UI v2)
     - Evidence is collapsible
     - Lineage is collapsible
+
+    STEP NEXT (Chat UI v2):
+    - Q1 uses viewModel (NOT sections/title/summary)
+    - Legacy handlers continue using sections/title/summary
     """
     message_id: uuid.UUID = Field(default_factory=uuid.uuid4)
     request_id: uuid.UUID  # From /chat request
@@ -427,10 +433,13 @@ class AssistantMessageVM(BaseModel):
     exam_type: ExamType  # EXAM ISOLATION: Explicit exam type (MANDATORY)
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
-    title: str  # Short header (e.g., "암진단비 비교 결과")
-    summary_bullets: List[str]  # 3-6 bullets (fact-only)
+    # Legacy fields (Optional for backwards compatibility with Chat UI v2)
+    title: Optional[str] = None  # Short header (e.g., "암진단비 비교 결과")
+    summary_bullets: Optional[List[str]] = None  # 3-6 bullets (fact-only)
+    sections: Optional[List[Section]] = None  # Typed sections (table/explanation/etc.)
 
-    sections: List[Section]  # Typed sections (table/explanation/etc.)
+    # Chat UI v2 field (STEP NEXT: Q1 Premium Ranking)
+    viewModel: Optional[Dict[str, Any]] = None  # Q1ViewModel, Q2ViewModel, etc.
 
     # STEP NEXT-81B: Bubble markdown (deterministic summary for central chat bubble)
     bubble_markdown: Optional[str] = None  # Markdown summary (NO raw text, refs only)

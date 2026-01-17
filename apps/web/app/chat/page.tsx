@@ -1,11 +1,12 @@
 /**
- * Chat UI v2 - Unified Comparison Interface
+ * Chat UI v2 - Unified Comparison Interface (Kiwoom-style Layout)
  *
  * Features:
- * - Insurer multiselect with preset options
- * - Collapsible filter panel (sort, type, age, gender)
- * - Single query input
+ * - Overview Landing (onboarding with KPIs)
+ * - Split Workspace (Chat + Context Panel)
+ * - Filter panel (sort, type, age, gender)
  * - 4 response types: Q1(Premium), Q2(Limit Diff), Q3(3-part), Q4(Matrix)
+ * - All insurers (8) compared by default
  */
 
 'use client';
@@ -17,30 +18,44 @@ import { Q2LimitDiffView } from '@/components/chat/Q2LimitDiffView';
 import { Q3ThreePartView } from '@/components/chat/Q3ThreePartView';
 import { Q4SupportMatrixView } from '@/components/chat/Q4SupportMatrixView';
 
-const INSURER_NAMES: Record<string, string> = {
-  'N01': 'DB손해보험',
-  'N02': '롯데손해보험',
-  'N03': '메리츠화재',
-  'N05': '삼성화재',
-  'N08': '현대해상',
-  'N09': '흥국화재',
-  'N10': 'KB손해보험',
-  'N13': '한화손해보험',
+// Default: 전체 보험사 (8개)
+const ALL_INSURERS = ['N01', 'N02', 'N03', 'N05', 'N08', 'N09', 'N10', 'N13'];
+
+// KPI Data (hardcoded)
+const KPI_DATA = {
+  insurers: 8,
+  database: 'inca_ssot',
+  asOfDate: '2025-11-26',
+  canonicalCoverages: 45,  // Example
 };
 
-const PRESET_CONFIGS = [
-  { id: '2-insurer', label: '2개', codes: ['N01', 'N08'] },
-  { id: '4-insurer', label: '4개', codes: ['N01', 'N02', 'N08', 'N10'] },
-  { id: '8-insurer', label: '8개 (전체)', codes: ['N01', 'N02', 'N03', 'N05', 'N08', 'N09', 'N10', 'N13'] },
-];
+type WorkspaceMode = 'overview' | 'workspace';
+type ViewMode = 'split' | 'chat-only' | 'context-only';
 
 export default function ChatPage() {
-  const [availableInsurers, setAvailableInsurers] = useState<string[]>([]);
-  const [selectedInsurers, setSelectedInsurers] = useState<string[]>([]);
+  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>('overview');
+  const [viewMode, setViewMode] = useState<ViewMode>('split');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   const [result, setResult] = useState<any>(null);
+
+  // RUNTIME GUARD: Prevent legacy UI from loading in /chat
+  useEffect(() => {
+    const bodyText = document.body.textContent || '';
+    const forbiddenPatterns = [
+      '보험 상품 비교 도우미',
+      '옵션 숨기기',
+      'LLM: OFF',
+      'LLM: ON'
+    ];
+
+    for (const pattern of forbiddenPatterns) {
+      if (bodyText.includes(pattern)) {
+        throw new Error(`[UI Mixing Guard] Legacy UI element detected in /chat: "${pattern}"`);
+      }
+    }
+  }, []);
 
   // Filter states
   const [sortBy, setSortBy] = useState<'total' | 'monthly'>('total');
@@ -48,45 +63,8 @@ export default function ChatPage() {
   const [age, setAge] = useState<number>(40);
   const [gender, setGender] = useState<'M' | 'F'>('M');
 
-  // Load available insurers (using A4200_1 as default for now)
-  useEffect(() => {
-    async function fetchInsurers() {
-      try {
-        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000';
-        const response = await fetch(`${API_BASE}/coverage_status?coverage_code=A4200_1&as_of_date=2025-11-26`);
-        if (response.ok) {
-          const data = await response.json();
-          const insurers = data.available_insurers || [];
-          setAvailableInsurers(insurers);
-          setSelectedInsurers(insurers); // Default: all
-        }
-      } catch (err) {
-        console.error('Failed to load insurers:', err);
-        setAvailableInsurers(PRESET_CONFIGS[2].codes);
-        setSelectedInsurers(PRESET_CONFIGS[2].codes);
-      }
-    }
-    fetchInsurers();
-  }, []);
-
-  const handleInsurerToggle = (code: string) => {
-    setSelectedInsurers(prev => {
-      if (prev.includes(code)) {
-        const newSelection = prev.filter(c => c !== code);
-        return newSelection.length >= 2 ? newSelection : prev;
-      } else {
-        const newSelection = [...prev, code];
-        return newSelection.length <= 8 ? newSelection : prev;
-      }
-    });
-  };
-
-  const handlePresetSelect = (preset: typeof PRESET_CONFIGS[0]) => {
-    setSelectedInsurers(preset.codes);
-  };
-
   const handleSubmit = async () => {
-    if (!query.trim() || selectedInsurers.length < 2) {
+    if (!query.trim()) {
       return;
     }
 
@@ -98,7 +76,7 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query_text: query,
-          ins_cds: selectedInsurers,
+          ins_cds: ALL_INSURERS, // 전체 보험사 (8개)
           filters: {
             sort_by: sortBy,
             product_type: productType,
@@ -111,16 +89,39 @@ export default function ChatPage() {
       if (response.ok) {
         const data = await response.json();
         console.log('Result:', data);
+
+        // ANTI-LEGACY GUARD: Prevent regression to legacy response structure
+        if (data.kind === 'Q1') {
+          // Q1 MUST use viewModel (Chat UI v2), NOT sections/title/summary
+          if (!data.viewModel) {
+            throw new Error('[Q1 Anti-Legacy Guard] Q1 response must have viewModel field');
+          }
+          if (data.sections || data.title || data.summary_bullets) {
+            throw new Error('[Q1 Anti-Legacy Guard] Q1 must NOT have legacy fields (sections/title/summary)');
+          }
+        }
+
         setResult(data);
       } else {
-        console.error('Query failed:', response.status);
+        const errorText = await response.text();
+        console.error('Query failed:', response.status, errorText);
         setResult({
           kind: 'UNKNOWN',
-          viewModel: { error: '서버 오류가 발생했습니다.' },
+          viewModel: {
+            error: `서버 오류가 발생했습니다 (${response.status})`,
+            details: errorText.substring(0, 200)
+          },
         });
       }
     } catch (err) {
       console.error('Query error:', err);
+      setResult({
+        kind: 'UNKNOWN',
+        viewModel: {
+          error: '요청 처리 중 오류가 발생했습니다.',
+          details: err instanceof Error ? err.message : String(err)
+        },
+      });
     } finally {
       setLoading(false);
     }
@@ -147,67 +148,30 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* Insurer Selection */}
-      <div className="bg-white border-b border-gray-200">
+      {/* Filter Panel */}
+      <div className="bg-blue-50 border-b border-blue-200">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-semibold text-gray-700">
-              비교할 보험사 ({selectedInsurers.length}개 선택)
-            </label>
-            <div className="flex gap-2">
-              {PRESET_CONFIGS.map(preset => (
-                <button
-                  key={preset.id}
-                  onClick={() => handlePresetSelect(preset)}
-                  className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-100 border border-gray-200 rounded hover:bg-gray-200"
+            <div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 text-sm font-semibold text-gray-900"
+              >
+                <svg
+                  className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-90' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  {preset.label}
-                </button>
-              ))}
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                비교 조건 설정
+              </button>
+              <p className="text-xs text-gray-600 mt-1 ml-6">
+                보험료 비교 시 연령, 성별, 정렬 기준이 적용됩니다
+              </p>
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
-            {availableInsurers.map(code => (
-              <label
-                key={code}
-                className={`flex items-center gap-2 p-2 border rounded cursor-pointer text-xs ${
-                  selectedInsurers.includes(code)
-                    ? 'bg-blue-50 border-blue-300'
-                    : 'bg-white border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedInsurers.includes(code)}
-                  onChange={() => handleInsurerToggle(code)}
-                  className="w-3 h-3 text-blue-600 rounded"
-                />
-                <span className="font-medium text-gray-700">
-                  {INSURER_NAMES[code] || code}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Filter Panel (Collapsible) */}
-      <div className="bg-gray-100 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-3">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 text-sm font-semibold text-gray-700"
-          >
-            <svg
-              className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-90' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-            필터 옵션 {showFilters ? '숨기기' : '보기'}
-          </button>
 
           {showFilters && (
             <div className="mt-3 grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -271,25 +235,26 @@ export default function ChatPage() {
       {/* Query Input */}
       <div className="max-w-7xl mx-auto px-6 py-6">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
             질문을 입력하세요
           </label>
+          <p className="text-xs text-gray-500 mb-3">
+            💡 보험료 비교: "저렴한 보험료 4개 추천" | 담보 비교: "암진단비 담보 비교" | 지원 여부: "제자리암 지원 여부"
+          </p>
           <textarea
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="예: 암직접입원비 담보 중 보장한도가 다른 상품 찾아줘"
+            placeholder="예: 저렴한 보험료 4개 상품만 추천해줘"
             rows={3}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <div className="mt-4 flex items-center justify-between">
-            <div className="text-xs text-gray-500">
-              {selectedInsurers.length < 2 && (
-                <span className="text-red-600">⚠️ 최소 2개 보험사를 선택하세요</span>
-              )}
+            <div className="text-xs text-gray-600">
+              비교 조건: 전체 보험사 (8개) | {age}세 / {gender === 'M' ? '남성' : '여성'}
             </div>
             <button
               onClick={handleSubmit}
-              disabled={!query.trim() || selectedInsurers.length < 2 || loading}
+              disabled={!query.trim() || loading}
               className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               {loading ? '처리 중...' : '비교 생성'}
@@ -327,6 +292,11 @@ export default function ChatPage() {
             {result.kind === 'UNKNOWN' && result.viewModel?.error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-6">
                 <p className="font-semibold text-red-800 mb-2">{result.viewModel.error}</p>
+                {result.viewModel.details && (
+                  <pre className="text-xs text-red-700 mt-2 p-3 bg-red-100 rounded overflow-x-auto">
+                    {result.viewModel.details}
+                  </pre>
+                )}
                 {result.viewModel.suggestions && (
                   <ul className="text-sm text-red-700 mt-3 space-y-1">
                     {result.viewModel.suggestions.map((s: string, i: number) => (

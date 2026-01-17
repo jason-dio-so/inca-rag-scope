@@ -135,6 +135,257 @@ class Example1HandlerDeterministic(BaseDeterministicHandler):
 
 
 # ============================================================================
+# Q1 Handler: Premium Ranking (STEP NEXT)
+# ============================================================================
+
+class Q1HandlerDeterministic(BaseDeterministicHandler):
+    """
+    Q1 Premium Ranking handler (Chat UI v2)
+
+    Returns Q1ViewModel with evidence (Evidence-Mandatory, Rail-Only)
+    Uses /premium/ranking logic (no HTTP call, direct DB query)
+    """
+
+    def execute(self, compiled_query: Dict[str, Any], request: ChatRequest) -> AssistantMessageVM:
+        """
+        Execute Q1 Premium Ranking with Evidence
+
+        Returns:
+        - AssistantMessageVM with viewModel (Chat UI v2)
+        - NO title/summary/sections (legacy removed)
+        - Evidence included (base_premium + rate_multiplier)
+        """
+        import psycopg2
+        import psycopg2.extras
+        import os
+
+        # Extract parameters from request
+        age = 40  # Default
+        sex = "M"  # Default
+        plan_variant = "BOTH"  # Default
+        sort_by = "monthly_total"  # Default
+        top_n = 4  # Default
+        as_of_date = "2025-11-26"  # Default
+
+        # Override from user_profile if available
+        if request.user_profile:
+            if "age" in request.user_profile:
+                age = request.user_profile["age"]
+            if "sex" in request.user_profile or "gender" in request.user_profile:
+                sex = request.user_profile.get("sex") or request.user_profile.get("gender", "M")
+
+        # Get DB URL (SSOT: inca_ssot@5433 ONLY)
+        premium_db_url = os.getenv(
+            "SSOT_DB_URL",
+            "postgresql://postgres:postgres@localhost:5433/inca_ssot"
+        )
+
+        # Connect and query (SSOT: product_premium_quote_v2 ONLY)
+        conn = psycopg2.connect(premium_db_url)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        # Determine variants to query
+        variant_filter = ("NO_REFUND", "GENERAL")  # BOTH
+
+        # Query product_premium_quote_v2
+        cursor.execute("""
+            SELECT
+                ins_cd,
+                product_id,
+                product_full_name,
+                plan_variant,
+                age,
+                sex,
+                premium_monthly_total,
+                premium_total_total,
+                as_of_date,
+                source,
+                source_table_id,
+                source_row_id
+            FROM product_premium_quote_v2
+            WHERE age = %s
+              AND sex = %s
+              AND as_of_date = %s
+              AND plan_variant IN %s
+            ORDER BY
+                CASE WHEN %s = 'monthly_total' THEN premium_monthly_total END ASC,
+                CASE WHEN %s = 'total' THEN premium_total_total END ASC,
+                ins_cd ASC
+        """, (age, sex, as_of_date, variant_filter, sort_by, sort_by))
+
+        rows = cursor.fetchall()
+
+        # For GENERAL variant rows, fetch multiplier evidence from coverage_premium_quote
+        multiplier_evidence_map = {}
+        for row in rows:
+            if row['plan_variant'] == 'GENERAL':
+                ins_cd = row['ins_cd']
+                product_id = row['product_id']
+
+                # Query coverage_premium_quote for multiplier_percent
+                cursor.execute("""
+                    SELECT DISTINCT multiplier_percent, coverage_code
+                    FROM coverage_premium_quote
+                    WHERE ins_cd = %s
+                      AND product_id = %s
+                      AND plan_variant = 'GENERAL'
+                      AND age = %s
+                      AND sex = %s
+                      AND as_of_date = %s
+                    LIMIT 1
+                """, (ins_cd, product_id, age, sex, as_of_date))
+
+                mult_row = cursor.fetchone()
+                if mult_row:
+                    key = f"{ins_cd}_{product_id}"
+                    multiplier_evidence_map[key] = {
+                        "multiplier_percent": mult_row['multiplier_percent'],
+                        "coverage_code": mult_row['coverage_code']
+                    }
+
+        conn.close()
+
+        # Build insurer map
+        insurer_map = {
+            "N01": "DB손해보험",
+            "N02": "롯데손해보험",
+            "N03": "메리츠화재",
+            "N05": "삼성화재",
+            "N08": "현대해상",
+            "N09": "흥국화재",
+            "N10": "KB손해보험",
+            "N13": "한화손해보험"
+        }
+
+        # Group by insurer+product (merge NO_REFUND and GENERAL)
+        product_map = {}
+        for row in rows:
+            key = f"{row['ins_cd']}_{row['product_id']}"
+            if key not in product_map:
+                product_map[key] = {
+                    "ins_cd": row['ins_cd'],
+                    "insurer_name": insurer_map.get(row['ins_cd'], row['ins_cd']),
+                    "product_id": row['product_id'],
+                    "product_name": row['product_full_name'],
+                    "no_refund": None,
+                    "general": None
+                }
+
+            variant = row['plan_variant']
+            premium_data = {
+                "premium_monthly": row['premium_monthly_total'],
+                "premium_total": row['premium_total_total'],
+                "as_of_date": row['as_of_date'],
+                "source": row['source'],
+                "source_table_id": row['source_table_id'],
+                "source_row_id": row['source_row_id']
+            }
+
+            if variant == "NO_REFUND":
+                product_map[key]["no_refund"] = premium_data
+            elif variant == "GENERAL":
+                product_map[key]["general"] = premium_data
+
+        # Convert to list and sort
+        result_rows = []
+        for key, data in product_map.items():
+            # Determine sort key
+            if sort_by == "monthly_total":
+                sort_key = data["no_refund"]["premium_monthly"] if data["no_refund"] else float('inf')
+            else:
+                sort_key = data["no_refund"]["premium_total"] if data["no_refund"] else float('inf')
+
+            # Build evidence payload (Evidence-Mandatory)
+            evidence = {
+                "base_premium": {
+                    "source_table": "product_premium_quote_v2",
+                    "ins_cd": data["ins_cd"],
+                    "product_id": data["product_id"],
+                    "age": age,
+                    "sex": sex,
+                    "as_of_date": as_of_date,
+                    "no_refund": data["no_refund"],
+                    "general": data["general"]
+                }
+            }
+
+            # Add rate_multiplier evidence if GENERAL variant exists
+            if data["general"]:
+                mult_key = f"{data['ins_cd']}_{data['product_id']}"
+                if mult_key in multiplier_evidence_map:
+                    # Use actual multiplier from coverage_premium_quote
+                    evidence["rate_multiplier"] = {
+                        "source_table": "coverage_premium_quote",
+                        "ins_cd": data["ins_cd"],
+                        "product_id": data["product_id"],
+                        "multiplier_percent": multiplier_evidence_map[mult_key]["multiplier_percent"],
+                        "coverage_code": multiplier_evidence_map[mult_key]["coverage_code"],
+                        "as_of_date": as_of_date
+                    }
+                else:
+                    # Fallback to 130% (product-level GENERAL multiplier)
+                    evidence["rate_multiplier"] = {
+                        "source_table": "product_premium_quote_v2",
+                        "ins_cd": data["ins_cd"],
+                        "product_id": data["product_id"],
+                        "multiplier_percent": 130,
+                        "note": "Product-level GENERAL multiplier (hardcoded fallback)",
+                        "formula": "GENERAL = NO_REFUND × 130%",
+                        "as_of_date": as_of_date
+                    }
+
+            result_rows.append({
+                "rank": 0,  # Will be set after sort
+                "insurer_code": data["ins_cd"],  # Match Q1ViewModel spec
+                "insurer_name": data["insurer_name"],
+                "product_name": data["product_name"],
+                "premium_monthly": data["no_refund"]["premium_monthly"] if data["no_refund"] else None,
+                "premium_total": data["no_refund"]["premium_total"] if data["no_refund"] else None,
+                "premium_monthly_general": data["general"]["premium_monthly"] if data["general"] else None,
+                "premium_total_general": data["general"]["premium_total"] if data["general"] else None,
+                "sort_key": sort_key,
+                "evidence": evidence
+            })
+
+        # Sort and take top_n
+        result_rows.sort(key=lambda x: x["sort_key"])
+        top_rows = result_rows[:top_n]
+
+        # Add rank and remove internal sort_key
+        for i, row in enumerate(top_rows):
+            row["rank"] = i + 1
+            del row["sort_key"]
+
+        # Build Q1ViewModel (Chat UI v2)
+        viewModel = {
+            "top4": top_rows,
+            "query_params": {
+                "age": age,
+                "sex": sex,
+                "plan_variant": plan_variant,
+                "sort_by": sort_by,
+                "top_n": top_n,
+                "as_of_date": as_of_date
+            }
+        }
+
+        # Return AssistantMessageVM with viewModel (NO title/summary/sections)
+        return AssistantMessageVM(
+            request_id=request.request_id,
+            kind="Q1",
+            exam_type="EXAM1",
+            viewModel=viewModel,  # Chat UI v2
+            lineage={
+                "handler": "Q1HandlerDeterministic",
+                "llm_used": False,
+                "deterministic": True,
+                "data_source": "product_premium_quote_v2",
+                "evidence_mandatory": True
+            }
+        )
+
+
+# ============================================================================
 # Example 2-Diff Handler: Coverage Difference Filter
 # ============================================================================
 
@@ -1081,6 +1332,7 @@ class HandlerRegistryDeterministic:
     _HANDLERS: Dict[MessageKind, BaseDeterministicHandler] = {
         "PREMIUM_COMPARE": Example1HandlerDeterministic(),
         "EX1_PREMIUM_DISABLED": Example1HandlerDeterministic(),
+        "Q1": Q1HandlerDeterministic(),  # STEP NEXT: Q1 Premium Ranking enabled
         "EX2_DETAIL": Example2DetailHandlerDeterministic(),     # STEP NEXT-86: 설명 전용
         "EX2_DETAIL_DIFF": Example2DiffHandlerDeterministic(),  # LEGACY
         "EX2_LIMIT_FIND": Example2DiffHandlerDeterministic(),   # STEP NEXT-78: Reuse EX2Diff

@@ -9,6 +9,13 @@
 
 import { Q12ReportView } from '@/components/cards/Q12ReportView';
 
+export interface Q3Row {
+  ins_cd: string;
+  insurer_name?: string;
+  product_name?: string;
+  slots?: Record<string, { value: any; evidence_refs?: string[] }>;
+}
+
 interface Q3ViewProps {
   data: {
     coverage_code?: string;
@@ -21,9 +28,11 @@ interface Q3ViewProps {
     } | null;
     error?: string;
   };
+  onRowClick?: (row: Q3Row) => void;
+  selectedRow?: Q3Row | null;
 }
 
-export function Q3ThreePartView({ data }: Q3ViewProps) {
+export function Q3ThreePartView({ data, onRowClick, selectedRow }: Q3ViewProps) {
   if (data.error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-6">
@@ -91,8 +100,23 @@ export function Q3ThreePartView({ data }: Q3ViewProps) {
 
                 const amount = amountSlot.value;
 
+                const isSelected = selectedRow?.ins_cd === row.ins_cd;
+                const rowData: Q3Row = {
+                  ins_cd: row.ins_cd,
+                  insurer_name: insurerName,
+                  product_name: productName,
+                  slots: row.slots
+                };
+
                 return (
-                  <tr key={idx} className="hover:bg-gray-50">
+                  <tr
+                    key={idx}
+                    onClick={() => onRowClick?.(rowData)}
+                    className={`
+                      cursor-pointer transition-all
+                      ${isSelected ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset' : 'hover:bg-gray-50'}
+                    `}
+                  >
                     <td className="px-4 py-3 text-gray-900 font-medium">{insurerName}</td>
                     <td className="px-4 py-3 text-gray-700">{productName}</td>
                     <td className="px-4 py-3 text-right text-gray-900">

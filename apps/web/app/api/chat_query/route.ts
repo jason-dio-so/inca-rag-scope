@@ -224,6 +224,9 @@ async function handleQ1(request: ChatQueryRequest): Promise<any> {
     }
 
     const data = await response.json();
+
+    // Return data as-is (/premium/ranking returns { kind, query_params, rows })
+    // This matches Q1ViewModel structure
     return data;
 
   } catch (error) {
