@@ -63,10 +63,20 @@ export default function Q2Page() {
 
   const fetchCoverageCandidates = useCallback(async (query: string): Promise<CoverageCandidate[]> => {
     try {
+      // Empty query guard
+      const qt = String(query ?? "").trim();
+      if (!qt) {
+        console.warn('[Q2] fetchCoverageCandidates: empty query_text, returning []');
+        return [];
+      }
+
+      const body = { query_text: qt, max_candidates: 3 };
+      console.log('[Q2] coverage_candidates request body =', body);
+
       const response = await fetch('/api/q2/coverage_candidates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ coverage_query_text: query })
+        body: JSON.stringify(body)
       });
 
       if (!response.ok) {
