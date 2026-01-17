@@ -31,17 +31,18 @@ else
   FAIL=1
 fi
 
-# Check 2: Main table cells must NOT contain explanation keywords (footer is OK)
-echo "[CHECK 2] Main table cells must NOT contain explanation keywords..."
+# Check 2: Main table must NOT contain forbidden explanation terms (footer included)
+echo "[CHECK 2] Main table must NOT contain forbidden explanation terms..."
 if [ -f "$Q1_TABLE" ]; then
-  # Only check table cells (td/th), not footer note
-  EXPLANATION_IN_CELLS=$(grep -E '<td|<th' "$Q1_TABLE" | grep -E '근거|출처|사유|기준일' || true)
-  if [ -n "$EXPLANATION_IN_CELLS" ]; then
-    echo "❌ FAIL: Q1PremiumTable cells contain explanation keywords (should be rail-only)"
-    echo "$EXPLANATION_IN_CELLS" | head -10
+  # Check entire file for forbidden terms (including footer)
+  FORBIDDEN_TERMS='근거|출처|사유|기준일|Evidence|Source'
+  FORBIDDEN_MATCHES=$(grep -E "$FORBIDDEN_TERMS" "$Q1_TABLE" || true)
+  if [ -n "$FORBIDDEN_MATCHES" ]; then
+    echo "❌ FAIL: Q1PremiumTable contains forbidden explanation terms (should be rail-only)"
+    echo "$FORBIDDEN_MATCHES" | head -10
     FAIL=1
   else
-    echo "✅ PASS: Q1PremiumTable cells have no explanation keywords"
+    echo "✅ PASS: Q1PremiumTable has no forbidden explanation terms"
   fi
 fi
 

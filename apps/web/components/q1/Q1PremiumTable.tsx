@@ -5,7 +5,7 @@
  * Rules:
  * - Show/hide columns based on product type filter
  * - Numbers only (NO formulas/percentages in main table)
- * - Row click opens Evidence Rail (visual highlight only, NO text)
+ * - Row click opens detail panel (visual highlight only, NO text)
  */
 
 'use client';
@@ -148,7 +148,7 @@ export function Q1PremiumTable({
       {/* Footer Note */}
       <div className="bg-gray-50 border-t border-gray-200 px-6 py-3">
         <p className="text-xs text-gray-600">
-          ※ 보험료는 DB 기준 (2025-11-26) / 행을 클릭하면 상세 근거를 확인할 수 있습니다
+          ※ 보험료는 DB 기준 (2025-11-26) / 행을 클릭하면 상세 정보를 확인할 수 있습니다
         </p>
       </div>
     </div>
