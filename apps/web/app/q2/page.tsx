@@ -93,6 +93,14 @@ export default function Q2Page() {
 
   const executeQ2Compare = useCallback(async (coverageCode: string, ageBand: number, sex: string) => {
     try {
+      // Guard: validate coverage_code
+      if (!coverageCode || coverageCode.trim().length === 0) {
+        addMessage('system', '비교할 담보를 선택해주세요.');
+        setState('error');
+        setLoading(false);
+        return;
+      }
+
       setState('executing');
       setLoading(true);
 
@@ -103,11 +111,14 @@ export default function Q2Page() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          coverage_code: coverageCode,
+          query: `보장한도 차이 비교`,            // Natural language query
+          coverage_code: coverageCode,           // Single coverage_code
           age: ageBand,
           gender: sex,
           ins_cds: insurers,
-          plan_variant_scope: slots.plan_variant_scope || 'all'
+          sort_by: 'monthly',
+          plan_variant_scope: slots.plan_variant_scope || 'all',
+          as_of_date: '2025-11-26'
         })
       });
 

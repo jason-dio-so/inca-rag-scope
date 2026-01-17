@@ -301,6 +301,117 @@ Manual smoke tests to verify Q2 chat-driven coverage limit comparison works corr
 
 ---
 
+## TC18: Q2 Proxy - Direct curl Test (coverage_codes Array)
+
+### Steps
+1. Ensure backend is running (port 8000)
+2. Ensure frontend is running (port 3000)
+3. Run curl command:
+```bash
+curl -i -X POST http://localhost:3000/api/q2/compare \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query":"암진단비 보장한도 비교",
+    "ins_cds":["N01","N02","N03","N05","N08","N09","N10","N13"],
+    "age":40,
+    "gender":"M",
+    "coverage_codes":["A4200_1"],
+    "sort_by":"monthly",
+    "plan_variant_scope":"all",
+    "as_of_date":"2025-11-26"
+  }'
+```
+
+### Expected Results
+- ✅ HTTP 200 OK
+- ✅ Response contains comparison data
+- ✅ Console log shows: `[Q2][compare] payload` with `intent: "Q2"` and `products: []`
+- ✅ Console log shows: `coverage_codes: ["A4200_1"]` (NOT null)
+- ✅ NO `coverage_code:undefined` in payload
+- ✅ Backend receives valid CompareRequest
+
+---
+
+## TC19: Q2 Proxy - Single coverage_code Input (Backward Compatibility)
+
+### Steps
+1. Run curl command with single `coverage_code` field:
+```bash
+curl -i -X POST http://localhost:3000/api/q2/compare \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query":"암진단비 보장한도 비교",
+    "ins_cds":["N01","N02"],
+    "age":40,
+    "gender":"M",
+    "coverage_code":"A4200_1",
+    "sort_by":"monthly",
+    "plan_variant_scope":"all",
+    "as_of_date":"2025-11-26"
+  }'
+```
+
+### Expected Results
+- ✅ HTTP 200 OK
+- ✅ Proxy correctly transforms `coverage_code` → `coverage_codes: ["A4200_1"]`
+- ✅ Backend receives valid CompareRequest
+- ✅ Response contains comparison data
+
+---
+
+## TC20: Q2 Proxy - Missing coverage_code → 400
+
+### Steps
+1. Run curl command without coverage_code:
+```bash
+curl -i -X POST http://localhost:3000/api/q2/compare \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query":"암진단비 보장한도 비교",
+    "ins_cds":["N01","N02"],
+    "age":40,
+    "gender":"M",
+    "sort_by":"monthly",
+    "plan_variant_scope":"all",
+    "as_of_date":"2025-11-26"
+  }'
+```
+
+### Expected Results
+- ✅ HTTP 400 Bad Request (NOT 422)
+- ✅ Response body: `{ "error": "Missing coverage_code", "detail": "coverage_codes[0] or coverage_code is required and must not be empty" }`
+- ✅ Proxy blocks request BEFORE sending to backend
+- ✅ NO backend 422 error
+
+---
+
+## TC21: Q2 Proxy - Empty coverage_codes Array → 400
+
+### Steps
+1. Run curl command with empty array:
+```bash
+curl -i -X POST http://localhost:3000/api/q2/compare \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query":"암진단비 보장한도 비교",
+    "ins_cds":["N01","N02"],
+    "age":40,
+    "gender":"M",
+    "coverage_codes":[],
+    "sort_by":"monthly",
+    "plan_variant_scope":"all",
+    "as_of_date":"2025-11-26"
+  }'
+```
+
+### Expected Results
+- ✅ HTTP 400 Bad Request
+- ✅ Response body: `{ "error": "Missing coverage_code", ... }`
+- ✅ Proxy validation catches empty array
+- ✅ NO backend call made
+
+---
+
 ## Regression Checks
 
 ### Demographics Together Enforcement
@@ -332,12 +443,13 @@ Manual smoke tests to verify Q2 chat-driven coverage limit comparison works corr
 ---
 
 ## Pass Criteria
-- ✅ All TCs (TC1-TC16) pass
+- ✅ All TCs (TC1-TC21) pass
 - ✅ All regression checks pass (including demographics together enforcement)
-- ✅ Gate script passes (updated with demographics checks)
+- ✅ Gate script passes (updated with demographics + intent/products checks)
 - ✅ NO console errors in browser DevTools
 - ✅ Evidence Rail works independently
 - ✅ Demographics together enforced: age+sex → coverage → result
+- ✅ Proxy curl tests pass: TC18-TC21 (intent/products included, coverage_codes array support, 400 validation)
 
 ---
 

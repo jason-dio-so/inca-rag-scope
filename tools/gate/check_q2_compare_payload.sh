@@ -94,6 +94,61 @@ if [ -f "$Q2_COMPARE_ROUTE" ]; then
   fi
 fi
 
+# Check 7: MUST have 'intent' field in payload
+echo "[CHECK 7] /api/q2/compare MUST include 'intent' in payload..."
+if [ -f "$Q2_COMPARE_ROUTE" ]; then
+  if grep -qE "intent.*:.*\"Q2_COVERAGE_LIMIT_COMPARE\"|intent.*:.*'Q2_COVERAGE_LIMIT_COMPARE'" "$Q2_COMPARE_ROUTE"; then
+    echo "✅ PASS: Q2 compare route has 'intent' field (Q2_COVERAGE_LIMIT_COMPARE)"
+  else
+    echo "❌ FAIL: Q2 compare route missing or incorrect 'intent' field"
+    FAIL=1
+  fi
+fi
+
+# Check 8: MUST have 'products' field in payload
+echo "[CHECK 8] /api/q2/compare MUST include 'products' in payload..."
+if [ -f "$Q2_COMPARE_ROUTE" ]; then
+  if grep -qE "products.*:" "$Q2_COMPARE_ROUTE"; then
+    echo "✅ PASS: Q2 compare route has 'products' field"
+  else
+    echo "❌ FAIL: Q2 compare route missing 'products' field"
+    FAIL=1
+  fi
+fi
+
+# Check 9: MUST NOT have 'coverage_code:undefined' pattern (REGRESSION)
+echo "[CHECK 9] /api/q2/compare MUST NOT have 'coverage_code:undefined' pattern..."
+if [ -f "$Q2_COMPARE_ROUTE" ]; then
+  if grep -q "coverage_code:\${coverage_code}" "$Q2_COMPARE_ROUTE"; then
+    echo "❌ FAIL: Q2 compare route has 'coverage_code:\${coverage_code}' pattern (REGRESSION)"
+    FAIL=1
+  else
+    echo "✅ PASS: Q2 compare route has NO 'coverage_code:undefined' pattern"
+  fi
+fi
+
+# Check 10: MUST support coverage_codes array input
+echo "[CHECK 10] /api/q2/compare MUST support coverage_codes array input..."
+if [ -f "$Q2_COMPARE_ROUTE" ]; then
+  if grep -q "coverage_codes" "$Q2_COMPARE_ROUTE"; then
+    echo "✅ PASS: Q2 compare route supports coverage_codes array"
+  else
+    echo "❌ FAIL: Q2 compare route missing coverage_codes array support"
+    FAIL=1
+  fi
+fi
+
+# Check 11: MUST validate coverage_code (return 400 if missing)
+echo "[CHECK 11] /api/q2/compare MUST validate coverage_code..."
+if [ -f "$Q2_COMPARE_ROUTE" ]; then
+  if grep -q "Missing coverage_code" "$Q2_COMPARE_ROUTE" && grep -q "status: 400" "$Q2_COMPARE_ROUTE"; then
+    echo "✅ PASS: Q2 compare route validates coverage_code"
+  else
+    echo "❌ FAIL: Q2 compare route missing coverage_code validation"
+    FAIL=1
+  fi
+fi
+
 echo "========================================="
 if [ $FAIL -eq 0 ]; then
   echo "✅ Q2 COMPARE PAYLOAD GATE: ALL CHECKS PASSED"
