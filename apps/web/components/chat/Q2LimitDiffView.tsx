@@ -5,6 +5,13 @@
  * Format: Difference section + Common section + Comparison table
  */
 
+export interface Q2Row {
+  ins_cd: string;
+  insurer_name?: string;
+  product_name?: string;
+  slots?: Record<string, { value: any; evidence_refs?: string[] }>;
+}
+
 interface Q2ViewProps {
   data: {
     coverage_code: string;
@@ -13,9 +20,11 @@ interface Q2ViewProps {
     error?: string;
     suggestions?: string[];
   };
+  onRowClick?: (row: Q2Row) => void;
+  selectedRow?: Q2Row | null;
 }
 
-export function Q2LimitDiffView({ data }: Q2ViewProps) {
+export function Q2LimitDiffView({ data, onRowClick, selectedRow }: Q2ViewProps) {
   if (data.error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-6">
@@ -75,8 +84,23 @@ export function Q2LimitDiffView({ data }: Q2ViewProps) {
                 const durationLimit = slots.duration_limit_days?.value || null;
                 const dailyBenefit = slots.daily_benefit_amount_won?.value || null;
 
+                const isSelected = selectedRow?.ins_cd === row.ins_cd;
+                const rowData: Q2Row = {
+                  ins_cd: row.ins_cd,
+                  insurer_name: insurerName,
+                  product_name: productName,
+                  slots: row.slots
+                };
+
                 return (
-                  <tr key={idx} className="hover:bg-gray-50">
+                  <tr
+                    key={idx}
+                    onClick={() => onRowClick?.(rowData)}
+                    className={`
+                      cursor-pointer transition-all
+                      ${isSelected ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset' : 'hover:bg-gray-50'}
+                    `}
+                  >
                     <td className="px-4 py-3 text-gray-900 font-medium">{idx + 1}</td>
                     <td className="px-4 py-3 text-gray-900 font-medium">{insurerName}</td>
                     <td className="px-4 py-3 text-gray-700">{productName}</td>
@@ -98,7 +122,8 @@ export function Q2LimitDiffView({ data }: Q2ViewProps) {
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
         <p className="text-xs text-gray-600">
           <strong>안내:</strong> 모든 데이터는 약관 및 가입설계서를 기반으로 합니다.
-          "—"는 정보가 없음을 의미합니다. 최종 가입 전 약관을 직접 확인하시기 바랍니다.
+          "—"는 정보가 없음을 의미합니다. 행을 클릭하면 상세 정보를 확인할 수 있습니다.
+          최종 가입 전 약관을 직접 확인하시기 바랍니다.
         </p>
       </div>
     </div>
