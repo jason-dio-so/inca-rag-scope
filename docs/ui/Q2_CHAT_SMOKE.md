@@ -263,6 +263,44 @@ Manual smoke tests to verify Q2 chat-driven coverage limit comparison works corr
 
 ---
 
+## TC17: Q2 Chat → Compare (422 Prevention)
+
+### Steps
+1. Navigate to `/q2`
+2. In chat: "40대 남성"
+3. Bot asks for coverage
+4. In chat: "암진단비"
+5. Bot presents candidate(s)
+6. Select candidate (if multiple)
+7. Wait for result
+
+### Expected Results
+- ✅ POST /api/q2/compare returns 200 OK (NOT 422)
+- ✅ FastAPI /compare receives valid CompareRequest payload
+- ✅ Console log shows: [Q2][compare] payload with correct structure
+- ✅ Console log shows: insurers = ["MERITZ", "DB", ...] (NOT ["N01", "N02"])
+- ✅ Result table renders correctly with comparison data
+- ✅ Evidence Rail opens on row click
+- ✅ NO 422 Unprocessable Entity error
+
+### Debug Verification (Console)
+```
+[Q2][compare] payload = {
+  "query": "coverage_code:...",
+  "insurers": ["MERITZ", "DB", ...],
+  "age": 40,
+  "gender": "M",
+  "coverage_codes": ["..."],
+  "sort_by": "monthly",
+  "plan_variant_scope": "all",
+  "as_of_date": "2025-11-26"
+}
+[Q2][compare] insurers = ["MERITZ", "DB", ...]
+[Q2][compare] status = 200
+```
+
+---
+
 ## Regression Checks
 
 ### Demographics Together Enforcement
