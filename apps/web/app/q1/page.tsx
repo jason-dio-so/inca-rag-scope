@@ -25,6 +25,13 @@ import {
 // All insurers (SSOT eligible list)
 const ALL_INSURERS = ['N01', 'N02', 'N03', 'N05', 'N08', 'N09', 'N10', 'N13'];
 
+interface CoverageCandidate {
+  coverage_code: string;
+  canonical_name: string;
+  score: number;
+  match_reason: string;
+}
+
 export default function Q1Page() {
   // Chat state
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -36,6 +43,10 @@ export default function Q1Page() {
   const [ageRange, setAgeRange] = useState<'30' | '40' | '50'>('40');
   const [gender, setGender] = useState<'M' | 'F'>('M');
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  // Candidate selection state
+  const [pendingCandidates, setPendingCandidates] = useState<CoverageCandidate[]>([]);
+  const [pendingSlots, setPendingSlots] = useState<Q1Slots | null>(null);
 
   // Result state
   const [loading, setLoading] = useState(false);
@@ -134,7 +145,7 @@ export default function Q1Page() {
     }
   };
 
-  // Handle chat message (TOTAL mode only)
+  // Handle chat message
   const handleSendMessage = async (text: string) => {
     // Add user message
     setMessages(prev => [...prev, {
@@ -142,6 +153,41 @@ export default function Q1Page() {
       content: text,
       timestamp: new Date(),
     }]);
+
+    // Check if we're waiting for candidate selection
+    if (pendingCandidates.length > 0 && pendingSlots) {
+      const choice = text.trim();
+      const choiceNum = parseInt(choice);
+
+      if (choiceNum >= 1 && choiceNum <= pendingCandidates.length) {
+        const selected = pendingCandidates[choiceNum - 1];
+
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `"${selected.canonical_name}" (${selected.coverage_code})로 비교합니다.`,
+          timestamp: new Date(),
+        }]);
+
+        // Clear pending state
+        setPendingCandidates([]);
+        const slotsToUse = pendingSlots;
+        setPendingSlots(null);
+
+        // Execute ranking with selected coverage code
+        await executeCoverageRanking({
+          ...slotsToUse,
+          selected_coverage_codes: [selected.coverage_code]
+        });
+        return;
+      } else {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `유효한 번호를 입력해 주세요 (1~${pendingCandidates.length})`,
+          timestamp: new Date(),
+        }]);
+        return;
+      }
+    }
 
     // Parse slots
     const newSlots = parseSlots(text, slots);
@@ -167,24 +213,101 @@ export default function Q1Page() {
     // Handle BY_COVERAGE mode
     if (newSlots.premium_mode === 'BY_COVERAGE') {
       if (!newSlots.coverage_query_text) {
-        // Need coverage code input
+        // Need coverage input
         setMessages(prev => [...prev, {
           role: 'assistant',
-          content: '담보 코드를 입력해 주세요.\n예시: A4200_1 (암진단비), A4103 (뇌졸중진단비)',
+          content: '어떤 담보 기준으로 볼까요?\n예) 암진단비, 뇌졸중진단비\n또는 담보코드 직접 입력 (예: A4200_1)',
           timestamp: new Date(),
         }]);
         return;
       }
 
-      // Simplified: treat coverage_query_text as coverage_code directly
-      const coverage_code = newSlots.coverage_query_text.trim();
+      const query_text = newSlots.coverage_query_text.trim();
 
-      // Call BY_COVERAGE endpoint
-      await executeCoverageRanking({
-        ...newSlots,
-        selected_coverage_codes: [coverage_code]
-      });
-      return;
+      // Check if it's a direct coverage_code (starts with A followed by digits)
+      if (/^A\d+/.test(query_text)) {
+        // Treat as coverage_code directly
+        await executeCoverageRanking({
+          ...newSlots,
+          selected_coverage_codes: [query_text]
+        });
+        return;
+      }
+
+      // Free text: resolve to candidates
+      try {
+        setLoading(true);
+        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3000';
+        const response = await fetch(`${API_BASE}/api/q1/coverage_candidates`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query_text: query_text,
+            max_candidates: 3
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const candidates: CoverageCandidate[] = data.candidates || [];
+
+          if (candidates.length === 0) {
+            // No matches
+            setMessages(prev => [...prev, {
+              role: 'assistant',
+              content: `"${query_text}"에 해당하는 담보를 찾지 못했습니다.\n다른 담보명을 입력하거나 담보코드를 직접 입력해 주세요.\n예) 암진단비, A4200_1`,
+              timestamp: new Date(),
+            }]);
+            setLoading(false);
+            return;
+          }
+
+          if (candidates.length === 1) {
+            // Auto-select single candidate
+            const candidate = candidates[0];
+            setMessages(prev => [...prev, {
+              role: 'assistant',
+              content: `"${candidate.canonical_name}" (${candidate.coverage_code})로 비교합니다.`,
+              timestamp: new Date(),
+            }]);
+            setLoading(false);
+
+            await executeCoverageRanking({
+              ...newSlots,
+              selected_coverage_codes: [candidate.coverage_code]
+            });
+            return;
+          }
+
+          // Multiple candidates: show selection UI
+          setPendingCandidates(candidates);
+          setPendingSlots(newSlots);
+
+          const options = candidates.map((c, i) =>
+            `${i + 1}) ${c.canonical_name} (${c.coverage_code})`
+          ).join('\n');
+
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: `다음 중 선택해 주세요:\n${options}\n\n번호를 입력하세요 (1, 2, 3)`,
+            timestamp: new Date(),
+          }]);
+          setLoading(false);
+          return;
+
+        } else {
+          throw new Error(`Backend error: ${response.status}`);
+        }
+      } catch (err) {
+        console.error('Coverage candidates error:', err);
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: '담보 검색 중 오류가 발생했습니다. 다시 시도해 주세요.',
+          timestamp: new Date(),
+        }]);
+        setLoading(false);
+        return;
+      }
     }
 
     // Execute TOTAL mode
