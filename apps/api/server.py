@@ -33,6 +33,12 @@ from pydantic import BaseModel, Field
 import psycopg2
 import psycopg2.extras
 
+# Q1 endpoints
+from apps.api.q1_endpoints import (
+    Q1CoverageRankingRequest,
+    execute_coverage_ranking
+)
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -1929,7 +1935,7 @@ async def premium_ranking(
             WHERE age = %s
               AND sex = %s
               AND as_of_date = %s
-              AND plan_variant = ANY(%s)
+              AND plan_variant IN %s
             ORDER BY
                 CASE WHEN %s = 'monthly_total' THEN premium_monthly_total END ASC,
                 CASE WHEN %s = 'total' THEN premium_total_total END ASC,
@@ -2038,6 +2044,7 @@ async def premium_ranking(
             if data["general"]:
                 mult_key = f"{data['ins_cd']}_{data['product_id']}"
                 if mult_key in multiplier_evidence_map:
+                    # Use actual multiplier from coverage_premium_quote
                     evidence["rate_multiplier"] = {
                         "source_table": "coverage_premium_quote",
                         "ins_cd": data["ins_cd"],
@@ -2046,14 +2053,26 @@ async def premium_ranking(
                         "coverage_code": multiplier_evidence_map[mult_key]["coverage_code"],
                         "as_of_date": as_of_date
                     }
+                else:
+                    # STEP NEXT: Fallback to 130% when coverage_premium_quote is empty
+                    # This is the product-level multiplier used in GENERAL variant calculation
+                    evidence["rate_multiplier"] = {
+                        "source_table": "product_premium_quote_v2",
+                        "ins_cd": data["ins_cd"],
+                        "product_id": data["product_id"],
+                        "multiplier_percent": 130,
+                        "note": "Product-level GENERAL multiplier (hardcoded fallback)",
+                        "formula": "GENERAL = NO_REFUND × 130%",
+                        "as_of_date": as_of_date
+                    }
 
             result_rows.append({
-                "ins_cd": data["ins_cd"],
+                "insurer_code": data["ins_cd"],  # ALIGNED WITH FRONTEND (not ins_cd)
                 "insurer_name": data["insurer_name"],
                 "product_id": data["product_id"],
                 "product_name": data["product_name"],
-                "premium_monthly_no_refund": data["no_refund"]["premium_monthly"] if data["no_refund"] else None,
-                "premium_total_no_refund": data["no_refund"]["premium_total"] if data["no_refund"] else None,
+                "premium_monthly": data["no_refund"]["premium_monthly"] if data["no_refund"] else None,  # ALIGNED (NO_REFUND baseline)
+                "premium_total": data["no_refund"]["premium_total"] if data["no_refund"] else None,  # ALIGNED
                 "premium_monthly_general": data["general"]["premium_monthly"] if data["general"] else None,
                 "premium_total_general": data["general"]["premium_total"] if data["general"] else None,
                 "sort_key": sort_key,
@@ -2150,6 +2169,36 @@ async def debug_db():
             "message": f"❌ DB connection failed: {str(e)}",
             "db_url": DB_URL.replace('postgres:postgres', '***:***')
         }, 500
+
+
+# ============================================================================
+# Q1 Premium Ranking Endpoints
+# ============================================================================
+
+@app.post("/q1/coverage_ranking")
+def q1_coverage_ranking(request: Q1CoverageRankingRequest):
+    """
+    Q1 BY_COVERAGE premium ranking endpoint
+
+    Purpose: Rank products by coverage-specific premium sum
+    Rules:
+    - SSOT DB only (inca_ssot@5433)
+    - Product-level aggregation: (insurer_code, product_code)
+    - MANDATORY: insurer_name + product_name in all rows
+    - EXCLUDE rows without insurer_name OR product_name
+    - Top 4 results only
+    """
+    try:
+        conn = psycopg2.connect(DB_URL)
+        try:
+            result = execute_coverage_ranking(request, conn)
+            return result.dict()
+        finally:
+            conn.close()
+
+    except Exception as e:
+        logger.error(f"Q1 coverage_ranking error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # Run with: uvicorn apps.api.server:app --host 0.0.0.0 --port 8000 --reload
